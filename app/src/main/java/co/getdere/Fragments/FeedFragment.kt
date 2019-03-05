@@ -20,13 +20,14 @@ class FeedFragment : Fragment() {
     val galleryAdapter = GroupAdapter<ViewHolder>()
 
 
-    private fun setUpGalleryAdapter(){
+    private fun setUpGalleryAdapter() {
 
         feed_gallary.adapter = galleryAdapter
         val galleryLayoutManager = GridLayoutManager(this.context, 3)
         feed_gallary.layoutManager = galleryLayoutManager
 
-        val dummyUri = "https://firebasestorage.googleapis.com/v0/b/dere-3d530.appspot.com/o/20150923_100950.jpg?alt=media&token=97f4b02c-75d9-4d5d-bc86-a3ffaa3a0011"
+        val dummyUri =
+            "https://firebasestorage.googleapis.com/v0/b/dere-3d530.appspot.com/o/20150923_100950.jpg?alt=media&token=97f4b02c-75d9-4d5d-bc86-a3ffaa3a0011"
 
         val imageUri = Uri.parse(dummyUri)
         if (imageUri != null) {
@@ -38,8 +39,26 @@ class FeedFragment : Fragment() {
             galleryAdapter.add(FeedImage(imageUri))
             galleryAdapter.add(FeedImage(imageUri))
             galleryAdapter.add(FeedImage(imageUri))
-        }
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
+            galleryAdapter.add(FeedImage(imageUri))
 
+
+        }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
