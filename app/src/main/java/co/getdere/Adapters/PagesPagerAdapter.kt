@@ -13,17 +13,21 @@ class PagesPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAdapter
 
     private val fragments = SparseArray<WeakReference<Fragment>>()
 
-    override fun getItem(p0: Int) = when (p0) {
+    override fun getItem(p0: Int) : Fragment {
 
-        0 -> FeedFragment.newInstance()
-        1 -> BoardFragment.newInstance()
-        2 -> ProfileFragment.newInstance()
-        else -> FeedFragment.newInstance()
+        val actualPosition = p0 % 3
+        when (actualPosition) {
+
+            0 -> return FeedFragment.newInstance()
+            1 -> return BoardFragment.newInstance()
+            2 -> return ProfileFragment.newInstance()
+            else -> return FeedFragment.newInstance()
+        }
     }
 
 
     override fun getCount(): Int {
-        return 3
+        return 200
     }
 }
 
