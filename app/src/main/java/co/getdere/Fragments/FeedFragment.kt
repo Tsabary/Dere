@@ -24,7 +24,7 @@ class FeedFragment : Fragment() {
 
         feed_gallary.adapter = galleryAdapter
         val galleryLayoutManager = GridLayoutManager(this.context, 3)
-        feed_gallary.layoutManager = galleryLayoutManager
+        feed_gallary.layoutManager = galleryLayoutManager //not sure about this suggestion, try without if problems occur
 
         val dummyUri =
             "https://firebasestorage.googleapis.com/v0/b/dere-3d530.appspot.com/o/20150923_100950.jpg?alt=media&token=97f4b02c-75d9-4d5d-bc86-a3ffaa3a0011"
@@ -70,6 +70,7 @@ class FeedFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_feed, container, false)
+
 
 
     companion object {

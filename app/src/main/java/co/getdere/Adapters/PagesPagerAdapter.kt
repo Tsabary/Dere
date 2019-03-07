@@ -11,8 +11,6 @@ import java.lang.ref.WeakReference
 
 class PagesPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAdapter(fragmentManager) {
 
-    private val fragments = SparseArray<WeakReference<Fragment>>()
-
     override fun getItem(p0: Int) : Fragment {
 
         val actualPosition = p0 % 3
@@ -30,9 +28,3 @@ class PagesPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAdapter
         return 200
     }
 }
-
-//    override fun instantiateItem(container: ViewGroup, position: Int): Any {
-//        val fragment = super.instantiateItem(container, position) as Fragment
-//        fragments.put(position, WeakReference(it))
-//        return fragment
-//    }
