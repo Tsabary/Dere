@@ -1,16 +1,19 @@
 package co.getdere.Fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import co.getdere.MainActivity
 import co.getdere.Models.Answers
 import co.getdere.Models.Question
 import co.getdere.Models.Users
 import co.getdere.R
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
@@ -176,6 +179,46 @@ class SingleAnswer(
             }
 
         })
+
+        viewHolder.itemView.answer_upvote.setOnClickListener {
+            executeVote("up")
+        }
+
+        viewHolder.itemView.answer_downvote.setOnClickListener {
+            executeVote("down")
+        }
+
+        val refVotes = FirebaseDatabase.getInstance().getReference("/votes/$answerId")
+        refVotes.addValueEventListener(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                var count = 0
+
+                for (ds in p0.getChildren()) {
+                    val rating = ds.getValue(Int::class.java)
+                    count += rating!!
+                    viewHolder.itemView.answer_votes.text = count.toString()
+                }
+            }
+
+
+        })
+
+    }
+
+    private fun executeVote(vote: String) {
+
+        val uid = FirebaseAuth.getInstance().uid
+        val ref = FirebaseDatabase.getInstance().getReference("/votes/$answerId/$uid")
+
+        if (vote == "up") {
+            ref.setValue(1)
+        } else {
+            ref.setValue(-1)
+        }
 
     }
 

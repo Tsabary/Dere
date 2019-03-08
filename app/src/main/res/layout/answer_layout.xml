@@ -7,68 +7,57 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/second_constraint"
-            android:layout_width="match_parent"
+    <TextView
+            android:text="random text fdsdfsdfsdfsdf"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:id="@+id/answer_content"
+            android:textColor="@color/gray900"
+            android:lineSpacingExtra="4sp"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="24dp"
+            android:layout_marginStart="24dp"
+            app:layout_constraintStart_toStartOf="parent"/>
+    <ImageButton
+            android:src="@android:drawable/arrow_up_float"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/answer_upvote"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/answer_votes"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintEnd_toEndOf="@+id/answer_votes"
+            app:layout_constraintStart_toStartOf="@+id/answer_votes"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/answer_votes"
+            android:textSize="18sp"
+            app:layout_constraintTop_toBottomOf="@+id/answer_upvote"
+            app:layout_constraintBottom_toTopOf="@+id/answer_downvote"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            app:layout_constraintEnd_toEndOf="@+id/answer_downvote"
+            app:layout_constraintStart_toStartOf="@+id/answer_downvote"
+            android:text="0"/>
+    <ImageButton
+            android:src="@android:drawable/arrow_down_float"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/answer_downvote"
+            app:layout_constraintTop_toBottomOf="@+id/answer_votes"
+            app:layout_constraintBottom_toTopOf="@+id/divider6"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-                android:text="random text fdsdfsdfsdfsdf"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/answer_content"
-                android:layout_marginStart="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="24dp"
-                app:layout_constraintHorizontal_bias="0.0"
-                android:textColor="@color/gray900"
-                android:lineSpacingExtra="4sp"
-                app:layout_constraintStart_toEndOf="@+id/answer_downvote"
-                app:layout_constraintTop_toTopOf="@+id/answer_upvote"
-                android:layout_marginTop="8dp"/>
-        <ImageButton
-                android:src="@android:drawable/arrow_down_float"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/answer_downvote"
-                app:layout_constraintTop_toBottomOf="@+id/answer_votes"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="8dp"
-        />
-        <ImageButton
-                android:src="@android:drawable/arrow_up_float"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/answer_upvote"
-                app:layout_constraintStart_toStartOf="@+id/answer_votes"
-                app:layout_constraintEnd_toEndOf="@+id/answer_votes"
-                android:layout_marginTop="16dp"
-                app:layout_constraintTop_toTopOf="parent"/>
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/answer_votes"
-                android:textSize="18sp"
-                app:layout_constraintStart_toStartOf="@+id/answer_downvote"
-                app:layout_constraintEnd_toEndOf="@+id/answer_downvote"
-                app:layout_constraintTop_toBottomOf="@+id/answer_upvote"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintBottom_toTopOf="@+id/answer_downvote"
-                android:text="7"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_marginEnd="24dp"/>
     <TextView
             android:text="Added 4 hours ago"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/answer_timestamp"
-            app:layout_constraintTop_toBottomOf="@+id/second_constraint"
             android:textColor="@color/gray500"
-            android:layout_marginTop="16dp"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="16dp"/>
+            app:layout_constraintStart_toStartOf="@+id/answer_content"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@+id/answer_content"/>
 
     <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="50dp"
@@ -78,7 +67,7 @@
             android:id="@+id/answer_author_image"
             tools:src="@drawable/no_dread"
             app:layout_constraintStart_toStartOf="@+id/answer_timestamp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             app:layout_constraintTop_toBottomOf="@+id/answer_timestamp"
             android:layout_marginBottom="24dp"
             app:layout_constraintBottom_toTopOf="@+id/divider6"/>
