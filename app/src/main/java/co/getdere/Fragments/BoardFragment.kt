@@ -1,25 +1,17 @@
 package co.getdere.Fragments
 
 
-import android.app.Application
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.DividerItemDecoration
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import co.getdere.MainActivity
+import androidx.navigation.fragment.findNavController
 import co.getdere.Models.Question
-import co.getdere.NewQuestionActivity
 
 import co.getdere.R
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -27,38 +19,45 @@ import com.google.firebase.database.FirebaseDatabase
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.board_single_row.view.*
-import org.ocpsoft.prettytime.PrettyTime
-import java.text.SimpleDateFormat
-import java.util.*
 
 class BoardFragment : Fragment() {
     val questionsRecyclerAdapter = GroupAdapter<ViewHolder>()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val mainActivity = activity as MainActivity
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_board, container, false)
 
-        val myView = inflater.inflate(R.layout.fragment_board, container, false)
 
-        val fab: FloatingActionButton = myView.findViewById(R.id.board_fab)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val fab: FloatingActionButton = view.findViewById(R.id.board_fab)
 
         fab.setOnClickListener {
-//            val intent = Intent(this.context, NewQuestionFragment::class.java)
-//            startActivity(intent)
-
+            val action = BoardFragmentDirections.actionDestinationBoardToDestinationNewQuestion()
+            findNavController().navigate(action)
         }
 
-
-        val questionsRecycler = myView.findViewById<RecyclerView>(R.id.board_question_feed)
-        val questionRecyclerLayoutManager = LinearLayoutManager(this.context)
+        val questionsRecycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.board_question_feed)
+        val questionRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         questionsRecycler.adapter = questionsRecyclerAdapter
         questionsRecycler.layoutManager = questionRecyclerLayoutManager
 
-        listenToQusetions()
+        listenToQuestions()
+
+        questionsRecyclerAdapter.setOnItemClickListener { item, view2 ->
+
+            val row = item as SingleQuestion
+            val author = row.authorUid
+            val question = row.questionId
+            val action = BoardFragmentDirections.actionDestinationBoardToOpenedQuestionFragment()
+            action.questionId = question
+            action.questionAuthor = author
+            findNavController().navigate(action)
 
 
-        return myView
+        }
+
     }
 
 
@@ -67,7 +66,9 @@ class BoardFragment : Fragment() {
     }
 
 
-    private fun listenToQusetions() {
+    private fun listenToQuestions() {
+
+        questionsRecyclerAdapter.clear()
 
         val ref = FirebaseDatabase.getInstance().getReference("/questions")
         ref.addChildEventListener(object : ChildEventListener {
@@ -84,14 +85,18 @@ class BoardFragment : Fragment() {
 //                    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
 //                    val time : Date = dateFormat.parse(timeFromDb)
 
-                    questionsRecyclerAdapter.add(singleQuestion(
-                        singleQuestionFromDB.title,
-                        singleQuestionFromDB.details,
-                        singleQuestionFromDB.tags,
-                        "4 days ago",
-                        7,
-                        true
-                    ))
+                    questionsRecyclerAdapter.add(
+                        SingleQuestion(
+                            singleQuestionFromDB.id,
+                            singleQuestionFromDB.author,
+                            singleQuestionFromDB.title,
+                            singleQuestionFromDB.details,
+                            singleQuestionFromDB.tags,
+                            "4 days ago",
+                            7,
+                            false
+                        )
+                    )
 
                 }
 
@@ -118,9 +123,11 @@ class BoardFragment : Fragment() {
 }
 
 
-class singleQuestion(
+class SingleQuestion(
+    val questionId: String,
+    val authorUid: String,
     val question: String,
-    val details : String,
+    val details: String,
     val tags: String,
     val timestamp: String,
     val answers: Int,

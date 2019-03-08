@@ -4,9 +4,9 @@ package co.getdere.Fragments
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -42,7 +42,7 @@ class ProfileFragment : Fragment() {
         val profilePicture: ImageView = myView.findViewById(R.id.profile_image)
         val logoutBtn: Button = myView.findViewById<Button>(R.id.logout_btn)
         val profileName: TextView = myView.findViewById(R.id.profile_user_name)
-        val profileGallery: RecyclerView = myView.findViewById(R.id.profile_gallery)
+        val profileGallery: androidx.recyclerview.widget.RecyclerView = myView.findViewById(R.id.profile_gallery)
         bucketBtn = myView.findViewById(R.id.profile_bucket_btn)
         rollBtn = myView.findViewById(R.id.profile_roll_btn)
 
@@ -95,10 +95,10 @@ class ProfileFragment : Fragment() {
 
     }
 
-    private fun setUpGalleryAdapter(gallery: RecyclerView) {
+    private fun setUpGalleryAdapter(gallery: androidx.recyclerview.widget.RecyclerView) {
 
         gallery.adapter = galleryAdapter
-        val galleryLayoutManager = GridLayoutManager(this.context, 3)
+        val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
         gallery.layoutManager = galleryLayoutManager
 
         val dummyUri =
