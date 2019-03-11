@@ -62,7 +62,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                     question = p0.getValue(Question::class.java)
                     view.opened_question_title.text = question!!.title
                     view.opened_question_content.text = question!!.details
-                    view.opened_question_tags.text = question!!.tags
+//                    view.opened_question_tags.text = question!!.tags
 
                     view.opened_question_upvote.setOnClickListener {
                         executeVote("up",questionId, uid!!, view.opened_question_votes, view.opened_question_upvote, view.opened_question_downvote)

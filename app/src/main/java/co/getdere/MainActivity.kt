@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.viewpager.widget.ViewPager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
@@ -38,11 +39,6 @@ class MainActivity : AppCompatActivity() {
         setupBottomNavMenu(navController)
         setupActionBar(navController)
 
-
-//        viewPager = findViewById<ViewPager>(R.id.view_pager)
-//
-//        pagerAdapter = PagesPagerAdapter(supportFragmentManager)
-//        viewPager.adapter = pagerAdapter
 
     }
 
@@ -86,8 +82,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupActionBar(navController: NavController) {
-        NavigationUI.setupActionBarWithNavController(this, navController)
-        actionBar?.setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.white)))
+//        NavigationUI.setupActionBarWithNavController(this, navController)
+
+        val mToolbar = findViewById<Toolbar>(R.id.my_toolbar)
+        setSupportActionBar(mToolbar)
+//        mToolbar.setNavigationIcon(R.drawable.back_arrow_black)
+
+//        actionBar?.setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.white)))
+//        actionBar.setAc
     }
 
     companion object {

@@ -44,25 +44,13 @@ class NewQuestionFragment : Fragment() {
     val tagsAdapter = GroupAdapter<ViewHolder>()
     val tagsFiltredAdapter = GroupAdapter<ViewHolder>()
     lateinit var questionChipGroup: ChipGroup
-    lateinit var tagsList: MutableList<String>
+    var tagsList: MutableList<String> = mutableListOf()
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val mainActivity = activity as MainActivity
 
         val myView = inflater.inflate(R.layout.fragment_new_question, container, false)
-
-
-//        val adapter = ArrayAdapter<String>(mainActivity, android.R.layout.simple_dropdown_item_1line, tags)
-
-
-//
-//        myView.recyclerView.setAdapter(ArrayAdapter<String>(this.context))
-//        myView.autoCompleteTextView.setOnItemClickListener { parent, arg1, position, arg3 ->
-//            myView.autoCompleteTextView.text = null
-//            val selected = parent.getItemAtPosition(position) as String
-//            addChipToGroup(selected, myView.chipGroup2)
-//        }
 
         return myView
     }
@@ -73,7 +61,7 @@ class NewQuestionFragment : Fragment() {
 
         val questionTitle: EditText = view.findViewById(R.id.new_question_title)
         val questionDetails = view.findViewById<EditText>(R.id.new_question_details)
-        val questionTags = view.findViewById<EditText>(R.id.new_question_tags)
+//        val questionTags = view.findViewById<EditText>(R.id.new_question_tags)
         val questionButton = view.findViewById<Button>(R.id.new_question_btn)
         val questionTagsInput = view.findViewById<EditText>(R.id.new_question_tag_input)
         questionChipGroup = view.findViewById<ChipGroup>(R.id.new_question_chip_group)
@@ -117,19 +105,22 @@ class NewQuestionFragment : Fragment() {
 
         questionButton.setOnClickListener {
 
-            for (item in questionChipGroup){
+            for (i in 0 until questionChipGroup.childCount) {
+
+                val chip = questionChipGroup.getChildAt(i) as Chip
+
+                tagsList.add(chip.text.toString())
+                println(chip.text.toString())
 
             }
-
-
 
 
 
             postQuestion(
                 questionTitle.text.toString(),
                 questionDetails.text.toString(),
-                questionTags.text.toString(),
-                System.currentTimeMillis().toString()
+                tagsList,
+                System.currentTimeMillis()
             )
 
         }
@@ -145,7 +136,7 @@ class NewQuestionFragment : Fragment() {
     private fun onTagSelected(selectedTag: String) {
 
         val chip = Chip(this.context)
-        chip.setText(selectedTag)
+        chip.text = selectedTag
         chip.isCloseIconVisible = true
         chip.isCheckable = false
         chip.isClickable = false
@@ -172,7 +163,7 @@ class NewQuestionFragment : Fragment() {
         fun newInstance(): BoardFragment = BoardFragment()
     }
 
-    private fun postQuestion(title: String, details: String, tags: MutableList<String>, timestamp: String) {
+    private fun postQuestion(title: String, details: String, tags: MutableList<String>, timestamp: Long) {
 
         val uid = FirebaseAuth.getInstance().uid ?: return
 
@@ -192,31 +183,16 @@ class NewQuestionFragment : Fragment() {
             }
     }
 
-//
-//    private fun addChipToGroup(person: String, chipGroup: ChipGroup) {
-//        val chip = Chip(context)
-//        chip.text = person
-//        chip.isCloseIconEnabled = true
-//        chip.setChipIconTintResource(R.color.main_green)
-//
-//        // necessary to get single selection working
-//        chip.isClickable = true
-//        chip.isCheckable = false
-//        chipGroup.addView(chip as View)
-//        chip.setOnCloseIconClickListener { chipGroup.removeView(chip as View) }
-}
+
+    class singleTagSuggestion(val tagString: String) : Item<ViewHolder>() {
+        override fun getLayout(): Int {
+            return R.layout.tag_auto_complete
+        }
+
+        override fun bind(viewHolder: ViewHolder, position: Int) {
+            viewHolder.itemView.one_tag.text = tagString
+        }
 
 
-//}
-
-class singleTagSuggestion(val tagString: String) : Item<ViewHolder>() {
-    override fun getLayout(): Int {
-        return R.layout.tag_auto_complete
     }
-
-    override fun bind(viewHolder: ViewHolder, position: Int) {
-        viewHolder.itemView.one_tag.text = tagString
-    }
-
-
 }

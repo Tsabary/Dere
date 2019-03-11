@@ -18,6 +18,9 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.board_single_row.view.*
+import org.ocpsoft.prettytime.PrettyTime
+import java.text.DateFormat
+import java.util.*
 
 class BoardFragment : Fragment() {
     val questionsRecyclerAdapter = GroupAdapter<ViewHolder>()
@@ -29,7 +32,9 @@ class BoardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val fab = view.findViewById<FloatingActionButton>(R.id.board_fab)
+        activity!!.setTitle("Board")
+
+        val fab : FloatingActionButton = view.findViewById<FloatingActionButton>(R.id.board_fab)
 
         fab.setOnClickListener {
             val action = BoardFragmentDirections.actionDestinationBoardToDestinationNewQuestion()
@@ -96,6 +101,10 @@ class BoardFragment : Fragment() {
 
                             }
 
+                            val stampMills = singleQuestionFromDB.timestamp
+                            val pretty = PrettyTime()
+                            val date = pretty.format(Date(stampMills))
+
                             questionsRecyclerAdapter.add(
                                 SingleQuestion(
                                     singleQuestionFromDB.id,
@@ -103,7 +112,7 @@ class BoardFragment : Fragment() {
                                     singleQuestionFromDB.title,
                                     singleQuestionFromDB.details,
                                     singleQuestionFromDB.tags,
-                                    "4 days ago",
+                                    date,
                                     count,
                                     false
                                 )
@@ -150,7 +159,7 @@ class SingleQuestion(
     val authorUid: String,
     val question: String,
     val details: String,
-    val tags: String,
+    val tags: MutableList<String>,
     val timestamp: String,
     val answers: Int,
     val resolved: Boolean
@@ -162,7 +171,7 @@ class SingleQuestion(
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
         viewHolder.itemView.board_question.text = question
-        viewHolder.itemView.board_tags.text = tags
+        viewHolder.itemView.board_tags.text = tags.joinToString()
         viewHolder.itemView.board_timestamp.text = timestamp
         viewHolder.itemView.board_answers.text = answers.toString()
 
