@@ -35,13 +35,13 @@
             app:layout_constraintTop_toBottomOf="@+id/my_toolbar"/>
     <androidx.appcompat.widget.Toolbar
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            android:layout_height="wrap_content"
             android:theme="@style/MyActionBar"
             android:minHeight="?attr/actionBarSize"
             android:id="@+id/my_toolbar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-    android:elevation="1dp"/>
+            android:elevation="1dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -22,6 +22,8 @@ import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.answer_layout.view.*
 import kotlinx.android.synthetic.main.fragment_opened_question.view.*
+import org.ocpsoft.prettytime.PrettyTime
+import java.util.*
 
 
 class OpenedQuestionFragment : Fragment(), DereMethods {
@@ -45,6 +47,9 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        activity!!.setTitle("Board")
+
+
         arguments?.let {
             val safeArgs = OpenedQuestionFragmentArgs.fromBundle(it)
             authorUid = safeArgs.questionAuthor
@@ -60,9 +65,15 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
                 override fun onDataChange(p0: DataSnapshot) {
                     question = p0.getValue(Question::class.java)
+
+                    val stampMills = question!!.timestamp
+                    val pretty = PrettyTime()
+                    val date = pretty.format(Date(stampMills))
+
                     view.opened_question_title.text = question!!.title
                     view.opened_question_content.text = question!!.details
-//                    view.opened_question_tags.text = question!!.tags
+                    view.opened_question_timestamp.text = date
+                    view.opened_question_tags.text = question!!.tags.joinToString()
 
                     view.opened_question_upvote.setOnClickListener {
                         executeVote("up",questionId, uid!!, view.opened_question_votes, view.opened_question_upvote, view.opened_question_downvote)

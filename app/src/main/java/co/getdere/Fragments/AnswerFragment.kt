@@ -32,6 +32,8 @@ class AnswerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        activity!!.setTitle("Answer")
+
         arguments?.let {
             val safeArgs = AnswerFragmentArgs.fromBundle(it)
             questionId = safeArgs.questionId
@@ -39,6 +41,7 @@ class AnswerFragment : Fragment() {
 
             val content = view.answer_content
             val uid = FirebaseAuth.getInstance().uid ?: return
+
 
 
             view.answer_btn.setOnClickListener {

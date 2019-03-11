@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+>
 
     <item
+            app:showAsAction="ifRoom"
             android:id="@+id/destination_feed"
             android:icon="@drawable/feed_icon"
             android:title="@string/feed"/>
 
     <item
+            app:showAsAction="ifRoom"
             android:id="@+id/destination_board"
             android:icon="@drawable/board_icon"
             android:title="@string/board"/>
 
     <item
+            app:showAsAction="ifRoom"
             android:id="@+id/destination_profile"
             android:icon="@drawable/profile_icon"
             android:title="@string/profile"/>

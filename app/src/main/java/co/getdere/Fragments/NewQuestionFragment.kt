@@ -76,9 +76,13 @@ class NewQuestionFragment : Fragment() {
             tagsAdapter.add(singleTagSuggestion(t))
         }
 
+        activity!!.setTitle("New question")
+
+
         questionTagsInput.addTextChangedListener(object : TextWatcher {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                tagSuggestionRecycler.visibility = View.VISIBLE
 
                 val userInput = s.toString()
                 val relevantTags: List<String> = tags.filter { it.contains(userInput) }

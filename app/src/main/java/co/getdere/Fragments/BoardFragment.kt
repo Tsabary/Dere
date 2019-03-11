@@ -121,11 +121,6 @@ class BoardFragment : Fragment() {
                     })
 
 
-//
-//                    val p = PrettyTime()
-//                    val timeFromDb = singleQuestionFromDB.timestamp
-//                    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-//                    val time : Date = dateFormat.parse(timeFromDb)
 
 
 

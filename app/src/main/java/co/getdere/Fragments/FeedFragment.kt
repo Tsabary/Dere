@@ -1,21 +1,14 @@
 package co.getdere.Fragments
 
-import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.navigation.NavController
 import co.getdere.Models.FeedImage
 import co.getdere.R
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.fragment_feed.*
-import java.util.zip.Inflater
 
 class FeedFragment : Fragment() {
 
@@ -76,6 +69,9 @@ class FeedFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        activity!!.setTitle("Feed")
+
 //        setupActionBar()
     }
 
@@ -85,7 +81,7 @@ class FeedFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
 
-        inflater.inflate(R.menu.navigation, menu)
+        inflater.inflate(R.menu.feed_navigation, menu)
         super.onCreateOptionsMenu(menu, inflater)
 
     }

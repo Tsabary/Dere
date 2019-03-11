@@ -1,15 +1,14 @@
 package co.getdere.Fragments
 
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -30,36 +29,33 @@ class ProfileFragment : Fragment() {
 
     var userProfile: Users? = null
     val galleryAdapter = GroupAdapter<ViewHolder>()
-    lateinit var bucketBtn : TextView
-    lateinit var rollBtn : TextView
+    lateinit var bucketBtn: TextView
+    lateinit var rollBtn: TextView
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val mainActivity = activity as MainActivity
 
         val myView = inflater.inflate(R.layout.fragment_profile, container, false)
 
-        val profilePicture: ImageView = myView.findViewById(R.id.profile_image)
-        val logoutBtn: Button = myView.findViewById<Button>(R.id.logout_btn)
-        val profileName: TextView = myView.findViewById(R.id.profile_user_name)
-        val profileGallery: androidx.recyclerview.widget.RecyclerView = myView.findViewById(R.id.profile_gallery)
-        bucketBtn = myView.findViewById(R.id.profile_bucket_btn)
-        rollBtn = myView.findViewById(R.id.profile_roll_btn)
+        return myView
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val profilePicture: ImageView = view.findViewById(R.id.profile_image)
+        val profileName: TextView = view.findViewById(R.id.profile_user_name)
+        val profileGallery: androidx.recyclerview.widget.RecyclerView = view.findViewById(R.id.profile_gallery)
+        bucketBtn = view.findViewById(R.id.profile_bucket_btn)
+        rollBtn = view.findViewById(R.id.profile_roll_btn)
+        val mainActivity = activity as MainActivity
+
 
         userProfile = mainActivity.currentUser  // setup who's profile is that based on the value given to currentUser
 
 
         setUpGalleryAdapter(profileGallery)
 
-
-        logoutBtn.setOnClickListener {
-            FirebaseAuth.getInstance().signOut()
-
-            val intent = Intent(this.context, LoginActivity::class.java)
-
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
-        }
 
         bucketBtn.setOnClickListener {
             changeGalleryFeed("bucket")
@@ -74,13 +70,43 @@ class ProfileFragment : Fragment() {
         Picasso.get().load(uri).into(profilePicture)
         profileName.text = userProfile?.name
 
-        return myView
+        activity!!.title = "Profile"
+
+        setHasOptionsMenu(true)
+
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+
+        inflater.inflate(R.menu.profile_navigation, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+
     }
 
 
-    companion object {
-        fun newInstance(): ProfileFragment = ProfileFragment()
+//    companion object {
+//        fun newInstance(): ProfileFragment = ProfileFragment()
+//    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+
+        when (id) {
+            R.id.profile_logout -> {
+                FirebaseAuth.getInstance().signOut()
+
+                val intent = Intent(this.context, LoginActivity::class.java)
+
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+            }
+
+        }
+
+        return super.onOptionsItemSelected(item)
+
     }
+
 
     private fun changeGalleryFeed(source: String) {
 

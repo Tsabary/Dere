@@ -18,7 +18,6 @@ class PagesPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAdapter
 
             0 -> return FeedFragment.newInstance()
             1 -> return BoardFragment.newInstance()
-            2 -> return ProfileFragment.newInstance()
             else -> return FeedFragment.newInstance()
         }
     }
