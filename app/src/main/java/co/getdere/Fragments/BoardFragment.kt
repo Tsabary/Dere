@@ -3,6 +3,7 @@ package co.getdere.Fragments
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -12,10 +13,7 @@ import androidx.navigation.fragment.findNavController
 import co.getdere.Models.Question
 
 import co.getdere.R
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
@@ -31,7 +29,7 @@ class BoardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val fab: FloatingActionButton = view.findViewById(R.id.board_fab)
+        val fab = view.findViewById<FloatingActionButton>(R.id.board_fab)
 
         fab.setOnClickListener {
             val action = BoardFragmentDirections.actionDestinationBoardToDestinationNewQuestion()
@@ -77,7 +75,42 @@ class BoardFragment : Fragment() {
 
                 val singleQuestionFromDB = p0.getValue(Question::class.java)
 
+
                 if (singleQuestionFromDB != null) {
+
+                    val refAnswers = FirebaseDatabase.getInstance().getReference("/answers/${singleQuestionFromDB.id}")
+
+                    var count = 0
+
+                    refAnswers.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
+
+                        }
+
+                        override fun onDataChange(p0: DataSnapshot) {
+
+                            for (ds in p0.getChildren()) {
+
+                                count += 1
+                                Log.d("countAnswers", count.toString())
+
+                            }
+
+                            questionsRecyclerAdapter.add(
+                                SingleQuestion(
+                                    singleQuestionFromDB.id,
+                                    singleQuestionFromDB.author,
+                                    singleQuestionFromDB.title,
+                                    singleQuestionFromDB.details,
+                                    singleQuestionFromDB.tags,
+                                    "4 days ago",
+                                    count,
+                                    false
+                                )
+                            )
+                        }
+                    })
+
 
 //
 //                    val p = PrettyTime()
@@ -85,18 +118,7 @@ class BoardFragment : Fragment() {
 //                    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
 //                    val time : Date = dateFormat.parse(timeFromDb)
 
-                    questionsRecyclerAdapter.add(
-                        SingleQuestion(
-                            singleQuestionFromDB.id,
-                            singleQuestionFromDB.author,
-                            singleQuestionFromDB.title,
-                            singleQuestionFromDB.details,
-                            singleQuestionFromDB.tags,
-                            "4 days ago",
-                            7,
-                            false
-                        )
-                    )
+
 
                 }
 

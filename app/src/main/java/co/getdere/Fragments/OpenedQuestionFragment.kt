@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import co.getdere.DereMethods
 import co.getdere.MainActivity
 import co.getdere.Models.Answers
 import co.getdere.Models.Question
@@ -19,15 +20,17 @@ import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.answer_layout.view.*
 import kotlinx.android.synthetic.main.fragment_opened_question.view.*
 
 
-class OpenedQuestionFragment : Fragment() {
+class OpenedQuestionFragment : Fragment(), DereMethods {
 
     var postAuthor: Users? = null
     var question: Question? = null
     lateinit var authorUid: String
     lateinit var questionId: String
+    val uid = FirebaseAuth.getInstance().uid
 
     val answersAdapter = GroupAdapter<ViewHolder>()
 
@@ -58,8 +61,16 @@ class OpenedQuestionFragment : Fragment() {
                 override fun onDataChange(p0: DataSnapshot) {
                     question = p0.getValue(Question::class.java)
                     view.opened_question_title.text = question!!.title
-                    view.answer_content.text = question!!.details
+                    view.opened_question_content.text = question!!.details
                     view.opened_question_tags.text = question!!.tags
+
+                    view.opened_question_upvote.setOnClickListener {
+                        executeVote("up",questionId, uid!!, view.opened_question_votes, view.opened_question_upvote, view.opened_question_downvote)
+                    }
+
+                    view.opened_question_downvote.setOnClickListener {
+                        executeVote("down",questionId, uid!!, view.opened_question_votes, view.opened_question_upvote, view.opened_question_downvote)
+                    }
                 }
 
 
@@ -73,8 +84,8 @@ class OpenedQuestionFragment : Fragment() {
 
                 override fun onDataChange(p0: DataSnapshot) {
                     postAuthor = p0.getValue(Users::class.java)
-                    Picasso.get().load(postAuthor!!.image).into(view.answer_author_image)
-                    view.answer_author_name.text = postAuthor!!.name
+                    Picasso.get().load(postAuthor!!.image).into(view.opened_question_author_image)
+                    view.opened_question_author_name.text = postAuthor!!.name
 
                 }
 
@@ -156,7 +167,9 @@ class SingleAnswer(
     val answerContent: String,
     val answerAuthor: String,
     val answerTimestamp: String
-) : Item<ViewHolder>() {
+) : Item<ViewHolder>(), DereMethods {
+
+    val uid = FirebaseAuth.getInstance().uid
 
     var author: Users? = null
     override fun getLayout(): Int {
@@ -180,15 +193,18 @@ class SingleAnswer(
 
         })
 
+
         viewHolder.itemView.answer_upvote.setOnClickListener {
-            executeVote("up")
+            executeVote("up", answerId, uid!!, viewHolder.itemView.answer_votes, viewHolder.itemView.answer_upvote, viewHolder.itemView.answer_downvote)
         }
 
         viewHolder.itemView.answer_downvote.setOnClickListener {
-            executeVote("down")
+            executeVote("down", answerId, uid!!, viewHolder.itemView.answer_votes, viewHolder.itemView.answer_upvote, viewHolder.itemView.answer_downvote)
         }
 
         val refVotes = FirebaseDatabase.getInstance().getReference("/votes/$answerId")
+
+
         refVotes.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
 
@@ -202,6 +218,39 @@ class SingleAnswer(
                     count += rating!!
                     viewHolder.itemView.answer_votes.text = count.toString()
                 }
+
+                if (p0.hasChild("$uid")) {
+                    val refUserVote = FirebaseDatabase.getInstance().getReference("/votes/$answerId/$uid")
+                    var vote = 0
+                    refUserVote.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
+
+                        }
+
+                        override fun onDataChange(p0: DataSnapshot) {
+                            vote = p0.getValue().toString().toInt()
+
+                            when (vote) {
+                                1 -> {
+                                    viewHolder.itemView.answer_upvote.setImageResource(R.drawable.arrow_up_active)
+                                    viewHolder.itemView.answer_downvote.setImageResource(R.drawable.arrow_down_default)
+                                }
+                                0 -> {
+                                    viewHolder.itemView.answer_upvote.setImageResource(R.drawable.arrow_up_default)
+                                    viewHolder.itemView.answer_downvote.setImageResource(R.drawable.arrow_down_default)
+                                }
+                                -1 -> {
+                                    viewHolder.itemView.answer_upvote.setImageResource(R.drawable.arrow_up_default)
+                                    viewHolder.itemView.answer_downvote.setImageResource(R.drawable.arrow_down_active)
+                                }
+                            }
+
+                        }
+
+                    })
+
+
+                }
             }
 
 
@@ -209,18 +258,82 @@ class SingleAnswer(
 
     }
 
-    private fun executeVote(vote: String) {
 
-        val uid = FirebaseAuth.getInstance().uid
-        val ref = FirebaseDatabase.getInstance().getReference("/votes/$answerId/$uid")
 
-        if (vote == "up") {
-            ref.setValue(1)
-        } else {
-            ref.setValue(-1)
-        }
 
-    }
+
+
+
+
+//    private fun executeVote1(vote: String, answerId : String) {
+//
+//
+//        val refVotes = FirebaseDatabase.getInstance().getReference("/votes/$answerId")
+//        refVotes.addListenerForSingleValueEvent(object : ValueEventListener {
+//            override fun onCancelled(p0: DatabaseError) {
+//
+//            }
+//
+//            override fun onDataChange(p0: DataSnapshot) {
+//                val refUserVote = FirebaseDatabase.getInstance().getReference("/votes/$answerId/$uid")
+//
+//                if (p0.hasChild("$uid")) {
+//                    var voteValue = 0
+//                    refUserVote.addListenerForSingleValueEvent(object : ValueEventListener {
+//                        override fun onCancelled(p0: DatabaseError) {
+//
+//                        }
+//
+//                        override fun onDataChange(p0: DataSnapshot) {
+//                            voteValue = p0.getValue().toString().toInt()
+//
+//                            when (voteValue) {
+//
+//                                1 -> {
+//                                    when (vote) {
+//                                        "up" -> refUserVote.setValue(1)
+//                                        "down" -> refUserVote.setValue(0)
+//                                        else -> refUserVote.setValue(0)
+//                                    }
+//                                }
+//
+//                                0 -> {
+//                                    when (vote) {
+//                                        "up" -> refUserVote.setValue(1)
+//                                        "down" -> refUserVote.setValue(-1)
+//                                        else -> refUserVote.setValue(0)
+//
+//                                    }
+//                                }
+//
+//                                -1 -> {
+//                                    when (vote) {
+//                                        "up" -> refUserVote.setValue(0)
+//                                        "down" -> refUserVote.setValue(-1)
+//                                        else -> refUserVote.setValue(0)
+//
+//                                    }
+//                                }
+//                            }
+//
+//                        }
+//
+//                    })
+//
+//
+//                } else {
+//                    when (vote) {
+//                        "up" -> refUserVote.setValue(1)
+//                        "down" -> refUserVote.setValue(-1)
+//                        else -> refUserVote.setValue(0)
+//                    }
+//                }
+//            }
+//
+//
+//        })
+//
+//    }
 
 
 }
