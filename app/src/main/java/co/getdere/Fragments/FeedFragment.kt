@@ -1,11 +1,15 @@
 package co.getdere.Fragments
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
+import co.getdere.CameraActivity
 import co.getdere.Models.FeedImage
 import co.getdere.R
+import co.getdere.RegisterLogin.LoginActivity
+import com.google.firebase.auth.FirebaseAuth
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.fragment_feed.*
@@ -72,7 +76,6 @@ class FeedFragment : Fragment() {
 
         activity!!.setTitle("Feed")
 
-//        setupActionBar()
     }
 
     companion object {
@@ -87,9 +90,25 @@ class FeedFragment : Fragment() {
     }
 
 
-//    private fun setupActionBar() {
-//
-//        val mToolbar = view!!.findViewById<Toolbar>(R.id.feed_toolbar)
-//        AppCompatActivity().setSupportActionBar(mToolbar)
-//    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+
+        when (id) {
+            R.id.destination_camera -> {
+
+                val intent = Intent(this.context, CameraActivity::class.java)
+//                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+            }
+
+        }
+
+        return super.onOptionsItemSelected(item)
+
+    }
+
+
+
+
+
 }

@@ -84,9 +84,9 @@ class ProfileFragment : Fragment() {
     }
 
 
-//    companion object {
-//        fun newInstance(): ProfileFragment = ProfileFragment()
-//    }
+    companion object {
+        fun newInstance(): ProfileFragment = ProfileFragment()
+    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
