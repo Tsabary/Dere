@@ -2,8 +2,12 @@ package co.getdere.Fragments
 
 
 import android.app.Fragment
+import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,12 +15,15 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import co.getdere.R
 import com.camerakit.CameraPreview
+import com.google.firebase.storage.FirebaseStorage
 import com.squareup.picasso.Picasso
 import io.fotoapparat.Fotoapparat
 import io.fotoapparat.parameter.ScaleType
 import io.fotoapparat.selector.back
 import kotlinx.android.synthetic.main.fragment_camera_preview.*
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.*
 
 
 class CameraPreviewFragment : Fragment() {
@@ -73,69 +80,60 @@ class CameraPreviewFragment : Fragment() {
             ?.takePicture()
 //            ?.saveToFile(dest)
 
+        fun getImageUri(
+            inContext: Context,
+            inImage: Bitmap
+        ): Uri {
+            val bytes = ByteArrayOutputStream()
+            inImage.compress(
+                Bitmap.CompressFormat.PNG,
+                100,
+                bytes
+            )
+            val path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null)
+            return Uri.parse(
+                path
+            )
+        }
+
+
         photoResult
             ?.toBitmap()
             ?.whenAvailable { bitmapPhoto ->
-                val imageView: ImageView= view.findViewById(R.id.imageView)
+                val uriImage = getImageUri(this.context, bitmapPhoto!!.bitmap)
+                val filename = UUID.randomUUID().toString()
+                val ref = FirebaseStorage.getInstance().getReference("/images/$filename")
+                ref.putFile(uriImage).addOnSuccessListener {
+                    Log.d("UploadActivity", "Successfully uploaded image ${it.metadata?.path}")
 
-                imageView.setImageBitmap(bitmapPhoto?.bitmap)
-                imageView.rotation = (-bitmapPhoto!!.rotationDegrees).toFloat()
+                    ref.downloadUrl.addOnSuccessListener {
+                        Log.d("UploadActivity", "File location: $it")
+
+                        addImageToFirebaseDatabase(it.toString())
+
+                    }
+
+
+                }.addOnFailureListener {
+                    Log.d("RegisterActivity", "Failed to upload image to server $it")
+                }
+//
+//                val imageView: ImageView = view.findViewById(R.id.imageView)
+//
+//                imageView.setImageBitmap(bitmapPhoto?.bitmap)
+//                imageView.rotation = (-bitmapPhoto!!.rotationDegrees).toFloat()
+//
+//                Log.d("Snap activity", "Took picture")
+
             }
-        Log.d("Snap activity", "Took picture")
 
     }
 
 
-    //These two enums below refers to using the flash and to switching the camera. I don't use either right now but keeping them around if needed later
-//    enum class FlashState {
-//        TORCH, OFF
-//    }
-//
-//    enum class FotoapparatState {
-//        ON, OFF
-//    }
-//
+    private fun addImageToFirebaseDatabase(image : String){
 
 
-//
-//    private fun saveImageToInternalStorage(drawableId:Int): Uri {
-//        // Get the image from drawable resource as drawable object
-//        val drawable = ContextCompat.getDrawable(applicationContext,drawableId)
-//
-//        // Get the bitmap from drawable object
-//        val bitmap = (drawable as BitmapDrawable).bitmap
-//
-//        // Get the context wrapper instance
-//        val wrapper = ContextWrapper(applicationContext)
-//
-//        // Initializing a new file
-//        // The bellow line return a directory in internal storage
-//        var file = wrapper.getDir("images", Context.MODE_PRIVATE)
-//
-//
-//        // Create a file to save the image
-//        file = File(file, "${UUID.randomUUID()}.jpg")
-//
-//        try {
-//            // Get the file output stream
-//            val stream: OutputStream = FileOutputStream(file)
-//
-//            // Compress bitmap
-//            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-//
-//            // Flush the stream
-//            stream.flush()
-//
-//            // Close stream
-//            stream.close()
-//        } catch (e: IOException){ // Catch the exception
-//            e.printStackTrace()
-//        }
-//
-//        // Return the saved image uri
-//        return Uri.parse(file.absolutePath)
-//    }
-
+    }
 
 }
 
