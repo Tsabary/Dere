@@ -72,8 +72,8 @@ class RegisterActivity : AppCompatActivity() {
         Log.d("Main", "email is $userEmail")
         Log.d("Main", "pass is $userPassword")
 
-
-        if (Patterns.EMAIL_ADDRESS.matcher(userEmail).matches()) {
+//        Patterns.EMAIL_ADDRESS.matcher(userEmail).matches()
+        if (userEmail.contains("@") && userEmail.contains(".")) {
 
             if (userPassword.length > 5) {
 

@@ -40,13 +40,15 @@ class LoginActivity : AppCompatActivity() {
         Log.d("Main", "email is $logEmail")
         Log.d("Main", "pass is $logPass")
 
-        if (Patterns.EMAIL_ADDRESS.matcher(logEmail).matches()) {
+//        Patterns.EMAIL_ADDRESS.matcher(logEmail).matches()  <--- this methos was used before for the if statement but I've replaced it as I kept getting the invalid email error
+
+        if (logEmail.contains("@") && logEmail.contains(".")) {
 
             if (logPass.length > 5) {
 
                 FirebaseAuth.getInstance().signInWithEmailAndPassword(logEmail, logPass).addOnCompleteListener {
                     if (it.isSuccessful) {
-                        Log.d("Login", "Succesflly loged a user in using uid: ${it.result?.user?.uid}")
+                        Log.d("Login", "Successfully logged a user in using uid: ${it.result?.user?.uid}")
                         val intent = Intent(this, MainActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
                         startActivity(intent)

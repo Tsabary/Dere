@@ -10,7 +10,7 @@
     <fragment
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:name="co.getdere.Fragments.PreviewFragment"
+            android:name="co.getdere.Fragments.CameraPreviewFragment"
             android:id="@+id/fragment"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
