@@ -13,6 +13,17 @@
                 app:destination="@id/destination_board"/>
         <action android:id="@+id/action_feedFragment_to_profileFragment"
                 app:destination="@id/destination_profile"/>
+        <action android:id="@+id/action_destination_feed_to_destination_image_full_size"
+                app:destination="@id/destination_image_full_size"/>
+
+    </fragment>
+    <fragment android:id="@+id/destination_image_full_size"
+              android:name="co.getdere.Fragments.ImageFullSizeFragment"
+              android:label="Full size"
+              tools:layout="@layout/fragment_image_full_size">
+        <argument android:name="imageId"
+                  app:argType="string"
+                  android:defaultValue=" "/>
     </fragment>
     <fragment android:id="@+id/destination_board"
               android:name="co.getdere.Fragments.BoardFragment"

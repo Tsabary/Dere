@@ -13,11 +13,15 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import co.getdere.MainActivity
-import co.getdere.Models.FeedImage
+import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.R
 import co.getdere.RegisterLogin.LoginActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.ChildEventListener
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
 import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
@@ -55,6 +59,8 @@ class ProfileFragment : Fragment() {
 
 
         setUpGalleryAdapter(profileGallery)
+
+        listenToImagesFromRoll()
 
 
         bucketBtn.setOnClickListener {
@@ -124,43 +130,54 @@ class ProfileFragment : Fragment() {
     private fun setUpGalleryAdapter(gallery: androidx.recyclerview.widget.RecyclerView) {
 
         gallery.adapter = galleryAdapter
-        val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
+        val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 4)
         gallery.layoutManager = galleryLayoutManager
 
-        val dummyUri =
-            "https://firebasestorage.googleapis.com/v0/b/dere-3d530.appspot.com/o/20150923_100950.jpg?alt=media&token=97f4b02c-75d9-4d5d-bc86-a3ffaa3a0011"
-
-        val imageUri = Uri.parse(dummyUri)
-        if (imageUri != null) {
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
-            galleryAdapter.add(FeedImage(imageUri))
 
 
-        }
     }
+
+
+
+    private fun listenToImagesFromRoll(){ //This needs to be fixed to not update in real time. Or should it?
+
+        galleryAdapter.clear()
+
+
+        val ref = FirebaseDatabase.getInstance().getReference("/images/byuser/${userProfile?.uid}")
+
+        ref.addChildEventListener(object : ChildEventListener {
+
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+
+                val singleImageFromDB = p0.getValue(Images::class.java)
+
+                if (singleImageFromDB != null) {
+
+                    galleryAdapter.add(FeedImage(Uri.parse(singleImageFromDB.image)))
+
+                }
+            }
+
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot) {
+            }
+
+        })
+
+    }
+
+
+
 
 
 }

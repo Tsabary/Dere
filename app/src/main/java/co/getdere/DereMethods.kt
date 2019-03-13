@@ -1,7 +1,12 @@
 package co.getdere
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -144,17 +149,8 @@ interface DereMethods {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
     }
+
+
 
 }

@@ -1,7 +1,6 @@
 package co.getdere.Fragments
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -16,7 +15,6 @@ import android.widget.EditText
 import androidx.navigation.fragment.findNavController
 import co.getdere.MainActivity
 import co.getdere.Models.Question
-import co.getdere.Models.Tag
 import co.getdere.R
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
