@@ -59,9 +59,9 @@ class FeedFragment : Fragment() {
         galleryAdapter.setOnItemClickListener { item, view2 ->
 
             val row = item as FeedImage
-            val imageId = row.image
+//            val imageId = row.image
             val action = FeedFragmentDirections.actionDestinationFeedToDestinationImageFullSize()
-            action.imageId = imageId.toString()
+            action.imageId = row.image.id
             findNavController().navigate(action)
 
 
@@ -101,7 +101,7 @@ class FeedFragment : Fragment() {
 
                 if (singleImageFromDB != null) {
 
-                    galleryAdapter.add(FeedImage(Uri.parse(singleImageFromDB.image)))
+                    galleryAdapter.add(FeedImage(singleImageFromDB))
 
                 }
             }
@@ -176,7 +176,7 @@ class FeedFragment : Fragment() {
 }
 
 
-class FeedImage(val image: Uri) : Item<ViewHolder>() {
+class FeedImage(val image: Images) : Item<ViewHolder>() {
 
 
     override fun getLayout(): Int {
@@ -185,7 +185,7 @@ class FeedImage(val image: Uri) : Item<ViewHolder>() {
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
-        Picasso.get().load(image).into(viewHolder.itemView.feed_single_photo_photo)
+        Picasso.get().load(image.image).into(viewHolder.itemView.feed_single_photo_photo)
 
     }
 

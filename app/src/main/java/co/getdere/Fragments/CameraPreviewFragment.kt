@@ -33,8 +33,9 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.squareup.picasso.Picasso
 import io.fotoapparat.Fotoapparat
+import io.fotoapparat.configuration.CameraConfiguration
 import io.fotoapparat.parameter.ScaleType
-import io.fotoapparat.selector.back
+import io.fotoapparat.selector.*
 import kotlinx.android.synthetic.main.fragment_camera_preview.*
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -71,20 +72,49 @@ class CameraPreviewFragment : Fragment() {
 
         locationAccuracy?.text = (activity as CameraActivity).locationAccuracy
 
+
+        val cameraConfiguration = CameraConfiguration(
+            pictureResolution = highestResolution(), // (optional) we want to have the highest possible photo resolution
+            previewResolution = highestResolution(), // (optional) we want to have the highest possible preview resolution
+            previewFpsRange = highestFps(),          // (optional) we want to have the best frame rate
+            focusMode = firstAvailable(              // (optional) use the first focus mode which is supported by device
+                continuousFocusPicture(),
+                autoFocus(),                       // if continuous focus is not available on device, auto focus will be used
+                fixed()                            // if even auto focus is not available - fixed focus mode will be used
+            ),
+            flashMode = firstAvailable(              // (optional) similar to how it is done for focus mode, this time for flash
+                autoRedEye(),
+                autoFlash(),
+                torch(),
+                off()
+            ),
+            antiBandingMode = firstAvailable(       // (optional) similar to how it is done for focus mode & flash, now for anti banding
+                auto(),
+                hz50(),
+                hz60(),
+                none()
+            ),
+            jpegQuality = manualJpegQuality(70),     // (optional) select a jpeg quality of 90 (out of 0-100) values
+            sensorSensitivity = lowestSensorSensitivity(), // (optional) we want to have the lowest sensor sensitivity (ISO)
+            frameProcessor = { frame -> }            // (optional) receives each frame from preview stream
+        )
+
+
         fotoapparat = Fotoapparat(
             context = this.context,
             view = cameraView,
             scaleType = ScaleType.CenterCrop,
             lensPosition = back(),
+            cameraConfiguration = cameraConfiguration,
             cameraErrorCallback = { error ->
                 println("Recorder errors: $error")
             }
         )
 
+
         camera_btn.setOnClickListener {
             takePhoto()
         }
-
 
 
 //        if (ContextCompat.checkSelfPermission(
@@ -217,8 +247,6 @@ class CameraPreviewFragment : Fragment() {
             }
 
     }
-
-
 
 
     companion object {

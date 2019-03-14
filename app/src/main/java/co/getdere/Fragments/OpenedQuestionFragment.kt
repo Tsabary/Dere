@@ -47,7 +47,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity!!.setTitle("Board")
+        activity!!.title = "Board"
 
 
         arguments?.let {

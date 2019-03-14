@@ -18,10 +18,7 @@ import co.getdere.Models.Users
 import co.getdere.R
 import co.getdere.RegisterLogin.LoginActivity
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
@@ -37,12 +34,8 @@ class ProfileFragment : Fragment() {
     lateinit var rollBtn: TextView
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?  = inflater.inflate(R.layout.fragment_profile, container, false)
 
-        val myView = inflater.inflate(R.layout.fragment_profile, container, false)
-
-        return myView
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -52,10 +45,46 @@ class ProfileFragment : Fragment() {
         val profileGallery: androidx.recyclerview.widget.RecyclerView = view.findViewById(R.id.profile_gallery)
         bucketBtn = view.findViewById(R.id.profile_bucket_btn)
         rollBtn = view.findViewById(R.id.profile_roll_btn)
-        val mainActivity = activity as MainActivity
+//
+//        if (arguments !=null){
+//            arguments?.let {
+//                val safeArgs = ProfileFragmentArgs.fromBundle(it)
+//                val userProfileUid = safeArgs.usersProfile
+//                val refUser = FirebaseDatabase.getInstance().getReference("users/$userProfileUid")
+//
+//                refUser.addListenerForSingleValueEvent(object : ValueEventListener{
+//                    override fun onCancelled(p0: DatabaseError) {
+//
+//                    }
+//
+//                    override fun onDataChange(p0: DataSnapshot) {
+//                        userProfile = p0.getValue(Users::class.java)
+//                    }
+//
+//                })
+//            }
+//
+//        } else {
+//            userProfile = (activity as MainActivity).currentUser
+//        }
 
+        arguments?.let {
+            val safeArgs = ProfileFragmentArgs.fromBundle(it)
+            val userProfileUid = safeArgs.usersProfile
+            val refUser = FirebaseDatabase.getInstance().getReference("users/$userProfileUid")
 
-        userProfile = mainActivity.currentUser  // setup who's profile is that based on the value given to currentUser
+            refUser.addListenerForSingleValueEvent(object : ValueEventListener{
+                override fun onCancelled(p0: DatabaseError) {
+
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+
+                    setCurrentUser(p0.getValue(Users::class.java))
+                }
+
+            })
+        }
 
 
         setUpGalleryAdapter(profileGallery)
@@ -80,6 +109,10 @@ class ProfileFragment : Fragment() {
 
         setHasOptionsMenu(true)
 
+    }
+
+    private fun setCurrentUser (user : Users?){
+        userProfile = user
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -154,7 +187,7 @@ class ProfileFragment : Fragment() {
 
                 if (singleImageFromDB != null) {
 
-                    galleryAdapter.add(FeedImage(Uri.parse(singleImageFromDB.image)))
+                    galleryAdapter.add(FeedImage(singleImageFromDB))
 
                 }
             }

@@ -24,6 +24,8 @@
         <argument android:name="imageId"
                   app:argType="string"
                   android:defaultValue=" "/>
+        <action android:id="@+id/action_destination_image_full_size_to_destination_profile"
+                app:destination="@id/destination_profile"/>
     </fragment>
     <fragment android:id="@+id/destination_board"
               android:name="co.getdere.Fragments.BoardFragment"
@@ -35,7 +37,9 @@
     </fragment>
     <fragment android:id="@+id/destination_profile"
               android:name="co.getdere.Fragments.ProfileFragment"
-              android:label="Profile"/>
+              android:label="Profile">
+        <argument android:name="usersProfile"/>
+    </fragment>
 
     <fragment android:id="@+id/destination_new_question"
               android:name="co.getdere.Fragments.NewQuestionFragment"

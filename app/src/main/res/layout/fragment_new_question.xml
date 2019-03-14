@@ -57,7 +57,8 @@
                     android:layout_marginEnd="16dp"
                     android:layout_marginTop="8dp"
                     app:layout_constraintTop_toBottomOf="@+id/new_question_static_title"
-                    android:inputType="textMultiLine|textCapSentences"/>
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:digits="abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 ?,"/>
 
 
             <TextView
@@ -87,7 +88,8 @@
                     android:layout_marginTop="8dp"
                     app:layout_constraintHorizontal_bias="0.0"
                     android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"/>
+                    android:layout_marginEnd="16dp"
+                    android:digits="abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 ?,"/>
 
 
             <TextView
@@ -127,7 +129,8 @@
                       android:layout_marginStart="16dp"
                       app:layout_constraintEnd_toEndOf="parent"
                       android:layout_marginEnd="16dp"
-                      app:layout_constraintHorizontal_bias="1.0"/>
+                      app:layout_constraintHorizontal_bias="1.0"
+                      android:digits="abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789"/>
 
 
             <androidx.recyclerview.widget.RecyclerView

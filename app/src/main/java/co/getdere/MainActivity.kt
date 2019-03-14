@@ -13,6 +13,7 @@ import androidx.navigation.ui.NavigationUI
 import co.getdere.Adapters.PagesPagerAdapter
 import co.getdere.Models.Users
 import co.getdere.RegisterLogin.RegisterActivity
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -22,6 +23,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
 
     var currentUser: Users? = null
+    lateinit var mToolbar : Toolbar
+    lateinit var mBottomNav : BottomNavigationView
 //    private lateinit var viewPager: ViewPager
 //    private lateinit var pagerAdapter: PagesPagerAdapter
 
@@ -37,12 +40,14 @@ class MainActivity : AppCompatActivity() {
         val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
 
         setupBottomNavMenu(navController)
-        setupActionBar(navController)
+        setupActionBar()
 
 
     }
 
     private fun setupBottomNavMenu(navController: NavController) {
+
+        mBottomNav = findViewById(R.id.bottom_nav)
 
         bottom_nav.let {
             NavigationUI.setupWithNavController(it, navController)
@@ -81,15 +86,10 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun setupActionBar(navController: NavController) {
-//        NavigationUI.setupActionBarWithNavController(this, navController)
+    private fun setupActionBar() {
 
-        val mToolbar = findViewById<Toolbar>(R.id.my_toolbar)
+        mToolbar = findViewById<Toolbar>(R.id.my_toolbar)
         setSupportActionBar(mToolbar)
-//        mToolbar.setNavigationIcon(R.drawable.back_arrow_black)
-
-//        actionBar?.setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.white)))
-//        actionBar.setAc
     }
 
     companion object {
