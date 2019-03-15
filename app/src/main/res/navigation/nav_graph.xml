@@ -37,9 +37,7 @@
     </fragment>
     <fragment android:id="@+id/destination_profile"
               android:name="co.getdere.Fragments.ProfileFragment"
-              android:label="Profile">
-        <argument android:name="usersProfile"/>
-    </fragment>
+              android:label="Profile"/>
 
     <fragment android:id="@+id/destination_new_question"
               android:name="co.getdere.Fragments.NewQuestionFragment"

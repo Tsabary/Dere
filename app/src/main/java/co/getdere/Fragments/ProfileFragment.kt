@@ -1,18 +1,16 @@
 package co.getdere.Fragments
 
 
-import android.app.Activity
+import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.*
-import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import co.getdere.MainActivity
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProviders
+import co.getdere.Interfaces.SharedViewModelUser
 import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.R
@@ -22,8 +20,6 @@ import com.google.firebase.database.*
 import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.fragment_feed.*
-import kotlinx.android.synthetic.main.fragment_profile.*
 
 
 class ProfileFragment : Fragment() {
@@ -32,9 +28,22 @@ class ProfileFragment : Fragment() {
     val galleryAdapter = GroupAdapter<ViewHolder>()
     lateinit var bucketBtn: TextView
     lateinit var rollBtn: TextView
+    lateinit var usersProfileId: String
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?  = inflater.inflate(R.layout.fragment_profile, container, false)
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        activity?.let {
+            val sharedViewModelUser = ViewModelProviders.of(it).get(SharedViewModelUser::class.java)
+            usersProfileId = sharedViewModelUser.usersProfileId
+            Log.d("UserProfileIdeViewModel", usersProfileId)
+        }
+    }
+
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_profile, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -45,51 +54,30 @@ class ProfileFragment : Fragment() {
         val profileGallery: androidx.recyclerview.widget.RecyclerView = view.findViewById(R.id.profile_gallery)
         bucketBtn = view.findViewById(R.id.profile_bucket_btn)
         rollBtn = view.findViewById(R.id.profile_roll_btn)
-//
-//        if (arguments !=null){
-//            arguments?.let {
-//                val safeArgs = ProfileFragmentArgs.fromBundle(it)
-//                val userProfileUid = safeArgs.usersProfile
-//                val refUser = FirebaseDatabase.getInstance().getReference("users/$userProfileUid")
-//
-//                refUser.addListenerForSingleValueEvent(object : ValueEventListener{
-//                    override fun onCancelled(p0: DatabaseError) {
-//
-//                    }
-//
-//                    override fun onDataChange(p0: DataSnapshot) {
-//                        userProfile = p0.getValue(Users::class.java)
-//                    }
-//
-//                })
-//            }
-//
-//        } else {
-//            userProfile = (activity as MainActivity).currentUser
-//        }
 
-        arguments?.let {
-            val safeArgs = ProfileFragmentArgs.fromBundle(it)
-            val userProfileUid = safeArgs.usersProfile
-            val refUser = FirebaseDatabase.getInstance().getReference("users/$userProfileUid")
+        val refUserProfile = FirebaseDatabase.getInstance().getReference("/users/$usersProfileId")
 
-            refUser.addListenerForSingleValueEvent(object : ValueEventListener{
-                override fun onCancelled(p0: DatabaseError) {
+        refUserProfile.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
 
-                }
+            }
 
-                override fun onDataChange(p0: DataSnapshot) {
+            override fun onDataChange(p0: DataSnapshot) {
 
-                    setCurrentUser(p0.getValue(Users::class.java))
-                }
+                val userProfile = p0.getValue(Users::class.java)
 
-            })
-        }
+                val uri = userProfile?.image
+                Picasso.get().load(uri).into(profilePicture)
+                profileName.text = userProfile?.name
+
+            }
+
+        })
 
 
         setUpGalleryAdapter(profileGallery)
 
-        listenToImagesFromRoll()
+        changeGalleryFeed("Roll")
 
 
         bucketBtn.setOnClickListener {
@@ -101,19 +89,12 @@ class ProfileFragment : Fragment() {
         }
 
 
-        val uri = userProfile?.image
-        Picasso.get().load(uri).into(profilePicture)
-        profileName.text = userProfile?.name
-
         activity!!.title = "Profile"
 
         setHasOptionsMenu(true)
 
     }
 
-    private fun setCurrentUser (user : Users?){
-        userProfile = user
-    }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
 
@@ -123,9 +104,7 @@ class ProfileFragment : Fragment() {
     }
 
 
-    companion object {
-        fun newInstance(): ProfileFragment = ProfileFragment()
-    }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
@@ -152,10 +131,12 @@ class ProfileFragment : Fragment() {
         if (source == "bucket") {
             rollBtn.setTextColor(resources.getColor(R.color.gray500))
             bucketBtn.setTextColor(resources.getColor(R.color.gray700))
+            listenToImagesFromBucket()
 
         } else {
             rollBtn.setTextColor(resources.getColor(R.color.gray700))
             bucketBtn.setTextColor(resources.getColor(R.color.gray500))
+            listenToImagesFromRoll()
         }
 
     }
@@ -167,17 +148,15 @@ class ProfileFragment : Fragment() {
         gallery.layoutManager = galleryLayoutManager
 
 
-
     }
 
 
-
-    private fun listenToImagesFromRoll(){ //This needs to be fixed to not update in real time. Or should it?
+    private fun listenToImagesFromRoll() { //This needs to be fixed to not update in real time. Or should it?
 
         galleryAdapter.clear()
 
 
-        val ref = FirebaseDatabase.getInstance().getReference("/images/byuser/${userProfile?.uid}")
+        val ref = FirebaseDatabase.getInstance().getReference("/images/byuser/$usersProfileId")
 
         ref.addChildEventListener(object : ChildEventListener {
 
@@ -210,7 +189,71 @@ class ProfileFragment : Fragment() {
     }
 
 
+    private fun listenToImagesFromBucket() { //This needs to be fixed to not update in real time. Or should it?
 
+        galleryAdapter.clear()
+
+        val ref = FirebaseDatabase.getInstance().getReference("/buckets/$usersProfileId")
+
+        ref.addChildEventListener(object : ChildEventListener {
+
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+
+                val singleImageFromDBlink = p0.getValue(String::class.java)
+
+                Log.d("CheckIfStringOfImage", singleImageFromDBlink)
+
+                val refForImageObjects =
+                    FirebaseDatabase.getInstance().getReference("images/feed/$singleImageFromDBlink")
+
+                refForImageObjects.addChildEventListener(object : ChildEventListener {
+
+                    override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                        val singleImageFromDB = p0.getValue(Images::class.java)
+
+                        if (singleImageFromDB != null) {
+
+                            galleryAdapter.add(FeedImage(singleImageFromDB))
+
+                        }
+                    }
+
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
+
+                    override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+                    }
+
+                    override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+                    }
+
+                    override fun onChildRemoved(p0: DataSnapshot) {
+                    }
+
+                })
+
+
+            }
+
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot) {
+            }
+
+        })
+
+    }
+
+    companion object {
+        fun newInstance(): ProfileFragment = ProfileFragment()
+    }
 
 
 }

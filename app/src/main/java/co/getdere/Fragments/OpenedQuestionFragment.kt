@@ -1,15 +1,13 @@
 package co.getdere.Fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import co.getdere.DereMethods
-import co.getdere.MainActivity
+import co.getdere.Interfaces.DereMethods
 import co.getdere.Models.Answers
 import co.getdere.Models.Question
 import co.getdere.Models.Users

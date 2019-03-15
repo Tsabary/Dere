@@ -1,6 +1,7 @@
 package co.getdere.Fragments
 
-
+import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -9,13 +10,15 @@ import android.view.ViewGroup
 
 import co.getdere.R
 
+class ApproveImageFragment : Fragment() {
 
-class PhotoCommentsFragment : Fragment() {
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_photo_comments, container, false)
+    ): View? = inflater.inflate(R.layout.fragment_approve_image, container, false)
 
 
 

@@ -1,16 +1,16 @@
 package co.getdere
 
 import android.content.Intent
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.MenuItem
-import androidx.viewpager.widget.ViewPager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
-import co.getdere.Adapters.PagesPagerAdapter
+import co.getdere.Interfaces.SharedViewModelImage
+import co.getdere.Interfaces.SharedViewModelUser
 import co.getdere.Models.Users
 import co.getdere.RegisterLogin.RegisterActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -32,6 +32,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val sharedViewModelImages = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
+
+        val sharedViewModelUsers = ViewModelProviders.of(this).get(SharedViewModelUser::class.java)
 
         FirebaseApp.initializeApp(this)
 
