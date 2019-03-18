@@ -24,4 +24,5 @@ class OpenPhotoPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAda
     override fun getCount(): Int {
         return 2
     }
+
 }

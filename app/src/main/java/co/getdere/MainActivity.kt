@@ -9,8 +9,9 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
+import co.getdere.Interfaces.SharedViewModelCurrentUser
 import co.getdere.Interfaces.SharedViewModelImage
-import co.getdere.Interfaces.SharedViewModelUser
+import co.getdere.Interfaces.SharedViewModelRandomUserId
 import co.getdere.Models.Users
 import co.getdere.RegisterLogin.RegisterActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -25,6 +26,9 @@ class MainActivity : AppCompatActivity() {
     var currentUser: Users? = null
     lateinit var mToolbar : Toolbar
     lateinit var mBottomNav : BottomNavigationView
+    lateinit var sharedViewModelCurrentUser: SharedViewModelCurrentUser
+
+
 //    private lateinit var viewPager: ViewPager
 //    private lateinit var pagerAdapter: PagesPagerAdapter
 
@@ -32,10 +36,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
 
         val sharedViewModelImages = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
 
-        val sharedViewModelUsers = ViewModelProviders.of(this).get(SharedViewModelUser::class.java)
+        val sharedViewModelUsers = ViewModelProviders.of(this).get(SharedViewModelRandomUserId::class.java)
 
         FirebaseApp.initializeApp(this)
 
@@ -45,6 +50,7 @@ class MainActivity : AppCompatActivity() {
 
         setupBottomNavMenu(navController)
         setupActionBar()
+
 
 
     }
@@ -84,7 +90,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                currentUser = p0.getValue(Users::class.java)
+
+                sharedViewModelCurrentUser.currentUserObject = p0.getValue(Users::class.java)!!
             }
 
         })

@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.Interfaces.SharedViewModelImage
 import co.getdere.Models.Images
@@ -36,6 +37,8 @@ import com.mapbox.mapboxsdk.maps.Style
 class ImageMapViewFragment : Fragment(), PermissionsListener {
 
 
+    private lateinit var sharedViewModelForImage : SharedViewModelImage
+
     private lateinit var mapView: MapView
     private lateinit var map: MapboxMap
     private lateinit var originLocation: Location
@@ -55,13 +58,8 @@ class ImageMapViewFragment : Fragment(), PermissionsListener {
         super.onAttach(context)
 
         activity?.let {
-            val sharedViewModel = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
+            sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
 
-            imageObject = sharedViewModel.sharedImageObject
-            imageLatitude = imageObject.location[0]
-            imageLongtitude = imageObject.location[1]
-
-            Log.d("checkLocation", " $imageLatitude $imageLongtitude")
         }
     }
 
@@ -82,59 +80,69 @@ class ImageMapViewFragment : Fragment(), PermissionsListener {
         super.onViewCreated(view, savedInstanceState)
         mapView = view.findViewById(co.getdere.R.id.mapView)
 
-        mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync { mapboxMap ->
 
-            mapboxMap.setStyle(Style.LIGHT) {
+        sharedViewModelForImage.sharedImageObject.observe(this, Observer {
+            it?.let {image ->
+                mapView.onCreate(savedInstanceState)
+                mapView.getMapAsync { mapboxMap ->
 
-                map = mapboxMap
+                    mapboxMap.setStyle(Style.LIGHT) { it ->
+
+                        map = mapboxMap
 //                enableLocation()
 
-                if (PermissionsManager.areLocationPermissionsGranted(this.context)) {
+                        if (PermissionsManager.areLocationPermissionsGranted(this.context)) {
 
-                    // Get an instance of the component
-                    val locationComponent = mapboxMap.locationComponent
+                            // Get an instance of the component
+                            val locationComponent = mapboxMap.locationComponent
 
-                    mapboxMap.addMarker(
-                        MarkerOptions()
-                        .position(LatLng(imageLatitude!!, imageLongtitude!!)))
-
-
-                    val position = CameraPosition.Builder()
-                        .target(LatLng(imageLatitude!!, imageLongtitude!!))
-                        .zoom(10.0)
-                        .build()
-
-                    mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position))
+                            mapboxMap.addMarker(
+                                MarkerOptions()
+                                    .position(LatLng(image.location[0], image.location[1])))
 
 
-                    // Activate with options
-                    if (ContextCompat.checkSelfPermission(
-                            this.context!!,
-                            Manifest.permission.ACCESS_FINE_LOCATION
-                        ) == PackageManager.PERMISSION_GRANTED
-                    ) {
-                        locationComponent.activateLocationComponent(this.context!!, mapboxMap.style!!)
-                    }
+                            val position = CameraPosition.Builder()
+                                .target(LatLng(image.location[0], image.location[1]))
+                                .zoom(10.0)
+                                .build()
 
-                    // Enable to make component visible
-                    locationComponent.isLocationComponentEnabled = true
+                            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position))
 
-                    // Set the component's camera mode
+
+                            // Activate with options
+                            if (ContextCompat.checkSelfPermission(
+                                    this.context!!,
+                                    Manifest.permission.ACCESS_FINE_LOCATION
+                                ) == PackageManager.PERMISSION_GRANTED
+                            ) {
+                                locationComponent.activateLocationComponent(this.context!!, mapboxMap.style!!)
+                            }
+
+                            // Enable to make component visible
+                            locationComponent.isLocationComponentEnabled = true
+
+                            // Set the component's camera mode
 //                    locationComponent.cameraMode = CameraMode.TRACKING
 
-                    // Set the component's render mode
-                    locationComponent.renderMode = RenderMode.COMPASS
+                            // Set the component's render mode
+                            locationComponent.renderMode = RenderMode.COMPASS
 
 
-                } else {
-                    permissionsManager = PermissionsManager(this)
-                    permissionsManager.requestLocationPermissions(activity)
+                        } else {
+                            permissionsManager = PermissionsManager(this)
+                            permissionsManager.requestLocationPermissions(activity)
+                        }
+
+
+                    }
                 }
-
-
             }
         }
+        )
+
+
+
+
     }
 
 

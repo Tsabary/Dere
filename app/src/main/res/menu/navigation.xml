@@ -17,7 +17,7 @@
 
     <item
             app:showAsAction="ifRoom"
-            android:id="@+id/destination_profile"
+            android:id="@+id/destination_profile_loged_in_user"
             android:icon="@drawable/profile_icon"
             android:title="@string/profile"/>
 

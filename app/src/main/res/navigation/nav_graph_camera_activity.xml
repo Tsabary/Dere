@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/nav_graph_camera_activity"
+            app:startDestination="@id/cameraPreviewFragment">
+
+    <fragment android:id="@+id/cameraPreviewFragment"
+              android:name="co.getdere.Fragments.CameraPreviewFragment"
+              android:label="Approve Image"
+              tools:layout="@layout/fragment_camera_preview">
+        <action android:id="@+id/action_cameraPreviewFragment_to_approveImageFragment"
+                app:destination="@id/approveImageFragment"/>
+    </fragment>
+
+    <fragment android:id="@+id/approveImageFragment"
+              android:name="co.getdere.Fragments.ApproveImageFragment"
+              android:label="fragment_approve_image"
+              tools:layout="@layout/fragment_approve_image">
+        <argument android:name="imageUri"
+                  app:argType="co.getdere.Models.ImageFile"/>
+        <action android:id="@+id/action_approveImageFragment_to_cameraPreviewFragment"
+                app:destination="@id/cameraPreviewFragment"/>
+    </fragment>
+</navigation>

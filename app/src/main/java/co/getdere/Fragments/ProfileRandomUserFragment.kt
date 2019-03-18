@@ -9,12 +9,16 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import co.getdere.Interfaces.SharedViewModelUser
+import co.getdere.Adapters.FeedImage
+import co.getdere.Interfaces.SharedViewModelRandomUser
+import co.getdere.Interfaces.SharedViewModelRandomUserId
 import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.R
 import co.getdere.RegisterLogin.LoginActivity
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.squareup.picasso.Picasso
@@ -22,62 +26,50 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 
 
-class ProfileFragment : Fragment() {
+class ProfileRandomUserFragment : Fragment() {
 
-    var userProfile: Users? = null
+    private lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
+
+    private var userProfile = Users()
+
     val galleryAdapter = GroupAdapter<ViewHolder>()
-    lateinit var bucketBtn: TextView
-    lateinit var rollBtn: TextView
-    lateinit var usersProfileId: String
+    private lateinit var bucketBtn: TextView
+    private lateinit var rollBtn: TextView
 
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
         activity?.let {
-            val sharedViewModelUser = ViewModelProviders.of(it).get(SharedViewModelUser::class.java)
-            usersProfileId = sharedViewModelUser.usersProfileId
-            Log.d("UserProfileIdeViewModel", usersProfileId)
+            sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
         }
     }
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_profile, container, false)
+        inflater.inflate(R.layout.fragment_profile_random_user, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val profilePicture: ImageView = view.findViewById(R.id.profile_image)
-        val profileName: TextView = view.findViewById(R.id.profile_user_name)
-        val profileGallery: androidx.recyclerview.widget.RecyclerView = view.findViewById(R.id.profile_gallery)
-        bucketBtn = view.findViewById(R.id.profile_bucket_btn)
-        rollBtn = view.findViewById(R.id.profile_roll_btn)
+        val profilePicture: ImageView = view.findViewById(R.id.profile_ru_image)
+        val profileName: TextView = view.findViewById(R.id.profile_ru_user_name)
+        val profileGallery: androidx.recyclerview.widget.RecyclerView = view.findViewById(R.id.profile_ru_gallery)
+        bucketBtn = view.findViewById(R.id.profile_ru_bucket_btn)
+        rollBtn = view.findViewById(R.id.profile_ru_roll_btn)
 
-        val refUserProfile = FirebaseDatabase.getInstance().getReference("/users/$usersProfileId")
 
-        refUserProfile.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-
+        sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
+            it?.let {user ->
+                userProfile = user
+                Glide.with(this).load(it.image).into(profilePicture)
+                profileName.text = it.name
+                setUpGalleryAdapter(profileGallery)
+                changeGalleryFeed("Bucket")
             }
-
-            override fun onDataChange(p0: DataSnapshot) {
-
-                val userProfile = p0.getValue(Users::class.java)
-
-                val uri = userProfile?.image
-                Picasso.get().load(uri).into(profilePicture)
-                profileName.text = userProfile?.name
-
-            }
-
-        })
-
-
-        setUpGalleryAdapter(profileGallery)
-
-        changeGalleryFeed("Roll")
+        }
+        )
 
 
         bucketBtn.setOnClickListener {
@@ -88,23 +80,16 @@ class ProfileFragment : Fragment() {
             changeGalleryFeed("roll")
         }
 
-
         activity!!.title = "Profile"
 
         setHasOptionsMenu(true)
-
     }
 
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-
         inflater.inflate(R.menu.profile_navigation, menu)
         super.onCreateOptionsMenu(menu, inflater)
-
     }
-
-
-
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
@@ -118,15 +103,14 @@ class ProfileFragment : Fragment() {
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
             }
-
         }
 
         return super.onOptionsItemSelected(item)
-
     }
 
-
     private fun changeGalleryFeed(source: String) {
+
+        Log.d("CHekingSequence",  userProfile.email)
 
         if (source == "bucket") {
             rollBtn.setTextColor(resources.getColor(R.color.gray500))
@@ -138,16 +122,16 @@ class ProfileFragment : Fragment() {
             bucketBtn.setTextColor(resources.getColor(R.color.gray500))
             listenToImagesFromRoll()
         }
-
     }
 
     private fun setUpGalleryAdapter(gallery: androidx.recyclerview.widget.RecyclerView) {
 
+        Log.d("CHekingSequence", userProfile.uid)
+
+
         gallery.adapter = galleryAdapter
         val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 4)
         gallery.layoutManager = galleryLayoutManager
-
-
     }
 
 
@@ -155,8 +139,7 @@ class ProfileFragment : Fragment() {
 
         galleryAdapter.clear()
 
-
-        val ref = FirebaseDatabase.getInstance().getReference("/images/byuser/$usersProfileId")
+        val ref = FirebaseDatabase.getInstance().getReference("/images/byuser/${userProfile.uid}")
 
         ref.addChildEventListener(object : ChildEventListener {
 
@@ -185,7 +168,6 @@ class ProfileFragment : Fragment() {
             }
 
         })
-
     }
 
 
@@ -193,15 +175,13 @@ class ProfileFragment : Fragment() {
 
         galleryAdapter.clear()
 
-        val ref = FirebaseDatabase.getInstance().getReference("/buckets/$usersProfileId")
+        val ref = FirebaseDatabase.getInstance().getReference("/buckets/${userProfile.uid}")
 
         ref.addChildEventListener(object : ChildEventListener {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                val singleImageFromDBlink = p0.getValue(String::class.java)
-
-                Log.d("CheckIfStringOfImage", singleImageFromDBlink)
+                val singleImageFromDBlink = p0.getValue(Map::class.java)
 
                 val refForImageObjects =
                     FirebaseDatabase.getInstance().getReference("images/feed/$singleImageFromDBlink")
@@ -212,9 +192,7 @@ class ProfileFragment : Fragment() {
                         val singleImageFromDB = p0.getValue(Images::class.java)
 
                         if (singleImageFromDB != null) {
-
                             galleryAdapter.add(FeedImage(singleImageFromDB))
-
                         }
                     }
 
@@ -229,10 +207,7 @@ class ProfileFragment : Fragment() {
 
                     override fun onChildRemoved(p0: DataSnapshot) {
                     }
-
                 })
-
-
             }
 
             override fun onCancelled(p0: DatabaseError) {
@@ -246,13 +221,12 @@ class ProfileFragment : Fragment() {
 
             override fun onChildRemoved(p0: DataSnapshot) {
             }
-
         })
 
     }
 
     companion object {
-        fun newInstance(): ProfileFragment = ProfileFragment()
+        fun newInstance(): ProfileRandomUserFragment = ProfileRandomUserFragment()
     }
 
 

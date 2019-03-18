@@ -10,11 +10,14 @@ import android.view.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.fragment.findNavController
+import co.getdere.Adapters.FeedImage
 import co.getdere.CameraActivity
 import co.getdere.MainActivity
 import co.getdere.Models.Images
 import co.getdere.R
+import com.bumptech.glide.Glide
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -173,23 +176,4 @@ class FeedFragment : Fragment() {
     }
 
 
-}
-
-
-class FeedImage(val image: Images) : Item<ViewHolder>() {
-
-
-    override fun getLayout(): Int {
-        return R.layout.feed_single_photo
-    }
-
-    override fun bind(viewHolder: ViewHolder, position: Int) {
-
-        Picasso.get().load(image.image).into(viewHolder.itemView.feed_single_photo_photo)
-
-    }
-
-    override fun getSpanSize(spanCount: Int, position: Int): Int {
-        return super.getSpanSize(spanCount, position)
-    }
 }

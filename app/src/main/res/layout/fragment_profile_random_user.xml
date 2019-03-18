@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/white"
-        android:layout_marginBottom="8dp">
+>
 
 
     <de.hdodenhof.circleimageview.CircleImageView
@@ -15,7 +15,7 @@
             app:civ_border_color="#424242"
             android:elevation="4dp"
             app:civ_border_width="1dp"
-            android:id="@+id/profile_image"
+            android:id="@+id/profile_ru_image"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:src="@drawable/no_dread"
@@ -24,52 +24,43 @@
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/profile_user_name"
+            android:id="@+id/profile_ru_user_name"
             tools:text="User name"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintTop_toTopOf="@+id/profile_image"
-            app:layout_constraintBottom_toTopOf="@+id/profile_number_of_photos"
+            app:layout_constraintTop_toTopOf="@+id/profile_ru_image"
+            app:layout_constraintBottom_toTopOf="@+id/profile_ru_number_of_photos"
             android:layout_marginTop="8dp"
-            app:layout_constraintStart_toEndOf="@+id/profile_image"
+            app:layout_constraintStart_toEndOf="@+id/profile_ru_image"
             android:layout_marginStart="24dp"/>
     <TextView
             android:text="23 photos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/profile_number_of_photos"
-            app:layout_constraintStart_toStartOf="@+id/profile_user_name"
-            app:layout_constraintTop_toBottomOf="@+id/profile_user_name"
+            android:id="@+id/profile_ru_number_of_photos"
+            app:layout_constraintStart_toStartOf="@+id/profile_ru_user_name"
+            app:layout_constraintTop_toBottomOf="@+id/profile_ru_user_name"
             android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/profile_image"/>
+            app:layout_constraintBottom_toBottomOf="@+id/profile_ru_image"/>
     <View
             android:id="@+id/divider"
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:background="@color/gray300"
-            app:layout_constraintTop_toBottomOf="@+id/profile_image"
+            app:layout_constraintTop_toBottomOf="@+id/profile_ru_image"
             android:layout_marginTop="16dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
     />
-    <!--<View-->
-            <!--android:id="@+id/divider2"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="1dp"-->
-            <!--android:background="@color/gray300"-->
-            <!--app:layout_constraintStart_toStartOf="parent"-->
-            <!--app:layout_constraintEnd_toEndOf="parent"-->
-            <!--app:layout_constraintHorizontal_bias="0.0"-->
-            <!--app:layout_constraintTop_toBottomOf="@+id/profile_bucket_btn"-->
-            <!--android:layout_marginTop="24dp"/>-->
+
     <TextView
             android:text="BUCKET"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/profile_bucket_btn"
+            android:id="@+id/profile_ru_bucket_btn"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintEnd_toStartOf="@+id/profile_roll_btn"
+            app:layout_constraintEnd_toStartOf="@+id/profile_ru_roll_btn"
             app:layout_constraintTop_toBottomOf="@+id/divider"
             android:layout_marginTop="24dp"
             android:textStyle="bold"
@@ -78,10 +69,10 @@
             android:text="ROLL"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/profile_roll_btn"
-            app:layout_constraintTop_toTopOf="@+id/profile_bucket_btn"
-            app:layout_constraintBottom_toBottomOf="@+id/profile_bucket_btn"
-            app:layout_constraintStart_toEndOf="@+id/profile_bucket_btn"
+            android:id="@+id/profile_ru_roll_btn"
+            app:layout_constraintTop_toTopOf="@+id/profile_ru_bucket_btn"
+            app:layout_constraintBottom_toBottomOf="@+id/profile_ru_bucket_btn"
+            app:layout_constraintStart_toEndOf="@+id/profile_ru_bucket_btn"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintEnd_toEndOf="parent"
             android:textStyle="bold"
@@ -89,11 +80,11 @@
     <androidx.recyclerview.widget.RecyclerView
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_constraintTop_toBottomOf="@+id/profile_bucket_btn"
+            app:layout_constraintTop_toBottomOf="@+id/profile_ru_bucket_btn"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:id="@+id/profile_gallery"
+            android:id="@+id/profile_ru_gallery"
             android:layout_marginTop="24dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,7 +1,6 @@
 package co.getdere.Fragments
 
 
-import android.app.Fragment
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
@@ -13,7 +12,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.NavHostFragment.findNavController
+import androidx.fragment.app.Fragment
+
 import co.getdere.CameraActivity
+import co.getdere.Models.ImageFile
 import co.getdere.Models.Images
 import co.getdere.R
 import com.camerakit.CameraPreview
@@ -24,6 +28,8 @@ import io.fotoapparat.Fotoapparat
 import io.fotoapparat.configuration.CameraConfiguration
 import io.fotoapparat.parameter.ScaleType
 import io.fotoapparat.selector.*
+import kotlinx.android.synthetic.main.activity_camera.*
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_camera_preview.*
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -53,12 +59,14 @@ class CameraPreviewFragment : Fragment() {
     ): View? = inflater.inflate(R.layout.fragment_camera_preview, container, false)
 
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val locationAccuracy = view?.findViewById<TextView>(R.id.camera_accuracy)
+        val locationAccuracyText = view.findViewById<TextView>(R.id.camera_accuracy)
 
-        locationAccuracy?.text = (activity as CameraActivity).locationAccuracy
+        val locationAccuracyData = (activity as CameraActivity).locationAccuracy
+
+        locationAccuracyText.text = locationAccuracyData
 
 
         val cameraConfiguration = CameraConfiguration(
@@ -82,14 +90,14 @@ class CameraPreviewFragment : Fragment() {
                 hz60(),
                 none()
             ),
-            jpegQuality = manualJpegQuality(70),     // (optional) select a jpeg quality of 90 (out of 0-100) values
+            jpegQuality = manualJpegQuality(100),     // (optional) select a jpeg quality of 90 (out of 0-100) values
             sensorSensitivity = lowestSensorSensitivity(), // (optional) we want to have the lowest sensor sensitivity (ISO)
             frameProcessor = { frame -> }            // (optional) receives each frame from preview stream
         )
 
 
         fotoapparat = Fotoapparat(
-            context = this.context,
+            context = this.context!!,
             view = cameraView,
             scaleType = ScaleType.CenterCrop,
             lensPosition = back(),
@@ -142,50 +150,45 @@ class CameraPreviewFragment : Fragment() {
 
     private fun takePhoto() {
 
-        val photoResult = fotoapparat
-            ?.takePicture()
+        val photoResult = fotoapparat?.takePicture()
 //            ?.saveToFile(dest)
 
-        fun getImageUri(
-            inContext: Context,
-            inImage: Bitmap
-        ): Uri {
+//        fun getImageUri(inContext: Context, inImage: Bitmap): Uri {
+//
+//            val bytes = ByteArrayOutputStream()
+//
+//            inImage.compress(Bitmap.CompressFormat.PNG, 100, bytes)
+//
+//            val path = MediaStore.Images.Media.insertImage(inContext.contentResolver, inImage, "Title", null)
+//
+//            return Uri.parse(path)
+//        }
+
+
+        fun getImageUri(inContext: Context, inImage: Bitmap): ImageFile {
+
             val bytes = ByteArrayOutputStream()
-            inImage.compress(
-                Bitmap.CompressFormat.PNG,
-                100,
-                bytes
-            )
-            val path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null)
-            return Uri.parse(
-                path
-            )
+
+            inImage.compress(Bitmap.CompressFormat.PNG, 100, bytes)
+
+            val path = MediaStore.Images.Media.insertImage(inContext.contentResolver, inImage, "Title", null)
+
+            return ImageFile(Uri.parse(path), path)
         }
 
 
         photoResult
             ?.toBitmap()
             ?.whenAvailable { bitmapPhoto ->
-                val uriImage = getImageUri(this.context, bitmapPhoto!!.bitmap)
-                val filename = UUID.randomUUID().toString()
-                val ref = FirebaseStorage.getInstance().getReference("/images/$filename")
-                ref.putFile(uriImage).addOnSuccessListener {
-                    Log.d("UploadActivity", "Successfully uploaded image ${it.metadata?.path}")
+                val uriImage = getImageUri(this.context!!, bitmapPhoto!!.bitmap)
 
-                    ref.downloadUrl.addOnSuccessListener {
-                        Log.d("UploadActivity", "File location: $it")
+                val action =
+                    CameraPreviewFragmentDirections.actionCameraPreviewFragmentToApproveImageFragment(uriImage)
+                findNavController(camera_nav_host_fragment).navigate(action)
+            }
+    }
 
-                        addImageToFirebaseDatabase(it.toString())
-
-                    }
-
-
-                }.addOnFailureListener {
-                    Log.d("RegisterActivity", "Failed to upload image to server $it")
-                }
-
-
-//
+        //
 //                val imageView: ImageView = view.findViewById(R.id.imageView)
 //
 //                imageView.setImageBitmap(bitmapPhoto?.bitmap)
@@ -193,16 +196,33 @@ class CameraPreviewFragment : Fragment() {
 //
 //                Log.d("Snap activity", "Took picture")
 
-            }
 
-    }
+
+//    private fun uploadPhotoToStorage(){
+//        val filename = UUID.randomUUID().toString()
+//        val ref = FirebaseStorage.getInstance().getReference("/images/$filename")
+//        ref.putFile(uriImage).addOnSuccessListener {
+//            Log.d("UploadActivity", "Successfully uploaded image ${it.metadata?.path}")
+//
+//            ref.downloadUrl.addOnSuccessListener {
+//                Log.d("UploadActivity", "File location: $it")
+//
+//                addImageToFirebaseDatabase(it.toString())
+//
+//            }
+//
+//
+//        }.addOnFailureListener {
+//            Log.d("RegisterActivity", "Failed to upload image to server $it")
+//        }
+//    }
 
 
     private fun addImageToFirebaseDatabase(image: String) {
 
         val uid = FirebaseAuth.getInstance().uid ?: ""
         val ref = FirebaseDatabase.getInstance().getReference("/images/feed/").push()
-        val location = (getActivity() as CameraActivity).imageLocation
+        val location = (activity as CameraActivity).imageLocation
 
 
         val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/images/byuser/$uid/${ref.key}")

@@ -12,7 +12,7 @@
         <action android:id="@+id/action_feedFragment_to_boardFragment"
                 app:destination="@id/destination_board"/>
         <action android:id="@+id/action_feedFragment_to_profileFragment"
-                app:destination="@id/destination_profile"/>
+                app:destination="@id/destination_profile_loged_in_user"/>
         <action android:id="@+id/action_destination_feed_to_destination_image_full_size"
                 app:destination="@id/destination_image_full_size"/>
 
@@ -25,7 +25,11 @@
                   app:argType="string"
                   android:defaultValue=" "/>
         <action android:id="@+id/action_destination_image_full_size_to_destination_profile"
-                app:destination="@id/destination_profile"/>
+                app:destination="@id/destination_profile_loged_in_user"/>
+        <action android:id="@+id/action_destination_image_full_size_to_profileRandomUserFragment"
+                app:destination="@id/profileRandomUserFragment"/>
+        <action android:id="@+id/action_destination_image_full_size_to_photoCommentsFragment"
+                app:destination="@id/photoCommentsFragment"/>
     </fragment>
     <fragment android:id="@+id/destination_board"
               android:name="co.getdere.Fragments.BoardFragment"
@@ -35,8 +39,8 @@
         <action android:id="@+id/action_destination_board_to_openedQuestionFragment"
                 app:destination="@id/destination_question_opened"/>
     </fragment>
-    <fragment android:id="@+id/destination_profile"
-              android:name="co.getdere.Fragments.ProfileFragment"
+    <fragment android:id="@+id/destination_profile_loged_in_user"
+              android:name="co.getdere.Fragments.ProfileLogedInUserFragment"
               android:label="Profile"/>
 
     <fragment android:id="@+id/destination_new_question"
@@ -72,4 +76,10 @@
         <action android:id="@+id/action_destination_answer_to_destination_question_opened"
                 app:destination="@id/destination_question_opened"/>
     </fragment>
+    <fragment android:id="@+id/profileRandomUserFragment"
+              android:name="co.getdere.Fragments.ProfileRandomUserFragment"
+              android:label="ProfileRandomUserFragment"/>
+    <fragment android:id="@+id/photoCommentsFragment"
+              android:name="co.getdere.Fragments.PhotoCommentsFragment"
+              android:label="Comments"/>
 </navigation>

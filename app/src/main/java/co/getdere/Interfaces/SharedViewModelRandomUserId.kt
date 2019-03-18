@@ -3,6 +3,6 @@ package co.getdere.Interfaces
 import androidx.lifecycle.ViewModel
 import co.getdere.Models.Users
 
-class SharedViewModelUser : ViewModel() {
+class SharedViewModelRandomUserId : ViewModel() {
     var usersProfileId = String()
 }
