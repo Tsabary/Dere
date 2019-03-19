@@ -122,7 +122,7 @@ class BoardFragment : Fragment() {
 
                         override fun onDataChange(p0: DataSnapshot) {
 
-                            for (ds in p0.getChildren()) {
+                            for (ds in p0.children) {
 
                                 count += 1
                                 Log.d("countAnswers", count.toString())
