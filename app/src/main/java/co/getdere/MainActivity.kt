@@ -9,18 +9,18 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
-import co.getdere.Interfaces.SharedViewModelCurrentUser
-import co.getdere.Interfaces.SharedViewModelImage
-import co.getdere.Interfaces.SharedViewModelRandomUserId
+import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.Models.Users
 import co.getdere.RegisterLogin.RegisterActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.pusher.pushnotifications.PushNotifications
 import kotlinx.android.synthetic.main.activity_main.*
-import com.pusher.pushnotifications.PushNotifications;
-
 
 
 class MainActivity : AppCompatActivity() {
@@ -48,7 +48,6 @@ class MainActivity : AppCompatActivity() {
 //
 //        val sharedViewModelImages = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
 //
-//        val sharedViewModelUsers = ViewModelProviders.of(this).get(SharedViewModelRandomUserId::class.java)
 
         FirebaseApp.initializeApp(this)
 

@@ -72,11 +72,6 @@ class FeedFragment : Fragment() {
 
     }
 
-    companion object {
-        fun newInstance(): FeedFragment = FeedFragment()
-    }
-
-
     private fun setUpGalleryAdapter() {
 
         feed_gallary.adapter = galleryAdapter
@@ -175,5 +170,8 @@ class FeedFragment : Fragment() {
         ActivityCompat.requestPermissions(mainActivity, permissions, 0)
     }
 
+    companion object {
+        fun newInstance(): FeedFragment = FeedFragment()
+    }
 
 }

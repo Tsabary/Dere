@@ -12,9 +12,11 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.Toast
 import androidx.navigation.fragment.findNavController
-import co.getdere.MainActivity
 import co.getdere.Models.Question
+import co.getdere.Models.SimpleString
 import co.getdere.R
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -33,25 +35,21 @@ class NewQuestionFragment : Fragment() {
         "Kate Eckhart",
         "Emily Sun",
         "Frodo Baggins",
-        "John Smith",
-        "Kate Eckhart",
-        "Emily Sun",
-        "Frodo Baggins"
+        "Yanay Zabary",
+        "Sze Lok Ho",
+        "Jesse Albright",
+        "Shayna something",
+        "Makena Lawrence"
     )
 
-    val tagsAdapter = GroupAdapter<ViewHolder>()
+    //    val tagsAdapter = GroupAdapter<ViewHolder>()
     val tagsFiltredAdapter = GroupAdapter<ViewHolder>()
     lateinit var questionChipGroup: ChipGroup
     var tagsList: MutableList<String> = mutableListOf()
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val mainActivity = activity as MainActivity
-
-        val myView = inflater.inflate(R.layout.fragment_new_question, container, false)
-
-        return myView
-    }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_new_question, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -62,39 +60,53 @@ class NewQuestionFragment : Fragment() {
 //        val questionTags = view.findViewById<EditText>(R.id.new_question_tags)
         val questionButton = view.findViewById<Button>(R.id.new_question_btn)
         val questionTagsInput = view.findViewById<EditText>(R.id.new_question_tag_input)
+        val addTagButton = view.findViewById<ImageButton>(R.id.new_question_add_tag_button)
         questionChipGroup = view.findViewById<ChipGroup>(R.id.new_question_chip_group)
+
 
         val tagSuggestionRecycler =
             view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.new_question_recycler)
         val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
-        tagSuggestionRecycler.adapter = tagsAdapter
+        tagSuggestionRecycler.adapter = tagsFiltredAdapter
 
-        for (t in tags) {
-            tagsAdapter.add(singleTagSuggestion(t))
-        }
 
-        activity!!.setTitle("New question")
+
+        activity!!.title = "New question"
 
 
         questionTagsInput.addTextChangedListener(object : TextWatcher {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                tagSuggestionRecycler.visibility = View.VISIBLE
+                tagsFiltredAdapter.clear()
+
+//                for (t in tags) {
+//                    tagsFiltredAdapter.add(SingleTagSuggestion(t))
+//                }
+
+//                tagSuggestionRecycler.visibility = View.VISIBLE
 
                 val userInput = s.toString()
-                val relevantTags: List<String> = tags.filter { it.contains(userInput) }
+
                 if (userInput == "") {
-                    tagSuggestionRecycler.adapter = tagsAdapter
+                    tagSuggestionRecycler.visibility = View.GONE
+//                    tagsFiltredAdapter.clear()
+
+//                    tagSuggestionRecycler.adapter = tagsFiltredAdapter
+
                 } else {
+                    val relevantTags: List<String> = tags.filter { it.contains(userInput) }
+
                     for (t in relevantTags) {
-                        tagsFiltredAdapter.clear()
-                        tagsFiltredAdapter.add(singleTagSuggestion(t))
+                        tagSuggestionRecycler.visibility = View.VISIBLE
+                        tagsFiltredAdapter.add(SingleTagSuggestion(t))
                     }
-                    tagSuggestionRecycler.adapter = tagsFiltredAdapter
+//                    tagSuggestionRecycler.adapter = tagsFiltredAdapter
+
                 }
 
             }
+
 
             override fun afterTextChanged(s: Editable?) {
             }
@@ -105,15 +117,23 @@ class NewQuestionFragment : Fragment() {
         })
 
 
+        addTagButton.setOnClickListener {
+
+            if (questionChipGroup.childCount < 5 ){
+                onTagSelected(questionTagsInput.text.toString())
+                questionTagsInput.text.clear()
+            } else {
+                Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
+            }
+
+        }
+
+
         questionButton.setOnClickListener {
 
             for (i in 0 until questionChipGroup.childCount) {
-
                 val chip = questionChipGroup.getChildAt(i) as Chip
-
                 tagsList.add(chip.text.toString())
-                println(chip.text.toString())
-
             }
 
 
@@ -127,10 +147,13 @@ class NewQuestionFragment : Fragment() {
 
         }
 
-        tagsAdapter.setOnItemClickListener { item, view2 ->
-            val row = item as singleTagSuggestion
-
-            onTagSelected(row.tagString)
+        tagsFiltredAdapter.setOnItemClickListener { item, _ ->
+            val row = item as SingleTagSuggestion
+            if (questionChipGroup.childCount < 5 ) {
+                onTagSelected(row.tagString)
+            } else {
+                Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
+            }
         }
 
     }
@@ -161,9 +184,7 @@ class NewQuestionFragment : Fragment() {
     }
 
 
-    companion object {
-        fun newInstance(): BoardFragment = BoardFragment()
-    }
+
 
     private fun postQuestion(title: String, details: String, tags: MutableList<String>, timestamp: Long) {
 
@@ -175,6 +196,18 @@ class NewQuestionFragment : Fragment() {
 
         ref.setValue(newQuestion)
             .addOnSuccessListener {
+
+                for (t in tags){
+                    val refTag = FirebaseDatabase.getInstance().getReference("/tags/$t/${ref.key}")
+
+                    refTag.setValue(SimpleString(ref.key.toString()))
+                }
+
+
+
+
+
+
                 Log.d("postQuestionActivity", "Saved question to Firebase Database")
                 val action = NewQuestionFragmentDirections.actionDestinationNewQuestionToDestinationBoard()
                 findNavController().navigate(action)
@@ -185,16 +218,20 @@ class NewQuestionFragment : Fragment() {
             }
     }
 
-
-    class singleTagSuggestion(val tagString: String) : Item<ViewHolder>() {
-        override fun getLayout(): Int {
-            return R.layout.tag_auto_complete
-        }
-
-        override fun bind(viewHolder: ViewHolder, position: Int) {
-            viewHolder.itemView.one_tag.text = tagString
-        }
-
-
+    companion object {
+        fun newInstance(): BoardFragment = BoardFragment()
     }
+
+}
+
+class SingleTagSuggestion(val tagString: String) : Item<ViewHolder>() {
+    override fun getLayout(): Int {
+        return R.layout.tag_auto_complete
+    }
+
+    override fun bind(viewHolder: ViewHolder, position: Int) {
+        viewHolder.itemView.one_tag.text = tagString
+    }
+
+
 }

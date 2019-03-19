@@ -1,10 +1,15 @@
 package co.getdere.Fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import co.getdere.Interfaces.DereMethods
@@ -12,6 +17,7 @@ import co.getdere.Models.Answers
 import co.getdere.Models.Question
 import co.getdere.Models.Users
 import co.getdere.R
+import co.getdere.ViewModels.SharedViewModelQuestion
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.squareup.picasso.Picasso
@@ -30,22 +36,49 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
     var question: Question? = null
     lateinit var authorUid: String
     lateinit var questionId: String
+
+    lateinit var questionObject : Question
+
+
     val uid = FirebaseAuth.getInstance().uid
 
     val answersAdapter = GroupAdapter<ViewHolder>()
+    lateinit var sharedViewModelForQuestion: SharedViewModelQuestion
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        activity?.let {
+            sharedViewModelForQuestion = ViewModelProviders.of(it).get(SharedViewModelQuestion::class.java)
+        }
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_opened_question, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_opened_question, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         activity!!.title = "Board"
+
+        val saveButton = view.findViewById<TextView>(R.id.opened_question_save)
+        val answerButton = view.findViewById<Button>(R.id.opened_question_answer_btn)
+        val answersRecycler = view.opened_question_answers_recycler
+
+
+
+        sharedViewModelForQuestion.sharedQuestionObject.observe(this, Observer {
+            it?.let { question ->
+                questionObject = question
+            }
+        }
+        )
+
+
 
 
         arguments?.let {
@@ -74,14 +107,27 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                     view.opened_question_tags.text = question!!.tags.joinToString()
 
                     view.opened_question_upvote.setOnClickListener {
-                        executeVote("up",questionId, uid!!, view.opened_question_votes, view.opened_question_upvote, view.opened_question_downvote)
+                        executeVote(
+                            "up",
+                            questionId,
+                            uid!!,
+                            view.opened_question_votes,
+                            view.opened_question_upvote,
+                            view.opened_question_downvote
+                        )
                     }
 
                     view.opened_question_downvote.setOnClickListener {
-                        executeVote("down",questionId, uid!!, view.opened_question_votes, view.opened_question_upvote, view.opened_question_downvote)
+                        executeVote(
+                            "down",
+                            questionId,
+                            uid!!,
+                            view.opened_question_votes,
+                            view.opened_question_upvote,
+                            view.opened_question_downvote
+                        )
                     }
                 }
-
 
             })
 
@@ -103,7 +149,11 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
         }
 
-        view.opened_question_answer_btn.setOnClickListener {
+        saveButton.setOnClickListener {
+val refQuestion = FirebaseDatabase.getInstance().getReference("")
+        }
+
+        answerButton.setOnClickListener {
 
             val action = OpenedQuestionFragmentDirections.actionOpenedQuestionFragmentToAnswerFragment()
             action.questionId = question!!.id
@@ -113,7 +163,6 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
         }
 
-        val answersRecycler = view.opened_question_answers_recycler
         val answersRecyclerLayoutManager = LinearLayoutManager(this.context)
         answersRecycler.adapter = answersAdapter
         answersRecycler.layoutManager = answersRecyclerLayoutManager
@@ -204,11 +253,25 @@ class SingleAnswer(
 
 
         viewHolder.itemView.answer_upvote.setOnClickListener {
-            executeVote("up", answerId, uid!!, viewHolder.itemView.answer_votes, viewHolder.itemView.answer_upvote, viewHolder.itemView.answer_downvote)
+            executeVote(
+                "up",
+                answerId,
+                uid!!,
+                viewHolder.itemView.answer_votes,
+                viewHolder.itemView.answer_upvote,
+                viewHolder.itemView.answer_downvote
+            )
         }
 
         viewHolder.itemView.answer_downvote.setOnClickListener {
-            executeVote("down", answerId, uid!!, viewHolder.itemView.answer_votes, viewHolder.itemView.answer_upvote, viewHolder.itemView.answer_downvote)
+            executeVote(
+                "down",
+                answerId,
+                uid!!,
+                viewHolder.itemView.answer_votes,
+                viewHolder.itemView.answer_upvote,
+                viewHolder.itemView.answer_downvote
+            )
         }
 
         val refVotes = FirebaseDatabase.getInstance().getReference("/votes/$answerId")
@@ -266,12 +329,6 @@ class SingleAnswer(
         })
 
     }
-
-
-
-
-
-
 
 
 //    private fun executeVote1(vote: String, answerId : String) {

@@ -4,14 +4,13 @@ package co.getdere.Fragments
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.Adapters.FeedImage
-import co.getdere.Interfaces.SharedViewModelCurrentUser
+import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.Models.Images
 import co.getdere.Models.SimpleString
 import co.getdere.Models.Users

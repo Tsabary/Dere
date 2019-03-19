@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import co.getdere.Interfaces.SharedViewModelImage
+import co.getdere.ViewModels.SharedViewModelImage
 import co.getdere.Models.Images
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.permissions.PermissionsListener

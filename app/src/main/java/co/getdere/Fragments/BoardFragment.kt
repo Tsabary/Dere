@@ -1,6 +1,7 @@
 package co.getdere.Fragments
 
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -9,21 +10,34 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import co.getdere.Models.Question
 
 import co.getdere.R
+import co.getdere.ViewModels.SharedViewModelQuestion
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.board_single_row.view.*
 import org.ocpsoft.prettytime.PrettyTime
-import java.text.DateFormat
 import java.util.*
 
 class BoardFragment : Fragment() {
+
     val questionsRecyclerAdapter = GroupAdapter<ViewHolder>()
+    lateinit var sharedViewModelForQuestion: SharedViewModelQuestion
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        activity?.let {
+            sharedViewModelForQuestion = ViewModelProviders.of(it).get(SharedViewModelQuestion::class.java)
+        }
+    }
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_board, container, false)
@@ -32,9 +46,9 @@ class BoardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity!!.setTitle("Board")
+        activity!!.title = "Board"
 
-        val fab : FloatingActionButton = view.findViewById<FloatingActionButton>(R.id.board_fab)
+        val fab: FloatingActionButton = view.findViewById<FloatingActionButton>(R.id.board_fab)
 
         fab.setOnClickListener {
             val action = BoardFragmentDirections.actionDestinationBoardToDestinationNewQuestion()
@@ -48,11 +62,30 @@ class BoardFragment : Fragment() {
 
         listenToQuestions()
 
-        questionsRecyclerAdapter.setOnItemClickListener { item, view2 ->
+        questionsRecyclerAdapter.setOnItemClickListener { item, _ ->
 
             val row = item as SingleQuestion
             val author = row.authorUid
             val question = row.questionId
+
+            val refQuestion = FirebaseDatabase.getInstance().getReference("questions/$question")
+
+            refQuestion.addListenerForSingleValueEvent(object :ValueEventListener{
+                override fun onCancelled(p0: DatabaseError) {
+
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+
+                    val questionFromDB = p0.getValue(Question::class.java)
+
+                    sharedViewModelForQuestion.sharedQuestionObject.postValue(questionFromDB)
+
+                }
+
+
+            })
+
             val action = BoardFragmentDirections.actionDestinationBoardToOpenedQuestionFragment()
             action.questionId = question
             action.questionAuthor = author
@@ -61,11 +94,6 @@ class BoardFragment : Fragment() {
 
         }
 
-    }
-
-
-    companion object {
-        fun newInstance(): BoardFragment = BoardFragment()
     }
 
 
@@ -121,9 +149,6 @@ class BoardFragment : Fragment() {
                     })
 
 
-
-
-
                 }
 
 
@@ -144,6 +169,10 @@ class BoardFragment : Fragment() {
 
         })
 
+    }
+
+    companion object {
+        fun newInstance(): BoardFragment = BoardFragment()
     }
 
 }
@@ -170,14 +199,15 @@ class SingleQuestion(
         viewHolder.itemView.board_timestamp.text = timestamp
         viewHolder.itemView.board_answers.text = answers.toString()
 
-        if (resolved) {
-            viewHolder.itemView.board_answers.setBackgroundResource(R.drawable.board_resolved_count_background)
-            viewHolder.itemView.board_answers.setTextColor(Color.parseColor("#ffffff"))
 
-        } else {
-            viewHolder.itemView.board_answers.setBackgroundResource(R.drawable.board_unresolved_count_background)
-            viewHolder.itemView.board_answers.setTextColor(Color.parseColor("#212121"))
-        }
+//        if (resolved) {
+//            viewHolder.itemView.board_answers.setBackgroundResource(R.drawable.board_resolved_count_background)
+//            viewHolder.itemView.board_answers.setTextColor(Color.parseColor("#ffffff"))
+//
+//        } else {
+//            viewHolder.itemView.board_answers.setBackgroundResource(R.drawable.board_unresolved_count_background)
+//            viewHolder.itemView.board_answers.setTextColor(Color.parseColor("#212121"))
+//        }
 
     }
 

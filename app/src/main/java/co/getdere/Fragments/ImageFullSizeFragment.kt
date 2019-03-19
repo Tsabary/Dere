@@ -3,8 +3,6 @@ package co.getdere.Fragments
 
 import android.content.Context
 import android.os.Bundle
-import android.net.Uri
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,15 +12,14 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import co.getdere.Adapters.OpenPhotoPagerAdapter
-import co.getdere.Interfaces.SharedViewModelImage
-import co.getdere.Interfaces.SharedViewModelRandomUser
+import co.getdere.ViewModels.SharedViewModelImage
+import co.getdere.ViewModels.SharedViewModelRandomUser
 import co.getdere.MainActivity
 import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.R
 import com.bumptech.glide.Glide
 import com.google.firebase.database.*
-import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_image_full_size.view.*
 
 
@@ -33,9 +30,6 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
 
     lateinit var sharedViewModelForImage: SharedViewModelImage
     lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
-
-    lateinit var imageObject : Images
-
 
     lateinit var refImage: DatabaseReference
     lateinit var boxPagerAdapter: OpenPhotoPagerAdapter

@@ -1,4 +1,4 @@
-package co.getdere.Interfaces
+package co.getdere.ViewModels
 
 import androidx.lifecycle.ViewModel
 import co.getdere.Models.Users

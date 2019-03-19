@@ -12,10 +12,9 @@ import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
-import co.getdere.Adapters.FeedImage
-import co.getdere.Interfaces.SharedViewModelCurrentUser
-import co.getdere.Interfaces.SharedViewModelImage
-import co.getdere.Interfaces.SharedViewModelRandomUser
+import co.getdere.ViewModels.SharedViewModelCurrentUser
+import co.getdere.ViewModels.SharedViewModelImage
+import co.getdere.ViewModels.SharedViewModelRandomUser
 import co.getdere.Models.Comments
 import co.getdere.Models.Images
 import co.getdere.Models.Users

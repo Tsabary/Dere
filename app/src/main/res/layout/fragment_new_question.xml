@@ -46,7 +46,7 @@
                     android:layout_marginTop="8dp"
                     app:layout_constraintTop_toBottomOf="@+id/new_question_static_title"
                     android:inputType="textMultiLine|textCapSentences"
-                    android:digits="abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 ?,"
+                    android:digits="abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 ?,'$/&quot;"
                     android:background="@android:color/transparent"
                     android:padding="8dp"
                     android:paddingStart="0dp"/>
@@ -81,7 +81,7 @@
                     app:layout_constraintHorizontal_bias="0.0"
                     android:layout_marginStart="32dp"
                     android:layout_marginEnd="32dp"
-                    android:digits="abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 ?,"
+                    android:digits="abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 ?,'$/&quot;"
                     android:background="@android:color/transparent"
                     android:padding="8dp"
                     android:paddingStart="0dp"/>
@@ -126,7 +126,7 @@
                       app:layout_constraintEnd_toEndOf="parent"
                       android:layout_marginEnd="32dp"
                       app:layout_constraintHorizontal_bias="1.0"
-                      android:digits="abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789"
+                      android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
                       android:padding="8dp"
                       android:paddingStart="0dp"
                       android:background="@android:color/transparent"
@@ -152,7 +152,7 @@
                     android:text="Use a dash to seperate multi-word tags.\nMaximum 5 tags"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/textView"
+                    android:id="@+id/new_question_tag_instructions"
                     android:textColor="@color/gray500"
                     app:layout_constraintStart_toStartOf="parent"
                     android:layout_marginStart="32dp"
@@ -169,7 +169,17 @@
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginTop="48dp"
-                    app:layout_constraintTop_toBottomOf="@+id/textView"/>
+                    app:layout_constraintTop_toBottomOf="@+id/new_question_tag_instructions"/>
+            <ImageButton
+                    android:src="@drawable/check"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/form_btn"
+                    android:id="@+id/new_question_add_tag_button"
+                    app:layout_constraintTop_toTopOf="@+id/new_question_tag_input"
+                    app:layout_constraintBottom_toBottomOf="@+id/new_question_tag_input"
+                    app:layout_constraintEnd_toEndOf="@+id/new_question_tag_input"
+                    android:layout_marginEnd="16dp"/>
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
