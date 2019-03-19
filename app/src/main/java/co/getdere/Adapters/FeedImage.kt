@@ -30,12 +30,7 @@ class FeedImage(val image: Images) : Item<ViewHolder>() {
         val requestOption = RequestOptions()
             .placeholder(R.color.gray500).centerCrop()
 
-        val fastLoadUrl : Uri = Uri.parse("asdsd")
-
-        Glide.with(viewHolder.root.context).load(image.image).transition(DrawableTransitionOptions.withCrossFade())
-            .thumbnail(Glide.with(viewHolder.root.context)
-                .load(fastLoadUrl)
-                .apply(requestOption))
+        Glide.with(viewHolder.root.context).load(image.imageSmall).transition(DrawableTransitionOptions.withCrossFade())
             .apply(requestOption).into(viewHolder.itemView.feed_single_photo_photo)
     }
 }

@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
+import co.getdere.Adapters.FeedImage
 import co.getdere.Interfaces.SharedViewModelCurrentUser
 import co.getdere.Interfaces.SharedViewModelImage
 import co.getdere.Interfaces.SharedViewModelRandomUser
@@ -21,18 +22,27 @@ import co.getdere.Models.Users
 
 import co.getdere.R
 import com.bumptech.glide.Glide
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
+import com.xwray.groupie.GroupAdapter
+import com.xwray.groupie.Item
+import com.xwray.groupie.ViewHolder
 import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.android.synthetic.main.comment_layout.view.*
+import org.ocpsoft.prettytime.PrettyTime
+import java.util.*
 
 
 class PhotoCommentsFragment : Fragment() {
 
     private lateinit var currentUser: Users
-    private lateinit var randomUser : Users
+    private lateinit var randomUser: Users
     private lateinit var imageObject: Images
 
-    private lateinit var sharedViewModelForRandomUser : SharedViewModelRandomUser
-    private lateinit var sharedViewModelForImage : SharedViewModelImage
+    private lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
+    private lateinit var sharedViewModelForImage: SharedViewModelImage
+
+    val commentsRecyclerAdapter = GroupAdapter<ViewHolder>()
+    val commentsRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
 
 
     override fun onAttach(context: Context) {
@@ -46,22 +56,6 @@ class PhotoCommentsFragment : Fragment() {
 
             sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
 
-            sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
-                it?.let { user ->
-
-                    randomUser = user
-                }
-            }
-            )
-
-
-            sharedViewModelForImage.sharedImageObject.observe(this, Observer {
-                it?.let { image ->
-
-                    imageObject = image
-                }
-            }
-            )
         }
     }
 
@@ -80,8 +74,35 @@ class PhotoCommentsFragment : Fragment() {
         val commentInput = view.findViewById<TextView>(R.id.photo_comments_comment_input)
         val postButton = view.findViewById<TextView>(R.id.photo_comments_post_button)
         val commentRecyclerView = view.findViewById<RecyclerView>(R.id.photo_comments_recycler)
+        val imageDetails = view.findViewById<TextView>(R.id.photo_comments_photo_description)
 
-        authorName.text =""
+
+
+        sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
+            it?.let { user ->
+
+                randomUser = user
+            }
+        }
+        )
+
+
+        sharedViewModelForImage.sharedImageObject.observe(this, Observer {
+            it?.let { image ->
+
+                imageObject = image
+                imageDetails.text = imageObject.details
+                listenToComments()
+            }
+        }
+        )
+
+
+
+        commentRecyclerView.adapter = commentsRecyclerAdapter
+        commentRecyclerView.layoutManager = commentsRecyclerLayoutManager
+
+
 
         Glide.with(this).load(currentUser.image).into(currentUserPhoto)
 
@@ -104,12 +125,92 @@ class PhotoCommentsFragment : Fragment() {
 
             ref.setValue(comment).addOnSuccessListener {
                 Log.d("postCommentActivity", "Saved comment to Firebase Database")
+                listenToComments()
 
             }.addOnFailureListener {
                 Log.d("postCommentActivity", "Failed to save comment to database")
             }
 
         }
+
+    }
+
+    private fun listenToComments(){
+
+            commentsRecyclerAdapter.clear()
+
+
+            val ref = FirebaseDatabase.getInstance().getReference("/comments/${imageObject.id}")
+
+            ref.addChildEventListener(object : ChildEventListener {
+
+                override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+
+                    val singleCommentFromDB = p0.getValue(Comments::class.java)
+
+                    if (singleCommentFromDB != null) {
+
+                        commentsRecyclerAdapter.add(singleComment(singleCommentFromDB))
+
+                    }
+                }
+
+                override fun onCancelled(p0: DatabaseError) {
+
+                }
+
+                override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+                }
+
+                override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+                }
+
+                override fun onChildRemoved(p0: DataSnapshot) {
+                }
+
+            })
+
+        }
+
+
+
+}
+
+class singleComment (var comment : Comments) : Item<ViewHolder>(){
+    override fun getLayout(): Int {
+        return R.layout.comment_layout
+    }
+
+    override fun bind(viewHolder: ViewHolder, position: Int) {
+
+        val stampMills = comment.timeStamp
+        val pretty = PrettyTime()
+        val date = pretty.format(Date(stampMills))
+
+        viewHolder.itemView.single_comment_content.text = comment.content
+        viewHolder.itemView.single_comment_timestamp.text = date
+
+        val refCommentUser = FirebaseDatabase.getInstance().getReference("/users/${comment.authorId}")
+
+        refCommentUser.addListenerForSingleValueEvent(object : ValueEventListener{
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+
+                val user = p0.getValue(Users::class.java)
+
+                viewHolder.itemView.single_comment_author.text = user!!.name
+
+                Glide.with(viewHolder.root.context).load(user.image).into(viewHolder.itemView.single_comment_photo)
+
+            }
+
+        })
+
+
+
 
     }
 

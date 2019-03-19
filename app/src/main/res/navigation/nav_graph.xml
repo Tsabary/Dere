@@ -30,6 +30,8 @@
                 app:destination="@id/profileRandomUserFragment"/>
         <action android:id="@+id/action_destination_image_full_size_to_photoCommentsFragment"
                 app:destination="@id/photoCommentsFragment"/>
+        <action android:id="@+id/action_destination_image_full_size_to_webViewFragment"
+                app:destination="@id/webViewFragment"/>
     </fragment>
     <fragment android:id="@+id/destination_board"
               android:name="co.getdere.Fragments.BoardFragment"
@@ -82,4 +84,8 @@
     <fragment android:id="@+id/photoCommentsFragment"
               android:name="co.getdere.Fragments.PhotoCommentsFragment"
               android:label="Comments"/>
+    <fragment android:id="@+id/webViewFragment"
+              android:name="co.getdere.Fragments.WebViewFragment"
+              android:label="External website"
+              tools:layout="@layout/fragment_web_view"/>
 </navigation>

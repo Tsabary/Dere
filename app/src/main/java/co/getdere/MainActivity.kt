@@ -19,6 +19,8 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_main.*
+import com.pusher.pushnotifications.PushNotifications;
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -29,6 +31,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var sharedViewModelCurrentUser: SharedViewModelCurrentUser
 
 
+
+
 //    private lateinit var viewPager: ViewPager
 //    private lateinit var pagerAdapter: PagesPagerAdapter
 
@@ -36,16 +40,19 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        PushNotifications.start(getApplicationContext(), "8286cd5e-eaaa-4d81-a57b-0f4d985b0a47");
+        PushNotifications.subscribe("hello");
+
         sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
-
-        val sharedViewModelImages = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
-
-        val sharedViewModelUsers = ViewModelProviders.of(this).get(SharedViewModelRandomUserId::class.java)
+//
+//        val sharedViewModelImages = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
+//
+//        val sharedViewModelUsers = ViewModelProviders.of(this).get(SharedViewModelRandomUserId::class.java)
 
         FirebaseApp.initializeApp(this)
 
         checkIfLoggedIn()
-        fetchCurrentUser()
         val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
 
         setupBottomNavMenu(navController)
@@ -77,6 +84,9 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, RegisterActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
+        }
+        else{
+            fetchCurrentUser()
         }
 
     }

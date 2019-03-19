@@ -18,7 +18,7 @@
               android:label="fragment_approve_image"
               tools:layout="@layout/fragment_approve_image">
         <argument android:name="imageUri"
-                  app:argType="co.getdere.Models.ImageFile"/>
+                  app:argType="string"/>
         <action android:id="@+id/action_approveImageFragment_to_cameraPreviewFragment"
                 app:destination="@id/cameraPreviewFragment"/>
     </fragment>

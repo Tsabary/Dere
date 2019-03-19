@@ -1,5 +1,9 @@
 package co.getdere.Fragments
 
+import android.content.ContentValues.TAG
+import android.content.Context
+import android.content.Intent
+import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -14,15 +18,18 @@ import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import me.echodev.resizer.Resizer
 import android.os.Environment
+import android.provider.MediaStore
+import android.widget.EditText
+import android.widget.TextView
 import co.getdere.CameraActivity
-import co.getdere.Models.ImageFile
+import co.getdere.MainActivity
 import co.getdere.Models.Images
-import co.getdere.Models.ImagesNewWithThumbnail
+import co.getdere.R
+import co.getdere.RegisterLogin.RegisterActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import java.io.File
-import java.net.URI
 import java.util.*
 
 
@@ -30,7 +37,10 @@ class ApproveImageFragment : Fragment() {
 
 
     lateinit var takenImageUri: String
-    lateinit var takenImagePath: String
+    lateinit var imagePath: String
+    lateinit var imageDescription: String
+    lateinit var imageUrl: String
+    var privacy = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,16 +53,16 @@ class ApproveImageFragment : Fragment() {
         val imagePreview = view.findViewById<ImageView>(co.getdere.R.id.approve_image_image)
         val declineImage = view.findViewById<ImageButton>(co.getdere.R.id.approve_image_x)
         val acceptImage = view.findViewById<ImageButton>(co.getdere.R.id.approve_image_check)
+        val privacyButton = view.findViewById<TextView>(co.getdere.R.id.approve_image_privacy_text)
 
         arguments?.let {
             val safeArgs = ApproveImageFragmentArgs.fromBundle(it)
-
-            takenImageUri = safeArgs.imageUri.uri.toString()
-            takenImagePath = safeArgs.imageUri.realPath
-
+            takenImageUri = safeArgs.imageUri
+            imagePath = getRealPathFromURI(this.context!!, Uri.parse(takenImageUri))
+            Log.d("CheckIfItIsPath", imagePath)
         }
 
-        Glide.with(this).load(takenImageUri).into(imagePreview)
+        Glide.with(this).load(Uri.parse(takenImageUri)).into(imagePreview)
 
 
         declineImage.setOnClickListener {
@@ -61,15 +71,47 @@ class ApproveImageFragment : Fragment() {
         }
 
         acceptImage.setOnClickListener {
+            imageDescription = view.findViewById<EditText>(R.id.approve_image_description_input).text.toString()
+            imageUrl = view.findViewById<EditText>(R.id.approve_image_url_input).text.toString()
             uploadPhotoToStorage()
         }
+
+
+        privacyButton.setOnClickListener {
+
+            if (privacyButton.text == "public") {
+                privacyButton.text = "private"
+                privacy = true
+            } else {
+                privacyButton.text = "public"
+                privacy = false
+            }
+
+
+        }
+
 
     }
 
 
-    private fun uploadPhotoToStorage() {
+    private fun getRealPathFromURI(context: Context, contentUri: Uri): String {
+        var cursor: Cursor? = null
+        try {
+            val proj = arrayOf(MediaStore.Images.Media.DATA)
+            cursor = context.contentResolver.query(contentUri, proj, null, null, null)
+            val column_index = cursor!!.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+            cursor.moveToFirst()
+            return cursor.getString(column_index)
+        } catch (e: Exception) {
+            Log.e(TAG, "getRealPathFromURI Exception : $e")
+            return ""
+        } finally {
+            cursor?.close()
+        }
+    }
 
-        Log.d("checkiftakeimageuriisnull", takenImageUri)
+
+    private fun uploadPhotoToStorage() {
 
         val randomName = UUID.randomUUID().toString()
         val storagePath = Environment.getExternalStorageDirectory().absolutePath
@@ -94,34 +136,31 @@ class ApproveImageFragment : Fragment() {
 //            .resizedFile
 
 
-        var bigImageUri = ""
-        var smallImageUri = ""
-
         val filename = UUID.randomUUID().toString()
         val refBigImage = FirebaseStorage.getInstance().getReference("/images/" + filename + "Big")
         val refSmallImage = FirebaseStorage.getInstance().getReference("/images/" + filename + "Small")
 
-        refBigImage.putFile(
+        refSmallImage.putFile(
             Uri.fromFile(
                 Resizer(this.context)
-                    .setTargetLength(80)
+                    .setTargetLength(100)
                     .setQuality(100)
                     .setOutputFormat("PNG")
                     .setOutputFilename(randomName + "Small")
                     .setOutputDirPath(storagePath)
-                    .setSourceImage(File(takenImagePath))
+                    .setSourceImage(File(imagePath))
                     .resizedFile
             )
         ).addOnSuccessListener {
             Log.d("UploadActivity", "Successfully uploaded image ${it.metadata?.path}")
 
-            refBigImage.downloadUrl.addOnSuccessListener {
-                Log.d("UploadActivity", "File location: $it")
+            refSmallImage.downloadUrl.addOnSuccessListener { smallUri ->
+                Log.d("UploadActivity", "File location: $smallUri")
 
-                bigImageUri = it.toString()
+                val smallImageUri = smallUri.toString()
 
 
-                refSmallImage.putFile(
+                refBigImage.putFile(
                     Uri.fromFile(
                         Resizer(this.context)
                             .setTargetLength(800)
@@ -129,16 +168,16 @@ class ApproveImageFragment : Fragment() {
                             .setOutputFormat("PNG")
                             .setOutputFilename(randomName + "Big")
                             .setOutputDirPath(storagePath)
-                            .setSourceImage(File(takenImagePath))
+                            .setSourceImage(File(imagePath))
                             .resizedFile
                     )
                 ).addOnSuccessListener {
                     Log.d("UploadActivity", "Successfully uploaded image ${it.metadata?.path}")
 
-                    refBigImage.downloadUrl.addOnSuccessListener {
-                        Log.d("UploadActivity", "File location: $it")
+                    refBigImage.downloadUrl.addOnSuccessListener { bigUri ->
+                        Log.d("UploadActivity", "File location: $bigUri")
 
-                        smallImageUri = it.toString()
+                        val bigImageUri = bigUri.toString()
 
 
                         addImageToFirebaseDatabase(bigImageUri, smallImageUri)
@@ -169,13 +208,14 @@ class ApproveImageFragment : Fragment() {
 
         val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/images/byuser/$uid/${ref.key}")
 
-        val newImage = ImagesNewWithThumbnail(
+        val newImage = Images(
             ref.key!!,
             bigImage,
             smallImage,
+            privacy,
             uid,
-            "https://justalink.com",
-            "Some details that will be added by the user",
+            imageUrl,
+            imageDescription,
             location,
             System.currentTimeMillis()
         )
@@ -183,19 +223,23 @@ class ApproveImageFragment : Fragment() {
         ref.setValue(newImage)
             .addOnSuccessListener {
                 Log.d("imageToDatabase", "image saved to feed successfully: ${ref.key}")
+
+                refToUsersDatabase.setValue(newImage)
+                    .addOnSuccessListener {
+                        Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
+
+                        val backToFeed = Intent(this.context, MainActivity::class.java)
+                        startActivity(backToFeed)
+
+                    }
+                    .addOnFailureListener {
+                        Log.d("imageToDatabaseByUser", "image did not save to byUser")
+                    }
             }
             .addOnFailureListener {
                 Log.d("imageToDatabase", "image did not save to feed")
             }
 
-
-        refToUsersDatabase.setValue(newImage)
-            .addOnSuccessListener {
-                Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
-            }
-            .addOnFailureListener {
-                Log.d("imageToDatabaseByUser", "image did not save to byUser")
-            }
 
     }
 

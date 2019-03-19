@@ -110,7 +110,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
 
         sharedViewModelForImage.sharedImageObject.observe(this, Observer {
             it?.let { image ->
-                Glide.with(this).load(image.image).into(mainImage)
+                Glide.with(this).load(image.imageBig).into(mainImage)
             }
         }
         )

@@ -2,6 +2,7 @@ package co.getdere.Fragments
 
 
 import android.content.Context
+import android.content.ContextWrapper
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -17,6 +18,7 @@ import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.fragment.app.Fragment
 
 import co.getdere.CameraActivity
+import co.getdere.MainActivity
 import co.getdere.Models.ImageFile
 import co.getdere.Models.Images
 import co.getdere.R
@@ -31,8 +33,8 @@ import io.fotoapparat.selector.*
 import kotlinx.android.synthetic.main.activity_camera.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_camera_preview.*
-import java.io.ByteArrayOutputStream
-import java.io.File
+import me.echodev.resizer.Resizer
+import java.io.*
 import java.util.*
 
 
@@ -165,7 +167,7 @@ class CameraPreviewFragment : Fragment() {
 //        }
 
 
-        fun getImageUri(inContext: Context, inImage: Bitmap): ImageFile {
+        fun getImageUri(inContext: Context, inImage: Bitmap): String {
 
             val bytes = ByteArrayOutputStream()
 
@@ -173,29 +175,69 @@ class CameraPreviewFragment : Fragment() {
 
             val path = MediaStore.Images.Media.insertImage(inContext.contentResolver, inImage, "Title", null)
 
-            return ImageFile(Uri.parse(path), path)
+            Log.d("CheckingImageUri", path)
+
+            return path
+        }
+
+
+
+        fun bitmapToFile(bitmapPhoto : Bitmap) : String{
+
+            val wrapper = ContextWrapper((activity as MainActivity).applicationContext)
+
+            var file = wrapper.getDir("Images", Context.MODE_PRIVATE)
+            file = File(file, "${UUID.randomUUID()}.jpg")
+
+            try {
+                val stream: OutputStream = FileOutputStream(file)
+                bitmapPhoto.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                stream.flush()
+                stream.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+
+            return file.absolutePath
+
         }
 
 
         photoResult
             ?.toBitmap()
             ?.whenAvailable { bitmapPhoto ->
-                val uriImage = getImageUri(this.context!!, bitmapPhoto!!.bitmap)
+
+                val imagePath = getImageUri(this.context!!, bitmapPhoto!!.bitmap)
+//
+//                bitmapToFile(bitmapPhoto)
+//
+//
+//                val smallImageUri = Resizer(this.context)
+//                    .setTargetLength(80)
+//                    .setQuality(100)
+//                    .setOutputFormat("PNG")
+//                    .setOutputFilename(randomName + "Small")
+//                    .setOutputDirPath(storagePath)
+//                    .setSourceImage(uriImage)
+//                    .resizedBitmap
+
 
                 val action =
-                    CameraPreviewFragmentDirections.actionCameraPreviewFragmentToApproveImageFragment(uriImage)
+                    CameraPreviewFragmentDirections.actionCameraPreviewFragmentToApproveImageFragment(imagePath)
                 findNavController(camera_nav_host_fragment).navigate(action)
             }
+
+
+
     }
 
-        //
+    //
 //                val imageView: ImageView = view.findViewById(R.id.imageView)
 //
 //                imageView.setImageBitmap(bitmapPhoto?.bitmap)
 //                imageView.rotation = (-bitmapPhoto!!.rotationDegrees).toFloat()
 //
 //                Log.d("Snap activity", "Took picture")
-
 
 
 //    private fun uploadPhotoToStorage(){
@@ -218,43 +260,43 @@ class CameraPreviewFragment : Fragment() {
 //    }
 
 
-    private fun addImageToFirebaseDatabase(image: String) {
-
-        val uid = FirebaseAuth.getInstance().uid ?: ""
-        val ref = FirebaseDatabase.getInstance().getReference("/images/feed/").push()
-        val location = (activity as CameraActivity).imageLocation
-
-
-        val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/images/byuser/$uid/${ref.key}")
-
-        val newImage = Images(
-            ref.key!!,
-            image,
-            uid,
-            "https://justalink.com",
-            "Some details that will be added by the user",
-            location,
-            System.currentTimeMillis()
-        )
-
-        ref.setValue(newImage)
-            .addOnSuccessListener {
-                Log.d("imageToDatabase", "image saved to feed successfully: ${ref.key}")
-            }
-            .addOnFailureListener {
-                Log.d("imageToDatabase", "image did not save to feed")
-            }
-
-
-        refToUsersDatabase.setValue(newImage)
-            .addOnSuccessListener {
-                Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
-            }
-            .addOnFailureListener {
-                Log.d("imageToDatabaseByUser", "image did not save to byUser")
-            }
-
-    }
+//    private fun addImageToFirebaseDatabase(image: String) {
+//
+//        val uid = FirebaseAuth.getInstance().uid ?: ""
+//        val ref = FirebaseDatabase.getInstance().getReference("/images/feed/").push()
+//        val location = (activity as CameraActivity).imageLocation
+//
+//
+//        val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/images/byuser/$uid/${ref.key}")
+//
+//        val newImage = Images(
+//            ref.key!!,
+//            image,
+//            uid,
+//            "https://justalink.com",
+//            "Some details that will be added by the user",
+//            location,
+//            System.currentTimeMillis()
+//        )
+//
+//        ref.setValue(newImage)
+//            .addOnSuccessListener {
+//                Log.d("imageToDatabase", "image saved to feed successfully: ${ref.key}")
+//            }
+//            .addOnFailureListener {
+//                Log.d("imageToDatabase", "image did not save to feed")
+//            }
+//
+//
+//        refToUsersDatabase.setValue(newImage)
+//            .addOnSuccessListener {
+//                Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
+//            }
+//            .addOnFailureListener {
+//                Log.d("imageToDatabaseByUser", "image did not save to byUser")
+//            }
+//
+//    }
 
 
     companion object {

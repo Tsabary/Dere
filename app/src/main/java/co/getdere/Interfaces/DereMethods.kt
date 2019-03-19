@@ -96,7 +96,7 @@ interface DereMethods {
             override fun onDataChange(p0: DataSnapshot) {
                 var count = 0
 
-                for (ds in p0.getChildren()) {
+                for (ds in p0.children) {
                     val rating = ds.getValue(Int::class.java)
                     count += rating!!
                     answerVotesView.text = count.toString()

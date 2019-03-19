@@ -21,9 +21,9 @@ import java.util.*
 
 class RegisterActivity : AppCompatActivity() {
 
-    private lateinit var userName : String
-    private lateinit var userEmail : String
-    private lateinit var userPassword : String
+    private lateinit var userName: String
+    private lateinit var userEmail: String
+    private lateinit var userPassword: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,12 +43,12 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
-    private var selectedPhotoUri : Uri? = null
+    private var selectedPhotoUri: Uri? = null
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == 0 && resultCode == Activity.RESULT_OK && data != null){
+        if (requestCode == 0 && resultCode == Activity.RESULT_OK && data != null) {
             Log.d("Main", "Photo was selected")
 
             selectedPhotoUri = data.data
@@ -64,7 +64,7 @@ class RegisterActivity : AppCompatActivity() {
         startActivity(loginIntent)
     }
 
-    private fun performRegister(){
+    private fun performRegister() {
 
         userEmail = register_email.text.toString()
         userPassword = register_password.text.toString()
@@ -73,38 +73,53 @@ class RegisterActivity : AppCompatActivity() {
         Log.d("Main", "pass is $userPassword")
 
 //        Patterns.EMAIL_ADDRESS.matcher(userEmail).matches()
-        if (userEmail.contains("@") && userEmail.contains(".")) {
 
-            if (userPassword.length > 5) {
+        if (selectedPhotoUri != null) {
 
-                FirebaseAuth.getInstance().createUserWithEmailAndPassword(userEmail, userPassword).addOnCompleteListener {
-                    if (it.isSuccessful) {
-                        Log.d("RegisterActivity", "Succesflly created a user using uid: ${it.result?.user?.uid}")
-                        uploadImageToFirebase()
 
-                        return@addOnCompleteListener
-                    } else {
+            if (userEmail.contains("@") && userEmail.contains(".")) {
+
+                if (userPassword.length > 5) {
+
+                    FirebaseAuth.getInstance().createUserWithEmailAndPassword(userEmail, userPassword)
+                        .addOnCompleteListener {
+                            if (it.isSuccessful) {
+                                Log.d(
+                                    "RegisterActivity",
+                                    "Succesflly created a user using uid: ${it.result?.user?.uid}"
+                                )
+                                uploadImageToFirebase()
+
+                                return@addOnCompleteListener
+                            } else {
+                                register_button.isClickable = true
+                                Log.d("RegisterActivity", "Failed creating a user using uid")
+                            }
+
+                        }.addOnFailureListener {
                         register_button.isClickable = true
-                        Log.d("RegisterActivity", "Failed creating a user using uid")}
-
-                }.addOnFailureListener {
+                        Log.d("RegisterActivity", "Failed to create user : ${it.message}")
+                    }
+                } else {
                     register_button.isClickable = true
-                    Log.d("RegisterActivity", "Failed to create user : ${it.message}")
+                    Toast.makeText(this, "Your password needs to be at least 6 characters long", Toast.LENGTH_LONG)
+                        .show()
                 }
+
             } else {
                 register_button.isClickable = true
-                Toast.makeText(this, "Your password needs to be at least 6 characters long", Toast.LENGTH_LONG)
-                    .show()
+                Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_LONG).show()
             }
-
         } else {
             register_button.isClickable = true
-            Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Please choose a profile photo", Toast.LENGTH_LONG)
+                .show()
         }
+
 
     }
 
-    private fun uploadImageToFirebase(){
+    private fun uploadImageToFirebase() {
 
         if (selectedPhotoUri == null) return
 
@@ -129,7 +144,7 @@ class RegisterActivity : AppCompatActivity() {
 
     }
 
-    private fun addUserToFirebaseDatabase(userImageUrl : String){
+    private fun addUserToFirebaseDatabase(userImageUrl: String) {
 
         val uid = FirebaseAuth.getInstance().uid ?: ""
         val ref = FirebaseDatabase.getInstance().getReference("/users/$uid")
