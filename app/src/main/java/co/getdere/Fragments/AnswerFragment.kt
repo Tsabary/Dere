@@ -32,7 +32,7 @@ class AnswerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity!!.setTitle("Answer")
+        activity!!.title = "Answer"
 
         arguments?.let {
             val safeArgs = AnswerFragmentArgs.fromBundle(it)
@@ -46,7 +46,7 @@ class AnswerFragment : Fragment() {
 
             view.answer_btn.setOnClickListener {
 
-                postAnswer(content.text.toString(), "4 days ago", uid, questionId)
+                postAnswer(content.text.toString(), System.currentTimeMillis(), uid)
 
             }
         }
@@ -54,20 +54,22 @@ class AnswerFragment : Fragment() {
 
     }
 
-    private fun postAnswer(content : String, timestamp: String, author : String, questionIdForAction : String){
+    private fun postAnswer(content : String, timestamp: Long, author : String){
 
-        val uid = FirebaseAuth.getInstance().uid ?: return
+        val uid = FirebaseAuth.getInstance().uid
 
-        val ref = FirebaseDatabase.getInstance().getReference("/answers/$questionId").push()
+        val ref = FirebaseDatabase.getInstance().getReference("/questions/$questionId/answers/").push()
 
-        val newAnswer = Answers(ref.key!!, content, timestamp, uid)
+        val refAnswerBody = FirebaseDatabase.getInstance().getReference("/questions/$questionId/answers/${ref.key}/body")
 
-        ref.setValue(newAnswer)
+        val newAnswer = Answers(ref.key!!, questionId, content, timestamp, uid!!)
+
+        refAnswerBody.setValue(newAnswer)
             .addOnSuccessListener {
                 Log.d("postAnswerActivity", "Saved answer to Firebase Database")
                 val action = AnswerFragmentDirections.actionDestinationAnswerToDestinationQuestionOpened()
-                action.questionId = questionIdForAction
-                action.questionAuthor = questionAuthorId
+//                action.questionId = questionIdForAction
+//                action.questionAuthor = questionAuthorId
                 findNavController().navigate(action)
 
 

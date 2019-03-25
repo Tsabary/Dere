@@ -9,9 +9,14 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
+import co.getdere.Models.Images
+import co.getdere.Models.Question
 import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.Models.Users
 import co.getdere.RegisterLogin.RegisterActivity
+import co.getdere.ViewModels.SharedViewModelImage
+import co.getdere.ViewModels.SharedViewModelQuestion
+import co.getdere.ViewModels.SharedViewModelRandomUser
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
@@ -25,16 +30,13 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    var currentUser: Users? = null
-    lateinit var mToolbar : Toolbar
-    lateinit var mBottomNav : BottomNavigationView
+    lateinit var mToolbar: Toolbar
+    lateinit var mBottomNav: BottomNavigationView
+
     lateinit var sharedViewModelCurrentUser: SharedViewModelCurrentUser
-
-
-
-
-//    private lateinit var viewPager: ViewPager
-//    private lateinit var pagerAdapter: PagesPagerAdapter
+    lateinit var sharedViewModelQuestion: SharedViewModelQuestion
+    lateinit var sharedViewModelImage: SharedViewModelImage
+    lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,9 +47,16 @@ class MainActivity : AppCompatActivity() {
         PushNotifications.subscribe("hello");
 
         sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
-//
-//        val sharedViewModelImages = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
-//
+
+//        sharedViewModelQuestion = ViewModelProviders.of(this).get(SharedViewModelQuestion::class.java)
+//        sharedViewModelQuestion.questionObject.postValue(Question())
+
+        sharedViewModelImage = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
+        sharedViewModelImage.sharedImageObject.postValue(Images())
+
+        sharedViewModelRandomUser = ViewModelProviders.of(this).get(SharedViewModelRandomUser::class.java)
+        sharedViewModelRandomUser.randomUserObject.postValue(Users())
+
 
         FirebaseApp.initializeApp(this)
 
@@ -56,7 +65,6 @@ class MainActivity : AppCompatActivity() {
 
         setupBottomNavMenu(navController)
         setupActionBar()
-
 
 
     }
@@ -83,8 +91,7 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, RegisterActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
-        }
-        else{
+        } else {
             fetchCurrentUser()
         }
 
@@ -93,7 +100,7 @@ class MainActivity : AppCompatActivity() {
     private fun fetchCurrentUser() {
 
         val uid = FirebaseAuth.getInstance().uid
-        val ref = FirebaseDatabase.getInstance().getReference("/users/$uid")
+        val ref = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
             }

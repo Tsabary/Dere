@@ -2,21 +2,19 @@ package co.getdere.Fragments
 
 
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
+import android.view.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
+import co.getdere.GroupieAdapters.SingleQuestion
 import co.getdere.Models.Question
+import co.getdere.Models.Users
 
 import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelQuestion
+import co.getdere.ViewModels.SharedViewModelRandomUser
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
@@ -29,12 +27,23 @@ class BoardFragment : Fragment() {
 
     val questionsRecyclerAdapter = GroupAdapter<ViewHolder>()
     lateinit var sharedViewModelForQuestion: SharedViewModelQuestion
+    lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
+
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
         activity?.let {
             sharedViewModelForQuestion = ViewModelProviders.of(it).get(SharedViewModelQuestion::class.java)
+            sharedViewModelForQuestion.questionObject.postValue(Question())
+
+            sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
         }
     }
 
@@ -48,7 +57,7 @@ class BoardFragment : Fragment() {
 
         activity!!.title = "Board"
 
-        val fab: FloatingActionButton = view.findViewById<FloatingActionButton>(R.id.board_fab)
+        val fab: FloatingActionButton = view.findViewById(R.id.board_fab)
 
         fab.setOnClickListener {
             val action = BoardFragmentDirections.actionDestinationBoardToDestinationNewQuestion()
@@ -65,10 +74,10 @@ class BoardFragment : Fragment() {
         questionsRecyclerAdapter.setOnItemClickListener { item, _ ->
 
             val row = item as SingleQuestion
-            val author = row.authorUid
-            val question = row.questionId
+            val author = row.question.author
+            val question = row.question.id
 
-            val refQuestion = FirebaseDatabase.getInstance().getReference("questions/$question")
+            val refQuestion = FirebaseDatabase.getInstance().getReference("/questions/$question/main/body")
 
             refQuestion.addListenerForSingleValueEvent(object :ValueEventListener{
                 override fun onCancelled(p0: DatabaseError) {
@@ -79,7 +88,25 @@ class BoardFragment : Fragment() {
 
                     val questionFromDB = p0.getValue(Question::class.java)
 
-                    sharedViewModelForQuestion.sharedQuestionObject.postValue(questionFromDB)
+                    sharedViewModelForQuestion.questionObject.postValue(questionFromDB)
+
+                    val refRandomUser = FirebaseDatabase.getInstance().getReference("/users/$author/profile")
+
+                    refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener{
+                        override fun onCancelled(p0: DatabaseError) {
+
+                        }
+
+                        override fun onDataChange(p0: DataSnapshot) {
+
+                            val randomUserFromDB = p0.getValue(Users::class.java)
+
+                            sharedViewModelRandomUser.randomUserObject.postValue(randomUserFromDB)
+
+
+                        }
+
+                    })
 
                 }
 
@@ -87,8 +114,8 @@ class BoardFragment : Fragment() {
             })
 
             val action = BoardFragmentDirections.actionDestinationBoardToOpenedQuestionFragment()
-            action.questionId = question
-            action.questionAuthor = author
+//            action.questionId = question
+//            action.questionAuthor = author
             findNavController().navigate(action)
 
 
@@ -106,56 +133,17 @@ class BoardFragment : Fragment() {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                val singleQuestionFromDB = p0.getValue(Question::class.java)
+                val singleQuestionFromDB = p0.child("main").child("body").getValue(Question::class.java)
 
 
                 if (singleQuestionFromDB != null) {
 
-                    val refAnswers = FirebaseDatabase.getInstance().getReference("/answers/${singleQuestionFromDB.id}")
-
-                    var count = 0
-
-                    refAnswers.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-
-                        }
-
-                        override fun onDataChange(p0: DataSnapshot) {
-
-                            for (ds in p0.children) {
-
-                                count += 1
-                                Log.d("countAnswers", count.toString())
-
-                            }
-
-                            val stampMills = singleQuestionFromDB.timestamp
-                            val pretty = PrettyTime()
-                            val date = pretty.format(Date(stampMills))
-
-                            questionsRecyclerAdapter.add(
-                                SingleQuestion(
-                                    singleQuestionFromDB.id,
-                                    singleQuestionFromDB.author,
-                                    singleQuestionFromDB.title,
-                                    singleQuestionFromDB.details,
-                                    singleQuestionFromDB.tags,
-                                    date,
-                                    count,
-                                    false
-                                )
-                            )
-                        }
-                    })
-
+                    questionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
 
                 }
-
-
             }
 
             override fun onCancelled(p0: DatabaseError) {
-
             }
 
             override fun onChildMoved(p0: DataSnapshot, p1: String?) {
@@ -171,6 +159,46 @@ class BoardFragment : Fragment() {
 
     }
 
+
+
+
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+
+        inflater.inflate(R.menu.board_navigation, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+
+    }
+
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+
+        when (id) {
+            R.id.destination_saved -> {
+
+                val action = BoardFragmentDirections.actionDestinationBoardToSavedQuestionsFragment()
+                findNavController().navigate(action)
+
+            }
+
+            R.id.destination_board_notifications -> {
+
+                val action = BoardFragmentDirections.actionDestinationBoardToBoardNotificationsFragment()
+                findNavController().navigate(action)
+
+            }
+
+        }
+
+        return super.onOptionsItemSelected(item)
+
+    }
+
+
+
+
+
     companion object {
         fun newInstance(): BoardFragment = BoardFragment()
     }
@@ -178,37 +206,30 @@ class BoardFragment : Fragment() {
 }
 
 
-class SingleQuestion(
-    val questionId: String,
-    val authorUid: String,
-    val question: String,
-    val details: String,
-    val tags: MutableList<String>,
-    val timestamp: String,
-    val answers: Int,
-    val resolved: Boolean
-) : Item<ViewHolder>() {
-    override fun getLayout(): Int {
-        return R.layout.board_single_row
-    }
-
-    override fun bind(viewHolder: ViewHolder, position: Int) {
-
-        viewHolder.itemView.board_question.text = question
-        viewHolder.itemView.board_tags.text = tags.joinToString()
-        viewHolder.itemView.board_timestamp.text = timestamp
-        viewHolder.itemView.board_answers.text = answers.toString()
-
-
-//        if (resolved) {
-//            viewHolder.itemView.board_answers.setBackgroundResource(R.drawable.board_resolved_count_background)
-//            viewHolder.itemView.board_answers.setTextColor(Color.parseColor("#ffffff"))
+//class SingleQuestion(
+//    val questionId: String,
+//    val authorUid: String,
+//    val question: String,
+//    val details: String,
+//    val tags: MutableList<String>,
+//    val timestamp: String,
+//    val answers: Int,
+//    val resolved: Boolean
+//) : Item<ViewHolder>() {
+//    override fun getLayout(): Int {
+//        return R.layout.board_single_row
+//    }
 //
-//        } else {
-//            viewHolder.itemView.board_answers.setBackgroundResource(R.drawable.board_unresolved_count_background)
-//            viewHolder.itemView.board_answers.setTextColor(Color.parseColor("#212121"))
-//        }
+//    override fun bind(viewHolder: ViewHolder, position: Int) {
+//
+//        viewHolder.itemView.board_question.text = question
+//        viewHolder.itemView.board_tags.text = tags.joinToString()
+//        viewHolder.itemView.board_timestamp.text = timestamp
+//        viewHolder.itemView.board_answers.text = answers.toString()
+//
+//    }
+//
+//}
 
-    }
 
-}
+

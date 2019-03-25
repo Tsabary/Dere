@@ -9,7 +9,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import co.getdere.Adapters.FeedImage
+import androidx.navigation.fragment.findNavController
+import co.getdere.GroupieAdapters.FeedImage
 import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.Models.Images
 import co.getdere.Models.SimpleString
@@ -76,6 +77,17 @@ class ProfileLogedInUserFragment : Fragment() {
         activity!!.title = "Profile"
 
         setHasOptionsMenu(true)
+
+
+        galleryAdapter.setOnItemClickListener { item, _ ->
+
+            val row = item as FeedImage
+//            val imageId = row.image
+            val action = ProfileLogedInUserFragmentDirections.actionDestinationProfileLogedInUserToDestinationImageFullSize()
+            action.imageId = row.image.id
+            findNavController().navigate(action)
+
+        }
 
     }
 
@@ -173,7 +185,7 @@ class ProfileLogedInUserFragment : Fragment() {
 
         galleryAdapter.clear()
 
-        val ref = FirebaseDatabase.getInstance().getReference("/buckets/${userProfile.uid}")
+        val ref = FirebaseDatabase.getInstance().getReference("/buckets/users/${userProfile.uid}")
 
         ref.addChildEventListener(object : ChildEventListener {
 
@@ -183,14 +195,10 @@ class ProfileLogedInUserFragment : Fragment() {
 
 
                 val refForImageObjects =
-                    FirebaseDatabase.getInstance().getReference("images/feed/-L_thdAdsrhNNmGTqJyr")
+                    FirebaseDatabase.getInstance().getReference("images/feed/${singleImageFromDBlink!!.singleString}")
 
-//                val refForImageObjects =
-//                    FirebaseDatabase.getInstance().getReference("images/feed/${singleImageFromDBlink?.singleString}")
-
-                refForImageObjects.addListenerForSingleValueEvent(object : ValueEventListener {
+                refForImageObjects.addListenerForSingleValueEvent(object : ValueEventListener{
                     override fun onCancelled(p0: DatabaseError) {
-
                     }
 
                     override fun onDataChange(p0: DataSnapshot) {
@@ -200,10 +208,11 @@ class ProfileLogedInUserFragment : Fragment() {
 
                             galleryAdapter.add(FeedImage(singleImageFromDB))
 
-                        }                    }
+                        }
+                    }
+
+
                 })
-
-
             }
 
             override fun onCancelled(p0: DatabaseError) {

@@ -27,11 +27,11 @@
         <action android:id="@+id/action_destination_image_full_size_to_destination_profile"
                 app:destination="@id/destination_profile_loged_in_user"/>
         <action android:id="@+id/action_destination_image_full_size_to_profileRandomUserFragment"
-                app:destination="@id/profileRandomUserFragment"/>
+                app:destination="@id/destination_profile_random_user"/>
         <action android:id="@+id/action_destination_image_full_size_to_photoCommentsFragment"
-                app:destination="@id/photoCommentsFragment"/>
+                app:destination="@id/destination_photo_comments"/>
         <action android:id="@+id/action_destination_image_full_size_to_webViewFragment"
-                app:destination="@id/webViewFragment"/>
+                app:destination="@id/destination_web_view"/>
     </fragment>
     <fragment android:id="@+id/destination_board"
               android:name="co.getdere.Fragments.BoardFragment"
@@ -40,10 +40,17 @@
                 app:destination="@id/destination_new_question"/>
         <action android:id="@+id/action_destination_board_to_openedQuestionFragment"
                 app:destination="@id/destination_question_opened"/>
+        <action android:id="@+id/action_destination_board_to_savedQuestionsFragment"
+                app:destination="@id/destinatin_saved"/>
+        <action android:id="@+id/action_destination_board_to_boardNotificationsFragment"
+                app:destination="@id/destination_board_notifications"/>
     </fragment>
     <fragment android:id="@+id/destination_profile_loged_in_user"
               android:name="co.getdere.Fragments.ProfileLogedInUserFragment"
-              android:label="Profile"/>
+              android:label="Profile">
+        <action android:id="@+id/action_destination_profile_loged_in_user_to_destination_image_full_size"
+                app:destination="@id/destination_image_full_size"/>
+    </fragment>
 
     <fragment android:id="@+id/destination_new_question"
               android:name="co.getdere.Fragments.NewQuestionFragment"
@@ -56,12 +63,6 @@
               android:name="co.getdere.Fragments.OpenedQuestionFragment"
               android:label="Community"
               tools:layout="@layout/fragment_opened_question">
-        <argument android:name="questionAuthor"
-                  app:argType="string"
-                  android:defaultValue=" "/>
-        <argument android:name="questionId"
-                  app:argType="string"
-                  android:defaultValue=" "/>
         <action android:id="@+id/action_openedQuestionFragment_to_answerFragment"
                 app:destination="@id/destination_answer"/>
     </fragment>
@@ -78,14 +79,31 @@
         <action android:id="@+id/action_destination_answer_to_destination_question_opened"
                 app:destination="@id/destination_question_opened"/>
     </fragment>
-    <fragment android:id="@+id/profileRandomUserFragment"
+    <fragment android:id="@+id/destination_profile_random_user"
               android:name="co.getdere.Fragments.ProfileRandomUserFragment"
-              android:label="ProfileRandomUserFragment"/>
-    <fragment android:id="@+id/photoCommentsFragment"
+              android:label="Profile">
+        <action android:id="@+id/action_destination_profile_random_user_to_destination_image_full_size"
+                app:destination="@id/destination_image_full_size"/>
+    </fragment>
+    <fragment android:id="@+id/destination_photo_comments"
               android:name="co.getdere.Fragments.PhotoCommentsFragment"
               android:label="Comments"/>
-    <fragment android:id="@+id/webViewFragment"
+    <fragment android:id="@+id/destination_web_view"
               android:name="co.getdere.Fragments.WebViewFragment"
               android:label="External website"
               tools:layout="@layout/fragment_web_view"/>
+    <fragment android:id="@+id/destinatin_saved"
+              android:name="co.getdere.Fragments.SavedQuestionsFragment"
+              android:label="Saved discussions"
+              tools:layout="@layout/fragment_saved_questions">
+        <action android:id="@+id/action_destinatin_saved_to_destination_question_opened"
+                app:destination="@id/destination_question_opened"/>
+    </fragment>
+    <fragment android:id="@+id/destination_board_notifications"
+              android:name="co.getdere.Fragments.BoardNotificationsFragment"
+              android:label="Notifications"
+              tools:layout="@layout/fragment_board_notifications">
+        <action android:id="@+id/action_destination_board_notifications_to_destination_question_opened"
+                app:destination="@id/destination_question_opened"/>
+    </fragment>
 </navigation>

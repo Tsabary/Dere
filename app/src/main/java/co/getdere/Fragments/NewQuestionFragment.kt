@@ -16,7 +16,6 @@ import androidx.navigation.fragment.findNavController
 import co.getdere.Models.Question
 import co.getdere.Models.SimpleString
 import co.getdere.R
-import co.getdere.ViewModels.SharedViewModelImage
 import co.getdere.ViewModels.SharedViewModelTags
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -67,6 +66,8 @@ class NewQuestionFragment : Fragment() {
                     count += 1
                 }
 
+//                tags.add(SingleTagForList("tel-aviv", 3))
+
                 tags.add(SingleTagForList(tagName, count))
 
                 sharedViewModelTags.tagList = tags
@@ -100,13 +101,13 @@ class NewQuestionFragment : Fragment() {
         val questionTitle: EditText = view.findViewById(R.id.new_question_title)
         val questionDetails = view.findViewById<EditText>(R.id.new_question_details)
         val questionButton = view.findViewById<TextView>(R.id.new_question_btn)
-        val questionTagsInput = view.findViewById<EditText>(R.id.new_question_tag_input)
+        val questionTagsInput = view.findViewById<EditText>(R.id.image_information_tag_input)
         val addTagButton = view.findViewById<ImageButton>(R.id.new_question_add_tag_button)
-        questionChipGroup = view.findViewById<ChipGroup>(R.id.new_question_chip_group)
+        questionChipGroup = view.findViewById<ChipGroup>(R.id.image_information_chip_group)
 
 
         val tagSuggestionRecycler =
-            view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.new_question_recycler)
+            view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.image_information_tag_recycler)
         val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
         tagSuggestionRecycler.adapter = tagsFiltredAdapter
@@ -257,10 +258,11 @@ class NewQuestionFragment : Fragment() {
         val uid = FirebaseAuth.getInstance().uid ?: return
 
         val ref = FirebaseDatabase.getInstance().getReference("/questions").push()
+        val refQuestionMain = FirebaseDatabase.getInstance().getReference("/questions/${ref.key}/main/body")
 
         val newQuestion = Question(ref.key!!, title, details, tags, timestamp, uid)
 
-        ref.setValue(newQuestion)
+        refQuestionMain.setValue(newQuestion)
             .addOnSuccessListener {
 
                 for (t in tags) {

@@ -5,7 +5,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
     <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="40dp"
@@ -47,6 +47,8 @@
             android:layout_marginStart="32dp"
             tools:text="time time"
             android:fontFamily="@font/open_sans_semibold"
-            android:textColor="@color/gray500"/>
+            android:textColor="@color/gray500"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="16dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

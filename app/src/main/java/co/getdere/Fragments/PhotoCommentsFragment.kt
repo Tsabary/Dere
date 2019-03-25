@@ -124,8 +124,7 @@ class PhotoCommentsFragment : Fragment() {
 
             ref.setValue(comment).addOnSuccessListener {
                 Log.d("postCommentActivity", "Saved comment to Firebase Database")
-                listenToComments()
-
+//                commentsRecyclerAdapter.add(singleComment(comment))
             }.addOnFailureListener {
                 Log.d("postCommentActivity", "Failed to save comment to database")
             }
@@ -134,48 +133,47 @@ class PhotoCommentsFragment : Fragment() {
 
     }
 
-    private fun listenToComments(){
+    private fun listenToComments() {
 
-            commentsRecyclerAdapter.clear()
+        commentsRecyclerAdapter.clear()
 
 
-            val ref = FirebaseDatabase.getInstance().getReference("/comments/${imageObject.id}")
+        val ref = FirebaseDatabase.getInstance().getReference("/comments/${imageObject.id}")
 
-            ref.addChildEventListener(object : ChildEventListener {
+        ref.addChildEventListener(object : ChildEventListener {
 
-                override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                    val singleCommentFromDB = p0.getValue(Comments::class.java)
+                val singleCommentFromDB = p0.getValue(Comments::class.java)
 
-                    if (singleCommentFromDB != null) {
+                if (singleCommentFromDB != null) {
 
-                        commentsRecyclerAdapter.add(singleComment(singleCommentFromDB))
-
-                    }
-                }
-
-                override fun onCancelled(p0: DatabaseError) {
+                    commentsRecyclerAdapter.add(singleComment(singleCommentFromDB))
 
                 }
+            }
 
-                override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-                }
+            override fun onCancelled(p0: DatabaseError) {
 
-                override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-                }
+            }
 
-                override fun onChildRemoved(p0: DataSnapshot) {
-                }
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
 
-            })
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
 
-        }
+            override fun onChildRemoved(p0: DataSnapshot) {
+            }
 
+        })
+
+    }
 
 
 }
 
-class singleComment (var comment : Comments) : Item<ViewHolder>(){
+class singleComment(var comment: Comments) : Item<ViewHolder>() {
     override fun getLayout(): Int {
         return R.layout.comment_layout
     }
@@ -189,9 +187,9 @@ class singleComment (var comment : Comments) : Item<ViewHolder>(){
         viewHolder.itemView.single_comment_content.text = comment.content
         viewHolder.itemView.single_comment_timestamp.text = date
 
-        val refCommentUser = FirebaseDatabase.getInstance().getReference("/users/${comment.authorId}")
+        val refCommentUser = FirebaseDatabase.getInstance().getReference("/users/${comment.authorId}/profile")
 
-        refCommentUser.addListenerForSingleValueEvent(object : ValueEventListener{
+        refCommentUser.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
 
             }
@@ -207,8 +205,6 @@ class singleComment (var comment : Comments) : Item<ViewHolder>(){
             }
 
         })
-
-
 
 
     }

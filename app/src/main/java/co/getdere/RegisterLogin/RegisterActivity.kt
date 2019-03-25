@@ -124,7 +124,7 @@ class RegisterActivity : AppCompatActivity() {
         if (selectedPhotoUri == null) return
 
         val filename = UUID.randomUUID().toString()
-        val ref = FirebaseStorage.getInstance().getReference("/images/$filename")
+        val ref = FirebaseStorage.getInstance().getReference("/images/userprofile/$filename")
 
         ref.putFile(selectedPhotoUri!!)
             .addOnSuccessListener {
@@ -147,11 +147,11 @@ class RegisterActivity : AppCompatActivity() {
     private fun addUserToFirebaseDatabase(userImageUrl: String) {
 
         val uid = FirebaseAuth.getInstance().uid ?: ""
-        val ref = FirebaseDatabase.getInstance().getReference("/users/$uid")
+        val ref = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
 
         userName = register_name.text.toString()
 
-        val newUser = Users(uid, userName, userEmail, userImageUrl)
+        val newUser = Users(uid, userName, userEmail, userImageUrl, "0")
 
         ref.setValue(newUser)
             .addOnSuccessListener {

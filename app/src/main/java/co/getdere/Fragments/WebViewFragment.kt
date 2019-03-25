@@ -53,7 +53,7 @@ class WebViewFragment : Fragment() {
                 webView.settings.builtInZoomControls = true
                 webView.settings.pluginState = WebSettings.PluginState.ON
                 webView.webViewClient = WebViewClient()
-                webView.loadUrl(url)
+                webView.loadUrl("https://www.ycombinator.com/")
 
             }
         }

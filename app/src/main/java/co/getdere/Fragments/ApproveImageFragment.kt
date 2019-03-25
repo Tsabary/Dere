@@ -4,6 +4,7 @@ import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.database.Cursor
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -21,14 +22,21 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.widget.EditText
 import android.widget.TextView
+import co.getdere.Adapters.NewPhotoUploadPagerAdapter
+import co.getdere.Adapters.OpenPhotoPagerAdapter
 import co.getdere.CameraActivity
+import co.getdere.CameraActivity2
 import co.getdere.MainActivity
 import co.getdere.Models.Images
+import co.getdere.OtherClasses.SwipeLockableViewPager
 import co.getdere.R
 import co.getdere.RegisterLogin.RegisterActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.android.synthetic.main.fragment_approve_image.view.*
+import kotlinx.android.synthetic.main.fragment_image_full_size.view.*
+import mumayank.com.airlocationlibrary.AirLocation
 import java.io.File
 import java.util.*
 
@@ -41,6 +49,26 @@ class ApproveImageFragment : Fragment() {
     lateinit var imageDescription: String
     lateinit var imageUrl: String
     var privacy = false
+    lateinit var boxPagerAdapter: NewPhotoUploadPagerAdapter
+    lateinit var viewPager: SwipeLockableViewPager
+
+
+    private var airLocation: AirLocation? = null
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        airLocation?.onActivityResult(requestCode, resultCode, data) // ADD THIS LINE INSIDE onActivityResult
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        airLocation?.onRequestPermissionsResult(
+            requestCode,
+            permissions,
+            grantResults
+        ) // ADD THIS LINE INSIDE onRequestPermissionResult
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,6 +82,8 @@ class ApproveImageFragment : Fragment() {
         val declineImage = view.findViewById<ImageButton>(co.getdere.R.id.approve_image_x)
         val acceptImage = view.findViewById<ImageButton>(co.getdere.R.id.approve_image_check)
         val privacyButton = view.findViewById<TextView>(co.getdere.R.id.approve_image_privacy_text)
+
+//        setUpViewPager()
 
         arguments?.let {
             val safeArgs = ApproveImageFragmentArgs.fromBundle(it)
@@ -92,6 +122,15 @@ class ApproveImageFragment : Fragment() {
 
 
     }
+
+//    private fun setUpViewPager() {
+//        boxPagerAdapter = NewPhotoUploadPagerAdapter((activity as CameraActivity).supportFragmentManager)
+//        val adapterOBJ= NewPhotoUploadPagerAdapter(childFragmentManager)
+//        viewPager = view!!.approve_image_pager_adapter
+//        viewPager.adapter = adapterOBJ
+//        viewPager.setSwipePagingEnabled(false)
+//
+//    }
 
 
     private fun getRealPathFromURI(context: Context, contentUri: Uri): String {
@@ -203,42 +242,63 @@ class ApproveImageFragment : Fragment() {
 
         val uid = FirebaseAuth.getInstance().uid ?: ""
         val ref = FirebaseDatabase.getInstance().getReference("/images/feed/").push()
-        val location = (activity as CameraActivity).imageLocation
+//        val location = (activity as CameraActivity2).imageLocation
 
 
         val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/images/byuser/$uid/${ref.key}")
 
-        val newImage = Images(
-            ref.key!!,
-            bigImage,
-            smallImage,
-            privacy,
-            uid,
-            imageUrl,
-            imageDescription,
-            location,
-            System.currentTimeMillis()
-        )
 
-        ref.setValue(newImage)
-            .addOnSuccessListener {
-                Log.d("imageToDatabase", "image saved to feed successfully: ${ref.key}")
 
-                refToUsersDatabase.setValue(newImage)
+
+
+
+        airLocation = AirLocation((activity as CameraActivity2), true, true, object : AirLocation.Callbacks {
+            override fun onSuccess(location: Location) {
+
+                val locationForImage = mutableListOf(location.latitude, location.longitude)
+
+
+                val newImage = Images(
+                    ref.key!!,
+                    bigImage,
+                    smallImage,
+                    privacy,
+                    uid,
+                    imageUrl,
+                    imageDescription,
+                    locationForImage,
+                    System.currentTimeMillis()
+                )
+
+                ref.setValue(newImage)
                     .addOnSuccessListener {
-                        Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
+                        Log.d("imageToDatabase", "image saved to feed successfully: ${ref.key}")
 
-                        val backToFeed = Intent(this.context, MainActivity::class.java)
-                        startActivity(backToFeed)
+                        refToUsersDatabase.setValue(newImage)
+                            .addOnSuccessListener {
+                                Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
 
+                                val backToFeed = Intent((activity as CameraActivity2), MainActivity::class.java)
+                                startActivity(backToFeed)
+
+                            }
+                            .addOnFailureListener {
+                                Log.d("imageToDatabaseByUser", "image did not save to byUser")
+                            }
                     }
                     .addOnFailureListener {
-                        Log.d("imageToDatabaseByUser", "image did not save to byUser")
+                        Log.d("imageToDatabase", "image did not save to feed")
                     }
+
+
             }
-            .addOnFailureListener {
-                Log.d("imageToDatabase", "image did not save to feed")
+
+            override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
+                // couldn't fetch location due to reason available in locationFailedEnum
+                // you may optionally do something to inform the user, even though the reason may be obvious
             }
+
+        })
 
 
     }

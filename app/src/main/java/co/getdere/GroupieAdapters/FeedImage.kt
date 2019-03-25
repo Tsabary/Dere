@@ -1,4 +1,4 @@
-package co.getdere.Adapters
+package co.getdere.GroupieAdapters
 
 import android.app.Activity
 import android.app.PendingIntent.getActivity

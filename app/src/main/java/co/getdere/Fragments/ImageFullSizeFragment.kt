@@ -4,6 +4,7 @@ package co.getdere.Fragments
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
@@ -17,6 +18,7 @@ import co.getdere.ViewModels.SharedViewModelRandomUser
 import co.getdere.MainActivity
 import co.getdere.Models.Images
 import co.getdere.Models.Users
+import co.getdere.OtherClasses.SwipeLockableViewPager
 import co.getdere.R
 import com.bumptech.glide.Glide
 import com.google.firebase.database.*
@@ -36,7 +38,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
 
     lateinit var goToMapBtn: ImageButton
     lateinit var goToSocial: ImageButton
-    lateinit var viewPager: ViewPager
+    lateinit var viewPager: SwipeLockableViewPager
 
 
     override fun onAttach(context: Context) {
@@ -67,7 +69,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
                     sharedViewModelForImage.sharedImageObject.postValue(imageObject)
 
                     val refRandomUser =
-                        FirebaseDatabase.getInstance().getReference("/users/${imageObject.photographer}")
+                        FirebaseDatabase.getInstance().getReference("/users/${imageObject.photographer}/profile")
 
                     refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onCancelled(p0: DatabaseError) {
@@ -84,6 +86,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
                 }
             })
         }
+
     }
 
 
@@ -100,6 +103,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
         goToMapBtn = view.findViewById<ImageButton>(R.id.image_full_go_to_map_btn)
         goToSocial = view.findViewById<ImageButton>(R.id.image_full_go_to_social)
         setUpViewPager()
+
 
 
         sharedViewModelForImage.sharedImageObject.observe(this, Observer {
@@ -123,34 +127,6 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
             changeFragmentInPager()
         }
 
-
-
-
-
-
-//        arguments?.let {
-//            val safeArgs = ImageFullSizeFragmentArgs.fromBundle(it)
-//
-//            val imageId = safeArgs.imageId
-//
-//            refImage = FirebaseDatabase.getInstance().getReference("/images/feed/$imageId")
-//
-//            refImage.addListenerForSingleValueEvent(object : ValueEventListener {
-//                override fun onCancelled(p0: DatabaseError) {
-//
-//                }
-//
-//                override fun onDataChange(p0: DataSnapshot) {
-//
-//                    val imageObject = p0.getValue(Images::class.java)!!
-//                    Picasso.get().load(Uri.parse(imageObject.image)).into(mainImage)
-//
-//                }
-//
-//
-//            })
-//
-//        }
 
     }
 
@@ -177,6 +153,8 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
         val adapterOBJ= OpenPhotoPagerAdapter(childFragmentManager)
         viewPager = view!!.image_full_view_pager
         viewPager.adapter = adapterOBJ
+        viewPager.setSwipePagingEnabled(false)
+
     }
 
 

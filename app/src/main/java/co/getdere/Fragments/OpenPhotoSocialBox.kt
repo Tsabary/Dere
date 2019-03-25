@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
@@ -78,7 +79,7 @@ class OpenPhotoSocialBox : Fragment() {
         commentCount = view.findViewById<TextView>(R.id.photo_social_comment_count)
 
 
-//        checkBucket()
+//        checkIfBucketed()
 
 //        val refImageAuthor = FirebaseDatabase.getInstance().getReference("users/${imageObject.photographer}")
 
@@ -105,7 +106,7 @@ class OpenPhotoSocialBox : Fragment() {
 
                 imageDetails.text = imageObject.details
 
-                checkBucket(0)
+                checkIfBucketed(0)
                 listenToBucketCount()
                 listenToCommentCount()
 
@@ -131,7 +132,7 @@ class OpenPhotoSocialBox : Fragment() {
 
         addToBucket.setOnClickListener {
 
-            checkBucket(1)
+            checkIfBucketed(1)
         }
 
         addComment.setOnClickListener {
@@ -162,8 +163,6 @@ class OpenPhotoSocialBox : Fragment() {
         }
 
     }
-
-
 
 
     private fun listenToCommentCount() {
@@ -211,10 +210,6 @@ class OpenPhotoSocialBox : Fragment() {
     }
 
 
-
-
-
-
     private fun listenToBucketCount() {
 
         val refAllImagesBuckets = FirebaseDatabase.getInstance().getReference("/buckets/images")
@@ -260,7 +255,7 @@ class OpenPhotoSocialBox : Fragment() {
     }
 
 
-    private fun checkBucket(ranNum: Int) {
+    private fun checkIfBucketed(ranNum: Int) {
 
         val refUserBucket = FirebaseDatabase.getInstance().getReference("/buckets/users/${currentUser.uid}")
 
@@ -272,16 +267,22 @@ class OpenPhotoSocialBox : Fragment() {
             override fun onDataChange(p0: DataSnapshot) {
                 if (p0.hasChild(imageObject.id)) {
                     if (ranNum == 1) {
-                        addToBucket.setImageResource(R.drawable.bucket)
 
-                        refUserBucket.child(imageObject.id).removeValue().addOnCompleteListener {
-                            val refImageBucketingList =
-                                FirebaseDatabase.getInstance().getReference("/buckets/images/${imageObject.id}")
+                        if (currentUser.uid == imageObject.photographer) {
+                            Toast.makeText(context, "You can't bucket your own photos", Toast.LENGTH_SHORT).show()
+                        } else {
+                            addToBucket.setImageResource(R.drawable.bucket)
 
-                            refImageBucketingList.child(currentUser.uid).removeValue().addOnCompleteListener {
-                                listenToBucketCount()
+                            refUserBucket.child(imageObject.id).removeValue().addOnCompleteListener {
+                                val refImageBucketingList =
+                                    FirebaseDatabase.getInstance().getReference("/buckets/images/${imageObject.id}")
+
+                                refImageBucketingList.child(currentUser.uid).removeValue().addOnCompleteListener {
+                                    listenToBucketCount()
+                                }
                             }
                         }
+
 
                     } else {
                         addToBucket.setImageResource(R.drawable.bucket_saved)
@@ -291,19 +292,23 @@ class OpenPhotoSocialBox : Fragment() {
                 } else {
                     if (ranNum == 1) {
 
-                        addToBucket.setImageResource(R.drawable.bucket_saved)
+                        if (currentUser.uid == imageObject.photographer) {
+                            Toast.makeText(context, "You can't bucket your own photos", Toast.LENGTH_SHORT).show()
+                        } else {
+                            addToBucket.setImageResource(R.drawable.bucket_saved)
 
-                        val refCurrentUserBucket =
-                            FirebaseDatabase.getInstance()
-                                .getReference("/buckets/users/${currentUser.uid}/${imageObject.id}")
-                        val bucketedImage = SimpleString(imageObject.id)
-                        refCurrentUserBucket.setValue(bucketedImage).addOnCompleteListener {
-                            val refCurrentImageBucket =
+                            val refCurrentUserBucket =
                                 FirebaseDatabase.getInstance()
-                                    .getReference("/buckets/images/${imageObject.id}/${currentUser.uid}")
-                            val bucketingUser = SimpleString(currentUser.uid)
-                            refCurrentImageBucket.setValue(bucketingUser).addOnCompleteListener {
-                                listenToBucketCount()
+                                    .getReference("/buckets/users/${currentUser.uid}/${imageObject.id}")
+                            val bucketedImage = SimpleString(imageObject.id)
+                            refCurrentUserBucket.setValue(bucketedImage).addOnCompleteListener {
+                                val refCurrentImageBucket =
+                                    FirebaseDatabase.getInstance()
+                                        .getReference("/buckets/images/${imageObject.id}/${currentUser.uid}")
+                                val bucketingUser = SimpleString(currentUser.uid)
+                                refCurrentImageBucket.setValue(bucketingUser).addOnCompleteListener {
+                                    listenToBucketCount()
+                                }
                             }
                         }
 
@@ -316,6 +321,7 @@ class OpenPhotoSocialBox : Fragment() {
             }
 
         })
+
 
     }
 

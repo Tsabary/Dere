@@ -4,29 +4,26 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.navigation.fragment.findNavController
-import co.getdere.Adapters.FeedImage
+import androidx.recyclerview.widget.LinearLayoutManager
+import co.getdere.GroupieAdapters.FeedImage
 import co.getdere.CameraActivity
+import co.getdere.CameraActivity2
+import co.getdere.GroupieAdapters.LinearFeedImage
 import co.getdere.MainActivity
 import co.getdere.Models.Images
 import co.getdere.R
-import com.bumptech.glide.Glide
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.feed_single_photo.view.*
 import kotlinx.android.synthetic.main.fragment_feed.*
 
 class FeedFragment : Fragment() {
@@ -59,14 +56,13 @@ class FeedFragment : Fragment() {
         activity!!.title = "Feed"
 
 
-        galleryAdapter.setOnItemClickListener { item, view2 ->
+        galleryAdapter.setOnItemClickListener { item, _ ->
 
             val row = item as FeedImage
 //            val imageId = row.image
             val action = FeedFragmentDirections.actionDestinationFeedToDestinationImageFullSize()
             action.imageId = row.image.id
             findNavController().navigate(action)
-
 
         }
 
@@ -75,9 +71,10 @@ class FeedFragment : Fragment() {
     private fun setUpGalleryAdapter() {
 
         feed_gallary.adapter = galleryAdapter
-        val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 4)
-        feed_gallary.layoutManager =
-            galleryLayoutManager //not sure about this suggestion, try without if problems occur
+        val galleryLayoutManager = LinearLayoutManager(this.context)
+        galleryLayoutManager.reverseLayout = true
+
+        feed_gallary.layoutManager = galleryLayoutManager
 
         listenToImages()
 
@@ -99,8 +96,10 @@ class FeedFragment : Fragment() {
 
                 if (singleImageFromDB != null) {
 
-                    galleryAdapter.add(FeedImage(singleImageFromDB))
+                    if (!singleImageFromDB.private){
+                        galleryAdapter.add(LinearFeedImage(singleImageFromDB))
 
+                    }
                 }
             }
 
@@ -140,7 +139,7 @@ class FeedFragment : Fragment() {
                     requestPermission()
                 } else {
 
-                    val intent = Intent(this.context, CameraActivity::class.java)
+                    val intent = Intent(this.context, CameraActivity2::class.java)
 //                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
                     startActivity(intent)
                 }

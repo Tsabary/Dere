@@ -18,6 +18,7 @@ import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.fragment.app.Fragment
 
 import co.getdere.CameraActivity
+import co.getdere.CameraActivity2
 import co.getdere.MainActivity
 import co.getdere.Models.ImageFile
 import co.getdere.Models.Images
@@ -65,10 +66,6 @@ class CameraPreviewFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val locationAccuracyText = view.findViewById<TextView>(R.id.camera_accuracy)
-
-        val locationAccuracyData = (activity as CameraActivity).locationAccuracy
-
-        locationAccuracyText.text = locationAccuracyData
 
 
         val cameraConfiguration = CameraConfiguration(
@@ -232,7 +229,7 @@ class CameraPreviewFragment : Fragment() {
     }
 
     //
-//                val imageView: ImageView = view.findViewById(R.id.imageView)
+//                val imageView: ImageView = view.findViewById(R.answerId.imageView)
 //
 //                imageView.setImageBitmap(bitmapPhoto?.bitmap)
 //                imageView.rotation = (-bitmapPhoto!!.rotationDegrees).toFloat()
