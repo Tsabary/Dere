@@ -3,6 +3,7 @@ package co.getdere.Fragments
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -55,7 +56,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
 
             val imageId = safeArgs.imageId
 
-            refImage = FirebaseDatabase.getInstance().getReference("/images/feed/$imageId")
+            refImage = FirebaseDatabase.getInstance().getReference("/images/$imageId/body")
 
             refImage.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {

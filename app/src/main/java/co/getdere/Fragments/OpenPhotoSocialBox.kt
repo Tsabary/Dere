@@ -212,7 +212,7 @@ class OpenPhotoSocialBox : Fragment() {
 
     private fun listenToBucketCount() {
 
-        val refAllImagesBuckets = FirebaseDatabase.getInstance().getReference("/buckets/images")
+        val refAllImagesBuckets = FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}")
 
         refAllImagesBuckets.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -221,10 +221,10 @@ class OpenPhotoSocialBox : Fragment() {
 
             override fun onDataChange(p0: DataSnapshot) {
 
-                if (p0.hasChild(imageObject.id)) {
+                if (p0.hasChild("buckets")) {
 
                     val refImageBucketingList =
-                        FirebaseDatabase.getInstance().getReference("/buckets/images/${imageObject.id}")
+                        FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/buckets")
 
                     refImageBucketingList.addValueEventListener(object : ValueEventListener {
                         override fun onCancelled(p0: DatabaseError) {
@@ -257,7 +257,7 @@ class OpenPhotoSocialBox : Fragment() {
 
     private fun checkIfBucketed(ranNum: Int) {
 
-        val refUserBucket = FirebaseDatabase.getInstance().getReference("/buckets/users/${currentUser.uid}")
+        val refUserBucket = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets")
 
         refUserBucket.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -275,7 +275,7 @@ class OpenPhotoSocialBox : Fragment() {
 
                             refUserBucket.child(imageObject.id).removeValue().addOnCompleteListener {
                                 val refImageBucketingList =
-                                    FirebaseDatabase.getInstance().getReference("/buckets/images/${imageObject.id}")
+                                    FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/buckets")
 
                                 refImageBucketingList.child(currentUser.uid).removeValue().addOnCompleteListener {
                                     listenToBucketCount()

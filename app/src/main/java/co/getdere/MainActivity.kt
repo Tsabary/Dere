@@ -8,6 +8,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import co.getdere.Models.Images
 import co.getdere.Models.Question
@@ -34,7 +35,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var mBottomNav: BottomNavigationView
 
     lateinit var sharedViewModelCurrentUser: SharedViewModelCurrentUser
-    lateinit var sharedViewModelQuestion: SharedViewModelQuestion
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
 
@@ -65,6 +65,8 @@ class MainActivity : AppCompatActivity() {
 
         setupBottomNavMenu(navController)
         setupActionBar()
+
+        this.findNavController(R.id.nav_host_fragment)
 
 
     }

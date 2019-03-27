@@ -12,22 +12,20 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.ImageView
 import androidx.navigation.fragment.findNavController
 
 import com.bumptech.glide.Glide
 import me.echodev.resizer.Resizer
 import android.os.Environment
 import android.provider.MediaStore
-import android.widget.EditText
-import android.widget.TextView
+import android.widget.*
 import co.getdere.Adapters.NewPhotoUploadPagerAdapter
 import co.getdere.Adapters.OpenPhotoPagerAdapter
 import co.getdere.CameraActivity
 import co.getdere.CameraActivity2
 import co.getdere.MainActivity
 import co.getdere.Models.Images
+import co.getdere.Models.SimpleString
 import co.getdere.OtherClasses.SwipeLockableViewPager
 import co.getdere.R
 import co.getdere.RegisterLogin.RegisterActivity
@@ -51,6 +49,7 @@ class ApproveImageFragment : Fragment() {
     var privacy = false
     lateinit var boxPagerAdapter: NewPhotoUploadPagerAdapter
     lateinit var viewPager: SwipeLockableViewPager
+    private lateinit var progress: ProgressBar
 
 
     private var airLocation: AirLocation? = null
@@ -82,6 +81,7 @@ class ApproveImageFragment : Fragment() {
         val declineImage = view.findViewById<ImageButton>(co.getdere.R.id.approve_image_x)
         val acceptImage = view.findViewById<ImageButton>(co.getdere.R.id.approve_image_check)
         val privacyButton = view.findViewById<TextView>(co.getdere.R.id.approve_image_privacy_text)
+        progress = view.findViewById<ProgressBar>(R.id.approve_image_progress)
 
 //        setUpViewPager()
 
@@ -151,6 +151,8 @@ class ApproveImageFragment : Fragment() {
 
 
     private fun uploadPhotoToStorage() {
+
+        progress.visibility = View.VISIBLE
 
         val randomName = UUID.randomUUID().toString()
         val storagePath = Environment.getExternalStorageDirectory().absolutePath
@@ -226,6 +228,7 @@ class ApproveImageFragment : Fragment() {
 
                 }.addOnFailureListener {
                     Log.d("RegisterActivity", "Failed to upload image to server $it")
+                    progress.visibility = View.GONE
                 }
 
 
@@ -234,6 +237,8 @@ class ApproveImageFragment : Fragment() {
 
         }.addOnFailureListener {
             Log.d("RegisterActivity", "Failed to upload image to server $it")
+            progress.visibility = View.GONE
+
         }
     }
 
@@ -241,11 +246,11 @@ class ApproveImageFragment : Fragment() {
     private fun addImageToFirebaseDatabase(bigImage: String, smallImage: String) {
 
         val uid = FirebaseAuth.getInstance().uid ?: ""
-        val ref = FirebaseDatabase.getInstance().getReference("/images/feed/").push()
+        val ref = FirebaseDatabase.getInstance().getReference("/images/").push()
+        val imageBodyRef = FirebaseDatabase.getInstance().getReference("/images/${ref.key}/body")
 //        val location = (activity as CameraActivity2).imageLocation
 
 
-        val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/images/byuser/$uid/${ref.key}")
 
 
 
@@ -270,11 +275,12 @@ class ApproveImageFragment : Fragment() {
                     System.currentTimeMillis()
                 )
 
-                ref.setValue(newImage)
+                imageBodyRef.setValue(newImage)
                     .addOnSuccessListener {
                         Log.d("imageToDatabase", "image saved to feed successfully: ${ref.key}")
+                        val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/users/$uid/images/${ref.key}")
 
-                        refToUsersDatabase.setValue(newImage)
+                        refToUsersDatabase.setValue(SimpleString(ref.key!!))
                             .addOnSuccessListener {
                                 Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
 

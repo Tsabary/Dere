@@ -47,6 +47,8 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
     lateinit var saveButton : TextView
 
+    lateinit var openedQuestionAuthorReputation : TextView
+
 
     val uid = FirebaseAuth.getInstance().uid
 
@@ -89,7 +91,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
         val openedQuestionVotes = view.findViewById<TextView>(R.id.opened_question_votes)
         val openedQuestionAuthorImage = view.findViewById<ImageView>(R.id.opened_question_author_image)
         val openedQuestionAuthorName = view.findViewById<TextView>(R.id.opened_question_author_name)
-        val openedQuestionAuthorReputation = view.findViewById<TextView>(R.id.opened_question_author_reputation)
+        openedQuestionAuthorReputation = view.findViewById<TextView>(R.id.opened_question_author_reputation)
 
 
         sharedViewModelQuestion.questionObject.observe(this, Observer {
@@ -256,7 +258,9 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                         saveButton.text = getString(R.string.Save)
                         saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray900 ))
 
-                        refCurrentUserSavedQuestions.child(questionObject.id).removeValue()
+                        refCurrentUserSavedQuestions.child(questionObject.id).removeValue().addOnSuccessListener {
+                            changeReputation(10, questionObject.id, questionObject.id,currentUserObject.uid, currentUserObject.name, questionObject.author, openedQuestionAuthorReputation)
+                        }
 
                     } else {
                         saveButton.text = getString(R.string.Saved)
@@ -274,7 +278,10 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                             FirebaseDatabase.getInstance()
                                 .getReference("/saved-questions/${currentUserObject.uid}/${questionObject.id}")
                         val savedQuestion = SimpleString(questionObject.id)
-                        refQuestionInUserSavedQuestions.setValue(savedQuestion)
+                        refQuestionInUserSavedQuestions.setValue(savedQuestion).addOnSuccessListener {
+                            changeReputation(9, questionObject.id, questionObject.id,currentUserObject.uid, currentUserObject.name, questionObject.author, openedQuestionAuthorReputation)
+
+                        }
 
                     } else {
                         saveButton.text = getString(R.string.Save)

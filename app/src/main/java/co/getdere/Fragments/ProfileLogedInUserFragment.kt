@@ -4,12 +4,16 @@ package co.getdere.Fragments
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import co.getdere.GroupieAdapters.FeedImage
 import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.Models.Images
@@ -17,18 +21,23 @@ import co.getdere.Models.SimpleString
 import co.getdere.Models.Users
 import co.getdere.R
 import co.getdere.RegisterLogin.LoginActivity
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
+import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.bucket_roll.view.*
+import kotlinx.android.synthetic.main.feed_single_photo.view.*
 
 
 class ProfileLogedInUserFragment : Fragment() {
 
 
     lateinit var userProfile: Users
-    val galleryAdapter = GroupAdapter<ViewHolder>()
+    val galleryRollAdapter = GroupAdapter<ViewHolder>()
+    val galleryBucketAdapter = GroupAdapter<ViewHolder>()
     lateinit var bucketBtn: TextView
     lateinit var rollBtn: TextView
 
@@ -60,17 +69,20 @@ class ProfileLogedInUserFragment : Fragment() {
         profileName.text = userProfile.name
 
 
-        setUpGalleryAdapter(profileGallery)
+        setUpGalleryAdapter(profileGallery, 0)
 
         changeGalleryFeed("Roll")
 
 
         bucketBtn.setOnClickListener {
             changeGalleryFeed("bucket")
+            setUpGalleryAdapter(profileGallery, 1)
+
         }
 
         rollBtn.setOnClickListener {
             changeGalleryFeed("roll")
+            setUpGalleryAdapter(profileGallery, 0)
         }
 
 
@@ -79,11 +91,12 @@ class ProfileLogedInUserFragment : Fragment() {
         setHasOptionsMenu(true)
 
 
-        galleryAdapter.setOnItemClickListener { item, _ ->
+        galleryRollAdapter.setOnItemClickListener { item, _ ->
 
             val row = item as FeedImage
 //            val imageId = row.image
-            val action = ProfileLogedInUserFragmentDirections.actionDestinationProfileLogedInUserToDestinationImageFullSize()
+            val action =
+                ProfileLogedInUserFragmentDirections.actionDestinationProfileLogedInUserToDestinationImageFullSize()
             action.imageId = row.image.id
             findNavController().navigate(action)
 
@@ -135,32 +148,50 @@ class ProfileLogedInUserFragment : Fragment() {
 
     }
 
-    private fun setUpGalleryAdapter(gallery: androidx.recyclerview.widget.RecyclerView) {
+    private fun setUpGalleryAdapter(gallery: androidx.recyclerview.widget.RecyclerView, type: Int) {
 
-        gallery.adapter = galleryAdapter
-        val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 4)
-        gallery.layoutManager = galleryLayoutManager
+
+        if (type == 0) {
+            gallery.adapter = galleryRollAdapter
+            val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 4)
+            gallery.layoutManager = galleryLayoutManager
+        } else {
+            gallery.adapter = galleryBucketAdapter
+            val galleryLayoutManager = LinearLayoutManager(this.context)
+            gallery.layoutManager = galleryLayoutManager
+        }
+
+
     }
 
 
     private fun listenToImagesFromRoll() { //This needs to be fixed to not update in real time. Or should it?
 
-        galleryAdapter.clear()
+        galleryRollAdapter.clear()
 
 
-        val ref = FirebaseDatabase.getInstance().getReference("/images/byuser/${userProfile.uid}")
+        val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
 
         ref.addChildEventListener(object : ChildEventListener {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                val singleImageFromDB = p0.getValue(Images::class.java)
+                val imagePath = p0.getValue(SimpleString::class.java)
 
-                if (singleImageFromDB != null) {
+                val imageObjectPath = FirebaseDatabase.getInstance().getReference("/images/${imagePath!!.singleString}/body")
 
-                    galleryAdapter.add(FeedImage(singleImageFromDB))
+                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
 
-                }
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        val imageObject = p0.getValue(Images::class.java)
+
+                        galleryRollAdapter.add(FeedImage(imageObject!!))
+                    }
+                })
+
             }
 
             override fun onCancelled(p0: DatabaseError) {
@@ -183,36 +214,44 @@ class ProfileLogedInUserFragment : Fragment() {
 
     private fun listenToImagesFromBucket() { //This needs to be fixed to not update in real time. Or should it?
 
-        galleryAdapter.clear()
+        galleryBucketAdapter.clear()
 
-        val ref = FirebaseDatabase.getInstance().getReference("/buckets/users/${userProfile.uid}")
+        val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/buckets")
 
         ref.addChildEventListener(object : ChildEventListener {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                val singleImageFromDBlink = p0.getValue(SimpleString::class.java)
+                Log.d("BucketGallery", p0.key)
+
+                val getBucket = p0.getValue(SimpleString::class.java)
+                Log.d("BucketGallery", getBucket!!.singleString)
 
 
-                val refForImageObjects =
-                    FirebaseDatabase.getInstance().getReference("images/feed/${singleImageFromDBlink!!.singleString}")
 
-                refForImageObjects.addListenerForSingleValueEvent(object : ValueEventListener{
-                    override fun onCancelled(p0: DatabaseError) {
-                    }
-
-                    override fun onDataChange(p0: DataSnapshot) {
-                        val singleImageFromDB = p0.getValue(Images::class.java)
-
-                        if (singleImageFromDB != null) {
-
-                            galleryAdapter.add(FeedImage(singleImageFromDB))
-
-                        }
-                    }
+                galleryBucketAdapter.add(SingleBucketRoll(p0, userProfile.uid))
+//                val singleBucketFromDB = p0.getValue(SimpleString::class.java)
 
 
-                })
+//                val refForImageObjects =
+//                    FirebaseDatabase.getInstance().getReference("images/feed/${singleImageFromDBlink!!.singleString}")
+//
+//                refForImageObjects.addListenerForSingleValueEvent(object : ValueEventListener {
+//                    override fun onCancelled(p0: DatabaseError) {
+//                    }
+//
+//                    override fun onDataChange(p0: DataSnapshot) {
+//                        val singleImageFromDB = p0.getValue(Images::class.java)
+//
+//                        if (singleImageFromDB != null) {
+//
+//                            galleryRollAdapter.add(FeedImage(singleImageFromDB))
+//
+//                        }
+//                    }
+//
+//
+//                })
             }
 
             override fun onCancelled(p0: DatabaseError) {
@@ -233,6 +272,102 @@ class ProfileLogedInUserFragment : Fragment() {
 
     companion object {
         fun newInstance(): ProfileLogedInUserFragment = ProfileLogedInUserFragment()
+    }
+
+
+}
+
+class SingleBucketRoll(val bucket: DataSnapshot, userId: String) : Item<ViewHolder>() {
+
+    val imagesRecyclerAdapter = GroupAdapter<ViewHolder>()
+
+    val refImages = FirebaseDatabase.getInstance().getReference("/users/$userId/buckets/${bucket.key.toString()}")
+
+    override fun getLayout(): Int {
+        return R.layout.bucket_roll
+    }
+
+    override fun bind(viewHolder: ViewHolder, position: Int) {
+        viewHolder.itemView.bucket_roll_name.text = bucket.key.toString()
+
+        val imagesRecycler = viewHolder.itemView.bucket_roll_image_recycler
+
+
+        val imagesRecyclerLayoutManager =
+            LinearLayoutManager(viewHolder.root.context, LinearLayoutManager.HORIZONTAL, true)
+        imagesRecyclerLayoutManager.stackFromEnd = true
+
+        imagesRecycler.layoutManager = imagesRecyclerLayoutManager
+        imagesRecycler.adapter = imagesRecyclerAdapter
+
+
+        refImages.addChildEventListener(object : ChildEventListener {
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                val imagePath = p0.getValue(SimpleString::class.java)
+
+                val imageObjectPath = FirebaseDatabase.getInstance().getReference("/images/${imagePath!!.singleString}/body")
+
+                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        val imageObject = p0.getValue(Images::class.java)
+
+                        imagesRecyclerAdapter.add(SingleImageToBucketRoll(imageObject!!))
+
+                    }
+
+                })
+
+
+            }
+
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot) {
+            }
+
+
+        })
+
+
+
+
+
+
+        imagesRecyclerAdapter.setOnItemClickListener { item, _ ->
+
+            val singleImage = item as SingleImageToBucketRoll
+
+            val action =
+                ProfileLogedInUserFragmentDirections.actionDestinationProfileLogedInUserToDestinationImageFullSize()
+            action.imageId = singleImage.image.id
+            viewHolder.root.findNavController().navigate(action)
+
+        }
+
+    }
+
+
+}
+
+
+class SingleImageToBucketRoll(val image: Images) : Item<ViewHolder>() {
+    override fun getLayout(): Int {
+        return R.layout.bucket_row_single_photo
+    }
+
+    override fun bind(viewHolder: ViewHolder, position: Int) {
+        Glide.with(viewHolder.root.context).load(image.imageSmall).into(viewHolder.itemView.feed_single_photo_photo)
     }
 
 

@@ -31,7 +31,7 @@ class CameraActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
 
-        val navController = Navigation.findNavController(this, R.id.camera_nav_host_fragment)
+//        val navController = Navigation.findNavController(this, R.id.camera_nav_host_fragment)
 
 
 

@@ -2,6 +2,7 @@ package co.getdere.Fragments
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -9,6 +10,7 @@ import android.view.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import co.getdere.GroupieAdapters.FeedImage
@@ -17,7 +19,10 @@ import co.getdere.CameraActivity2
 import co.getdere.GroupieAdapters.LinearFeedImage
 import co.getdere.MainActivity
 import co.getdere.Models.Images
+import co.getdere.Models.Users
 import co.getdere.R
+import co.getdere.ViewModels.SharedViewModelCurrentUser
+import co.getdere.ViewModels.SharedViewModelRandomUser
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -28,6 +33,8 @@ import kotlinx.android.synthetic.main.fragment_feed.*
 
 class FeedFragment : Fragment() {
 
+    private lateinit var currentUser: Users
+
     val galleryAdapter = GroupAdapter<ViewHolder>()
     val permissions = arrayOf(
         android.Manifest.permission.CAMERA,
@@ -37,6 +44,17 @@ class FeedFragment : Fragment() {
     )
 
     lateinit var mainActivity: Activity
+
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        activity?.let {
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+        }
+
+    }
+
 
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -58,7 +76,7 @@ class FeedFragment : Fragment() {
 
         galleryAdapter.setOnItemClickListener { item, _ ->
 
-            val row = item as FeedImage
+            val row = item as LinearFeedImage
 //            val imageId = row.image
             val action = FeedFragmentDirections.actionDestinationFeedToDestinationImageFullSize()
             action.imageId = row.image.id
@@ -86,19 +104,18 @@ class FeedFragment : Fragment() {
         galleryAdapter.clear()
 
 
-        val ref = FirebaseDatabase.getInstance().getReference("/images/feed")
+        val ref = FirebaseDatabase.getInstance().getReference("/images")
 
         ref.addChildEventListener(object : ChildEventListener {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                val singleImageFromDB = p0.getValue(Images::class.java)
+                val singleImageFromDB = p0.child("body").getValue(Images::class.java)
 
                 if (singleImageFromDB != null) {
 
                     if (!singleImageFromDB.private){
-                        galleryAdapter.add(LinearFeedImage(singleImageFromDB))
-
+                        galleryAdapter.add(LinearFeedImage(singleImageFromDB, currentUser.name))
                     }
                 }
             }

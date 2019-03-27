@@ -15,6 +15,8 @@
                 app:destination="@id/destination_profile_loged_in_user"/>
         <action android:id="@+id/action_destination_feed_to_destination_image_full_size"
                 app:destination="@id/destination_image_full_size"/>
+        <action android:id="@+id/action_destination_feed_to_destination_add_to_bucket"
+                app:destination="@id/destination_add_to_bucket"/>
 
     </fragment>
     <fragment android:id="@+id/destination_image_full_size"
@@ -105,5 +107,12 @@
               tools:layout="@layout/fragment_board_notifications">
         <action android:id="@+id/action_destination_board_notifications_to_destination_question_opened"
                 app:destination="@id/destination_question_opened"/>
+    </fragment>
+    <fragment android:id="@+id/destination_add_to_bucket"
+              android:name="co.getdere.Fragments.AddToBucketFragment"
+              android:label="Add to bucket"
+              tools:layout="@layout/fragment_add_to_bucket">
+        <argument android:name="image"
+                  app:argType="string"/>
     </fragment>
 </navigation>

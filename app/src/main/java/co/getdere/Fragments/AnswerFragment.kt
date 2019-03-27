@@ -8,7 +8,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.navigation.fragment.findNavController
+import co.getdere.Interfaces.DereMethods
 import co.getdere.Models.Answers
 
 import co.getdere.R
@@ -17,7 +19,7 @@ import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.fragment_answer.view.*
 
 
-class AnswerFragment : Fragment() {
+class AnswerFragment : Fragment(), DereMethods {
 
     lateinit var questionId : String
     lateinit var questionAuthorId : String
@@ -56,20 +58,19 @@ class AnswerFragment : Fragment() {
 
     private fun postAnswer(content : String, timestamp: Long, author : String){
 
-        val uid = FirebaseAuth.getInstance().uid
-
         val ref = FirebaseDatabase.getInstance().getReference("/questions/$questionId/answers/").push()
 
         val refAnswerBody = FirebaseDatabase.getInstance().getReference("/questions/$questionId/answers/${ref.key}/body")
 
-        val newAnswer = Answers(ref.key!!, questionId, content, timestamp, uid!!)
+        val newAnswer = Answers(ref.key!!, questionId, content, timestamp, author)
 
         refAnswerBody.setValue(newAnswer)
             .addOnSuccessListener {
                 Log.d("postAnswerActivity", "Saved answer to Firebase Database")
+
+                changeReputation(6, refAnswerBody.key!!,questionId, author, "you", author, TextView(this.context))
+
                 val action = AnswerFragmentDirections.actionDestinationAnswerToDestinationQuestionOpened()
-//                action.questionId = questionIdForAction
-//                action.questionAuthor = questionAuthorId
                 findNavController().navigate(action)
 
 
