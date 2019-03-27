@@ -120,7 +120,7 @@ class SavedQuestionsFragment : Fragment() {
 
         questionsRecyclerAdapter.clear()
 
-        val ref = FirebaseDatabase.getInstance().getReference("/saved-questions/${currentUser.uid}")
+        val ref = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/saved-questions")
         ref.addChildEventListener(object : ChildEventListener {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {

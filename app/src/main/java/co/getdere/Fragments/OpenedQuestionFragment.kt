@@ -139,7 +139,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 Glide.with(this).load(user.image).into(openedQuestionAuthorImage)
                 openedQuestionAuthorName.text = user.name
 
-                openedQuestionAuthorReputation.text = "reputation: ${user.reputation}"
+                openedQuestionAuthorReputation.text = "(${user.reputation})"
 
                 randomUserObject = user // remove later this is just from pasr bad code - is it?
             }
@@ -245,7 +245,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
     private fun checkIfQuestionSaved(ranNum: Int) {
 
-        val refCurrentUserSavedQuestions = FirebaseDatabase.getInstance().getReference("/saved-questions/${currentUserObject.uid}")
+        val refCurrentUserSavedQuestions = FirebaseDatabase.getInstance().getReference("/users/${currentUserObject.uid}/saved-questions")
 
         refCurrentUserSavedQuestions.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -259,7 +259,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                         saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray900 ))
 
                         refCurrentUserSavedQuestions.child(questionObject.id).removeValue().addOnSuccessListener {
-                            changeReputation(10, questionObject.id, questionObject.id,currentUserObject.uid, currentUserObject.name, questionObject.author, openedQuestionAuthorReputation)
+                            changeReputation(11, questionObject.id, questionObject.id,currentUserObject.uid, currentUserObject.name, questionObject.author, openedQuestionAuthorReputation, "questionsave")
                         }
 
                     } else {
@@ -276,10 +276,10 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
                         val refQuestionInUserSavedQuestions =
                             FirebaseDatabase.getInstance()
-                                .getReference("/saved-questions/${currentUserObject.uid}/${questionObject.id}")
+                                .getReference("/users/${currentUserObject.uid}/saved-questions/${questionObject.id}")
                         val savedQuestion = SimpleString(questionObject.id)
                         refQuestionInUserSavedQuestions.setValue(savedQuestion).addOnSuccessListener {
-                            changeReputation(9, questionObject.id, questionObject.id,currentUserObject.uid, currentUserObject.name, questionObject.author, openedQuestionAuthorReputation)
+                            changeReputation(10, questionObject.id, questionObject.id,currentUserObject.uid, currentUserObject.name, questionObject.author, openedQuestionAuthorReputation, "questionsave")
 
                         }
 

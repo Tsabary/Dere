@@ -68,7 +68,7 @@ class AnswerFragment : Fragment(), DereMethods {
             .addOnSuccessListener {
                 Log.d("postAnswerActivity", "Saved answer to Firebase Database")
 
-                changeReputation(6, refAnswerBody.key!!,questionId, author, "you", author, TextView(this.context))
+                changeReputation(6, refAnswerBody.key!!,questionId, author, "you", author, TextView(this.context), "answer")
 
                 val action = AnswerFragmentDirections.actionDestinationAnswerToDestinationQuestionOpened()
                 findNavController().navigate(action)

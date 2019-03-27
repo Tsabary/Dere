@@ -86,7 +86,8 @@ interface DereMethods {
                                                         initiatorId,
                                                         initiatorName,
                                                         receiverId,
-                                                        userReputationView
+                                                        userReputationView,
+                                                        "vote"
                                                     )
                                                 } else {
                                                     changeReputation(
@@ -96,7 +97,8 @@ interface DereMethods {
                                                         initiatorId,
                                                         initiatorName,
                                                         receiverId,
-                                                        userReputationView
+                                                        userReputationView,
+                                                        "vote"
                                                     )
                                                 }
                                             }
@@ -127,7 +129,8 @@ interface DereMethods {
                                                         initiatorId,
                                                         initiatorName,
                                                         receiverId,
-                                                        userReputationView
+                                                        userReputationView,
+                                                        "vote"
                                                     )
                                                 } else {
                                                     changeReputation(
@@ -137,7 +140,8 @@ interface DereMethods {
                                                         initiatorId,
                                                         initiatorName,
                                                         receiverId,
-                                                        userReputationView
+                                                        userReputationView,
+                                                        "vote"
                                                     )
                                                 }
                                             }
@@ -159,7 +163,8 @@ interface DereMethods {
                                                         initiatorId,
                                                         initiatorName,
                                                         receiverId,
-                                                        userReputationView
+                                                        userReputationView,
+                                                        "vote"
                                                     )
                                                 } else {
                                                     changeReputation(
@@ -169,7 +174,8 @@ interface DereMethods {
                                                         initiatorId,
                                                         initiatorName,
                                                         receiverId,
-                                                        userReputationView
+                                                        userReputationView,
+                                                        "vote"
                                                     )
                                                 }
                                             }
@@ -201,7 +207,8 @@ interface DereMethods {
                                                     initiatorId,
                                                     initiatorName,
                                                     receiverId,
-                                                    userReputationView
+                                                    userReputationView,
+                                                    "vote"
                                                 )
 
                                             }
@@ -238,7 +245,8 @@ interface DereMethods {
                                         initiatorId,
                                         initiatorName,
                                         receiverId,
-                                        userReputationView
+                                        userReputationView,
+                                        "vote"
                                     )
                                 } else {
                                     changeReputation(
@@ -248,7 +256,8 @@ interface DereMethods {
                                         initiatorId,
                                         initiatorName,
                                         receiverId,
-                                        userReputationView
+                                        userReputationView,
+                                        "vote"
                                     )
                                 }
                             }
@@ -268,7 +277,8 @@ interface DereMethods {
                                         initiatorId,
                                         initiatorName,
                                         receiverId,
-                                        userReputationView
+                                        userReputationView,
+                                        "vote"
                                     )
                                 } else {
                                     changeReputation(
@@ -278,7 +288,8 @@ interface DereMethods {
                                         initiatorId,
                                         initiatorName,
                                         receiverId,
-                                        userReputationView
+                                        userReputationView,
+                                        "vote"
                                     )
                                 }
                             }
@@ -465,7 +476,8 @@ interface DereMethods {
                                                 initiatorId,
                                                 initiatorName,
                                                 receiverId,
-                                                userReputationView
+                                                userReputationView,
+                                                "like"
                                             )
 
                                         }
@@ -505,7 +517,8 @@ interface DereMethods {
                                                 initiatorId,
                                                 initiatorName,
                                                 receiverId,
-                                                userReputationView
+                                                userReputationView,
+                                                "like"
                                             )
 
                                         }
@@ -553,7 +566,8 @@ interface DereMethods {
                                     initiatorId,
                                     initiatorName,
                                     receiverId,
-                                    userReputationView
+                                    userReputationView,
+                                    "like"
                                 )
                             }
 
@@ -633,13 +647,14 @@ interface DereMethods {
         initiatorId: String,
         initiatorName: String,
         receiverId: String,
-        userReputationView: TextView
+        userReputationView: TextView,
+        action: String
     ) {
 
         val refReceiverReputation =
-            FirebaseDatabase.getInstance().getReference("/users/$receiverId/reputation/$mainPostId").push()
+            FirebaseDatabase.getInstance().getReference("/users/$receiverId/reputation/$specificPostId$action")
         val refInitiatorReputation =
-            FirebaseDatabase.getInstance().getReference("/users/$initiatorId/reputation").push()
+            FirebaseDatabase.getInstance().getReference("/users/$initiatorId/reputation/$specificPostId$action")
 
         when (scenarioType) {
 
@@ -651,8 +666,10 @@ interface DereMethods {
             }
 
             1 -> {
-                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -5)
-                refReceiverReputation.setValue(valueForReceiver)
+//                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -5)
+//                refReceiverReputation.setValue(valueForReceiver)
+
+                refReceiverReputation.removeValue()
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
 
@@ -665,8 +682,9 @@ interface DereMethods {
             }
 
             3 -> {
-                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -10)
-                refReceiverReputation.setValue(valueForReceiver)
+//                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -10)
+//                refReceiverReputation.setValue(valueForReceiver)
+                refReceiverReputation.removeValue()
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
 
@@ -682,10 +700,18 @@ interface DereMethods {
             }
 
             5 -> {
-                val valueForReceiver = ReputationScore(specificPostId, initiatorId, 2)
-                refReceiverReputation.setValue(valueForReceiver)
-                val valueForInitiator = ReputationScore(specificPostId, initiatorId, 1)
-                refInitiatorReputation.setValue(valueForInitiator)
+//                val valueForReceiver = ReputationScore(specificPostId, initiatorId, 2)
+//                refReceiverReputation.setValue(valueForReceiver)
+
+                refReceiverReputation.removeValue()
+
+
+//                val valueForInitiator = ReputationScore(specificPostId, initiatorId, 1)
+//                refInitiatorReputation.setValue(valueForInitiator)
+
+                refInitiatorReputation.removeValue()
+
+
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
                 updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
             }
@@ -725,8 +751,11 @@ interface DereMethods {
             }
 
             11 -> {
-                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -5)
-                refReceiverReputation.setValue(valueForReceiver)
+//                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -5)
+//                refReceiverReputation.setValue(valueForReceiver)
+
+                refReceiverReputation.removeValue()
+
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
 
@@ -753,8 +782,11 @@ interface DereMethods {
             }
 
             15 -> {
-                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -2)
-                refReceiverReputation.setValue(valueForReceiver)
+//                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -2)
+//                refReceiverReputation.setValue(valueForReceiver)
+
+                refReceiverReputation.removeValue()
+
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
         }
@@ -766,10 +798,6 @@ interface DereMethods {
         val refTest = FirebaseDatabase.getInstance().getReference("/users/$id/reputation")
 
         refTest.addValueEventListener(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
             override fun onDataChange(p0: DataSnapshot) {
                 var count = 0
 
@@ -783,14 +811,20 @@ interface DereMethods {
 
                 if (count < 0) {
                     userObject.updateChildren(mapOf("reputation" to "0"))
-                    userReputationView.text = "reputation: 0"
+                    userReputationView.text = "(0)"
                     Log.d("checkIfCountWorks", count.toString())
                 } else {
                     userObject.updateChildren(mapOf("reputation" to count.toString()))
-                    userReputationView.text = "reputation: ${count.toString()}"
+                    userReputationView.text = "(${count.toString()})"
                     Log.d("checkIfCountWorks", count.toString())
                 }
             }
+
+
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
         })
     }
 
