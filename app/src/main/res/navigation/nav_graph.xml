@@ -15,8 +15,6 @@
                 app:destination="@id/destination_profile_loged_in_user"/>
         <action android:id="@+id/action_destination_feed_to_destination_image_full_size"
                 app:destination="@id/destination_image_full_size"/>
-        <action android:id="@+id/action_destination_feed_to_destination_add_to_bucket"
-                app:destination="@id/destination_add_to_bucket"/>
 
     </fragment>
     <fragment android:id="@+id/destination_image_full_size"
@@ -34,6 +32,8 @@
                 app:destination="@id/destination_photo_comments"/>
         <action android:id="@+id/action_destination_image_full_size_to_webViewFragment"
                 app:destination="@id/destination_web_view"/>
+        <action android:id="@+id/action_destination_image_full_size_to_destination_add_to_bucket"
+                app:destination="@id/destination_add_to_bucket"/>
     </fragment>
     <fragment android:id="@+id/destination_board"
               android:name="co.getdere.Fragments.BoardFragment"
@@ -52,6 +52,8 @@
               android:label="Profile">
         <action android:id="@+id/action_destination_profile_loged_in_user_to_destination_image_full_size"
                 app:destination="@id/destination_image_full_size"/>
+        <action android:id="@+id/action_destination_profile_loged_in_user_to_editProfileFragment"
+                app:destination="@id/destination_edit_profile"/>
     </fragment>
 
     <fragment android:id="@+id/destination_new_question"
@@ -113,6 +115,15 @@
               android:label="Add to bucket"
               tools:layout="@layout/fragment_add_to_bucket">
         <argument android:name="image"
-                  app:argType="string"/>
+                  app:argType="co.getdere.Models.Images"/>
+        <argument android:name="currentUser"
+                  app:argType="co.getdere.Models.Users"/>
+    </fragment>
+    <fragment android:id="@+id/destination_edit_profile"
+              android:name="co.getdere.Fragments.EditProfileFragment"
+              android:label="Edit profile"
+              tools:layout="@layout/fragment_edit_profile">
+        <argument android:name="User"
+                  app:argType="co.getdere.Models.Users"/>
     </fragment>
 </navigation>

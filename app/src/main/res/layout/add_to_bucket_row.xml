@@ -19,7 +19,6 @@
             android:fontFamily="@font/open_sans_bold"
             android:textSize="18sp"/>
     <TextView
-            android:text="ADD"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/add_to_bucket_add"
@@ -31,5 +30,6 @@
             android:layout_marginBottom="24dp"
             android:fontFamily="@font/open_sans_bold"
             android:textColor="@color/green700"
-            android:textSize="18sp"/>
+            android:textSize="18sp"
+            tools:text="ADD"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

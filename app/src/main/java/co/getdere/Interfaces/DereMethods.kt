@@ -652,7 +652,7 @@ interface DereMethods {
     ) {
 
         val refReceiverReputation =
-            FirebaseDatabase.getInstance().getReference("/users/$receiverId/reputation/$specificPostId$action")
+            FirebaseDatabase.getInstance().getReference("/users/$receiverId/reputation/$specificPostId$initiatorId$action")
         val refInitiatorReputation =
             FirebaseDatabase.getInstance().getReference("/users/$initiatorId/reputation/$specificPostId$action")
 

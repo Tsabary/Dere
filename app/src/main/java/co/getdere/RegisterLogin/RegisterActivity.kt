@@ -151,7 +151,7 @@ class RegisterActivity : AppCompatActivity() {
 
         userName = register_name.text.toString()
 
-        val newUser = Users(uid, userName, userEmail, userImageUrl, "0")
+        val newUser = Users(uid, userName, userEmail, userImageUrl, "0", "Watch me as I get Dere")
 
         ref.setValue(newUser)
             .addOnSuccessListener {

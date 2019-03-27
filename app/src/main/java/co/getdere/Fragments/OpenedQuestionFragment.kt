@@ -347,7 +347,7 @@ class SingleAnswer(
                     viewHolder.itemView.answer_author_name.text = author.name
                     viewHolder.itemView.answer_content.text = answer.content
                     viewHolder.itemView.answer_timestamp.text = date
-                    viewHolder.itemView.answer_author_reputation.text = "reputation: ${author.reputation}"
+                    viewHolder.itemView.answer_author_reputation.text = "(${author.reputation})"
                 }
             }
         })

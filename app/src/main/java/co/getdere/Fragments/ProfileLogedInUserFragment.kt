@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -61,17 +62,49 @@ class ProfileLogedInUserFragment : Fragment() {
         val profilePicture: ImageView = view.findViewById(R.id.profile_li_image)
         val profileName: TextView = view.findViewById(R.id.profile_li_user_name)
         val profileGallery: androidx.recyclerview.widget.RecyclerView = view.findViewById(R.id.profile_li_gallery)
+        val profileReputation = view.findViewById<TextView>(R.id.profile_li_reputation_count)
+        val profileFollowers = view.findViewById<TextView>(R.id.profile_li_followers_count)
+        val profilePhotos = view.findViewById<TextView>(R.id.profile_li_photos_count)
+        val profileTaglint = view.findViewById<TextView>(R.id.profile_li_tagline)
+        val profileEditButton = view.findViewById<ImageButton>(R.id.profile_li_edit_profile_button)
+
         bucketBtn = view.findViewById(R.id.profile_li_bucket_btn)
         rollBtn = view.findViewById(R.id.profile_li_roll_btn)
 
-
-        Picasso.get().load(userProfile.image).into(profilePicture)
+        Glide.with(this).load(userProfile.image).into(profilePicture)
         profileName.text = userProfile.name
+        profileReputation.text = userProfile.reputation
+        profileTaglint.text = userProfile.tagline
 
+        val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
+
+        photosRef.addValueEventListener(object : ValueEventListener{
+
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                var count = 0
+
+                for (ds in p0.children) {
+                    count += 1
+                    profilePhotos.text = count.toString()
+                }
+            }
+
+        })
 
         setUpGalleryAdapter(profileGallery, 0)
 
         changeGalleryFeed("Roll")
+
+
+        profileEditButton.setOnClickListener {
+
+            val action = ProfileLogedInUserFragmentDirections.actionDestinationProfileLogedInUserToEditProfileFragment(userProfile)
+            findNavController().navigate(action)
+        }
 
 
         bucketBtn.setOnClickListener {
@@ -136,13 +169,13 @@ class ProfileLogedInUserFragment : Fragment() {
     private fun changeGalleryFeed(source: String) {
 
         if (source == "bucket") {
-            rollBtn.setTextColor(resources.getColor(R.color.gray500))
+            rollBtn.setTextColor(resources.getColor(R.color.gray300))
             bucketBtn.setTextColor(resources.getColor(R.color.gray700))
             listenToImagesFromBucket()
 
         } else {
             rollBtn.setTextColor(resources.getColor(R.color.gray700))
-            bucketBtn.setTextColor(resources.getColor(R.color.gray500))
+            bucketBtn.setTextColor(resources.getColor(R.color.gray300))
             listenToImagesFromRoll()
         }
 
@@ -153,7 +186,7 @@ class ProfileLogedInUserFragment : Fragment() {
 
         if (type == 0) {
             gallery.adapter = galleryRollAdapter
-            val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 4)
+            val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
             gallery.layoutManager = galleryLayoutManager
         } else {
             gallery.adapter = galleryBucketAdapter
@@ -178,7 +211,8 @@ class ProfileLogedInUserFragment : Fragment() {
 
                 val imagePath = p0.getValue(SimpleString::class.java)
 
-                val imageObjectPath = FirebaseDatabase.getInstance().getReference("/images/${imagePath!!.singleString}/body")
+                val imageObjectPath =
+                    FirebaseDatabase.getInstance().getReference("/images/${imagePath!!.singleString}/body")
 
                 imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onCancelled(p0: DatabaseError) {
@@ -305,7 +339,8 @@ class SingleBucketRoll(val bucket: DataSnapshot, userId: String) : Item<ViewHold
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
                 val imagePath = p0.getValue(SimpleString::class.java)
 
-                val imageObjectPath = FirebaseDatabase.getInstance().getReference("/images/${imagePath!!.singleString}/body")
+                val imageObjectPath =
+                    FirebaseDatabase.getInstance().getReference("/images/${imagePath!!.singleString}/body")
 
                 imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onCancelled(p0: DatabaseError) {

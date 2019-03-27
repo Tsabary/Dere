@@ -132,7 +132,10 @@ class OpenPhotoSocialBox : Fragment() {
 
         addToBucket.setOnClickListener {
 
-            checkIfBucketed(1)
+            val action = ImageFullSizeFragmentDirections.actionDestinationImageFullSizeToDestinationAddToBucket(imageObject, currentUser)
+            findNavController().navigate(action)
+
+//            checkIfBucketed(1)
         }
 
         addComment.setOnClickListener {

@@ -1,6 +1,7 @@
 package co.getdere.GroupieAdapters
 
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.navigation.findNavController
@@ -56,9 +57,9 @@ class LinearFeedImage(val image: Images, val initiatorName : String) : Item<View
 
 
 
-
+        listenToLikeCount (likeCount)
         listenToBucketCount(bucketCount)
-        checkIfBucketed(0, viewHolder, bucketButton, bucketCount)
+        checkIfBucketed(0, viewHolder, bucketButton)
 
         listenToLikeCount(likeCount, image)
         executeLike(image, uid!!, likeCount, likeButton, 0, initiatorName, image.photographer, authorReputation)
@@ -106,53 +107,53 @@ class LinearFeedImage(val image: Images, val initiatorName : String) : Item<View
 
 
 
-        bucketButton.setOnClickListener {
-
-
-            val refUserBucket = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets")
-
-            refUserBucket.addChildEventListener(object : ChildEventListener {
-
-                override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
-
-                    if (p0.hasChild(image.id)) {
-
-                        Toast.makeText(viewHolder.root.context, "Remove from bucket action", Toast.LENGTH_SHORT)
-                            .show()
-
-                    } else {
-                        if (uid == image.photographer) {
-                            Toast.makeText(
-                                viewHolder.root.context,
-                                "You can't bucket your own photos",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else {
-
-
-                            val action =
-                                FeedFragmentDirections.actionDestinationFeedToDestinationAddToBucket(image.id)
-
-                            viewHolder.itemView.rootView.findNavController().navigate(action)
-                        }
-
-                    }
-                }
-
-                override fun onCancelled(p0: DatabaseError) {
-                }
-
-                override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-                }
-
-                override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-                }
-
-                override fun onChildRemoved(p0: DataSnapshot) {
-                }
-            })
-        }
+//        bucketButton.setOnClickListener {
+//
+//
+//            val refUserBucket = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets")
+//
+//            refUserBucket.addChildEventListener(object : ChildEventListener {
+//
+//                override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+//
+//
+//                    if (p0.hasChild(image.id)) {
+//
+//                        Toast.makeText(viewHolder.root.context, "Remove from bucket action", Toast.LENGTH_SHORT)
+//                            .show()
+//
+//                    } else {
+//                        if (uid == image.photographer) {
+//                            Toast.makeText(
+//                                viewHolder.root.context,
+//                                "You can't bucket your own photos",
+//                                Toast.LENGTH_SHORT
+//                            ).show()
+//                        } else {
+//
+//
+//                            val action =
+//                                FeedFragmentDirections.actionDestinationFeedToDestinationAddToBucket(image.id)
+//
+//                            viewHolder.itemView.rootView.findNavController().navigate(action)
+//                        }
+//
+//                    }
+//                }
+//
+//                override fun onCancelled(p0: DatabaseError) {
+//                }
+//
+//                override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+//                }
+//
+//                override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+//                }
+//
+//                override fun onChildRemoved(p0: DataSnapshot) {
+//                }
+//            })
+//        }
 
 
     }
@@ -192,7 +193,7 @@ class LinearFeedImage(val image: Images, val initiatorName : String) : Item<View
 
 
                 } else {
-                    bucketCount.text = ""
+                    bucketCount.text = "0"
                 }
 
             }
@@ -203,7 +204,7 @@ class LinearFeedImage(val image: Images, val initiatorName : String) : Item<View
     }
 
 
-    private fun checkIfBucketed(ranNum: Int, viewHolder: ViewHolder, addToBucket: ImageButton, bucketCount: TextView) {
+    private fun checkIfBucketed(ranNum: Int, viewHolder: ViewHolder, addToBucket: ImageView) {
 
         val refUserBucket = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets")
 
@@ -213,48 +214,55 @@ class LinearFeedImage(val image: Images, val initiatorName : String) : Item<View
 
 
                 if (p0.hasChild(image.id)) {
-                    if (ranNum == 1) {
 
-                        if (uid == image.photographer) {
-                            Toast.makeText(
-                                viewHolder.root.context,
-                                "You can't bucket your own photos",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else {
-                            Toast.makeText(viewHolder.root.context, "Remove from bucket action", Toast.LENGTH_SHORT)
-                                .show()
-                        }
+                    addToBucket.setImageResource(R.drawable.bucket_saved)
 
-
-                    } else {
-                        addToBucket.setImageResource(R.drawable.bucket_saved)
-                    }
+//                    if (ranNum == 1) {
+//
+//                        if (uid == image.photographer) {
+//                            Toast.makeText(
+//                                viewHolder.root.context,
+//                                "You can't bucket your own photos",
+//                                Toast.LENGTH_SHORT
+//                            ).show()
+//                        } else {
+//                            Toast.makeText(viewHolder.root.context, "Remove from bucket action", Toast.LENGTH_SHORT)
+//                                .show()
+//                        }
+//
+//
+//                    } else {
+//                        addToBucket.setImageResource(R.drawable.bucket_saved)
+//                    }
 
 
                 } else {
-                    if (ranNum == 1) {
 
-                        if (uid == image.photographer) {
-                            Toast.makeText(
-                                viewHolder.root.context,
-                                "You can't bucket your own photos",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else {
+                    addToBucket.setImageResource(R.drawable.bucket)
 
 
-                            val action =
-                                FeedFragmentDirections.actionDestinationFeedToDestinationAddToBucket(image.id)
-
-                            viewHolder.root.findNavController().navigate(action)
-
-                        }
-
-                    } else {
-                        addToBucket.setImageResource(R.drawable.bucket)
-
-                    }
+//                    if (ranNum == 1) {
+//
+//                        if (uid == image.photographer) {
+//                            Toast.makeText(
+//                                viewHolder.root.context,
+//                                "You can't bucket your own photos",
+//                                Toast.LENGTH_SHORT
+//                            ).show()
+//                        } else {
+//
+//
+//                            val action =
+//                                FeedFragmentDirections.actionDestinationFeedToDestinationAddToBucket(image.id)
+//
+//                            viewHolder.root.findNavController().navigate(action)
+//
+//                        }
+//
+//                    } else {
+//                        addToBucket.setImageResource(R.drawable.bucket)
+//
+//                    }
 
                 }
 
@@ -277,6 +285,60 @@ class LinearFeedImage(val image: Images, val initiatorName : String) : Item<View
         })
 
     }
+
+
+
+
+
+    private fun listenToLikeCount(likeCount: TextView) {
+
+        val refImage = FirebaseDatabase.getInstance().getReference("/images/${image.id}")
+
+        refImage.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+
+                if (p0.hasChild("likes")) {
+
+                    val refImageBucketingList =
+                        FirebaseDatabase.getInstance().getReference("/images/${image.id}/likes")
+
+                    refImageBucketingList.addValueEventListener(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
+
+                        }
+
+                        override fun onDataChange(p0: DataSnapshot) {
+                            var count = 0
+
+                            for (ds in p0.children) {
+                                count += 1
+                                likeCount.text = count.toString()
+                            }
+                        }
+
+                    })
+
+
+                } else {
+                    likeCount.text = "0"
+                }
+
+            }
+
+        })
+
+
+    }
+
+
+
+
+
+
 
 
 }

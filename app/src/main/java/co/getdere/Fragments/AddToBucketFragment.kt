@@ -3,6 +3,7 @@ package co.getdere.Fragments
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,12 +11,16 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import co.getdere.Interfaces.DereMethods
+import co.getdere.MainActivity
 import co.getdere.Models.Images
 import co.getdere.Models.SimpleString
+import co.getdere.Models.Users
 
 import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelImage
@@ -27,25 +32,13 @@ import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.add_to_bucket_row.view.*
 
 
-class AddToBucketFragment : Fragment() {
+class AddToBucketFragment : Fragment(), DereMethods {
 
-    private lateinit var imageId: String
-    private lateinit var sharedViewModelForImage: SharedViewModelImage
+    private lateinit var image: Images
+    private lateinit var currentUser: Users
 
     val bucketsAdapter = GroupAdapter<ViewHolder>()
     val bucketsLayoutManager = LinearLayoutManager(this.context)
-
-    val uid = FirebaseAuth.getInstance().uid
-
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
-        }
-    }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,9 +50,9 @@ class AddToBucketFragment : Fragment() {
 
         arguments?.let {
             val safeArgs = AddToBucketFragmentArgs.fromBundle(it)
-            imageId = safeArgs.image
+            image = safeArgs.image
+            currentUser = safeArgs.currentUser
         }
-
 
 
         val recycler = view.findViewById<RecyclerView>(R.id.add_to_bucket_recycler)
@@ -69,45 +62,14 @@ class AddToBucketFragment : Fragment() {
         recycler.adapter = bucketsAdapter
         recycler.layoutManager = bucketsLayoutManager
 
-        val allBucketsRef = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets")
-
-        allBucketsRef.addChildEventListener(object : ChildEventListener{
-
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
-                bucketsAdapter.add(SingleBucketSuggestion(p0.key!!, imageId))
-
-            }
-
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
-
-
-        })
-
-
-
-
-
-
-
-
+        listenToBuckets()
 
 
         bucketAddButton.setOnClickListener {
 
             if (newBucketInput.text.isNotEmpty()) {
 
-                val refBuckets = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets/")
+                val refBuckets = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets/")
 
                 refBuckets.addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onCancelled(p0: DatabaseError) {
@@ -123,19 +85,38 @@ class AddToBucketFragment : Fragment() {
                         } else {
 
                             val ref = FirebaseDatabase.getInstance()
-                                .getReference("/users/$uid/buckets/${newBucketInput.text}/$imageId")
+                                .getReference("/users/${currentUser.uid}/buckets/${newBucketInput.text}/${image.id}")
 
-                            ref.setValue(SimpleString(imageId))
+                            ref.setValue(SimpleString(image.id)).addOnSuccessListener {
 
-                            val imageBucketingRef = FirebaseDatabase.getInstance().getReference("/images/$imageId/buckets/$uid")
 
-                            imageBucketingRef.setValue(SimpleString(uid!!))
+                                val imageBucketingRef =
+                                    FirebaseDatabase.getInstance()
+                                        .getReference("/images/${image.id}/buckets/${currentUser.uid}")
 
-                            newBucketInput.text.clear()
+                                imageBucketingRef.setValue(SimpleString(currentUser.uid)).addOnSuccessListener {
+
+                                    newBucketInput.text.clear()
+
+                                    listenToBuckets()
+
+                                    changeReputation(
+                                        8,
+                                        image.id,
+                                        image.id,
+                                        currentUser.uid,
+                                        currentUser.name,
+                                        image.photographer,
+                                        TextView(context),
+                                        "bucket"
+                                    )
+
+                                }
+
+                            }
 
                         }
                     }
-
 
                 })
 
@@ -151,142 +132,37 @@ class AddToBucketFragment : Fragment() {
     }
 
 
-//    private fun listenToBuckets(imageId : String){
-//
-//
-//        val refBuckets = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets/")
-//
-//        refBuckets.addChildEventListener(object : ChildEventListener{
-//
-//
-//            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-//                val bucket = p0.getValue(String::class.java)
-//
-//                bucketsAdapter.add(SingleBucketSuggestion(bucket!!, imageId))
-//            }
-//
-//            override fun onCancelled(p0: DatabaseError) {
-//            }
-//
-//            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-//            }
-//
-//            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-//            }
-//
-//            override fun onChildRemoved(p0: DataSnapshot) {
-//            }
-//
-//
-//        })
-//
-//
-//    }
-//
-//
-//
-//
-//
+    private fun listenToBuckets() {
+
+        bucketsAdapter.clear()
+
+        val allBucketsRef = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets")
+
+        allBucketsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+
+                for (ds in p0.children){
+
+                    bucketsAdapter.add(SingleBucketSuggestion(ds.key!!, image, currentUser))
+
+                }
+
+            }
+
+        })
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//    private fun checkIfBucketed(ranNum: Int) {
-//
-//        val refUserBucket = FirebaseDatabase.getInstance().getReference("/buckets/users/${currentUser.uid}")
-//
-//        refUserBucket.addListenerForSingleValueEvent(object : ValueEventListener {
-//            override fun onCancelled(p0: DatabaseError) {
-//
-//            }
-//
-//            override fun onDataChange(p0: DataSnapshot) {
-//                if (p0.hasChild(imageObject.id)) {
-//                    if (ranNum == 1) {
-//
-//                        if (currentUser.uid == imageObject.photographer) {
-//                            Toast.makeText(context, "You can't bucket your own photos", Toast.LENGTH_SHORT).show()
-//                        } else {
-//                            addToBucket.setImageResource(R.drawable.bucket)
-//
-//                            refUserBucket.child(imageObject.id).removeValue().addOnCompleteListener {
-//                                val refImageBucketingList =
-//                                    FirebaseDatabase.getInstance().getReference("/buckets/images/${imageObject.id}")
-//
-//                                refImageBucketingList.child(currentUser.uid).removeValue().addOnCompleteListener {
-//                                    listenToBucketCount()
-//                                }
-//                            }
-//                        }
-//
-//
-//                    } else {
-//                        addToBucket.setImageResource(R.drawable.bucket_saved)
-//                    }
-//
-//
-//                } else {
-//                    if (ranNum == 1) {
-//
-//                        if (currentUser.uid == imageObject.photographer) {
-//                            Toast.makeText(context, "You can't bucket your own photos", Toast.LENGTH_SHORT).show()
-//                        } else {
-//                            addToBucket.setImageResource(R.drawable.bucket_saved)
-//
-//                            val refCurrentUserBucket =
-//                                FirebaseDatabase.getInstance()
-//                                    .getReference("/buckets/users/${currentUser.uid}/${imageObject.id}")
-//                            val bucketedImage = SimpleString(imageObject.id)
-//                            refCurrentUserBucket.setValue(bucketedImage).addOnCompleteListener {
-//                                val refCurrentImageBucket =
-//                                    FirebaseDatabase.getInstance()
-//                                        .getReference("/buckets/images/${imageObject.id}/${currentUser.uid}")
-//                                val bucketingUser = SimpleString(currentUser.uid)
-//                                refCurrentImageBucket.setValue(bucketingUser).addOnCompleteListener {
-//                                    listenToBucketCount()
-//                                }
-//                            }
-//                        }
-//
-//                    } else {
-//                        addToBucket.setImageResource(R.drawable.bucket)
-//
-//                    }
-//
-//                }
-//            }
-//
-//        })
-//
-//
-//    }
-//
-//
-
+    }
 
 }
 
-class SingleBucketSuggestion(private val bucketName: String, val imageId: String) : Item<ViewHolder>() {
+
+class SingleBucketSuggestion(val bucketName: String, val image: Images, val currentUser: Users) : Item<ViewHolder>(),
+    DereMethods {
 
 
     val uid = FirebaseAuth.getInstance().uid
@@ -299,15 +175,262 @@ class SingleBucketSuggestion(private val bucketName: String, val imageId: String
     override fun bind(viewHolder: ViewHolder, position: Int) {
         viewHolder.itemView.add_to_bucket_name.text = bucketName
 
-        viewHolder.itemView.add_to_bucket_add.setOnClickListener {
+        val actionText = viewHolder.itemView.add_to_bucket_add
 
-            val ref = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets/${bucketName}/$imageId")
 
-            ref.setValue(SimpleString(imageId))
+
+        executeBucket(0, bucketName, image, currentUser, actionText, viewHolder.root.context)
+
+        actionText.setOnClickListener {
+
+            executeBucket(1, bucketName, image, currentUser, actionText, viewHolder.root.context)
 
         }
 
 
     }
 
+
+    private fun executeBucket(
+        case: Int,
+        bucketName: String,
+        image: Images,
+        currentUser: Users,
+        actionText: TextView,
+        context: Context
+    ) {
+
+
+        val refUser = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}")
+        val refUserBuckets = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets")
+        val refBucket = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets/$bucketName")
+        val refImageBuckets =
+            FirebaseDatabase.getInstance().getReference("/images/${image.id}/buckets/${currentUser.uid}")
+
+
+        refUserBuckets.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                if (p0.hasChild(bucketName)) {
+
+                    refBucket.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
+                        }
+
+                        override fun onDataChange(p0: DataSnapshot) {
+
+                            if (p0.hasChild(image.id)) {
+
+                                if (case == 1) {
+
+
+                                    changeReputation(
+                                        9,
+                                        image.id,
+                                        image.id,
+                                        currentUser.uid,
+                                        currentUser.name,
+                                        image.photographer,
+                                        TextView(context),
+                                        "bucket"
+                                    )
+
+                                    refBucket.child(image.id).removeValue()
+                                    refImageBuckets.removeValue()
+
+
+
+                                    actionText.text = "ADD"
+                                    actionText.setTextColor(
+                                        ContextCompat.getColor(
+                                            context,
+                                            R.color.green700
+                                        )
+                                    )
+
+
+                                } else {
+                                    actionText.text = "REMOVE"
+                                    actionText.setTextColor(
+                                        ContextCompat.getColor(
+                                            context,
+                                            R.color.gray500
+                                        )
+                                    )
+                                }
+
+                            } else {
+
+                                if (case == 1) {
+
+
+                                    val ref =
+                                        FirebaseDatabase.getInstance()
+                                            .getReference("/users/$uid/buckets/$bucketName/${image.id}")
+
+                                    ref.setValue(SimpleString(image.id)).addOnSuccessListener {
+
+                                        refImageBuckets.setValue(SimpleString(currentUser.uid))
+                                            .addOnSuccessListener {
+
+                                                actionText.text = "REMOVE"
+                                                actionText.setTextColor(
+                                                    ContextCompat.getColor(
+                                                        context,
+                                                        R.color.gray500
+                                                    )
+                                                )
+
+                                                changeReputation(
+                                                    8,
+                                                    image.id,
+                                                    image.id,
+                                                    currentUser.uid,
+                                                    currentUser.name,
+                                                    image.photographer,
+                                                    TextView(context),
+                                                    "bucket"
+                                                )
+                                            }
+                                    }
+
+
+                                } else {
+                                    actionText.text = "ADD"
+                                    actionText.setTextColor(
+                                        ContextCompat.getColor(
+                                            context,
+                                            R.color.green700
+                                        )
+                                    )
+                                }
+
+                            }
+
+                        }
+
+
+                    })
+
+
+                } else {
+
+                    if (case == 1) {
+
+
+                        val ref =
+                            FirebaseDatabase.getInstance()
+                                .getReference("/users/$uid/buckets/$bucketName/${image.id}")
+
+                        ref.setValue(SimpleString(image.id)).addOnSuccessListener {
+
+                            refImageBuckets.setValue(SimpleString(currentUser.uid))
+                                .addOnSuccessListener {
+
+                                    actionText.text = "REMOVE"
+                                    actionText.setTextColor(
+                                        ContextCompat.getColor(
+                                            context,
+                                            R.color.gray500
+                                        )
+                                    )
+
+                                    changeReputation(
+                                        8,
+                                        image.id,
+                                        image.id,
+                                        currentUser.uid,
+                                        currentUser.name,
+                                        image.photographer,
+                                        TextView(context),
+                                        "bucket"
+                                    )
+                                }
+                        }
+
+
+                    } else {
+                        actionText.text = "ADD"
+                        actionText.setTextColor(
+                            ContextCompat.getColor(
+                                context,
+                                R.color.green700
+                            )
+                        )
+                    }
+
+                }
+
+
+            }
+
+
+        })
+
+
+    }
+
+
 }
+
+
+//                        val refUserBuckets = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets")
+//
+//                        refUserBuckets.addChildEventListener(object : ChildEventListener{
+//
+//                            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+//
+//                                var count = 0
+//
+//                                for (ds in p0.children){
+//
+//                                    if (ds.hasChild(image.id)){
+//                                        count +=1
+//                                    }
+//                                }
+//
+//                                println(count)
+//
+//                                if (count > 1) {
+//
+//                                    refBucket.child(image.id).removeValue()
+//                                    refImageBuckets.removeValue()
+//
+//
+//
+//                                } else {
+//
+//                                    changeReputation(
+//                                        9,
+//                                        image.id,
+//                                        image.id,
+//                                        currentUser.uid,
+//                                        currentUser.name,
+//                                        image.photographer,
+//                                        TextView(context),
+//                                        "bucket"
+//                                    )
+//
+//                                    refBucket.child(image.id).removeValue()
+//                                    refImageBuckets.removeValue()
+//                                }
+//
+//
+//                            }
+//
+//                            override fun onCancelled(p0: DatabaseError) {
+//                            }
+//
+//                            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+//                            }
+//
+//                            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+//                            }
+//
+//                            override fun onChildRemoved(p0: DataSnapshot) {
+//                            }
+//
+//                        })
