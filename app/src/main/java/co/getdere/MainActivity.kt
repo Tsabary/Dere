@@ -43,13 +43,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        PushNotifications.start(getApplicationContext(), "8286cd5e-eaaa-4d81-a57b-0f4d985b0a47");
-        PushNotifications.subscribe("hello");
+//        PushNotifications.start(getApplicationContext(), "8286cd5e-eaaa-4d81-a57b-0f4d985b0a47");
+//        PushNotifications.subscribe("hello");
 
         sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
-
-//        sharedViewModelQuestion = ViewModelProviders.of(this).get(SharedViewModelQuestion::class.java)
-//        sharedViewModelQuestion.questionObject.postValue(Question())
 
         sharedViewModelImage = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
         sharedViewModelImage.sharedImageObject.postValue(Images())
@@ -117,7 +114,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupActionBar() {
 
-        mToolbar = findViewById<Toolbar>(R.id.my_toolbar)
+        mToolbar = findViewById(R.id.my_toolbar)
         setSupportActionBar(mToolbar)
     }
 

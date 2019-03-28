@@ -14,8 +14,6 @@ class OpenPhotoPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAda
         when (p0) {
             0 -> return OpenPhotoSocialBox.newInstance()
             1 -> return ImageMapView2Fragment.newInstance()
-//            0 -> return OpenPhotoSocialBox.newInstance()
-//            1 -> return BoardFragment.newInstance()
             else -> return OpenPhotoSocialBox.newInstance()
         }
     }
