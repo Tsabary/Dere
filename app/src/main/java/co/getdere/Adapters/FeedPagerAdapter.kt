@@ -10,13 +10,19 @@ import co.getdere.Fragments.RecentFeedFragment
 
 class FeedPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAdapter(fragmentManager) {
 
+    private val tabTitles = arrayOf("Following", "Recent")
+
     override fun getItem(p0: Int): Fragment {
 
         when (p0) {
-            0 -> return RecentFeedFragment.newInstance()
-            1 -> return FollowingFeedFragment.newInstance()
-            else -> return OpenPhotoSocialBox.newInstance()
+            0 -> return FollowingFeedFragment.newInstance()
+            1 -> return RecentFeedFragment.newInstance()
+            else -> return FollowingFeedFragment.newInstance()
         }
+    }
+
+    override fun getPageTitle(position: Int): CharSequence? {
+        return tabTitles[position]
     }
 
 

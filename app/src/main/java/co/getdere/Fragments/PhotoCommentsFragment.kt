@@ -120,11 +120,11 @@ class PhotoCommentsFragment : Fragment() {
 
             commentInput.text = ""
 
-            val ref = FirebaseDatabase.getInstance().getReference("/comments/${imageObject.id}").push()
+            val ref = FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/comments/").push()
 
             ref.setValue(comment).addOnSuccessListener {
                 Log.d("postCommentActivity", "Saved comment to Firebase Database")
-//                commentsRecyclerAdapter.add(singleComment(comment))
+//                commentsRecyclerAdapter.add(SingleComment(comment))
             }.addOnFailureListener {
                 Log.d("postCommentActivity", "Failed to save comment to database")
             }
@@ -138,7 +138,7 @@ class PhotoCommentsFragment : Fragment() {
         commentsRecyclerAdapter.clear()
 
 
-        val ref = FirebaseDatabase.getInstance().getReference("/comments/${imageObject.id}")
+        val ref = FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/comments/")
 
         ref.addChildEventListener(object : ChildEventListener {
 
@@ -148,7 +148,7 @@ class PhotoCommentsFragment : Fragment() {
 
                 if (singleCommentFromDB != null) {
 
-                    commentsRecyclerAdapter.add(singleComment(singleCommentFromDB))
+                    commentsRecyclerAdapter.add(SingleComment(singleCommentFromDB))
 
                 }
             }
@@ -173,7 +173,7 @@ class PhotoCommentsFragment : Fragment() {
 
 }
 
-class singleComment(var comment: Comments) : Item<ViewHolder>() {
+class SingleComment(var comment: Comments) : Item<ViewHolder>() {
     override fun getLayout(): Int {
         return R.layout.comment_layout
     }

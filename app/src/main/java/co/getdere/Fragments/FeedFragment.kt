@@ -18,6 +18,7 @@ import co.getdere.MainActivity
 import co.getdere.Models.Users
 import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelCurrentUser
+import com.google.android.material.tabs.TabLayout
 
 class FeedFragment : Fragment() {
 
@@ -60,12 +61,12 @@ class FeedFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        pagerAdapter = FeedPagerAdapter(childFragmentManager)
-
-
         val viewPager = view.findViewById<ViewPager>(R.id.feed_pager_pager)
+        pagerAdapter = FeedPagerAdapter(childFragmentManager)
         viewPager.adapter = pagerAdapter
+
+        val tabLayout = view.findViewById<TabLayout>(R.id.feed_pager_tab_layout)
+        tabLayout.setupWithViewPager(viewPager)
 
     }
 

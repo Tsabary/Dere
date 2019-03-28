@@ -66,8 +66,6 @@ class NewQuestionFragment : Fragment() {
                     count += 1
                 }
 
-//                tags.add(SingleTagForList("tel-aviv", 3))
-
                 tags.add(SingleTagForList(tagName, count))
 
                 sharedViewModelTags.tagList = tags
