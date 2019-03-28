@@ -1,8 +1,8 @@
 package co.getdere.Fragments
 
 
-import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -12,8 +12,8 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import co.getdere.GroupieAdapters.FeedImage
 import co.getdere.ViewModels.SharedViewModelCurrentUser
@@ -25,7 +25,6 @@ import co.getdere.RegisterLogin.LoginActivity
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
@@ -33,7 +32,7 @@ import kotlinx.android.synthetic.main.bucket_roll.view.*
 import kotlinx.android.synthetic.main.feed_single_photo.view.*
 
 
-class ProfileLogedInUserFragment : Fragment() {
+class ProfileLoggedInUserFragment : Fragment() {
 
 
     lateinit var userProfile: Users
@@ -42,22 +41,24 @@ class ProfileLogedInUserFragment : Fragment() {
     lateinit var bucketBtn: TextView
     lateinit var rollBtn: TextView
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
+    lateinit var sharedViewModelForCurrentUser: SharedViewModelCurrentUser
+
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         activity?.let {
-            val sharedViewModelForCurrentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java)
+            sharedViewModelForCurrentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java)
             userProfile = sharedViewModelForCurrentUser.currentUserObject
         }
+
+        return inflater.inflate(R.layout.fragment_profile_logged_in_user, container, false)
+
     }
-
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_profile_loged_in_user, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
 
         val profilePicture: ImageView = view.findViewById(R.id.profile_li_image)
         val profileName: TextView = view.findViewById(R.id.profile_li_user_name)
@@ -65,8 +66,9 @@ class ProfileLogedInUserFragment : Fragment() {
         val profileReputation = view.findViewById<TextView>(R.id.profile_li_reputation_count)
         val profileFollowers = view.findViewById<TextView>(R.id.profile_li_followers_count)
         val profilePhotos = view.findViewById<TextView>(R.id.profile_li_photos_count)
-        val profileTaglint = view.findViewById<TextView>(R.id.profile_li_tagline)
+        val profileTagline = view.findViewById<TextView>(R.id.profile_li_tagline)
         val profileEditButton = view.findViewById<ImageButton>(R.id.profile_li_edit_profile_button)
+        val instagramButton = view.findViewById<ImageButton>(R.id.profile_li_insta_icon)
 
         bucketBtn = view.findViewById(R.id.profile_li_bucket_btn)
         rollBtn = view.findViewById(R.id.profile_li_roll_btn)
@@ -74,11 +76,11 @@ class ProfileLogedInUserFragment : Fragment() {
         Glide.with(this).load(userProfile.image).into(profilePicture)
         profileName.text = userProfile.name
         profileReputation.text = userProfile.reputation
-        profileTaglint.text = userProfile.tagline
+        profileTagline.text = userProfile.tagline
 
         val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
 
-        photosRef.addValueEventListener(object : ValueEventListener{
+        photosRef.addValueEventListener(object : ValueEventListener {
 
             override fun onCancelled(p0: DatabaseError) {
 
@@ -95,14 +97,52 @@ class ProfileLogedInUserFragment : Fragment() {
 
         })
 
+
+        val userRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}")
+
+        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                if (p0.hasChild("stax")) {
+                    instagramButton.visibility = View.VISIBLE
+                }
+            }
+
+        })
+
         setUpGalleryAdapter(profileGallery, 0)
 
         changeGalleryFeed("Roll")
 
 
+        instagramButton.setOnClickListener {
+
+            val userInstaRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/stax/instagram")
+            userInstaRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+
+                    val instaLink = "https://www.instagram.com/${p0.value}"
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(instaLink)))
+                }
+
+
+            })
+
+        }
+
         profileEditButton.setOnClickListener {
 
-            val action = ProfileLogedInUserFragmentDirections.actionDestinationProfileLogedInUserToEditProfileFragment(userProfile)
+            val action =
+                ProfileLoggedInUserFragmentDirections.actionDestinationProfileLoggedInUserToEditProfileFragment(
+                    userProfile
+                )
             findNavController().navigate(action)
         }
 
@@ -129,7 +169,7 @@ class ProfileLogedInUserFragment : Fragment() {
             val row = item as FeedImage
 //            val imageId = row.image
             val action =
-                ProfileLogedInUserFragmentDirections.actionDestinationProfileLogedInUserToDestinationImageFullSize()
+                ProfileLoggedInUserFragmentDirections.actionDestinationProfileLoggedInUserToDestinationImageFullSize()
             action.imageId = row.image.id
             findNavController().navigate(action)
 
@@ -304,8 +344,9 @@ class ProfileLogedInUserFragment : Fragment() {
 
     }
 
+
     companion object {
-        fun newInstance(): ProfileLogedInUserFragment = ProfileLogedInUserFragment()
+        fun newInstance(): ProfileLoggedInUserFragment = ProfileLoggedInUserFragment()
     }
 
 
@@ -315,6 +356,8 @@ class SingleBucketRoll(val bucket: DataSnapshot, userId: String) : Item<ViewHold
 
     val imagesRecyclerAdapter = GroupAdapter<ViewHolder>()
 
+    var recyclerState = 0
+
     val refImages = FirebaseDatabase.getInstance().getReference("/users/$userId/buckets/${bucket.key.toString()}")
 
     override fun getLayout(): Int {
@@ -322,21 +365,32 @@ class SingleBucketRoll(val bucket: DataSnapshot, userId: String) : Item<ViewHold
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
-        viewHolder.itemView.bucket_roll_name.text = bucket.key.toString()
+
+        val bucketName = viewHolder.itemView.bucket_roll_name
+        bucketName.text = bucket.key.toString()
 
         val imagesRecycler = viewHolder.itemView.bucket_roll_image_recycler
 
-
         val imagesRecyclerLayoutManager =
-            LinearLayoutManager(viewHolder.root.context, LinearLayoutManager.HORIZONTAL, true)
-        imagesRecyclerLayoutManager.stackFromEnd = true
-
+            GridLayoutManager(viewHolder.root.context, 1, GridLayoutManager.HORIZONTAL, false)
         imagesRecycler.layoutManager = imagesRecyclerLayoutManager
         imagesRecycler.adapter = imagesRecyclerAdapter
 
 
         refImages.addChildEventListener(object : ChildEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
+
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+
+
                 val imagePath = p0.getValue(SimpleString::class.java)
 
                 val imageObjectPath =
@@ -356,23 +410,36 @@ class SingleBucketRoll(val bucket: DataSnapshot, userId: String) : Item<ViewHold
 
                 })
 
-
             }
 
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
 
             override fun onChildRemoved(p0: DataSnapshot) {
             }
 
 
         })
+
+        bucketName.setOnClickListener {
+            if (recyclerState == 0) {
+                val imagesRecyclerLayoutManager3 =
+                    GridLayoutManager(viewHolder.root.context, 3, GridLayoutManager.HORIZONTAL, false)
+                imagesRecycler.layoutManager = imagesRecyclerLayoutManager3
+                imagesRecycler.animate().setDuration(2000)
+                    .scaleX(3.0f)
+                    .scaleY(3.0f)
+
+            } else {
+                val imagesRecyclerLayoutManager3 =
+                    GridLayoutManager(viewHolder.root.context, 1, GridLayoutManager.HORIZONTAL, false)
+                imagesRecycler.layoutManager = imagesRecyclerLayoutManager3
+                imagesRecycler.layoutParams.height = 120
+
+            }
+
+        }
+
+
+
 
 
 
@@ -384,7 +451,7 @@ class SingleBucketRoll(val bucket: DataSnapshot, userId: String) : Item<ViewHold
             val singleImage = item as SingleImageToBucketRoll
 
             val action =
-                ProfileLogedInUserFragmentDirections.actionDestinationProfileLogedInUserToDestinationImageFullSize()
+                ProfileLoggedInUserFragmentDirections.actionDestinationProfileLoggedInUserToDestinationImageFullSize()
             action.imageId = singleImage.image.id
             viewHolder.root.findNavController().navigate(action)
 

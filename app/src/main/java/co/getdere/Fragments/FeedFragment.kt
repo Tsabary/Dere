@@ -51,6 +51,7 @@ class FeedFragment : Fragment() {
 
         activity?.let {
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+            setHasOptionsMenu(true)
         }
 
     }
@@ -61,7 +62,6 @@ class FeedFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         setUpGalleryAdapter()
-        setHasOptionsMenu(true)
         mainActivity = activity as MainActivity
     }
 

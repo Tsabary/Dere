@@ -6,12 +6,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import co.getdere.GroupieAdapters.FeedImage
 import co.getdere.ViewModels.SharedViewModelRandomUser
 import co.getdere.Models.Images
@@ -19,6 +23,7 @@ import co.getdere.Models.SimpleString
 import co.getdere.Models.Users
 import co.getdere.R
 import co.getdere.RegisterLogin.LoginActivity
+import co.getdere.ViewModels.SharedViewModelCurrentUser
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -31,53 +36,116 @@ class ProfileRandomUserFragment : Fragment() {
     private lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
 
     private var userProfile = Users()
+    lateinit var currentUser: Users
 
-    val galleryAdapter = GroupAdapter<ViewHolder>()
+    val galleryRollAdapter = GroupAdapter<ViewHolder>()
+    val galleryBucketAdapter = GroupAdapter<ViewHolder>()
     private lateinit var bucketBtn: TextView
     private lateinit var rollBtn: TextView
+    lateinit var followButton: TextView
+    lateinit var profileGallery: RecyclerView
 
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
         activity?.let {
+
             sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
+
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
         }
     }
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_profile_random_user, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
+        val myView = inflater.inflate(R.layout.fragment_profile_random_user, container, false)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        val profileTagline = myView.findViewById<TextView>(R.id.profile_ru_tagline)
+        val profilePicture: ImageView = myView.findViewById(R.id.profile_ru_image)
+        val profileName: TextView = myView.findViewById(R.id.profile_ru_user_name)
+        profileGallery = myView.findViewById(R.id.profile_ru_gallery)
+        val profileReputation = myView.findViewById<TextView>(R.id.profile_ru_reputation_count)
+        val profilePhotos = myView.findViewById<TextView>(R.id.profile_ru_photos_count)
+        followButton = myView.findViewById(R.id.profile_ru_follow_button)
 
-        val profilePicture: ImageView = view.findViewById(R.id.profile_ru_image)
-        val profileName: TextView = view.findViewById(R.id.profile_ru_user_name)
-        val profileGallery: androidx.recyclerview.widget.RecyclerView = view.findViewById(R.id.profile_ru_gallery)
-        bucketBtn = view.findViewById(R.id.profile_ru_bucket_btn)
-        rollBtn = view.findViewById(R.id.profile_ru_roll_btn)
 
 
         sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
-            it?.let {user ->
+            it?.let { user ->
                 userProfile = user
                 Glide.with(this).load(it.image).into(profilePicture)
                 profileName.text = it.name
-                setUpGalleryAdapter(profileGallery)
-                changeGalleryFeed("Bucket")
+                profileReputation.text = it.reputation
+                profileTagline.text = it.tagline
+                setUpGalleryAdapter(profileGallery, 0)
+                changeGalleryFeed("Roll")
+
+                executeFollow(0, followButton)
+
+
+                val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
+
+                photosRef.addValueEventListener(object : ValueEventListener {
+
+                    override fun onCancelled(p0: DatabaseError) {
+
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+
+                        profilePhotos.text = p0.childrenCount.toString()
+
+                    }
+
+                })
+
             }
         }
         )
 
 
+
+
+        return myView
+
+    }
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+
+        val profileFollowers = view.findViewById<TextView>(R.id.profile_ru_followers_count)
+        val profileTagline = view.findViewById<TextView>(R.id.profile_ru_tagline)
+        val instagramButton = view.findViewById<ImageButton>(R.id.profile_ru_insta_icon)
+        var followState = 0
+
+
+        bucketBtn = view.findViewById(R.id.profile_ru_bucket_btn)
+        rollBtn = view.findViewById(R.id.profile_ru_roll_btn)
+
+
+
+
+
+
+        followButton.setOnClickListener {
+            executeFollow(1, followButton)
+        }
+
+
         bucketBtn.setOnClickListener {
             changeGalleryFeed("bucket")
+            setUpGalleryAdapter(profileGallery, 1)
+
         }
 
         rollBtn.setOnClickListener {
             changeGalleryFeed("roll")
+            setUpGalleryAdapter(profileGallery, 0)
+
         }
 
         activity!!.title = "Profile"
@@ -85,11 +153,12 @@ class ProfileRandomUserFragment : Fragment() {
         setHasOptionsMenu(true)
 
 
-        galleryAdapter.setOnItemClickListener { item, _ ->
+        galleryRollAdapter.setOnItemClickListener { item, _ ->
 
             val row = item as FeedImage
 //            val imageId = row.image
-            val action = ProfileRandomUserFragmentDirections.actionDestinationProfileRandomUserToDestinationImageFullSize()
+            val action =
+                ProfileRandomUserFragmentDirections.actionDestinationProfileRandomUserToDestinationImageFullSize()
             action.imageId = row.image.id
             findNavController().navigate(action)
 
@@ -97,6 +166,69 @@ class ProfileRandomUserFragment : Fragment() {
 
     }
 
+    private fun executeFollow(case: Int, followButton: TextView) {
+
+        val followerRef = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/following")
+        val beingFollowedRef = FirebaseDatabase.getInstance().getReference("users/${userProfile.uid}/followers")
+
+        followerRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+
+                if (p0.hasChild(userProfile.uid)) {
+
+                    if (case == 1) {
+
+                        val followerRefThisAccount = FirebaseDatabase.getInstance()
+                            .getReference("/users/${currentUser.uid}/following/${userProfile.uid}")
+                        val beingFollowedRefThisAccount = FirebaseDatabase.getInstance()
+                            .getReference("users/${userProfile.uid}/followers/${currentUser.uid}")
+
+                        followerRefThisAccount.removeValue()
+                        beingFollowedRefThisAccount.removeValue()
+
+                        followButton.setBackgroundResource(R.drawable.follow_button)
+                        followButton.setTextColor(ContextCompat.getColor(context!!, R.color.white))
+                        followButton.text = "Follow"
+
+                    } else {
+                        followButton.visibility = View.VISIBLE
+                        followButton.setBackgroundResource(R.drawable.unfollow_button)
+                        followButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray300))
+                        followButton.text = "Unfollow"
+
+                    }
+
+                } else {
+
+                    if (case == 1) {
+
+                        followerRef.setValue(mapOf(userProfile.uid to true))
+                        beingFollowedRef.setValue(mapOf(currentUser.uid to true))
+
+                        followButton.setBackgroundResource(R.drawable.unfollow_button)
+                        followButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray300))
+                        followButton.text = "Unfollow"
+
+                    } else {
+                        followButton.visibility = View.VISIBLE
+                        followButton.setBackgroundResource(R.drawable.follow_button)
+                        followButton.setTextColor(ContextCompat.getColor(context!!, R.color.white))
+                        followButton.text = "Follow"
+
+                    }
+
+                }
+
+            }
+
+
+        })
+
+    }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.profile_navigation, menu)
@@ -122,8 +254,6 @@ class ProfileRandomUserFragment : Fragment() {
 
     private fun changeGalleryFeed(source: String) {
 
-        Log.d("CHekingSequence",  userProfile.email)
-
         if (source == "bucket") {
             rollBtn.setTextColor(resources.getColor(R.color.gray500))
             bucketBtn.setTextColor(resources.getColor(R.color.gray700))
@@ -136,34 +266,55 @@ class ProfileRandomUserFragment : Fragment() {
         }
     }
 
-    private fun setUpGalleryAdapter(gallery: androidx.recyclerview.widget.RecyclerView) {
+    private fun setUpGalleryAdapter(gallery: androidx.recyclerview.widget.RecyclerView, type: Int) {
 
-        Log.d("CHekingSequence", userProfile.uid)
-
-
-        gallery.adapter = galleryAdapter
-        val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 4)
-        gallery.layoutManager = galleryLayoutManager
+        if (type == 0) {
+            gallery.adapter = galleryRollAdapter
+            val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
+            gallery.layoutManager = galleryLayoutManager
+        } else {
+            gallery.adapter = galleryBucketAdapter
+            val galleryLayoutManager = LinearLayoutManager(this.context)
+            gallery.layoutManager = galleryLayoutManager
+        }
     }
 
 
     private fun listenToImagesFromRoll() { //This needs to be fixed to not update in real time. Or should it?
 
-        galleryAdapter.clear()
+        galleryRollAdapter.clear()
 
-        val ref = FirebaseDatabase.getInstance().getReference("/images/byuser/${userProfile.uid}")
+        val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
 
         ref.addChildEventListener(object : ChildEventListener {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                val singleImageFromDB = p0.getValue(Images::class.java)
+                val imagePath = p0.getValue(SimpleString::class.java)
 
-                if (singleImageFromDB != null) {
+                val imageObjectPath =
+                    FirebaseDatabase.getInstance().getReference("/images/${imagePath!!.singleString}/body")
 
-                    galleryAdapter.add(FeedImage(singleImageFromDB))
+                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
 
-                }
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        val imageObject = p0.getValue(Images::class.java)
+
+                        galleryRollAdapter.add(FeedImage(imageObject!!))
+                    }
+                })
+
+
+//                val singleImageFromDB = p0.getValue(Images::class.java)
+//
+//                if (singleImageFromDB != null) {
+//
+//                    galleryAdapter.add(FeedImage(singleImageFromDB))
+//
+//                }
             }
 
             override fun onCancelled(p0: DatabaseError) {
@@ -185,9 +336,9 @@ class ProfileRandomUserFragment : Fragment() {
 
     private fun listenToImagesFromBucket() { //This needs to be fixed to not update in real time. Or should it?
 
-        galleryAdapter.clear()
+        galleryBucketAdapter.clear()
 
-        val ref = FirebaseDatabase.getInstance().getReference("/buckets/users/${userProfile.uid}")
+        val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/buckets")
 
         ref.addChildEventListener(object : ChildEventListener {
 
@@ -197,7 +348,7 @@ class ProfileRandomUserFragment : Fragment() {
 
 
                 val refForImageObjects =
-                    FirebaseDatabase.getInstance().getReference("images/feed/${singleImageFromDBlink!!.singleString}")
+                    FirebaseDatabase.getInstance().getReference("/images/${singleImageFromDBlink!!.singleString}/body")
 
                 refForImageObjects.addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onCancelled(p0: DatabaseError) {
@@ -208,7 +359,7 @@ class ProfileRandomUserFragment : Fragment() {
 
                         if (singleImageFromDB != null) {
 
-                            galleryAdapter.add(FeedImage(singleImageFromDB))
+                            galleryBucketAdapter.add(FeedImage(singleImageFromDB))
 
                         }
                     }

@@ -3,13 +3,12 @@ package co.getdere.RegisterLogin
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import android.util.Patterns
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import co.getdere.MainActivity
 import co.getdere.Models.Users
 import co.getdere.R

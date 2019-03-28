@@ -11,7 +11,7 @@ import com.google.firebase.database.*
 interface DereMethods {
 
 
-    //following methods are for the forum
+    //following methods are for the forum_icon
 
 
     fun executeVote(

@@ -24,6 +24,7 @@
     app:labelVisibilityMode="unlabeled"/>
     <fragment
             android:id="@+id/nav_host_fragment"
+            android:tag="container_fragment"
             android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_height="0dp"
             app:navGraph="@navigation/nav_graph"
