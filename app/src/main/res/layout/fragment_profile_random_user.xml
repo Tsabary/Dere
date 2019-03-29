@@ -145,7 +145,7 @@
             app:layout_constraintEnd_toEndOf="@+id/profile_ru_follower_static"
             app:layout_constraintStart_toStartOf="@+id/profile_ru_follower_static"
             app:layout_constraintBottom_toBottomOf="@+id/profile_ru_reputation_count"
-            android:text="45"/>
+            tools:text="45"/>
     <TextView
             android:text="Photos"
             android:layout_width="wrap_content"

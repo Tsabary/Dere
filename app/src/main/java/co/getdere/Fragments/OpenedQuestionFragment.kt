@@ -91,7 +91,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
         val openedQuestionVotes = view.findViewById<TextView>(R.id.opened_question_votes)
         val openedQuestionAuthorImage = view.findViewById<ImageView>(R.id.opened_question_author_image)
         val openedQuestionAuthorName = view.findViewById<TextView>(R.id.opened_question_author_name)
-        openedQuestionAuthorReputation = view.findViewById<TextView>(R.id.opened_question_author_reputation)
+        openedQuestionAuthorReputation = view.findViewById(R.id.opened_question_author_reputation)
 
 
         sharedViewModelQuestion.questionObject.observe(this, Observer {
@@ -276,9 +276,8 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
                         val refQuestionInUserSavedQuestions =
                             FirebaseDatabase.getInstance()
-                                .getReference("/users/${currentUserObject.uid}/saved-questions/${questionObject.id}")
-                        val savedQuestion = SimpleString(questionObject.id)
-                        refQuestionInUserSavedQuestions.setValue(savedQuestion).addOnSuccessListener {
+                                .getReference("/users/${currentUserObject.uid}/saved-questions")
+                        refQuestionInUserSavedQuestions.setValue(mapOf(questionObject.id to true)).addOnSuccessListener {
                             changeReputation(10, questionObject.id, questionObject.id,currentUserObject.uid, currentUserObject.name, questionObject.author, openedQuestionAuthorReputation, "questionsave")
 
                         }

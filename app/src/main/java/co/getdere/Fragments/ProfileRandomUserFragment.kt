@@ -4,7 +4,6 @@ package co.getdere.Fragments
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -17,13 +16,12 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import co.getdere.GroupieAdapters.FeedImage
-import co.getdere.ViewModels.SharedViewModelRandomUser
 import co.getdere.Models.Images
-import co.getdere.Models.SimpleString
 import co.getdere.Models.Users
 import co.getdere.R
 import co.getdere.RegisterLogin.LoginActivity
 import co.getdere.ViewModels.SharedViewModelCurrentUser
+import co.getdere.ViewModels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -68,6 +66,7 @@ class ProfileRandomUserFragment : Fragment() {
         profileGallery = myView.findViewById(R.id.profile_ru_gallery)
         val profileReputation = myView.findViewById<TextView>(R.id.profile_ru_reputation_count)
         val profilePhotos = myView.findViewById<TextView>(R.id.profile_ru_photos_count)
+        val profileFollowers = myView.findViewById<TextView>(R.id.profile_ru_followers_count)
         followButton = myView.findViewById(R.id.profile_ru_follow_button)
 
 
@@ -100,6 +99,24 @@ class ProfileRandomUserFragment : Fragment() {
                     }
 
                 })
+
+
+                val followersRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/followers")
+
+                followersRef.addValueEventListener(object : ValueEventListener {
+
+                    override fun onCancelled(p0: DatabaseError) {
+
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+
+                        profileFollowers.text = p0.childrenCount.toString()
+
+                    }
+
+                })
+
 
             }
         }
@@ -290,10 +307,10 @@ class ProfileRandomUserFragment : Fragment() {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                val imagePath = p0.getValue(SimpleString::class.java)
+                val imagePath = p0.key
 
                 val imageObjectPath =
-                    FirebaseDatabase.getInstance().getReference("/images/${imagePath!!.singleString}/body")
+                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
 
                 imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onCancelled(p0: DatabaseError) {
@@ -344,11 +361,11 @@ class ProfileRandomUserFragment : Fragment() {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                val singleImageFromDBlink = p0.getValue(SimpleString::class.java)
+                val singleImageFromDBlink = p0.key
 
 
                 val refForImageObjects =
-                    FirebaseDatabase.getInstance().getReference("/images/${singleImageFromDBlink!!.singleString}/body")
+                    FirebaseDatabase.getInstance().getReference("/images/$singleImageFromDBlink/body")
 
                 refForImageObjects.addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onCancelled(p0: DatabaseError) {

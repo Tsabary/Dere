@@ -15,6 +15,8 @@
                 app:destination="@id/destination_profile_logged_in_user"/>
         <action android:id="@+id/action_destination_feed_to_destination_image_full_size"
                 app:destination="@id/destination_image_full_size"/>
+        <action android:id="@+id/action_destination_feed_to_feedNotificationsFragment"
+                app:destination="@id/destination_feed_notifications"/>
 
     </fragment>
     <fragment android:id="@+id/destination_image_full_size"
@@ -127,5 +129,12 @@
                   app:argType="co.getdere.Models.Users"/>
         <action android:id="@+id/action_destination_edit_profile_to_destination_profile_logged_in_user"
                 app:destination="@id/destination_profile_logged_in_user"/>
+    </fragment>
+    <fragment android:id="@+id/destination_feed_notifications"
+              android:name="co.getdere.Fragments.FeedNotificationsFragment"
+              android:label="Notifications"
+              tools:layout="@layout/fragment_feed_notifications">
+        <action android:id="@+id/action_destination_feed_notifications_to_destination_image_full_size"
+                app:destination="@id/destination_image_full_size"/>
     </fragment>
 </navigation>

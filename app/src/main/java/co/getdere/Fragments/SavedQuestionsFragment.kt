@@ -3,17 +3,15 @@ package co.getdere.Fragments
 
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import co.getdere.GroupieAdapters.SingleQuestion
 import co.getdere.Models.Question
-import co.getdere.Models.SimpleString
 import co.getdere.Models.Users
-
 import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.ViewModels.SharedViewModelQuestion
@@ -125,14 +123,14 @@ class SavedQuestionsFragment : Fragment() {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                val singleQuestionPathFromDB = p0.getValue(SimpleString::class.java)
+                val singleQuestionPathFromDB = p0.key
 
 
                 if (singleQuestionPathFromDB != null) {
 
 
                     val refQuestionObject = FirebaseDatabase.getInstance()
-                        .getReference("/questions/${singleQuestionPathFromDB.singleString}/main/body")
+                        .getReference("/questions/$singleQuestionPathFromDB/main/body")
 
                     refQuestionObject.addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onCancelled(p0: DatabaseError) {

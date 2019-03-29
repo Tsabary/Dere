@@ -3,18 +3,17 @@ package co.getdere.Fragments
 
 import android.content.Context
 import android.os.Bundle
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import co.getdere.Models.Notification
-import co.getdere.Models.Question
-import co.getdere.Models.Users
+import co.getdere.Models.*
+
 import co.getdere.R
-import co.getdere.ViewModels.SharedViewModelQuestion
+import co.getdere.ViewModels.SharedViewModelImage
 import co.getdere.ViewModels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
@@ -23,21 +22,23 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.board_notification_single_row.view.*
+import kotlinx.android.synthetic.main.feed_notification_single_row.view.*
 
-class BoardNotificationsFragment : Fragment() {
+
+class FeedNotificationsFragment : Fragment() {
 
     val notificationsRecyclerAdapter = GroupAdapter<ViewHolder>()
 
     val uid = FirebaseAuth.getInstance().uid
 
-    lateinit var sharedViewModelQuestion: SharedViewModelQuestion
+    lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
 
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         activity?.let {
-            sharedViewModelQuestion = ViewModelProviders.of(it).get(SharedViewModelQuestion::class.java)
+            sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
         }
     }
@@ -46,7 +47,7 @@ class BoardNotificationsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_board_notifications, container, false)
+    ): View? = inflater.inflate(R.layout.fragment_feed_notifications, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -56,14 +57,14 @@ class BoardNotificationsFragment : Fragment() {
 
         notificationsRecyclerAdapter.clear()
 
-        val notificationsRecycler = view.findViewById<RecyclerView>(R.id.board_notifications_recycler)
+        val notificationsRecycler = view.findViewById<RecyclerView>(R.id.feed_notifications_recycler)
         val notificationRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         notificationsRecycler.adapter = notificationsRecyclerAdapter
         notificationsRecycler.layoutManager = notificationRecyclerLayoutManager
 
 
         val refBoardNotifications =
-            FirebaseDatabase.getInstance().getReference("/users/$uid/notifications/board")
+            FirebaseDatabase.getInstance().getReference("/users/$uid/notifications/gallery")
 
         refBoardNotifications.addChildEventListener(object : ChildEventListener {
 
@@ -72,7 +73,7 @@ class BoardNotificationsFragment : Fragment() {
                 val notification = p0.getValue(Notification::class.java)
 
                 if (notification != null) {
-                    notificationsRecyclerAdapter.add(SingleBoardNotification(notification))
+                    notificationsRecyclerAdapter.add(SingleFeedNotification(notification))
                 }
             }
 
@@ -92,24 +93,24 @@ class BoardNotificationsFragment : Fragment() {
 
         notificationsRecyclerAdapter.setOnItemClickListener { item, _ ->
 
-            val row = item as SingleBoardNotification
+            val row = item as SingleFeedNotification
 
-            val refQuestionId = FirebaseDatabase.getInstance().getReference("/questions/${row.notification.mainPostId}/main/body")
+            val refImageId = FirebaseDatabase.getInstance().getReference("/images/${row.notification.mainPostId}/body")
 
-            refQuestionId.addListenerForSingleValueEvent(object : ValueEventListener {
+            refImageId.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
                 }
 
                 override fun onDataChange(p0: DataSnapshot) {
 
-                    val question = p0.getValue(Question::class.java)
+                    val image = p0.getValue(Images::class.java)
 
-                    if (question != null) {
+                    if (image != null) {
 
-                        sharedViewModelQuestion.questionObject.postValue(question)
+                        sharedViewModelImage.sharedImageObject.postValue(image)
 
                         val refRandomUser =
-                            FirebaseDatabase.getInstance().getReference("/users/${question.author}/profile")
+                            FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
 
                         refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onCancelled(p0: DatabaseError) {
@@ -118,11 +119,11 @@ class BoardNotificationsFragment : Fragment() {
                             override fun onDataChange(p0: DataSnapshot) {
                                 val randomUser = p0.getValue(Users::class.java)
 
-                                if (randomUser != null){
+                                if (randomUser != null) {
                                     sharedViewModelRandomUser.randomUserObject.postValue(randomUser)
 
-                                    val action =
-                                        BoardNotificationsFragmentDirections.actionDestinationBoardNotificationsToDestinationQuestionOpened()
+                                    val action = FeedNotificationsFragmentDirections.actionDestinationFeedNotificationsToDestinationImageFullSize()
+
                                     findNavController().navigate(action)
 
                                 }
@@ -139,68 +140,58 @@ class BoardNotificationsFragment : Fragment() {
 }
 
 
-class SingleBoardNotification(val notification: Notification) : Item<ViewHolder>() {
+class SingleFeedNotification(val notification: Notification) : Item<ViewHolder>() {
     override fun getLayout(): Int {
-        return R.layout.board_notification_single_row
+        return R.layout.feed_notification_single_row
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
-        val refQuestion = FirebaseDatabase.getInstance().getReference("/questions/${notification.mainPostId}/main/body")
+        val refImage = FirebaseDatabase.getInstance().getReference("/images/${notification.mainPostId}/body")
 
-        refQuestion.addListenerForSingleValueEvent(object : ValueEventListener {
+        refImage.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
             }
 
             override fun onDataChange(p0: DataSnapshot) {
 
-                val question = p0.getValue(Question::class.java)
+                val image = p0.getValue(Images::class.java)
 
-                if (question != null) {
+                if (image != null) {
 
+                    inflateImages(viewHolder, image)
 
-                    when (notification.scenarioType){
+                    when (notification.scenarioType) {
 
-                        0 -> {
+                        8 -> {
                             val notificationText =
-                                "${notification.initiatorName} upvoted your question ${question.title}"
+                                "${notification.initiatorName} bucketed your photo"
 
-                            viewHolder.itemView.board_notification_content.text = notificationText
+                            viewHolder.itemView.feed_notification_content.text = notificationText
 
-                            inflateInitiatorImage(viewHolder, 1)
                         }
 
-                        2 -> {
-                            val text =
-                                "${notification.initiatorName} upvoted your answer on the question ${question.title}"
-
-                            viewHolder.itemView.board_notification_content.text = text
-
-                            inflateInitiatorImage(viewHolder, 1)
-                        }
-
-                        4 -> {
-                            if (notification.mainPostId == notification.specificPostId){
-                                val text =
-                                    "Someone downvoted your question ${question.title}"
-
-                                viewHolder.itemView.board_notification_content.text = text
-                            } else {
-                                val text =
-                                    "Someone downvoted your answer to the question ${question.title}"
-
-                                viewHolder.itemView.board_notification_content.text = text
-                                inflateInitiatorImage(viewHolder, 0)
-                            }
-                        }
-
-                        10 -> {
+                        12 -> {
                             val notificationText =
-                                "${notification.initiatorName} saved your question ${question.title}"
+                                "${notification.initiatorName} liked a comment you made"
 
-                            viewHolder.itemView.board_notification_content.text = notificationText
+                            viewHolder.itemView.feed_notification_content.text = notificationText
 
-                            inflateInitiatorImage(viewHolder, 1)
+                        }
+
+                        14 -> {
+                            val notificationText =
+                                "${notification.initiatorName} liked your photo"
+
+                            viewHolder.itemView.feed_notification_content.text = notificationText
+
+                        }
+
+                        16 -> {
+                            val notificationText =
+                                "${notification.initiatorName} commented on your photo"
+
+                            viewHolder.itemView.feed_notification_content.text = notificationText
 
                         }
 
@@ -208,20 +199,23 @@ class SingleBoardNotification(val notification: Notification) : Item<ViewHolder>
                     }
 
 
+                    /*
 
-                        /*
-
-                        1 : question upvoted
-                        3 : answer upvoted
-                        4 : question or answer downvoted
-                        10 : question saved
-
-                         */
+8 : photo bucketed +15 to receiver +notification  // type 2            ***not implemented yet***
+12 : comment receives a like +1 to receiver +notification  // type 3            ***not implemented yet***
+14 : photo receives a like +2 to receiver +notification  // type 2
+16 : photo receives a comment
 
 
 
+post types:
 
+0: question
+1: answer
+2: image
+3: comment
 
+                     */
 
 
 //                        val myTypeface = Typeface.create(
@@ -235,8 +229,6 @@ class SingleBoardNotification(val notification: Notification) : Item<ViewHolder>
 //                        string.setSpan(TypefaceSpan("monospace"), 19, 22, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
 
-
-
 //                        val notificationText =
 //                            SpannableStringBuilder("${notification.initiatorName} has upvoted your answer on the question ${question.title}")
 //
@@ -248,10 +240,6 @@ class SingleBoardNotification(val notification: Notification) : Item<ViewHolder>
 //                        notificationText.setSpan(android.text.style.TypefaceSpan(R.font.open_sans_bold))
 
 
-
-
-
-
                 }
 
             }
@@ -259,34 +247,30 @@ class SingleBoardNotification(val notification: Notification) : Item<ViewHolder>
         })
     }
 
-    private fun inflateInitiatorImage(viewHolder : ViewHolder, case : Int){
+    private fun inflateImages(viewHolder: ViewHolder, images: Images) {
 
-        if (case == 1){
-            val refInitiator = FirebaseDatabase.getInstance().getReference("/users/${notification.initiatorId}/profile")
+        Glide.with(viewHolder.root.context).load(images.imageSmall)
+            .into(viewHolder.itemView.feed_notification_post_image)
 
-            refInitiator.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
+        val refInitiator = FirebaseDatabase.getInstance().getReference("/users/${notification.initiatorId}/profile")
 
+        refInitiator.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+
+                val user = p0.getValue(Users::class.java)
+
+                if (user != null) {
+                    Glide.with(viewHolder.root.context).load(user.image)
+                        .into(viewHolder.itemView.feed_notification_initiator_image)
                 }
 
-                override fun onDataChange(p0: DataSnapshot) {
+            }
 
-                    val user = p0.getValue(Users::class.java)
-
-                    if (user != null) {
-                        Glide.with(viewHolder.root.context).load(user.image)
-                            .into(viewHolder.itemView.board_notification_initiator_image)
-
-                    }
-
-                }
-
-            })
-        } else {
-            Glide.with(viewHolder.root.context).load(R.drawable.user_profile)
-                .into(viewHolder.itemView.board_notification_initiator_image)
-        }
-
+        })
 
 
     }

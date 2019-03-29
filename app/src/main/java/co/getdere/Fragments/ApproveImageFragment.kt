@@ -7,33 +7,26 @@ import android.database.Cursor
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.navigation.fragment.findNavController
-
-import com.bumptech.glide.Glide
-import me.echodev.resizer.Resizer
-import android.os.Environment
-import android.provider.MediaStore
 import android.widget.*
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import co.getdere.Adapters.NewPhotoUploadPagerAdapter
-import co.getdere.Adapters.OpenPhotoPagerAdapter
-import co.getdere.CameraActivity
 import co.getdere.CameraActivity2
 import co.getdere.MainActivity
 import co.getdere.Models.Images
-import co.getdere.Models.SimpleString
 import co.getdere.OtherClasses.SwipeLockableViewPager
 import co.getdere.R
-import co.getdere.RegisterLogin.RegisterActivity
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
-import kotlinx.android.synthetic.main.fragment_approve_image.view.*
-import kotlinx.android.synthetic.main.fragment_image_full_size.view.*
+import me.echodev.resizer.Resizer
 import mumayank.com.airlocationlibrary.AirLocation
 import java.io.File
 import java.util.*
@@ -278,9 +271,9 @@ class ApproveImageFragment : Fragment() {
                 imageBodyRef.setValue(newImage)
                     .addOnSuccessListener {
                         Log.d("imageToDatabase", "image saved to feed successfully: ${ref.key}")
-                        val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/users/$uid/images/${ref.key}")
+                        val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/users/$uid/images")
 
-                        refToUsersDatabase.setValue(SimpleString(ref.key!!))
+                        refToUsersDatabase.setValue(mapOf(ref.key to true))
                             .addOnSuccessListener {
                                 Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
 

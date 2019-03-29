@@ -3,29 +3,24 @@ package co.getdere.Fragments
 
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import co.getdere.Interfaces.DereMethods
+import co.getdere.Models.Images
+import co.getdere.Models.Users
+import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.ViewModels.SharedViewModelImage
 import co.getdere.ViewModels.SharedViewModelRandomUser
-import co.getdere.Models.Images
-import co.getdere.Models.SimpleString
-import co.getdere.Models.Users
-
-
-import co.getdere.R
 import com.bumptech.glide.Glide
-import com.google.firebase.database.*
 import com.xwray.groupie.ViewHolder
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*

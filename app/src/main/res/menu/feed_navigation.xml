@@ -9,5 +9,11 @@
             android:icon="@drawable/camera"
             android:title="@string/camera"/>
 
+    <item
+            app:showAsAction="ifRoom"
+            android:id="@+id/destination_feed_notifications"
+            android:icon="@drawable/lightning"
+            android:title="@string/feed_notifications"/>
+
 
 </menu>

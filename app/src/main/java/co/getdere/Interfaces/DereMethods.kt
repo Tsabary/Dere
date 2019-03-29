@@ -57,6 +57,9 @@ interface DereMethods {
 
                 if (postVotesSnapshot.hasChild(initiatorId)) {
 
+                    postVotesSnapshot.child(initiatorId).value
+
+
                     refUserVote.addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onCancelled(p0: DatabaseError) {
 
@@ -311,7 +314,7 @@ interface DereMethods {
 
 //        val refUserNotifications =
 //            FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/board/$mainPostId").push()
-//        refUserNotifications.setValue(BoardNotification(postType, initiatorName, mainPostId, initiatorId))
+//        refUserNotifications.setValue(Notification(postType, initiatorName, mainPostId, initiatorId))
     }
 
     fun upView(upvoteView: ImageView, downvoteView: ImageView) {
@@ -497,15 +500,15 @@ interface DereMethods {
 
                                     val refUserLikes =
                                         FirebaseDatabase.getInstance()
-                                            .getReference("/users/$initiatorId/likes/${image.id}")
+                                            .getReference("/users/$initiatorId/likes")
 
-                                    refUserLikes.setValue(SimpleString(image.id)).addOnSuccessListener {
+                                    refUserLikes.setValue(mapOf(image.id to true)).addOnSuccessListener {
 
                                         val refImageLikes =
                                             FirebaseDatabase.getInstance()
-                                                .getReference("/images/${image.id}/likes/$initiatorId")
+                                                .getReference("/images/${image.id}/likes")
 
-                                        refImageLikes.setValue(SimpleString(initiatorId)).addOnSuccessListener {
+                                        refImageLikes.setValue(mapOf(initiatorId to true)).addOnSuccessListener {
 
                                             likeButton.setImageResource(R.drawable.heart_active)
 
@@ -546,15 +549,15 @@ interface DereMethods {
 
                         val refUserLikes =
                             FirebaseDatabase.getInstance()
-                                .getReference("/users/$initiatorId/likes/${image.id}")
+                                .getReference("/users/$initiatorId/likes")
 
-                        refUserLikes.setValue(SimpleString(image.id)).addOnSuccessListener {
+                        refUserLikes.setValue(mapOf(image.id to true)).addOnSuccessListener {
 
                             val refImageLikes =
                                 FirebaseDatabase.getInstance()
-                                    .getReference("/images/${image.id}/likes/$initiatorId")
+                                    .getReference("/images/${image.id}/likes")
 
-                            refImageLikes.setValue(SimpleString(initiatorId)).addOnSuccessListener {
+                            refImageLikes.setValue(mapOf(initiatorId to true)).addOnSuccessListener {
 
                                 likeButton.setImageResource(R.drawable.heart_active)
 
@@ -798,9 +801,9 @@ interface DereMethods {
 
 
             val refUserBoardNotifications =
-                FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/board/$mainPostId").push()
+                FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId$initiatorId$scenarioType")
             refUserBoardNotifications.setValue(
-                BoardNotification(
+                Notification(
                     postType,
                     scenarioType,
                     initiatorId,
@@ -813,10 +816,10 @@ interface DereMethods {
         } else {
 
             val refUserGalleryNotifications =
-                FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/gallery/$mainPostId")
-                    .push()
+                FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/gallery/$mainPostId$specificPostId$initiatorId$scenarioType")
+
             refUserGalleryNotifications.setValue(
-                GalleryNotification(
+                Notification(
                     postType,
                     scenarioType,
                     initiatorId,
@@ -861,7 +864,10 @@ interface DereMethods {
 //                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -5)
 //                refReceiverReputation.setValue(valueForReceiver)
 
+                val notificationRef = FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}0")
+
                 refReceiverReputation.removeValue()
+                notificationRef.removeValue()
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
 
@@ -876,7 +882,11 @@ interface DereMethods {
             3 -> {
 //                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -10)
 //                refReceiverReputation.setValue(valueForReceiver)
+
+                val notificationRef = FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}2")
+
                 refReceiverReputation.removeValue()
+                notificationRef.removeValue()
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
 
@@ -895,6 +905,10 @@ interface DereMethods {
 //                val valueForReceiver = ReputationScore(specificPostId, initiatorId, 2)
 //                refReceiverReputation.setValue(valueForReceiver)
 
+                val notificationRef = FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}4")
+                notificationRef.removeValue()
+
+
                 refReceiverReputation.removeValue()
 
 
@@ -912,12 +926,24 @@ interface DereMethods {
                 val valueForInitiator = ReputationScore(specificPostId, initiatorId, 2)
                 refInitiatorReputation.setValue(valueForInitiator)
                 updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
+
+                sendNotification(1, 6, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+
             }
 
             7 -> {
-                val valueForInitiator = ReputationScore(specificPostId, initiatorId, -2)
-                refInitiatorReputation.setValue(valueForInitiator)
+//                val valueForInitiator = ReputationScore(specificPostId, initiatorId, -2)
+//                refInitiatorReputation.setValue(valueForInitiator)
+
+                refInitiatorReputation.removeValue()
+
+                val notificationRef = FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}6")
+                notificationRef.removeValue()
+
+
                 updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
+
+
             }
 
             8 -> {
@@ -929,8 +955,14 @@ interface DereMethods {
             }
 
             9 -> {
-                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -15)
-                refReceiverReputation.setValue(valueForReceiver)
+//                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -15)
+//                refReceiverReputation.setValue(valueForReceiver)
+
+                val notificationRef = FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}8")
+                notificationRef.removeValue()
+
+                refReceiverReputation.removeValue()
+
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
 
@@ -946,6 +978,9 @@ interface DereMethods {
 //                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -5)
 //                refReceiverReputation.setValue(valueForReceiver)
 
+                val notificationRef = FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}10")
+                notificationRef.removeValue()
+
                 refReceiverReputation.removeValue()
 
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
@@ -960,8 +995,12 @@ interface DereMethods {
             }
 
             13 -> {
-                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -1)
-                refReceiverReputation.setValue(valueForReceiver)
+
+                val notificationRef = FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}2")
+                notificationRef.removeValue()
+
+
+                refReceiverReputation.removeValue()
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
 
@@ -977,10 +1016,42 @@ interface DereMethods {
 //                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -2)
 //                refReceiverReputation.setValue(valueForReceiver)
 
+                val notificationRef = FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}14")
+                notificationRef.removeValue()
+
                 refReceiverReputation.removeValue()
 
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
+
+            16 -> {
+
+
+                sendNotification(2, 16, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+
+
+            }
+
+            17 -> {
+
+                val notificationRef = FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}16")
+                notificationRef.removeValue()
+            }
+
+            18 -> {
+
+
+                sendNotification(1, 18, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+
+
+            }
+
+            19 -> {
+
+                val notificationRef = FirebaseDatabase.getInstance().getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}18")
+                notificationRef.removeValue()
+            }
+
         }
     }
 
@@ -1043,6 +1114,10 @@ reputation scenarios:
 13 : comment like removed -1 to receiver            ***not implemented yet***
 14 : photo receives a like +2 to receiver +notification  // type 2
 15 : photo like removed -2 to receiver
+16 : photo receives a comment
+17 : photo comment removed
+18 : answer receives a comment
+19: comment on answer removed
 
 
 

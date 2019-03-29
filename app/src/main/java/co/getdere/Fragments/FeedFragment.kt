@@ -11,6 +11,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import androidx.viewpager.widget.ViewPager
 import co.getdere.Adapters.FeedPagerAdapter
 import co.getdere.CameraActivity2
@@ -91,6 +92,12 @@ class FeedFragment : Fragment() {
                     val intent = Intent(this.context, CameraActivity2::class.java)
                     startActivity(intent)
                 }
+            }
+
+            R.id.destination_feed_notifications -> {
+
+                val action = FeedNotificationsFragmentDirections.actionDestinationFeedNotificationsToDestinationImageFullSize()
+                findNavController().navigate(action)
             }
 
         }

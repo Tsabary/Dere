@@ -4,7 +4,6 @@ package co.getdere.Fragments
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -16,12 +15,11 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import co.getdere.GroupieAdapters.FeedImage
-import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.Models.Images
-import co.getdere.Models.SimpleString
 import co.getdere.Models.Users
 import co.getdere.R
 import co.getdere.RegisterLogin.LoginActivity
+import co.getdere.ViewModels.SharedViewModelCurrentUser
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -79,6 +77,8 @@ class ProfileLoggedInUserFragment : Fragment() {
         profileTagline.text = userProfile.tagline
 
         val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
+        val followersRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/followers")
+
 
         photosRef.addValueEventListener(object : ValueEventListener {
 
@@ -87,13 +87,23 @@ class ProfileLoggedInUserFragment : Fragment() {
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                var count = 0
 
-                for (ds in p0.children) {
-                    count += 1
-                    profilePhotos.text = count.toString()
-                }
+                profilePhotos.text = p0.childrenCount.toString()
             }
+
+        })
+
+        followersRef.addValueEventListener(object : ValueEventListener{
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+
+                profileFollowers.text = p0.childrenCount.toString()
+
+            }
+
 
         })
 
@@ -249,10 +259,10 @@ class ProfileLoggedInUserFragment : Fragment() {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                val imagePath = p0.getValue(SimpleString::class.java)
+                val imagePath = p0.key
 
                 val imageObjectPath =
-                    FirebaseDatabase.getInstance().getReference("/images/${imagePath!!.singleString}/body")
+                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
 
                 imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onCancelled(p0: DatabaseError) {
@@ -295,13 +305,6 @@ class ProfileLoggedInUserFragment : Fragment() {
         ref.addChildEventListener(object : ChildEventListener {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
-                Log.d("BucketGallery", p0.key)
-
-                val getBucket = p0.getValue(SimpleString::class.java)
-                Log.d("BucketGallery", getBucket!!.singleString)
-
-
 
                 galleryBucketAdapter.add(SingleBucketRoll(p0, userProfile.uid))
 //                val singleBucketFromDB = p0.getValue(SimpleString::class.java)
@@ -391,10 +394,10 @@ class SingleBucketRoll(val bucket: DataSnapshot, userId: String) : Item<ViewHold
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
 
-                val imagePath = p0.getValue(SimpleString::class.java)
+                val imagePath = p0.key
 
                 val imageObjectPath =
-                    FirebaseDatabase.getInstance().getReference("/images/${imagePath!!.singleString}/body")
+                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
 
                 imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onCancelled(p0: DatabaseError) {

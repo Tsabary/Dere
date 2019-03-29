@@ -5,16 +5,18 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.TextView
+import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import co.getdere.Models.Question
-import co.getdere.Models.SimpleString
 import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelTags
 import com.google.android.material.chip.Chip
@@ -60,11 +62,7 @@ class NewQuestionFragment : Fragment() {
 
                 val tagName = p0.key.toString()
 
-                var count = 0
-                for (ds in p0.children) {
-
-                    count += 1
-                }
+                val count = p0.childrenCount.toInt()
 
                 tags.add(SingleTagForList(tagName, count))
 
@@ -264,9 +262,9 @@ class NewQuestionFragment : Fragment() {
             .addOnSuccessListener {
 
                 for (t in tags) {
-                    val refTag = FirebaseDatabase.getInstance().getReference("/tags/$t/${ref.key}")
+                    val refTag = FirebaseDatabase.getInstance().getReference("/tags/$t")
 
-                    refTag.setValue(SimpleString(ref.key.toString()))
+                    refTag.setValue(mapOf(ref.key!! to true))
                 }
 
 

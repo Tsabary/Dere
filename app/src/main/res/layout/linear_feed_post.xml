@@ -82,7 +82,7 @@
                 android:fontFamily="@font/open_sans_bold"
                 tools:text="Name Name"
                 app:layout_constraintBottom_toTopOf="@+id/linear_feed_timestamp"
-        />
+                android:textSize="15sp"/>
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -142,7 +142,8 @@
                 app:layout_constraintBottom_toBottomOf="@+id/linear_feed_author_name"
                 tools:text="(1.2k)"
                 android:fontFamily="@font/open_sans_semibold"
-                android:textColor="@color/gray500"/>
+                android:textColor="@color/gray500"
+                android:textSize="15sp"/>
         <TextView
                 android:text="Add a comment.."
                 android:layout_width="wrap_content"

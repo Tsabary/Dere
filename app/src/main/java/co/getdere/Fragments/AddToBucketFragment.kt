@@ -3,8 +3,6 @@ package co.getdere.Fragments
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,18 +10,13 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import co.getdere.Interfaces.DereMethods
-import co.getdere.MainActivity
 import co.getdere.Models.Images
-import co.getdere.Models.SimpleString
 import co.getdere.Models.Users
-
 import co.getdere.R
-import co.getdere.ViewModels.SharedViewModelImage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
@@ -85,16 +78,16 @@ class AddToBucketFragment : Fragment(), DereMethods {
                         } else {
 
                             val ref = FirebaseDatabase.getInstance()
-                                .getReference("/users/${currentUser.uid}/buckets/${newBucketInput.text}/${image.id}")
+                                .getReference("/users/${currentUser.uid}/buckets/${newBucketInput.text}")
 
-                            ref.setValue(SimpleString(image.id)).addOnSuccessListener {
+                            ref.setValue(mapOf(image.id to true)).addOnSuccessListener {
 
 
                                 val imageBucketingRef =
                                     FirebaseDatabase.getInstance()
-                                        .getReference("/images/${image.id}/buckets/${currentUser.uid}")
+                                        .getReference("/images/${image.id}/buckets")
 
-                                imageBucketingRef.setValue(SimpleString(currentUser.uid)).addOnSuccessListener {
+                                imageBucketingRef.setValue(mapOf(currentUser.uid to true)).addOnSuccessListener {
 
                                     newBucketInput.text.clear()
 
@@ -205,7 +198,7 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
         val refUserBuckets = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets")
         val refBucket = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets/$bucketName")
         val refImageBuckets =
-            FirebaseDatabase.getInstance().getReference("/images/${image.id}/buckets/${currentUser.uid}")
+            FirebaseDatabase.getInstance().getReference("/images/${image.id}/buckets")
 
 
         refUserBuckets.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -238,8 +231,11 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
                                         "bucket"
                                     )
 
+
                                     refBucket.child(image.id).removeValue()
-                                    refImageBuckets.removeValue()
+                                    refImageBuckets.child(currentUser.uid).removeValue().addOnSuccessListener {
+                                        addReputationIfExistsInAnyBucket(context)
+                                    }
 
 
 
@@ -269,11 +265,11 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
 
                                     val ref =
                                         FirebaseDatabase.getInstance()
-                                            .getReference("/users/$uid/buckets/$bucketName/${image.id}")
+                                            .getReference("/users/$uid/buckets/$bucketName")
 
-                                    ref.setValue(SimpleString(image.id)).addOnSuccessListener {
+                                    ref.setValue(mapOf(image.id to true)).addOnSuccessListener {
 
-                                        refImageBuckets.setValue(SimpleString(currentUser.uid))
+                                        refImageBuckets.setValue(mapOf(currentUser.uid to true))
                                             .addOnSuccessListener {
 
                                                 actionText.text = "REMOVE"
@@ -323,11 +319,11 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
 
                         val ref =
                             FirebaseDatabase.getInstance()
-                                .getReference("/users/$uid/buckets/$bucketName/${image.id}")
+                                .getReference("/users/$uid/buckets/$bucketName")
 
-                        ref.setValue(SimpleString(image.id)).addOnSuccessListener {
+                        ref.setValue(mapOf(image.id to true)).addOnSuccessListener {
 
-                            refImageBuckets.setValue(SimpleString(currentUser.uid))
+                            refImageBuckets.setValue(mapOf(currentUser.uid to true))
                                 .addOnSuccessListener {
 
                                     actionText.text = "REMOVE"
@@ -370,6 +366,54 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
 
         })
 
+
+    }
+
+
+
+    private fun addReputationIfExistsInAnyBucket(context : Context){
+
+        val refUserBuckets = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets")
+
+        refUserBuckets.addChildEventListener(object : ChildEventListener{
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+
+                if (p0.hasChild(image.id)){
+
+                    changeReputation(
+                        8,
+                        image.id,
+                        image.id,
+                        currentUser.uid,
+                        currentUser.name,
+                        image.photographer,
+                        TextView(context),
+                        "bucket"
+                    )
+
+                    val refImageBuckets =
+                        FirebaseDatabase.getInstance().getReference("/images/${image.id}/buckets")
+
+                    refImageBuckets.setValue(mapOf(currentUser.uid to true))
+
+                }
+
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot) {
+            }
+
+
+        })
 
     }
 

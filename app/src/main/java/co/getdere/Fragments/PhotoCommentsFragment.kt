@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
+import co.getdere.Interfaces.DereMethods
 import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.ViewModels.SharedViewModelImage
 import co.getdere.ViewModels.SharedViewModelRandomUser
@@ -31,7 +32,7 @@ import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
 
 
-class PhotoCommentsFragment : Fragment() {
+class PhotoCommentsFragment : Fragment(), DereMethods {
 
     private lateinit var currentUser: Users
     private lateinit var randomUser: Users
@@ -123,8 +124,10 @@ class PhotoCommentsFragment : Fragment() {
             val ref = FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/comments/").push()
 
             ref.setValue(comment).addOnSuccessListener {
+
+                sendNotification(3, 16, currentUser.uid, currentUser.name, imageObject.id, ref.key!!, imageObject.photographer)
+
                 Log.d("postCommentActivity", "Saved comment to Firebase Database")
-//                commentsRecyclerAdapter.add(SingleComment(comment))
             }.addOnFailureListener {
                 Log.d("postCommentActivity", "Failed to save comment to database")
             }
