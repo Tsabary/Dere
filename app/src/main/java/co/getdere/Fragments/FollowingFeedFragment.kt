@@ -31,7 +31,7 @@ import kotlinx.android.synthetic.main.fragment_following_feed.view.*
 
 class FollowingFeedFragment : Fragment() {
 
-    //    private lateinit var currentUser: Users
+//        private lateinit var currentUser: Users
     lateinit var sharedViewModelFollowedAccounts: SharedViewModelFollowedAccounts
 
     val uid = FirebaseAuth.getInstance().uid

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context=".Fragments.AnswerFragment">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <EditText
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:inputType="textMultiLine|textCapWords"
+                android:gravity="top"
+                android:id="@+id/answer_comment_content_input"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:backgroundTint="@android:color/transparent"
+                android:layout_marginEnd="32dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="32dp"
+                app:layout_constraintBottom_toTopOf="@+id/answer_comment_post_btn"/>
+        <TextView
+                android:gravity="center"
+                android:text="COMMENT"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:id="@+id/answer_comment_post_btn"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginBottom="32dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginStart="32dp"
+                android:textAlignment="center"
+                android:textSize="14sp"
+                android:fontFamily="@font/open_sans_bold"
+                android:textColor="@color/white"
+                android:background="@drawable/buttons_shape"
+        />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>
