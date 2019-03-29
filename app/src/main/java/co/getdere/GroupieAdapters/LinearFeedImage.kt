@@ -54,7 +54,7 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
 
 
         listenToBucketCount(bucketCount, image)
-        checkIfBucketed(0, viewHolder, bucketButton, image, uid!!)
+        checkIfBucketed(bucketButton, image, uid!!)
 
         listenToLikeCount(likeCount, image)
         executeLike(image, uid, likeCount, likeButton, 0, currentUser.name, image.photographer, authorReputation)

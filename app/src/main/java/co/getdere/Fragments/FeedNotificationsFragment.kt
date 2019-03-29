@@ -122,8 +122,9 @@ class FeedNotificationsFragment : Fragment() {
                                 if (randomUser != null) {
                                     sharedViewModelRandomUser.randomUserObject.postValue(randomUser)
 
-                                    val action = FeedNotificationsFragmentDirections.actionDestinationFeedNotificationsToDestinationImageFullSize()
-
+                                    val action =
+                                        FeedNotificationsFragmentDirections.actionDestinationFeedNotificationsToDestinationImageFullSize()
+                                    action.imageId = image.id
                                     findNavController().navigate(action)
 
                                 }
@@ -190,6 +191,14 @@ class SingleFeedNotification(val notification: Notification) : Item<ViewHolder>(
                         16 -> {
                             val notificationText =
                                 "${notification.initiatorName} commented on your photo"
+
+                            viewHolder.itemView.feed_notification_content.text = notificationText
+
+                        }
+
+                        20 -> {
+                            val notificationText =
+                                "${notification.initiatorName} liked a comment you made"
 
                             viewHolder.itemView.feed_notification_content.text = notificationText
 

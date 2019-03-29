@@ -1,5 +1,5 @@
 package co.getdere.Models
 
-class Comments (var authorId : String, var content : String, var timeStamp : Long) {
-    constructor() : this("","",0)
+class Comments (val authorId : String, val content : String, val timeStamp : Long, val ImageId : String) {
+    constructor() : this("","",0, "")
 }

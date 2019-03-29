@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -104,7 +105,7 @@ class OpenPhotoSocialBox : Fragment(), DereMethods {
 
                 imageDetails.text = imageObject.details
 
-                checkIfBucketed(0, ViewHolder(view), addToBucket, imageObject, currentUser.uid)
+                checkIfBucketed(addToBucket, imageObject, currentUser.uid)
                 listenToBucketCount(bucketCount, imageObject)
 
 
@@ -141,10 +142,13 @@ class OpenPhotoSocialBox : Fragment(), DereMethods {
 
         addToBucket.setOnClickListener {
 
-            val action = ImageFullSizeFragmentDirections.actionDestinationImageFullSizeToDestinationAddToBucket(imageObject, currentUser)
-            findNavController().navigate(action)
+            if (imageObject.photographer == currentUser.uid){
+                Toast.makeText(this.context, "You can't bucket your own photos", Toast.LENGTH_LONG).show()
+            } else {
+                val action = ImageFullSizeFragmentDirections.actionDestinationImageFullSizeToDestinationAddToBucket(imageObject, currentUser)
+                findNavController().navigate(action)
+            }
 
-//            checkIfBucketed(1)
         }
 
         addComment.setOnClickListener {
@@ -177,176 +181,6 @@ class OpenPhotoSocialBox : Fragment(), DereMethods {
     }
 
 
-//    private fun listenToCommentCount() {
-//
-//        val refAllImagesComments = FirebaseDatabase.getInstance().getReference("/comments")
-//
-//        refAllImagesComments.addListenerForSingleValueEvent(object : ValueEventListener {
-//            override fun onCancelled(p0: DatabaseError) {
-//
-//            }
-//
-//            override fun onDataChange(p0: DataSnapshot) {
-//
-//                if (p0.hasChild(imageObject.id)) {
-//
-//                    val refImageBucketingList =
-//                        FirebaseDatabase.getInstance().getReference("/comments/${imageObject.id}")
-//
-//                    refImageBucketingList.addValueEventListener(object : ValueEventListener {
-//                        override fun onCancelled(p0: DatabaseError) {
-//
-//                        }
-//
-//                        override fun onDataChange(p0: DataSnapshot) {
-//                            var count = 0
-//
-//                            for (ds in p0.children) {
-//                                count += 1
-//                                commentCount.text = count.toString()
-//                            }
-//                        }
-//
-//                    })
-//
-//
-//                } else {
-//                    commentCount.text = ""
-//                }
-//
-//            }
-//
-//        })
-//
-//
-//    }
-
-
-//    private fun listenToBucketCount() {
-//
-//        val refAllImagesBuckets = FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}")
-//
-//        refAllImagesBuckets.addListenerForSingleValueEvent(object : ValueEventListener {
-//            override fun onCancelled(p0: DatabaseError) {
-//
-//            }
-//
-//            override fun onDataChange(p0: DataSnapshot) {
-//
-//                if (p0.hasChild("buckets")) {
-//
-//                    val refImageBucketingList =
-//                        FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/buckets")
-//
-//                    refImageBucketingList.addValueEventListener(object : ValueEventListener {
-//                        override fun onCancelled(p0: DatabaseError) {
-//
-//                        }
-//
-//                        override fun onDataChange(p0: DataSnapshot) {
-//                            var count = 0
-//
-//                            for (ds in p0.children) {
-//                                count += 1
-//                                bucketCount.text = count.toString()
-//                            }
-//                        }
-//
-//                    })
-//
-//
-//                } else {
-//                    bucketCount.text = ""
-//                }
-//
-//            }
-//
-//        })
-//
-//
-//    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-//    private fun checkIfBucketed(ranNum: Int) {
-//
-//        val refUserBucket = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets")
-//
-//        refUserBucket.addListenerForSingleValueEvent(object : ValueEventListener {
-//            override fun onCancelled(p0: DatabaseError) {
-//
-//            }
-//
-//            override fun onDataChange(p0: DataSnapshot) {
-//                if (p0.hasChild(imageObject.id)) {
-//                    if (ranNum == 1) {
-//
-//                        if (currentUser.uid == imageObject.photographer) {
-//                            Toast.makeText(context, "You can't bucket your own photos", Toast.LENGTH_SHORT).show()
-//                        } else {
-//                            addToBucket.setImageResource(R.drawable.bucket)
-//
-//                            refUserBucket.child(imageObject.id).removeValue().addOnCompleteListener {
-//                                val refImageBucketingList =
-//                                    FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/buckets")
-//
-//                                refImageBucketingList.child(currentUser.uid).removeValue().addOnCompleteListener {
-//                                    listenToBucketCount(bucketCount, imageObject)
-//                                }
-//                            }
-//                        }
-//
-//
-//                    } else {
-//                        addToBucket.setImageResource(R.drawable.bucket_saved)
-//                    }
-//
-//
-//                } else {
-//                    if (ranNum == 1) {
-//
-//                        if (currentUser.uid == imageObject.photographer) {
-//                            Toast.makeText(context, "You can't bucket your own photos", Toast.LENGTH_SHORT).show()
-//                        } else {
-//                            addToBucket.setImageResource(R.drawable.bucket_saved)
-//
-//                            val refCurrentUserBucket =
-//                                FirebaseDatabase.getInstance()
-//                                    .getReference("/buckets/users/${currentUser.uid}/${imageObject.id}")
-//                            val bucketedImage = SimpleString(imageObject.id)
-//                            refCurrentUserBucket.setValue(bucketedImage).addOnCompleteListener {
-//                                val refCurrentImageBucket =
-//                                    FirebaseDatabase.getInstance()
-//                                        .getReference("/buckets/images/${imageObject.id}/${currentUser.uid}")
-//                                val bucketingUser = SimpleString(currentUser.uid)
-//                                refCurrentImageBucket.setValue(bucketingUser).addOnCompleteListener {
-//                                    listenToBucketCount(bucketCount, imageObject)
-//                                }
-//                            }
-//                        }
-//
-//                    } else {
-//                        addToBucket.setImageResource(R.drawable.bucket)
-//
-//                    }
-//
-//                }
-//            }
-//
-//        })
-//
-//
-//    }
 
     private fun goToComments() {
         val action = ImageFullSizeFragmentDirections.actionDestinationImageFullSizeToPhotoCommentsFragment()
@@ -357,5 +191,4 @@ class OpenPhotoSocialBox : Fragment(), DereMethods {
     companion object {
         fun newInstance(): OpenPhotoSocialBox = OpenPhotoSocialBox()
     }
-
 }
