@@ -5,9 +5,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import co.getdere.Interfaces.DereMethods
+import co.getdere.Models.AnswerComments
 import co.getdere.Models.Answers
+import co.getdere.Models.Users
 import co.getdere.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
@@ -17,8 +21,8 @@ import kotlinx.android.synthetic.main.fragment_answer_comment.view.*
 class AnswerCommentFragment : Fragment(), DereMethods {
 
     lateinit var questionId : String
-    lateinit var answerId : String
-    lateinit var questionAuthorId : String
+    lateinit var answer : Answers
+    lateinit var currentUser : Users
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -33,9 +37,10 @@ class AnswerCommentFragment : Fragment(), DereMethods {
         activity!!.title = "Comment"
 
         arguments?.let {
-            val safeArgs = AnswerFragmentArgs.fromBundle(it)
+            val safeArgs = AnswerCommentFragmentArgs.fromBundle(it)
             questionId = safeArgs.questionId
-            questionAuthorId = safeArgs.questionAuthor
+            answer = safeArgs.answer
+            currentUser = safeArgs.currentUser
 
             val content = view.answer_comment_content_input
             val uid = FirebaseAuth.getInstance().uid ?: return
@@ -52,15 +57,19 @@ class AnswerCommentFragment : Fragment(), DereMethods {
 
     private fun postComment(content : String, timestamp: Long, author : String){
 
-        val refComment = FirebaseDatabase.getInstance().getReference("/questions/$questionId/answers/$answerId/comments").push()
+        val refComment = FirebaseDatabase.getInstance().getReference("/questions/$questionId/answers/${answer.answerId}/comments").push()
 
-        val newComment = Answers(refComment.key!!, answerId, content, timestamp, author)
+        val newComment = AnswerComments(refComment.key!!, answer.answerId, questionId, content, timestamp, author)
 
         refComment.setValue(newComment)
             .addOnSuccessListener {
                 Log.d("postAnswerComment", "Saved comment to Firebase Database")
-//                val action = AnswerFragmentDirections.actionDestinationAnswerToDestinationQuestionOpened()
-//                findNavController().navigate(action)
+
+                changeReputation(18, answer.answerId, questionId, currentUser.uid, currentUser.name, answer.author, TextView(this.context), "answercomment")
+
+
+                val action = AnswerCommentFragmentDirections.actionAnswerCommentFragmentToDestinationQuestionOpened()
+                findNavController().navigate(action)
 
             }.addOnFailureListener {
                 Log.d("postAnswerComment", "Failed to save question to database")

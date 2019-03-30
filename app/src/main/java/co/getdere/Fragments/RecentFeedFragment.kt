@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import co.getdere.GroupieAdapters.LinearFeedImage
 import co.getdere.Models.Images
 import co.getdere.Models.Users
@@ -27,7 +28,10 @@ class RecentFeedFragment : Fragment() {
 
     private lateinit var currentUser: Users
 
+    lateinit var feedRecycler : RecyclerView
     val galleryAdapter = GroupAdapter<ViewHolder>()
+    val galleryLayoutManager = LinearLayoutManager(this.context)
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -47,6 +51,8 @@ class RecentFeedFragment : Fragment() {
 
         activity!!.title = "Feed"
 
+        feedRecycler = view.findViewById(R.id.recent_feed_gallary)
+
         setUpGalleryAdapter()
 
 
@@ -64,11 +70,9 @@ class RecentFeedFragment : Fragment() {
 
     private fun setUpGalleryAdapter() {
 
-        recent_feed_gallary.adapter = galleryAdapter
-        val galleryLayoutManager = LinearLayoutManager(this.context)
+        feedRecycler.adapter = galleryAdapter
+        feedRecycler.layoutManager = galleryLayoutManager
         galleryLayoutManager.reverseLayout = true
-
-        recent_feed_gallary.layoutManager = galleryLayoutManager
 
         listenToImages()
     }

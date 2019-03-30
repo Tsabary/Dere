@@ -1,7 +1,12 @@
 package co.getdere.GroupieAdapters
 
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
+import co.getdere.Fragments.FeedFragmentDirections
+import co.getdere.Fragments.ImageFullSizeFragmentDirections
 import co.getdere.Interfaces.DereMethods
 import co.getdere.Models.Images
 import co.getdere.Models.Users
@@ -35,6 +40,15 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
         val likeCount = viewHolder.itemView.linear_feed_like_count
 
         val commentCount = viewHolder.itemView.linear_feed_comment_count
+
+        val imageDescription = viewHolder.itemView.linear_feed_image_details
+
+        if (image.details.isNotEmpty()){
+            imageDescription.visibility = View.VISIBLE
+            imageDescription.text = image.details
+        }
+
+
 
 
         Glide.with(viewHolder.root.context).load(currentUser.image).into(viewHolder.itemView.linear_feed_current_user_photo)
@@ -93,6 +107,13 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
 
         likeButton.setOnClickListener {
             executeLike(image, uid, likeCount, likeButton, 1, currentUser.name, image.photographer, authorReputation)
+        }
+
+        bucketButton.setOnClickListener {
+
+            val action = FeedFragmentDirections.actionDestinationFeedToDestinationAddToBucket(image, currentUser)
+            viewHolder.root.findNavController().navigate(action)
+
         }
     }
 }

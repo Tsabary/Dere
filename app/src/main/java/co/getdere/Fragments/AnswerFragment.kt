@@ -12,6 +12,8 @@ import android.widget.TextView
 import androidx.navigation.fragment.findNavController
 import co.getdere.Interfaces.DereMethods
 import co.getdere.Models.Answers
+import co.getdere.Models.Question
+import co.getdere.Models.Users
 
 import co.getdere.R
 import com.google.firebase.auth.FirebaseAuth
@@ -21,8 +23,8 @@ import kotlinx.android.synthetic.main.fragment_answer.view.*
 
 class AnswerFragment : Fragment(), DereMethods {
 
-    lateinit var questionId : String
-    lateinit var questionAuthorId : String
+    lateinit var question : Question
+    lateinit var currentUser  : Users
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -38,17 +40,15 @@ class AnswerFragment : Fragment(), DereMethods {
 
         arguments?.let {
             val safeArgs = AnswerFragmentArgs.fromBundle(it)
-            questionId = safeArgs.questionId
-            questionAuthorId = safeArgs.questionAuthor
+            question = safeArgs.question
+            currentUser = safeArgs.currentUser
 
             val content = view.answer_content
-            val uid = FirebaseAuth.getInstance().uid ?: return
-
 
 
             view.answer_btn.setOnClickListener {
 
-                postAnswer(content.text.toString(), System.currentTimeMillis(), uid)
+                postAnswer(content.text.toString(), System.currentTimeMillis())
 
             }
         }
@@ -56,19 +56,19 @@ class AnswerFragment : Fragment(), DereMethods {
 
     }
 
-    private fun postAnswer(content : String, timestamp: Long, author : String){
+    private fun postAnswer(content : String, timestamp: Long){
 
-        val ref = FirebaseDatabase.getInstance().getReference("/questions/$questionId/answers/").push()
+        val ref = FirebaseDatabase.getInstance().getReference("/questions/${question.id}/answers/").push()
 
-        val refAnswerBody = FirebaseDatabase.getInstance().getReference("/questions/$questionId/answers/${ref.key}/body")
+        val refAnswerBody = FirebaseDatabase.getInstance().getReference("/questions/${question.id}/answers/${ref.key}/body")
 
-        val newAnswer = Answers(ref.key!!, questionId, content, timestamp, author)
+        val newAnswer = Answers(ref.key!!, question.id, content, timestamp, currentUser.uid)
 
         refAnswerBody.setValue(newAnswer)
             .addOnSuccessListener {
                 Log.d("postAnswerActivity", "Saved answer to Firebase Database")
 
-                changeReputation(6, ref.key!!,questionId, author, "you", author, TextView(this.context), "answer")
+                changeReputation(6, ref.key!!, question.id, currentUser.uid, currentUser.name, question.author, TextView(this.context), "answer")
 
                 val action = AnswerFragmentDirections.actionDestinationAnswerToDestinationQuestionOpened()
                 findNavController().navigate(action)

@@ -886,7 +886,7 @@ interface DereMethods {
             13 -> {
 
                 val notificationRef = FirebaseDatabase.getInstance()
-                    .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}2")
+                    .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}12")
                 notificationRef.removeValue()
 
 
@@ -945,22 +945,22 @@ interface DereMethods {
                 notificationRef.removeValue()
             }
 
-            20 -> {
-                val valueForReceiver = ReputationScore(specificPostId, initiatorId, 1)
-                refReceiverReputation.setValue(valueForReceiver)
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
-                sendNotification(3, 20, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
-            }
-
-            21 -> {
-
-                val notificationRef = FirebaseDatabase.getInstance()
-                    .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}20")
-
-                refReceiverReputation.removeValue()
-                notificationRef.removeValue()
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
-            }
+//            20 -> {
+//                val valueForReceiver = ReputationScore(specificPostId, initiatorId, 1)
+//                refReceiverReputation.setValue(valueForReceiver)
+//                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+//                sendNotification(3, 20, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+//            }
+//
+//            21 -> {
+//
+//                val notificationRef = FirebaseDatabase.getInstance()
+//                    .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}20")
+//
+//                refReceiverReputation.removeValue()
+//                notificationRef.removeValue()
+//                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+//            }
 
 
 
@@ -1018,18 +1018,18 @@ reputation scenarios:
 5 : question/answer downvote is removed +2 for receiver +1 for initiator
 6 : answer given +2 to initiator
 7 : answer removed -2 to initiator            ***not implemented yet***
-8 : photo bucketed +15 to receiver +notification  // type 2            ***not implemented yet***
-9 : photo unbucketed -15 to receiver            ***not implemented yet***
+8 : photo bucketed +15 to receiver +notification  // type 2
+9 : photo unbucketed -15 to receiver
 10 : question saved +5 to receiver +notification  // type 0
 11 : question unsaved - 5 to receiver
-12 : comment receives a like +1 to receiver +notification  // type 3            ***not implemented yet***
-13 : comment like removed -1 to receiver            ***not implemented yet***
+12 : comment receives a like +1 to receiver +notification  // type 3
+13 : comment like removed -1 to receiver
 14 : photo receives a like +2 to receiver +notification  // type 2
 15 : photo like removed -2 to receiver
 16 : photo receives a comment
 17 : photo comment removed
 18 : answer receives a comment
-19: comment on answer removed
+19: comment on answer removed // not implemented yet
 20 : photo comment received a like
 21 : photo comment like removed
 

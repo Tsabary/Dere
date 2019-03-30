@@ -1,69 +1,79 @@
 package co.getdere.Fragments
 
-import android.Manifest
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.Log
-import android.view.*
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import co.getdere.CameraActivity2
+import androidx.recyclerview.widget.RecyclerView
 import co.getdere.GroupieAdapters.LinearFeedImage
-import co.getdere.MainActivity
 import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.R
-import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.ViewModels.SharedViewModelFollowedAccounts
+import co.getdere.ViewModels.SharedViewModelFollowingFeedPosition
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.fragment_following_feed.*
-import kotlinx.android.synthetic.main.fragment_following_feed.view.*
+import androidx.recyclerview.widget.LinearSmoothScroller
+
+
+
+
 
 class FollowingFeedFragment : Fragment() {
 
-//        private lateinit var currentUser: Users
     lateinit var sharedViewModelFollowedAccounts: SharedViewModelFollowedAccounts
+//    lateinit var sharedViewModelFollowingFeedPosition : SharedViewModelFollowingFeedPosition
+
+    lateinit var feedRecycler: RecyclerView
+    val galleryAdapter = GroupAdapter<ViewHolder>()
+    private var galleryLayoutManager = LinearLayoutManager(this.context)
 
     val uid = FirebaseAuth.getInstance().uid
 
-    val galleryAdapter = GroupAdapter<ViewHolder>()
+
+//    lateinit var smoothScroller : RecyclerView.SmoothScroller
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val myView = inflater.inflate(R.layout.fragment_following_feed, container, false)
 
+//
+//        smoothScroller = object : LinearSmoothScroller(this.context) {
+//            override fun getVerticalSnapPreference(): Int {
+//                return LinearSmoothScroller.SNAP_TO_START
+//            }
+//        }
+
+        feedRecycler = myView.findViewById(R.id.following_feed_gallary)
+
         activity?.let {
-            //            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
             sharedViewModelFollowedAccounts = ViewModelProviders.of(it).get(SharedViewModelFollowedAccounts::class.java)
+//            sharedViewModelFollowingFeedPosition = ViewModelProviders.of(it).get(SharedViewModelFollowingFeedPosition::class.java)
+
+            val userRef = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
+
+            userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+                    val currentUser = p0.getValue(Users::class.java)
+                    setUpGalleryAdapter(currentUser!!)
+                }
+            })
         }
 
-        val userRef = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
 
-        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                val currentUser = p0.getValue(Users::class.java)
-                setUpGalleryAdapter(myView, currentUser!!)
-
-
-            }
-
-
-        })
 
 
         createFollowedAccountsList()
@@ -71,6 +81,8 @@ class FollowingFeedFragment : Fragment() {
         return myView
 
     }
+
+
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -91,17 +103,20 @@ class FollowingFeedFragment : Fragment() {
 
     }
 
-    private fun setUpGalleryAdapter(myView: View, currentUser: Users) {
+    private fun setUpGalleryAdapter(currentUser: Users) {
 
-        myView.following_feed_gallary.adapter = galleryAdapter
-        val galleryLayoutManager = LinearLayoutManager(this.context)
+        feedRecycler.adapter = galleryAdapter
+        feedRecycler.layoutManager = galleryLayoutManager
         galleryLayoutManager.reverseLayout = true
 
-        myView.following_feed_gallary.layoutManager = galleryLayoutManager
-
         listenToImages(currentUser)
-
     }
+
+//    override fun onPause() {
+//        super.onPause()
+//
+//        sharedViewModelFollowingFeedPosition.position = galleryLayoutManager.findLastVisibleItemPosition()
+//    }
 
 
     private fun listenToImages(currentUser: Users) { //This needs to be fixed to not update in real time. Or should it?

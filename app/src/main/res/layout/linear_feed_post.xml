@@ -156,17 +156,41 @@
                 android:layout_marginStart="24dp"
                 app:layout_constraintTop_toTopOf="@+id/linear_feed_current_user_photo"
                 app:layout_constraintBottom_toBottomOf="@+id/linear_feed_current_user_photo"/>
-        <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:id="@+id/linear_feed_current_user_photo"
+
+        <!--app:showTrimExpandedText="false"-->
+
+
+        <com.borjabravo.readmoretextview.ReadMoreTextView
+                app:trimMode="trimModeLength"
+                app:trimLength="60"
+                app:trimExpandedText="Read less"
+                app:trimCollapsedText="Read more"
+                app:showTrimExpandedText="true"
+                app:colorClickableText="@color/green700"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/linear_feed_image_details"
+                android:fontFamily="@font/open_sans_semibold"
                 android:layout_marginTop="32dp"
                 app:layout_constraintTop_toBottomOf="@+id/linear_feed_like"
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginStart="32dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="32dp"
+                android:visibility="gone"/>
+
+
+        <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:id="@+id/linear_feed_current_user_photo"
+                app:layout_constraintTop_toBottomOf="@+id/linear_feed_image_details"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="32dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:layout_marginBottom="32dp"
-                tools:src="@drawable/no_dread"/>
+                tools:src="@drawable/no_dread"
+                android:layout_marginTop="32dp"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

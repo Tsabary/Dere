@@ -39,7 +39,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 android:layout_marginTop="16dp"
                 app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="80dp"
+                android:layout_marginStart="98dp"
                 tools:text="User name"
                 android:fontFamily="@font/open_sans_bold"/>
     </androidx.constraintlayout.widget.ConstraintLayout>

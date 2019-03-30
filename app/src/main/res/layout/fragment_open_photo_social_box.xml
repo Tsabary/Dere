@@ -134,8 +134,8 @@
     <com.borjabravo.readmoretextview.ReadMoreTextView
             app:trimMode="trimModeLength"
             app:trimLength="60"
-            app:trimExpandedText="Read more"
-            app:trimCollapsedText="Read less"
+            app:trimExpandedText="@string/read_more"
+            app:trimCollapsedText="@string/read_less"
             app:showTrimExpandedText="false"
             app:colorClickableText="@color/green700"
             android:layout_width="0dp"

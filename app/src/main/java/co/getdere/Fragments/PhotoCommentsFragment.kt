@@ -260,7 +260,7 @@ class SingleComment(var comment: Comments, val commentId : String, val imageId: 
                         likeButton.setImageResource(R.drawable.heart)
 
                         changeReputation(
-                            21,
+                            13,
                             commentId,
                             imageId,
                             currentUser.uid,
@@ -281,7 +281,7 @@ class SingleComment(var comment: Comments, val commentId : String, val imageId: 
                         likeButton.setImageResource(R.drawable.heart_active)
 
                         changeReputation(
-                            20,
+                            12,
                             commentId,
                             imageId,
                             currentUser.uid,

@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,6 +28,7 @@ import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.answer_comment_layout.view.*
 import kotlinx.android.synthetic.main.answer_layout.view.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
@@ -40,14 +42,14 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
     lateinit var questionObject: Question
 
 
-    lateinit var currentUserObject : Users
-    lateinit var randomUserObject : Users
+    lateinit var currentUserObject: Users
+    lateinit var randomUserObject: Users
 
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
 
-    lateinit var saveButton : TextView
+    lateinit var saveButton: TextView
 
-    lateinit var openedQuestionAuthorReputation : TextView
+    lateinit var openedQuestionAuthorReputation: TextView
 
 
     val uid = FirebaseAuth.getInstance().uid
@@ -63,7 +65,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
             currentUserObject = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
 
-            sharedViewModelRandomUser =ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
+            sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
         }
     }
 
@@ -189,10 +191,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
         answerButton.setOnClickListener {
 
-            val action = OpenedQuestionFragmentDirections.actionOpenedQuestionFragmentToAnswerFragment()
-            action.questionId = questionObject.id
-            action.questionAuthor = randomUserObject.uid
-
+            val action = OpenedQuestionFragmentDirections.actionOpenedQuestionFragmentToAnswerFragment(questionObject, currentUserObject)
             findNavController().navigate(action)
         }
 
@@ -224,8 +223,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                     answersAdapter.add(
                         SingleAnswer(
                             singleAnswerFromDB,
-                            currentUserObject.uid,
-                            currentUserObject.name
+                            currentUserObject
                         )
                     )
                 }
@@ -234,10 +232,13 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
             override fun onChildChanged(p0: DataSnapshot, p1: String?) {
 
             }
+
             override fun onCancelled(p0: DatabaseError) {
             }
+
             override fun onChildMoved(p0: DataSnapshot, p1: String?) {
             }
+
             override fun onChildRemoved(p0: DataSnapshot) {
             }
         })
@@ -245,7 +246,8 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
     private fun checkIfQuestionSaved(ranNum: Int) {
 
-        val refCurrentUserSavedQuestions = FirebaseDatabase.getInstance().getReference("/users/${currentUserObject.uid}/saved-questions")
+        val refCurrentUserSavedQuestions =
+            FirebaseDatabase.getInstance().getReference("/users/${currentUserObject.uid}/saved-questions")
 
         refCurrentUserSavedQuestions.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -256,15 +258,24 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 if (p0.hasChild(questionObject.id)) {
                     if (ranNum == 1) {
                         saveButton.text = getString(R.string.Save)
-                        saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray900 ))
+                        saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray900))
 
                         refCurrentUserSavedQuestions.child(questionObject.id).removeValue().addOnSuccessListener {
-                            changeReputation(11, questionObject.id, questionObject.id,currentUserObject.uid, currentUserObject.name, questionObject.author, openedQuestionAuthorReputation, "questionsave")
+                            changeReputation(
+                                11,
+                                questionObject.id,
+                                questionObject.id,
+                                currentUserObject.uid,
+                                currentUserObject.name,
+                                questionObject.author,
+                                openedQuestionAuthorReputation,
+                                "questionsave"
+                            )
                         }
 
                     } else {
                         saveButton.text = getString(R.string.Saved)
-                        saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.green700 ))
+                        saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
                     }
 
 
@@ -272,19 +283,29 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                     if (ranNum == 1) {
 
                         saveButton.text = getString(R.string.Saved)
-                        saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.green700 ))
+                        saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
 
                         val refQuestionInUserSavedQuestions =
                             FirebaseDatabase.getInstance()
                                 .getReference("/users/${currentUserObject.uid}/saved-questions")
-                        refQuestionInUserSavedQuestions.setValue(mapOf(questionObject.id to true)).addOnSuccessListener {
-                            changeReputation(10, questionObject.id, questionObject.id,currentUserObject.uid, currentUserObject.name, questionObject.author, openedQuestionAuthorReputation, "questionsave")
+                        refQuestionInUserSavedQuestions.setValue(mapOf(questionObject.id to true))
+                            .addOnSuccessListener {
+                                changeReputation(
+                                    10,
+                                    questionObject.id,
+                                    questionObject.id,
+                                    currentUserObject.uid,
+                                    currentUserObject.name,
+                                    questionObject.author,
+                                    openedQuestionAuthorReputation,
+                                    "questionsave"
+                                )
 
-                        }
+                            }
 
                     } else {
                         saveButton.text = getString(R.string.Save)
-                        saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray900 ))
+                        saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray900))
                     }
                 }
             }
@@ -293,13 +314,12 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 }
 
 
-
-
 class SingleAnswer(
-    val answer : Answers,
-    val currentUserId : String,
-    val currentUserName : String
+    val answer: Answers,
+    val currentUser : Users
 ) : Item<ViewHolder>(), DereMethods {
+
+    val commentsAdapter = GroupAdapter<ViewHolder>()
 
     override fun getLayout(): Int {
         return R.layout.answer_layout
@@ -307,12 +327,52 @@ class SingleAnswer(
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
+        val upvote = viewHolder.itemView.findViewById<ImageButton>(R.id.answer_upvote)
+        val downvote = viewHolder.itemView.findViewById<ImageButton>(R.id.answer_downvote)
+        val comment = viewHolder.itemView.findViewById<TextView>(R.id.answer_comment_button)
+
+        val commentsRecycler = viewHolder.itemView.findViewById<RecyclerView>(R.id.answer_comments_recycler)
+
+        val commentsLayoutManager = LinearLayoutManager(viewHolder.root.context)
+
+        commentsRecycler.adapter = commentsAdapter
+        commentsRecycler.layoutManager = commentsLayoutManager
+
+        val refAnswerComments = FirebaseDatabase.getInstance()
+            .getReference("/questions/${answer.questionId}/answers/${answer.answerId}/comments")
+
+        refAnswerComments.addChildEventListener(object : ChildEventListener {
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+
+                val singleCommentFromDB = p0.getValue(AnswerComments::class.java)
+
+                if (singleCommentFromDB != null){
+
+                    commentsAdapter.add(SingleAnswerComment(singleCommentFromDB))
+
+                }
+
+            }
+
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot) {
+            }
+
+        })
 
         executeVote(
             "checkStatus",
             answer.questionId,
-            currentUserId,
-            currentUserName,
+            currentUser.uid,
+            currentUser.name,
             answer.author,
             1,
             viewHolder.itemView.answer_votes,
@@ -324,9 +384,6 @@ class SingleAnswer(
         )
 
 
-
-
-
         val ref = FirebaseDatabase.getInstance().getReference("/users/${answer.author}/profile")
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -336,7 +393,7 @@ class SingleAnswer(
 
                 val author = p0.getValue(Users::class.java)
 
-                if (author != null){
+                if (author != null) {
 
                     val stampMills = answer.timestamp
                     val pretty = PrettyTime()
@@ -352,12 +409,12 @@ class SingleAnswer(
         })
 
 
-        viewHolder.itemView.answer_upvote.setOnClickListener {
+        upvote.setOnClickListener {
             executeVote(
                 "up",
                 answer.questionId,
-                currentUserId,
-                currentUserName,
+                currentUser.uid,
+                currentUser.name,
                 answer.author,
                 1,
                 viewHolder.itemView.answer_votes,
@@ -369,12 +426,12 @@ class SingleAnswer(
             )
         }
 
-        viewHolder.itemView.answer_downvote.setOnClickListener {
+        downvote.setOnClickListener {
             executeVote(
                 "down",
                 answer.questionId,
-                currentUserId,
-                currentUserName,
+                currentUser.uid,
+                currentUser.name,
                 answer.author,
                 1,
                 viewHolder.itemView.answer_votes,
@@ -385,5 +442,48 @@ class SingleAnswer(
                 viewHolder.itemView.answer_author_reputation
             )
         }
+
+        comment.setOnClickListener {
+
+            val action = OpenedQuestionFragmentDirections.actionDestinationQuestionOpenedToAnswerCommentFragment(
+                answer.questionId,
+                answer,
+                currentUser
+            )
+            viewHolder.root.findNavController().navigate(action)
+
+        }
     }
+}
+
+class SingleAnswerComment(val comment : AnswerComments) : Item<ViewHolder>(){
+    override fun getLayout(): Int {
+        return R.layout.answer_comment_layout
+    }
+
+    override fun bind(viewHolder: ViewHolder, position: Int) {
+
+        viewHolder.itemView.answer_comment_comment.text = comment.content
+
+        val ref = FirebaseDatabase.getInstance().getReference("/users/${comment.author}/profile")
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+
+                val author = p0.getValue(Users::class.java)
+
+                if (author != null) {
+
+                    viewHolder.itemView.answer_comment_author_name.text = author.name
+
+                }
+            }
+        })
+
+
+    }
+
+
 }

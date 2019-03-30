@@ -185,6 +185,8 @@ class SingleBoardNotification(val notification: Notification) : Item<ViewHolder>
                                     "Someone downvoted your question ${question.title}"
 
                                 viewHolder.itemView.board_notification_content.text = text
+                                inflateInitiatorImage(viewHolder, 0)
+
                             } else {
                                 val text =
                                     "Someone downvoted your answer to the question ${question.title}"
@@ -194,9 +196,27 @@ class SingleBoardNotification(val notification: Notification) : Item<ViewHolder>
                             }
                         }
 
+                        6 -> {
+                            val text =
+                                "${notification.initiatorName} answered your question ${question.title}"
+
+                            viewHolder.itemView.board_notification_content.text = text
+                            inflateInitiatorImage(viewHolder, 1)
+                        }
+
                         10 -> {
                             val notificationText =
                                 "${notification.initiatorName} saved your question ${question.title}"
+
+                            viewHolder.itemView.board_notification_content.text = notificationText
+
+                            inflateInitiatorImage(viewHolder, 1)
+
+                        }
+
+                        18 -> {
+                            val notificationText =
+                                "${notification.initiatorName} commented on your answer to the question ${question.title}"
 
                             viewHolder.itemView.board_notification_content.text = notificationText
 

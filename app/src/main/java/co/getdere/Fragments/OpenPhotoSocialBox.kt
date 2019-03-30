@@ -22,7 +22,6 @@ import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.ViewModels.SharedViewModelImage
 import co.getdere.ViewModels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
-import com.xwray.groupie.ViewHolder
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
 

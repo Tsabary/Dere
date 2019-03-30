@@ -2,6 +2,7 @@ package co.getdere
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -9,6 +10,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import co.getdere.Models.Images
 import co.getdere.Models.Question
@@ -54,16 +56,15 @@ class MainActivity : AppCompatActivity() {
         sharedViewModelRandomUser = ViewModelProviders.of(this).get(SharedViewModelRandomUser::class.java)
         sharedViewModelRandomUser.randomUserObject.postValue(Users())
 
-
         FirebaseApp.initializeApp(this)
-
         checkIfLoggedIn()
-        val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
-
-        setupBottomNavMenu(navController)
         setupActionBar()
 
-        this.findNavController(R.id.nav_host_fragment)
+
+
+
+
+
 
 
     }
@@ -107,9 +108,26 @@ class MainActivity : AppCompatActivity() {
             override fun onDataChange(p0: DataSnapshot) {
 
                 sharedViewModelCurrentUser.currentUserObject = p0.getValue(Users::class.java)!!
+                Log.d("checkLocation","fetchCurrentUser")
+
+                setupNavController()
             }
 
         })
+    }
+
+    private fun setupNavController(){
+        Log.d("checkLocation","setupNavController")
+
+        val myNavHostFragment: NavHostFragment = nav_host_fragment as NavHostFragment
+        val inflater = myNavHostFragment.navController.navInflater
+        val graph = inflater.inflate(R.navigation.nav_graph)
+        myNavHostFragment.navController.graph = graph
+
+
+        val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
+        setupBottomNavMenu(navController)
+        this.findNavController(R.id.nav_host_fragment)
     }
 
     private fun setupActionBar() {
