@@ -198,7 +198,7 @@ class SingleFeedNotification(val notification: Notification) : Item<ViewHolder>(
 
                         20 -> {
                             val notificationText =
-                                "${notification.initiatorName} liked a comment you made"
+                                "${notification.initiatorName} started following you"
 
                             viewHolder.itemView.feed_notification_content.text = notificationText
 

@@ -44,10 +44,7 @@ class ProfileLoggedInUserFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        activity?.let {
-            sharedViewModelForCurrentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java)
-            userProfile = sharedViewModelForCurrentUser.currentUserObject
-        }
+
 
         return inflater.inflate(R.layout.fragment_profile_logged_in_user, container, false)
 
@@ -71,10 +68,17 @@ class ProfileLoggedInUserFragment : Fragment() {
         bucketBtn = view.findViewById(R.id.profile_li_bucket_btn)
         rollBtn = view.findViewById(R.id.profile_li_roll_btn)
 
-        Glide.with(this).load(userProfile.image).into(profilePicture)
-        profileName.text = userProfile.name
-        profileReputation.text = userProfile.reputation
-        profileTagline.text = userProfile.tagline
+        activity?.let {
+            sharedViewModelForCurrentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java)
+            userProfile = sharedViewModelForCurrentUser.currentUserObject
+
+            Glide.with(this).load(userProfile.image).into(profilePicture)
+            profileName.text = userProfile.name
+            profileReputation.text = userProfile.reputation
+            profileTagline.text = userProfile.tagline
+        }
+
+
 
         val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
         val followersRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/followers")

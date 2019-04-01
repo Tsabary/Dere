@@ -16,6 +16,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import co.getdere.GroupieAdapters.FeedImage
+import co.getdere.Interfaces.DereMethods
 import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.R
@@ -29,7 +30,7 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 
 
-class ProfileRandomUserFragment : Fragment() {
+class ProfileRandomUserFragment : Fragment(), DereMethods {
 
     private lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
 
@@ -229,6 +230,8 @@ class ProfileRandomUserFragment : Fragment() {
                         followButton.setBackgroundResource(R.drawable.unfollow_button)
                         followButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray300))
                         followButton.text = "Unfollow"
+
+                        changeReputation(20,userProfile.uid, userProfile.uid, currentUser.uid, currentUser.name, userProfile.uid, TextView(context), "follow")
 
                     } else {
                         followButton.visibility = View.VISIBLE

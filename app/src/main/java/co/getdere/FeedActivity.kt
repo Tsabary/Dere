@@ -34,9 +34,11 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.pusher.pushnotifications.PushNotifications
 import kotlinx.android.synthetic.main.activity_main.*
+import android.view.View
+import kotlinx.android.synthetic.main.activity_feed.*
 
 
-class MainActivity : AppCompatActivity() {
+class FeedActivity : AppCompatActivity() {
 
     lateinit var mToolbar: Toolbar
     lateinit var mBottomNav: BottomNavigationView
@@ -45,26 +47,12 @@ class MainActivity : AppCompatActivity() {
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
 
-//    val fragment1: Fragment = FeedFragment()
-//    val fragment2: Fragment = BoardFragment()
-//    val fragment3: Fragment = ProfileLoggedInUserFragment()
-//    val fm = supportFragmentManager
-//    var active : Fragment = fragment1
-
     lateinit var navHostFragment: Fragment
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-//
-//        fm.beginTransaction().add(R.id.nav_host_fragment, fragment3, "3").hide(fragment3).commit()
-//        fm.beginTransaction().add(R.id.nav_host_fragment, fragment2, "2").hide(fragment2).commit()
-//        fm.beginTransaction().add(R.id.nav_host_fragment, fragment1, "1").commit()
-
-//        PushNotifications.start(getApplicationContext(), "8286cd5e-eaaa-4d81-a57b-0f4d985b0a47");
-//        PushNotifications.subscribe("hello");
+        setContentView(R.layout.activity_feed)
 
         sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
 
@@ -78,67 +66,45 @@ class MainActivity : AppCompatActivity() {
         checkIfLoggedIn()
         setupActionBar()
 
-        navHostFragment = nav_host_fragment
-        mBottomNav = findViewById(R.id.bottom_nav)
+        navHostFragment = feed_nav_host_fragment
+        mBottomNav = findViewById(co.getdere.R.id.feed_bottom_nav)
 
+        mBottomNav.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
 
-//        mBottomNav.setOnNavigationItemSelectedListener { item ->
-//
-//            when (item.itemId) {
-//
-//                R.id.destination_feed -> {
-//                    println(active)
-//                    fm.beginTransaction().hide(active).show(fragment1).commit()
-//                    active = fragment1
-//                    println(active)
-//                    return@setOnNavigationItemSelectedListener true
-//                }
-//
-//                R.id.destination_board -> {
-//                    println(active)
-//                    fm.beginTransaction().hide(active).show(fragment2).commit()
-//                    active = fragment2
-//                    println(active)
-//
-//                    return@setOnNavigationItemSelectedListener true
-//
-//                }
-//
-//                R.id.destination_profile_logged_in_user -> {
-//                    println(active)
-//                    fm.beginTransaction().hide(active).show(fragment3).commit()
-//                    active = fragment3
-//                    println(active)
-//
-//                    return@setOnNavigationItemSelectedListener true
-//
-//                }
-//
-//                else -> {
-//                    fm.beginTransaction().hide(active).show(fragment1).commit();
-//                    active = fragment1
-//                }
-//
-//            }
-//
-//            return@setOnNavigationItemSelectedListener false
-//
-//        }
-
-
-    }
-
-    private fun setupBottomNavMenu(navController: NavController) {
-
-
-        bottom_nav.let {
-            NavigationUI.setupWithNavController(it, navController)
+                co.getdere.R.id.destination_board -> {
+                    val intent = Intent(this, BoardActivity::class.java)
+                    startActivity(intent)
+                }
+                R.id.destination_profile_logged_in_user -> {
+                    val intent = Intent(this, ProfileActivity::class.java)
+                    startActivity(intent)
+                }
+            }
+            false
         }
+
+
+
+
+
     }
+
+
+
+
+//
+//    private fun setupBottomNavMenu(navController: NavController) {
+//
+//
+//        bottom_nav.let {
+//            NavigationUI.setupWithNavController(it, navController)
+//        }
+//    }
 
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
+        val navController = Navigation.findNavController(this, R.id.feed_nav_host_fragment)
         val navigated = NavigationUI.onNavDestinationSelected(item!!, navController)
         return navigated || super.onOptionsItemSelected(item)
     }
@@ -181,13 +147,13 @@ class MainActivity : AppCompatActivity() {
 
         val myNavHostFragment: NavHostFragment = navHostFragment as NavHostFragment
         val inflater = myNavHostFragment.navController.navInflater
-        val graph = inflater.inflate(R.navigation.nav_graph)
+        val graph = inflater.inflate(R.navigation.feed_nav_graph)
         myNavHostFragment.navController.graph = graph
 
 
-        val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
-        setupBottomNavMenu(navController)
-        this.findNavController(R.id.nav_host_fragment)
+        val navController = Navigation.findNavController(this, R.id.feed_nav_host_fragment)
+//        setupBottomNavMenu(navController)
+        this.findNavController(R.id.feed_nav_host_fragment)
     }
 
     private fun setupActionBar() {
@@ -197,7 +163,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        fun newInstance(): MainActivity = MainActivity()
+        fun newInstance(): FeedActivity = FeedActivity()
     }
 }
 

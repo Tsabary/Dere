@@ -52,7 +52,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
     lateinit var openedQuestionAuthorReputation: TextView
 
 
-    val uid = FirebaseAuth.getInstance().uid
+//    val uid = FirebaseAuth.getInstance().uid
 
     val answersAdapter = GroupAdapter<ViewHolder>()
 
@@ -326,6 +326,8 @@ class SingleAnswer(
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
+
+//        val uid = FirebaseAuth.getInstance().uid
 
         val upvote = viewHolder.itemView.findViewById<ImageButton>(R.id.answer_upvote)
         val downvote = viewHolder.itemView.findViewById<ImageButton>(R.id.answer_downvote)

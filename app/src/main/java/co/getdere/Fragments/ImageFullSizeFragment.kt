@@ -3,24 +3,21 @@ package co.getdere.Fragments
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.viewpager.widget.ViewPager
 import co.getdere.Adapters.OpenPhotoPagerAdapter
-import co.getdere.ViewModels.SharedViewModelImage
-import co.getdere.ViewModels.SharedViewModelRandomUser
-import co.getdere.MainActivity
+import co.getdere.FeedActivity
 import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.OtherClasses.SwipeLockableViewPager
 import co.getdere.R
+import co.getdere.ViewModels.SharedViewModelImage
+import co.getdere.ViewModels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.fragment_image_full_size.view.*
@@ -114,8 +111,8 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
         }
         )
 
-        (activity as MainActivity).mToolbar.visibility = View.GONE
-        (activity as MainActivity).mBottomNav.visibility = View.GONE
+        (activity as FeedActivity).mToolbar.visibility = View.GONE
+        (activity as FeedActivity).mBottomNav.visibility = View.GONE
         //hide the bottom nav and the tool bar when on full screen mode
 
 
@@ -150,7 +147,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
 
 
     private fun setUpViewPager() {
-        boxPagerAdapter = OpenPhotoPagerAdapter((activity as MainActivity).supportFragmentManager)
+        boxPagerAdapter = OpenPhotoPagerAdapter((activity as FeedActivity).supportFragmentManager)
         val adapterOBJ= OpenPhotoPagerAdapter(childFragmentManager)
         viewPager = view!!.image_full_view_pager
         viewPager.adapter = adapterOBJ
@@ -162,8 +159,8 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
     override fun onDetach() {
         super.onDetach()
 
-        (activity as MainActivity).mToolbar.visibility = View.VISIBLE
-        (activity as MainActivity).mBottomNav.visibility = View.VISIBLE
+        (activity as FeedActivity).mToolbar.visibility = View.VISIBLE
+        (activity as FeedActivity).mBottomNav.visibility = View.VISIBLE
 
         val emptyUser = Users()
         val emptyImage = Images()

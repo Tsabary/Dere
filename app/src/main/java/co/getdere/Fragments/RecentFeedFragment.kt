@@ -29,8 +29,9 @@ class RecentFeedFragment : Fragment() {
     private lateinit var currentUser: Users
 
     lateinit var feedRecycler : RecyclerView
+
     val galleryAdapter = GroupAdapter<ViewHolder>()
-    val galleryLayoutManager = LinearLayoutManager(this.context)
+
 
 
     override fun onAttach(context: Context) {
@@ -69,6 +70,8 @@ class RecentFeedFragment : Fragment() {
     }
 
     private fun setUpGalleryAdapter() {
+
+        val galleryLayoutManager = LinearLayoutManager(this.context)
 
         feedRecycler.adapter = galleryAdapter
         feedRecycler.layoutManager = galleryLayoutManager

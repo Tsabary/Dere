@@ -15,7 +15,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.viewpager.widget.ViewPager
 import co.getdere.Adapters.FeedPagerAdapter
 import co.getdere.CameraActivity2
-import co.getdere.MainActivity
+import co.getdere.FeedActivity
 import co.getdere.Models.Users
 import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelCurrentUser
@@ -33,14 +33,14 @@ class FeedFragment : Fragment() {
     private lateinit var currentUser: Users
 
 
-    lateinit var mainActivity: Activity
+    lateinit var feedActivity: Activity
 
     lateinit var pagerAdapter : FeedPagerAdapter
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        mainActivity = activity as MainActivity
+        feedActivity = activity as FeedActivity
     }
 
 
@@ -121,7 +121,7 @@ class FeedFragment : Fragment() {
     }
 
     private fun requestPermission() {
-        ActivityCompat.requestPermissions(mainActivity, permissions, 0)
+        ActivityCompat.requestPermissions(feedActivity, permissions, 0)
     }
 
     companion object {

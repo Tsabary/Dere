@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".BoardActivity">
+
+
+
+
+    <androidx.appcompat.widget.Toolbar
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:theme="@style/MyActionBar"
+            android:minHeight="?attr/actionBarSize"
+            android:id="@+id/my_toolbar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+
+    <fragment
+            android:id="@+id/board_nav_host_fragment"
+            android:tag="container_fragment"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_height="0dp"
+            app:defaultNavHost="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/board_bottom_nav"
+            app:navGraph="@navigation/board_nav_graph"
+            android:layout_width="0dp"
+            app:layout_constraintTop_toBottomOf="@+id/my_toolbar"/>
+
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/board_bottom_nav"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/windowBackground"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:itemBackground="@color/white"
+            app:itemTextColor="@color/bottom_nav_color"
+            app:itemIconTint="@color/bottom_nav_color"
+            app:menu="@menu/navigation"
+            app:labelVisibilityMode="unlabeled"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

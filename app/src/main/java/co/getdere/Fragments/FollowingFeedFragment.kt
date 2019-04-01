@@ -24,9 +24,6 @@ import com.xwray.groupie.ViewHolder
 import androidx.recyclerview.widget.LinearSmoothScroller
 
 
-
-
-
 class FollowingFeedFragment : Fragment() {
 
     lateinit var sharedViewModelFollowedAccounts: SharedViewModelFollowedAccounts
@@ -34,7 +31,6 @@ class FollowingFeedFragment : Fragment() {
 
     lateinit var feedRecycler: RecyclerView
     val galleryAdapter = GroupAdapter<ViewHolder>()
-    private var galleryLayoutManager = LinearLayoutManager(this.context)
 
     val uid = FirebaseAuth.getInstance().uid
 
@@ -83,8 +79,6 @@ class FollowingFeedFragment : Fragment() {
     }
 
 
-
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -104,6 +98,9 @@ class FollowingFeedFragment : Fragment() {
     }
 
     private fun setUpGalleryAdapter(currentUser: Users) {
+
+        val galleryLayoutManager = LinearLayoutManager(this.context)
+
 
         feedRecycler.adapter = galleryAdapter
         feedRecycler.layoutManager = galleryLayoutManager

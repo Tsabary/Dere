@@ -47,7 +47,7 @@
         <action android:id="@+id/action_destination_board_to_openedQuestionFragment"
                 app:destination="@id/destination_question_opened"/>
         <action android:id="@+id/action_destination_board_to_savedQuestionsFragment"
-                app:destination="@id/destinatin_saved"/>
+                app:destination="@id/destination_saved"/>
         <action android:id="@+id/action_destination_board_to_boardNotificationsFragment"
                 app:destination="@id/destination_board_notifications"/>
     </fragment>
@@ -74,7 +74,7 @@
         <action android:id="@+id/action_openedQuestionFragment_to_answerFragment"
                 app:destination="@id/destination_answer"/>
         <action android:id="@+id/action_destination_question_opened_to_answerCommentFragment"
-                app:destination="@id/answerCommentFragment"/>
+                app:destination="@id/destination_answer_comment"/>
     </fragment>
     <fragment android:id="@+id/destination_answer"
               android:name="co.getdere.Fragments.AnswerFragment"
@@ -101,7 +101,7 @@
               android:name="co.getdere.Fragments.WebViewFragment"
               android:label="External website"
               tools:layout="@layout/fragment_web_view"/>
-    <fragment android:id="@+id/destinatin_saved"
+    <fragment android:id="@+id/destination_saved"
               android:name="co.getdere.Fragments.SavedQuestionsFragment"
               android:label="Saved discussions"
               tools:layout="@layout/fragment_saved_questions">
@@ -140,7 +140,7 @@
         <action android:id="@+id/action_destination_feed_notifications_to_destination_image_full_size"
                 app:destination="@id/destination_image_full_size"/>
     </fragment>
-    <fragment android:id="@+id/answerCommentFragment"
+    <fragment android:id="@+id/destination_answer_comment"
               android:name="co.getdere.Fragments.AnswerCommentFragment"
               android:label="AnswerCommentFragment">
         <argument android:name="questionId"
