@@ -1,7 +1,8 @@
 package co.getdere.Fragments
 
+import android.content.Context
 import android.os.Bundle
-import android.os.Parcelable
+import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,71 +12,65 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import co.getdere.FeedActivity
 import co.getdere.GroupieAdapters.LinearFeedImage
 import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.R
+import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.ViewModels.SharedViewModelFollowedAccounts
-import co.getdere.ViewModels.SharedViewModelFollowingFeedPosition
+import co.getdere.ViewModels.SharedViewModelImage
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
+import com.google.firebase.database.ChildEventListener
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
-import androidx.recyclerview.widget.LinearSmoothScroller
 
 
-class FollowingFeedFragment : Fragment() {
+open class FollowingFeedFragment : Fragment() {
 
     lateinit var sharedViewModelFollowedAccounts: SharedViewModelFollowedAccounts
-//    lateinit var sharedViewModelFollowingFeedPosition : SharedViewModelFollowingFeedPosition
+
+    lateinit var sharedViewModelImage: SharedViewModelImage
+
+    lateinit var currentUser: Users
 
     lateinit var feedRecycler: RecyclerView
     val galleryAdapter = GroupAdapter<ViewHolder>()
 
     val uid = FirebaseAuth.getInstance().uid
 
+    lateinit var galleryLayoutManager: LinearLayoutManager
 
-//    lateinit var smoothScroller : RecyclerView.SmoothScroller
+
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        activity?.let {
+            sharedViewModelFollowedAccounts = ViewModelProviders.of(it).get(SharedViewModelFollowedAccounts::class.java)
+
+            sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
+
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+
+            createFollowedAccountsList()
+
+        }
+
+    }
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val myView = inflater.inflate(R.layout.fragment_following_feed, container, false)
 
-//
-//        smoothScroller = object : LinearSmoothScroller(this.context) {
-//            override fun getVerticalSnapPreference(): Int {
-//                return LinearSmoothScroller.SNAP_TO_START
-//            }
-//        }
-
         feedRecycler = myView.findViewById(R.id.following_feed_gallary)
-
-        activity?.let {
-            sharedViewModelFollowedAccounts = ViewModelProviders.of(it).get(SharedViewModelFollowedAccounts::class.java)
-//            sharedViewModelFollowingFeedPosition = ViewModelProviders.of(it).get(SharedViewModelFollowingFeedPosition::class.java)
-
-            val userRef = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
-
-            userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-
-                }
-
-                override fun onDataChange(p0: DataSnapshot) {
-                    val currentUser = p0.getValue(Users::class.java)
-                    setUpGalleryAdapter(currentUser!!)
-                }
-            })
-        }
-
-
-
-
-        createFollowedAccountsList()
+        setUpGalleryAdapter()
 
         return myView
-
     }
 
 
@@ -88,32 +83,43 @@ class FollowingFeedFragment : Fragment() {
 
         galleryAdapter.setOnItemClickListener { item, _ ->
 
-            val row = item as LinearFeedImage
-            val action = FeedFragmentDirections.actionDestinationFeedToDestinationImageFullSize()
-            action.imageId = row.image.id
-            findNavController().navigate(action)
+            val image = item as LinearFeedImage
+
+            sharedViewModelImage.sharedImageObject.postValue(image.image)
+
+            val activity = activity as FeedActivity
+
+            activity.switchVisibility(1)
+
+//            activity.fm.beginTransaction().replace(R.id.feed_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment").addToBackStack(null).commit()
+
+//            activity.fm.beginTransaction().hide(activity.active).show(activity.imageFullSizeFragment).commit()
+//            activity.active = activity.imageFullSizeFragment
+
+//            val row = item as LinearFeedImage
+//            val action =
+//                FeedFragmentDirections.actionDestinationFeedToDestinationImageFullSize(row.image.id, "FeedActivity")
+//            findNavController().navigate(action)
 
         }
 
     }
 
-    private fun setUpGalleryAdapter(currentUser: Users) {
-
-        val galleryLayoutManager = LinearLayoutManager(this.context)
+    private fun setUpGalleryAdapter() {
 
 
+        galleryLayoutManager = LinearLayoutManager(this.context)
         feedRecycler.adapter = galleryAdapter
         feedRecycler.layoutManager = galleryLayoutManager
         galleryLayoutManager.reverseLayout = true
 
         listenToImages(currentUser)
+
+        Handler().postDelayed(Runnable { galleryLayoutManager.scrollToPosition(3) }, 2000)
     }
 
-//    override fun onPause() {
-//        super.onPause()
-//
-//        sharedViewModelFollowingFeedPosition.position = galleryLayoutManager.findLastVisibleItemPosition()
-//    }
+
+
 
 
     private fun listenToImages(currentUser: Users) { //This needs to be fixed to not update in real time. Or should it?
@@ -143,12 +149,15 @@ class FollowingFeedFragment : Fragment() {
                         if (accountUid == singleImageFromDB.photographer) {
                             if (!singleImageFromDB.private) {
                                 galleryAdapter.add(LinearFeedImage(singleImageFromDB, currentUser))
+
+
                             }
                         }
 
                     }
 
                 }
+
             }
 
             override fun onCancelled(p0: DatabaseError) {

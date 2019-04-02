@@ -1,8 +1,10 @@
 package co.getdere.Fragments
 
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +17,7 @@ import co.getdere.FeedActivity
 import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.OtherClasses.SwipeLockableViewPager
+import co.getdere.ProfileActivity
 import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelImage
 import co.getdere.ViewModels.SharedViewModelRandomUser
@@ -38,6 +41,8 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
     lateinit var goToSocial: ImageButton
     lateinit var viewPager: SwipeLockableViewPager
 
+    var activityName = "FeedActivity"
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -45,44 +50,21 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
         activity?.let {
             sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
 
+
             sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
         }
+
+
 
         arguments?.let {
             val safeArgs = ImageFullSizeFragmentArgs.fromBundle(it)
 
-            val imageId = safeArgs.imageId
+//            val imageId = safeArgs.imageId
 
-            refImage = FirebaseDatabase.getInstance().getReference("/images/$imageId/body")
+            activityName = safeArgs.activityName
 
-            refImage.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
 
-                }
 
-                override fun onDataChange(p0: DataSnapshot) {
-
-                    val imageObject = p0.getValue(Images::class.java)!!
-
-                    sharedViewModelForImage.sharedImageObject.postValue(imageObject)
-
-                    val refRandomUser =
-                        FirebaseDatabase.getInstance().getReference("/users/${imageObject.photographer}/profile")
-
-                    refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-                        }
-
-                        override fun onDataChange(p0: DataSnapshot) {
-
-                            val randomUserObject = p0.getValue(Users::class.java)!!
-
-                            sharedViewModelForRandomUser.randomUserObject.postValue(randomUserObject)
-                        }
-
-                    })
-                }
-            })
         }
 
     }
@@ -94,8 +76,69 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
     ): View? = inflater.inflate(R.layout.fragment_image_full_size, container, false)
 
 
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+
+
+
+
+        sharedViewModelForImage.sharedImageObject.observe(this, Observer {
+            it?.let {image ->
+
+                if (image.id.isNotEmpty()){
+
+                    refImage = FirebaseDatabase.getInstance().getReference("/images/${image.id}/body")
+
+                    refImage.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
+
+                        }
+
+                        override fun onDataChange(p0: DataSnapshot) {
+
+                            val imageObject = p0.getValue(Images::class.java)!!
+
+                            sharedViewModelForImage.sharedImageObject.postValue(imageObject)
+
+                            val refRandomUser =
+                                FirebaseDatabase.getInstance().getReference("/users/${imageObject.photographer}/profile")
+
+                            refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onCancelled(p0: DatabaseError) {
+                                }
+
+                                override fun onDataChange(p0: DataSnapshot) {
+
+                                    val randomUserObject = p0.getValue(Users::class.java)!!
+
+                                    sharedViewModelForRandomUser.randomUserObject.postValue(randomUserObject)
+                                }
+
+                            })
+                        }
+                    })
+
+                }
+
+
+
+            }
+
+        })
+
+
+
+
+
+
+
+
+
+
+
 
         val mainImage = view.findViewById<ImageView>(R.id.image_full_image)
         goToMapBtn = view.findViewById<ImageButton>(R.id.image_full_go_to_map_btn)
@@ -111,8 +154,15 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
         }
         )
 
-        (activity as FeedActivity).mToolbar.visibility = View.GONE
-        (activity as FeedActivity).mBottomNav.visibility = View.GONE
+//        if (activityName == "FeedActivity"){
+//            (activity as FeedActivity).mToolbar.visibility = View.GONE
+//            (activity as FeedActivity).mBottomNav.visibility = View.GONE
+//        } else {
+//            (activity as ProfileActivity).mToolbar.visibility = View.GONE
+//            (activity as ProfileActivity).mBottomNav.visibility = View.GONE
+//        }
+
+
         //hide the bottom nav and the tool bar when on full screen mode
 
 
@@ -147,7 +197,13 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
 
 
     private fun setUpViewPager() {
-        boxPagerAdapter = OpenPhotoPagerAdapter((activity as FeedActivity).supportFragmentManager)
+
+        if (activityName == "FeedActivity"){
+            boxPagerAdapter = OpenPhotoPagerAdapter((activity as FeedActivity).supportFragmentManager)
+        } else {
+            boxPagerAdapter = OpenPhotoPagerAdapter((activity as ProfileActivity).supportFragmentManager)
+        }
+
         val adapterOBJ= OpenPhotoPagerAdapter(childFragmentManager)
         viewPager = view!!.image_full_view_pager
         viewPager.adapter = adapterOBJ
@@ -159,8 +215,15 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment() {
     override fun onDetach() {
         super.onDetach()
 
-        (activity as FeedActivity).mToolbar.visibility = View.VISIBLE
-        (activity as FeedActivity).mBottomNav.visibility = View.VISIBLE
+        if (activityName == "FeedActivity"){
+            (activity as FeedActivity).mToolbar.visibility = View.VISIBLE
+            (activity as FeedActivity).mBottomNav.visibility = View.VISIBLE
+        } else {
+            (activity as ProfileActivity).mToolbar.visibility = View.VISIBLE
+            (activity as ProfileActivity).mBottomNav.visibility = View.VISIBLE
+        }
+
+
 
         val emptyUser = Users()
         val emptyImage = Images()

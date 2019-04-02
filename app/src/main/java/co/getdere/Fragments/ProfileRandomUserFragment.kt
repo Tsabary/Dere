@@ -44,6 +44,8 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
     lateinit var followButton: TextView
     lateinit var profileGallery: RecyclerView
 
+    lateinit var activityName: String
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -53,6 +55,13 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
             sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
 
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+
+
+        }
+
+        arguments?.let {
+            val safeArgs = ProfileRandomUserFragmentArgs.fromBundle(it)
+            activityName = safeArgs.activityName
         }
     }
 
@@ -61,14 +70,91 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
         val myView = inflater.inflate(R.layout.fragment_profile_random_user, container, false)
 
-        val profileTagline = myView.findViewById<TextView>(R.id.profile_ru_tagline)
-        val profilePicture: ImageView = myView.findViewById(R.id.profile_ru_image)
-        val profileName: TextView = myView.findViewById(R.id.profile_ru_user_name)
-        profileGallery = myView.findViewById(R.id.profile_ru_gallery)
-        val profileReputation = myView.findViewById<TextView>(R.id.profile_ru_reputation_count)
-        val profilePhotos = myView.findViewById<TextView>(R.id.profile_ru_photos_count)
-        val profileFollowers = myView.findViewById<TextView>(R.id.profile_ru_followers_count)
-        followButton = myView.findViewById(R.id.profile_ru_follow_button)
+//        val profileTagline = myView.findViewById<TextView>(R.id.profile_ru_tagline)
+//        val profilePicture: ImageView = myView.findViewById(R.id.profile_ru_image)
+//        val profileName: TextView = myView.findViewById(R.id.profile_ru_user_name)
+//        profileGallery = myView.findViewById(R.id.profile_ru_gallery)
+//        val profileReputation = myView.findViewById<TextView>(R.id.profile_ru_reputation_count)
+//        val profilePhotos = myView.findViewById<TextView>(R.id.profile_ru_photos_count)
+//        val profileFollowers = myView.findViewById<TextView>(R.id.profile_ru_followers_count)
+//        followButton = myView.findViewById(R.id.profile_ru_follow_button)
+//
+//
+//
+//        sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
+//            it?.let { user ->
+//                userProfile = user
+//                Glide.with(this).load(it.image).into(profilePicture)
+//                profileName.text = it.name
+//                profileReputation.text = it.reputation
+//                profileTagline.text = it.tagline
+//                setUpGalleryAdapter(profileGallery, 0)
+//                changeGalleryFeed("Roll")
+//
+//                executeFollow(0, followButton)
+//
+//
+//                val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
+//
+//                photosRef.addValueEventListener(object : ValueEventListener {
+//
+//                    override fun onCancelled(p0: DatabaseError) {
+//
+//                    }
+//
+//                    override fun onDataChange(p0: DataSnapshot) {
+//
+//                        profilePhotos.text = p0.childrenCount.toString()
+//
+//                    }
+//
+//                })
+//
+//
+//                val followersRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/followers")
+//
+//                followersRef.addValueEventListener(object : ValueEventListener {
+//
+//                    override fun onCancelled(p0: DatabaseError) {
+//
+//                    }
+//
+//                    override fun onDataChange(p0: DataSnapshot) {
+//
+//                        profileFollowers.text = p0.childrenCount.toString()
+//
+//                    }
+//
+//                })
+//
+//
+//            }
+//        }
+//        )
+//
+
+
+
+        return myView
+
+    }
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+
+
+
+
+        val profileTagline = view.findViewById<TextView>(R.id.profile_ru_tagline)
+        val profilePicture: ImageView = view.findViewById(R.id.profile_ru_image)
+        val profileName: TextView = view.findViewById(R.id.profile_ru_user_name)
+        profileGallery = view.findViewById(R.id.profile_ru_gallery)
+        val profileReputation = view.findViewById<TextView>(R.id.profile_ru_reputation_count)
+        val profilePhotos = view.findViewById<TextView>(R.id.profile_ru_photos_count)
+        val profileFollowers = view.findViewById<TextView>(R.id.profile_ru_followers_count)
+        followButton = view.findViewById(R.id.profile_ru_follow_button)
 
 
 
@@ -126,19 +212,15 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
 
 
-        return myView
-
-    }
 
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
 
 
-        val profileFollowers = view.findViewById<TextView>(R.id.profile_ru_followers_count)
-        val profileTagline = view.findViewById<TextView>(R.id.profile_ru_tagline)
-        val instagramButton = view.findViewById<ImageButton>(R.id.profile_ru_insta_icon)
-        var followState = 0
+
+
+
+
+
 
 
         bucketBtn = view.findViewById(R.id.profile_ru_bucket_btn)
@@ -176,8 +258,7 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
             val row = item as FeedImage
 //            val imageId = row.image
             val action =
-                ProfileRandomUserFragmentDirections.actionDestinationProfileRandomUserToDestinationImageFullSize()
-            action.imageId = row.image.id
+                ProfileRandomUserFragmentDirections.actionDestinationProfileRandomUserToDestinationImageFullSize(row.image.id, "FeedActivity")
             findNavController().navigate(action)
 
         }

@@ -183,8 +183,8 @@ class ProfileLoggedInUserFragment : Fragment() {
             val row = item as FeedImage
 //            val imageId = row.image
             val action =
-                ProfileLoggedInUserFragmentDirections.actionDestinationProfileLoggedInUserToDestinationImageFullSize()
-            action.imageId = row.image.id
+                ProfileLoggedInUserFragmentDirections.actionDestinationProfileLoggedInUserToDestinationImageFullSize(row.image.id, "ProfileActivity")
+
             findNavController().navigate(action)
 
         }
@@ -458,8 +458,7 @@ class SingleBucketRoll(val bucket: DataSnapshot, userId: String) : Item<ViewHold
             val singleImage = item as SingleImageToBucketRoll
 
             val action =
-                ProfileLoggedInUserFragmentDirections.actionDestinationProfileLoggedInUserToDestinationImageFullSize()
-            action.imageId = singleImage.image.id
+                ProfileLoggedInUserFragmentDirections.actionDestinationProfileLoggedInUserToDestinationImageFullSize(singleImage.image.id, "ProfileActivity")
             viewHolder.root.findNavController().navigate(action)
 
         }

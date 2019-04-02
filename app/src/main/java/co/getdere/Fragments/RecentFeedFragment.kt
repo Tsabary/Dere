@@ -9,12 +9,14 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import co.getdere.FeedActivity
 import co.getdere.GroupieAdapters.LinearFeedImage
 import co.getdere.Models.Images
 import co.getdere.Models.Users
 
 import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelCurrentUser
+import co.getdere.ViewModels.SharedViewModelImage
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -28,6 +30,9 @@ class RecentFeedFragment : Fragment() {
 
     private lateinit var currentUser: Users
 
+    lateinit var sharedViewModelImage: SharedViewModelImage
+
+
     lateinit var feedRecycler : RecyclerView
 
     val galleryAdapter = GroupAdapter<ViewHolder>()
@@ -39,6 +44,9 @@ class RecentFeedFragment : Fragment() {
 
         activity?.let {
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+
+            sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
+
         }
 
     }
@@ -60,10 +68,22 @@ class RecentFeedFragment : Fragment() {
 
         galleryAdapter.setOnItemClickListener { item, _ ->
 
-            val row = item as LinearFeedImage
-            val action = FeedFragmentDirections.actionDestinationFeedToDestinationImageFullSize()
-            action.imageId = row.image.id
-            findNavController().navigate(action)
+
+
+            val image = item as LinearFeedImage
+
+            sharedViewModelImage.sharedImageObject.postValue(image.image)
+
+            val activity = activity as FeedActivity
+
+            activity.switchVisibility(1)
+
+
+//
+//            val row = item as LinearFeedImage
+//            val action = FeedFragmentDirections.actionDestinationFeedToDestinationImageFullSize(row.image.id, "FeedActivity")
+//
+//            findNavController().navigate(action)
 
         }
 

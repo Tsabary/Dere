@@ -123,8 +123,7 @@ class FeedNotificationsFragment : Fragment() {
                                     sharedViewModelRandomUser.randomUserObject.postValue(randomUser)
 
                                     val action =
-                                        FeedNotificationsFragmentDirections.actionDestinationFeedNotificationsToDestinationImageFullSize()
-                                    action.imageId = image.id
+                                        FeedNotificationsFragmentDirections.actionDestinationFeedNotificationsToDestinationImageFullSize(image.id, "FeedActivity")
                                     findNavController().navigate(action)
 
                                 }

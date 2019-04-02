@@ -14,12 +14,11 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
-import co.getdere.MainActivity
 import co.getdere.Models.Users
+import co.getdere.ProfileActivity
 import co.getdere.ViewModels.SharedViewModelCurrentUser
 import com.bumptech.glide.Glide
 import com.google.firebase.database.DataSnapshot
@@ -28,8 +27,6 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import de.hdodenhof.circleimageview.CircleImageView
-import kotlinx.android.synthetic.main.activity_register.*
-import kotlinx.android.synthetic.main.activity_register.view.*
 import java.util.*
 
 
@@ -112,7 +109,7 @@ class EditProfileFragment : Fragment() {
             Log.d("Main", "Photo was selected")
 
             selectedPhotoUri = data.data
-            val bitmap = MediaStore.Images.Media.getBitmap((activity as MainActivity).contentResolver, selectedPhotoUri)
+            val bitmap = MediaStore.Images.Media.getBitmap((activity as ProfileActivity).contentResolver, selectedPhotoUri)
             userImage.setImageBitmap(bitmap)
 //            register_photo_pick.alpha = 0f
 

@@ -181,7 +181,7 @@ class MainActivity : AppCompatActivity() {
 
         val myNavHostFragment: NavHostFragment = navHostFragment as NavHostFragment
         val inflater = myNavHostFragment.navController.navInflater
-        val graph = inflater.inflate(R.navigation.nav_graph)
+        val graph = inflater.inflate(R.navigation.feed_nav_graph)
         myNavHostFragment.navController.graph = graph
 
 

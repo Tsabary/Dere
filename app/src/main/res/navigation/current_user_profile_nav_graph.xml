@@ -11,7 +11,7 @@
               tools:layout="@layout/fragment_image_full_size">
         <argument android:name="imageId"
                   app:argType="string"
-                  android:defaultValue=" "/>
+        />
         <action android:id="@+id/action_destination_image_full_size_to_destination_profile"
                 app:destination="@id/destination_profile_logged_in_user"/>
         <action android:id="@+id/action_destination_image_full_size_to_profileRandomUserFragment"
@@ -22,6 +22,8 @@
                 app:destination="@id/destination_web_view"/>
         <action android:id="@+id/action_destination_image_full_size_to_destination_add_to_bucket"
                 app:destination="@id/destination_add_to_bucket"/>
+        <argument android:name="activityName"
+                  app:argType="string"/>
     </fragment>
     <fragment android:id="@+id/destination_profile_logged_in_user"
               android:name="co.getdere.Fragments.ProfileLoggedInUserFragment"
@@ -37,6 +39,8 @@
               android:label="Profile">
         <action android:id="@+id/action_destination_profile_random_user_to_destination_image_full_size"
                 app:destination="@id/destination_image_full_size"/>
+        <argument android:name="activityName"
+                  app:argType="string"/>
     </fragment>
     <fragment android:id="@+id/destination_photo_comments"
               android:name="co.getdere.Fragments.PhotoCommentsFragment"

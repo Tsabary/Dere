@@ -2,6 +2,7 @@ package co.getdere.Fragments
 
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +18,7 @@ import androidx.navigation.fragment.findNavController
 import co.getdere.Interfaces.DereMethods
 import co.getdere.Models.Images
 import co.getdere.Models.Users
+import co.getdere.ProfileActivity
 import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.ViewModels.SharedViewModelImage
@@ -39,6 +41,8 @@ class OpenPhotoSocialBox : Fragment(), DereMethods {
     lateinit var bucketCount: TextView
     lateinit var commentCount: TextView
 
+    lateinit var activityName : String
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
@@ -48,6 +52,13 @@ class OpenPhotoSocialBox : Fragment(), DereMethods {
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
 
             sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
+        }
+
+        if (activity.toString().contains("Feed")){
+            activityName = "FeedActivity"
+        } else {
+            activityName = "ProfileActivity"
+
         }
 
     }
@@ -128,12 +139,12 @@ class OpenPhotoSocialBox : Fragment(), DereMethods {
         authorName?.setOnClickListener {
 
             if (imageObject.photographer == currentUser.uid) {
-                val action = ImageFullSizeFragmentDirections.actionDestinationImageFullSizeToDestinationProfile()
-                findNavController().navigate(action)
+                val intent = Intent(this.context, ProfileActivity::class.java)
+                startActivity(intent)
 
             } else {
                 val action =
-                    ImageFullSizeFragmentDirections.actionDestinationImageFullSizeToProfileRandomUserFragment()
+                    ImageFullSizeFragmentDirections.actionDestinationImageFullSizeToProfileRandomUserFragment(activityName)
                 findNavController().navigate(action)
             }
 
