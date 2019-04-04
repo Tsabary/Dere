@@ -17,10 +17,8 @@ import co.getdere.Models.Users
 import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.ViewModels.SharedViewModelImage
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
+import co.getdere.ViewModels.SharedViewModelRandomUser
+import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.fragment_recent_feed.*
@@ -31,12 +29,12 @@ class RecentFeedFragment : Fragment() {
     private lateinit var currentUser: Users
 
     lateinit var sharedViewModelImage: SharedViewModelImage
+    lateinit var sharedViewModelForRandomUser : SharedViewModelRandomUser
 
 
-    lateinit var feedRecycler : RecyclerView
+    lateinit var feedRecycler: RecyclerView
 
     val galleryAdapter = GroupAdapter<ViewHolder>()
-
 
 
     override fun onAttach(context: Context) {
@@ -46,6 +44,7 @@ class RecentFeedFragment : Fragment() {
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
 
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
+            sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
 
         }
 
@@ -67,16 +66,47 @@ class RecentFeedFragment : Fragment() {
 
 
         galleryAdapter.setOnItemClickListener { item, _ ->
+            val activity = activity as FeedActivity
 
+//            if (activity.subActive != activity.imageFullSizeFragment) {
+//
+//                activity.subFm.beginTransaction()
+//                    .add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment")
+//                    .commit()
+//                activity.subActive = activity.imageFullSizeFragment
+//
+//            }
+
+//            activity.switchVisibility(1)
 
 
             val image = item as LinearFeedImage
 
             sharedViewModelImage.sharedImageObject.postValue(image.image)
 
-            val activity = activity as FeedActivity
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
+            activity.subActive = activity.imageFullSizeFragment
 
             activity.switchVisibility(1)
+
+
+            // meanwhile in the background it will load the random user object
+
+            val refRandomUser =
+                FirebaseDatabase.getInstance().getReference("/users/${image.image.photographer}/profile")
+
+            refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+
+                    val randomUserObject = p0.getValue(Users::class.java)!!
+
+                    sharedViewModelForRandomUser.randomUserObject.postValue(randomUserObject)
+                }
+
+            })
 
 
 //

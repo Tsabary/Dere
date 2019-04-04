@@ -58,11 +58,11 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
 
         }
-
-        arguments?.let {
-            val safeArgs = ProfileRandomUserFragmentArgs.fromBundle(it)
-            activityName = safeArgs.activityName
-        }
+//
+//        arguments?.let {
+//            val safeArgs = ProfileRandomUserFragmentArgs.fromBundle(it)
+//            activityName = safeArgs.activityName
+//        }
     }
 
 

@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import co.getdere.FeedActivity
 import co.getdere.Models.Notification
 import co.getdere.Models.Question
 import co.getdere.Models.Users
@@ -108,6 +109,11 @@ class BoardNotificationsFragment : Fragment() {
 
                         sharedViewModelQuestion.questionObject.postValue(question)
 
+                        val activity = activity as FeedActivity
+
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment).commit()
+                        activity.subActive = activity.openedQuestionFragment
+
                         val refRandomUser =
                             FirebaseDatabase.getInstance().getReference("/users/${question.author}/profile")
 
@@ -120,10 +126,10 @@ class BoardNotificationsFragment : Fragment() {
 
                                 if (randomUser != null){
                                     sharedViewModelRandomUser.randomUserObject.postValue(randomUser)
-
-                                    val action =
-                                        BoardNotificationsFragmentDirections.actionDestinationBoardNotificationsToDestinationQuestionOpened()
-                                    findNavController().navigate(action)
+//
+//                                    val action =
+//                                        BoardNotificationsFragmentDirections.actionDestinationBoardNotificationsToDestinationQuestionOpened()
+//                                    findNavController().navigate(action)
 
                                 }
                             }

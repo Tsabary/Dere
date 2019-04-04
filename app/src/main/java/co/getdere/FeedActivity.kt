@@ -3,21 +3,21 @@ package co.getdere
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import co.getdere.Fragments.FeedFragment
-import co.getdere.Fragments.ImageFullSizeFragment
-import co.getdere.Fragments.ProfileRandomUserFragment
+import co.getdere.Fragments.*
+import co.getdere.Models.Answers
 import co.getdere.Models.Images
+import co.getdere.Models.Question
 import co.getdere.Models.Users
 import co.getdere.RegisterLogin.RegisterActivity
 import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.ViewModels.SharedViewModelImage
+import co.getdere.ViewModels.SharedViewModelQuestion
 import co.getdere.ViewModels.SharedViewModelRandomUser
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
@@ -27,7 +27,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.android.synthetic.main.subcontents.*
+import kotlinx.android.synthetic.main.subcontents_main.*
 
 
 class FeedActivity : AppCompatActivity() {
@@ -38,12 +38,25 @@ class FeedActivity : AppCompatActivity() {
     lateinit var sharedViewModelCurrentUser: SharedViewModelCurrentUser
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
+    lateinit var sharedViewModelQuestion: SharedViewModelQuestion
 
-    lateinit var feedNavHostFragment: Fragment
+//    lateinit var feedNavHostFragment: Fragment
 
-    var imageFullSizeFragment = ImageFullSizeFragment()
-    var feedFragment = FeedFragment()
-    var randomProfileNavHostFragment = ProfileRandomUserFragment()
+    lateinit var feedFragment: FeedFragment
+    lateinit var boardFragment: BoardFragment
+    lateinit var profileLoggedInUserFragment: ProfileLoggedInUserFragment
+
+    lateinit var imageFullSizeFragment: ImageFullSizeFragment
+    lateinit var profileRandomUserFragment: ProfileRandomUserFragment
+    lateinit var bucketFragment: AddToBucketFragment
+    lateinit var openedQuestionFragment: OpenedQuestionFragment
+    lateinit var feedNotificationsFragment: FeedNotificationsFragment
+    lateinit var boardNotificationsFragment: BoardNotificationsFragment
+    lateinit var savedQuestionFragment: SavedQuestionsFragment
+    lateinit var answerCommentFragment: AnswerCommentFragment
+    lateinit var answerFragment: AnswerFragment
+    lateinit var newQuestionFragment: NewQuestionFragment
+    lateinit var editProfileFragment: EditProfileFragment
 
 
     lateinit var mainFrame: FrameLayout
@@ -52,20 +65,23 @@ class FeedActivity : AppCompatActivity() {
     val fm = supportFragmentManager
     val subFm = supportFragmentManager
 
-    var active: Fragment = feedFragment
-    var subActive: Fragment = imageFullSizeFragment
+    lateinit var active: Fragment
+    lateinit var subActive: Fragment
 
-
+    var answerObject = Answers()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_feed)
 
+        sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
+        sharedViewModelQuestion = ViewModelProviders.of(this).get(SharedViewModelQuestion::class.java)
+
         FirebaseApp.initializeApp(this)
         checkIfLoggedIn()
 
-        sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
+
 
         sharedViewModelImage = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
         sharedViewModelImage.sharedImageObject.postValue(Images())
@@ -76,6 +92,7 @@ class FeedActivity : AppCompatActivity() {
         mainFrame = feed_frame_container
         subFrame = feed_subcontents_frame_container
 
+
         mToolbar = findViewById(R.id.my_toolbar)
         setSupportActionBar(mToolbar)
 
@@ -84,42 +101,63 @@ class FeedActivity : AppCompatActivity() {
         mBottomNav.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
 
-                co.getdere.R.id.destination_board -> {
-//
-//                    fm.beginTransaction().hide(active).show(boardNavHostFragment).commit()
-//                    active = boardNavHostFragment
-
-                    val intent = Intent(this, BoardActivity::class.java)
-                    startActivity(intent)
-                }
-                R.id.destination_profile_logged_in_user -> {
-
-//                    fm.beginTransaction().hide(active).show(profileNavHostFragment).commit()
-//                    active = profileNavHostFragment
-
-                    val intent = Intent(this, ProfileActivity::class.java)
-                    startActivity(intent)
-                }
 
                 R.id.destination_feed -> {
 
-//                    fm.beginTransaction().hide(active).show(feedNavHostFragment).commit()
-//                    active = feedNavHostFragment
+                    fm.beginTransaction().hide(active).show(feedFragment).commit()
+                    active = feedFragment
 
-//                    val intent = Intent(this, ProfileActivity::class.java)
-//                    startActivity(intent)
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+                    menuItem.isChecked = true
+
+
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+
+                    if (mainFrame.visibility == View.GONE) {
+                        switchVisibility(0)
+                    }
+
+
+                }
+
+                co.getdere.R.id.destination_board -> {
+
+                    fm.beginTransaction().hide(active).show(boardFragment).commit()
+                    active = boardFragment
+
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_board)
+                    menuItem.isChecked = true
+
+
+                    if (mainFrame.visibility == View.GONE) {
+                        switchVisibility(0)
+                    }
+
+                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                    subActive = openedQuestionFragment
+
+
+                }
+                R.id.destination_profile_logged_in_user -> {
+
+                    fm.beginTransaction().hide(active).show(profileLoggedInUserFragment).commit()
+                    active = profileLoggedInUserFragment
+
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_profile_logged_in_user)
+                    menuItem.isChecked = true
+
+
+                    if (mainFrame.visibility == View.GONE) {
+                        switchVisibility(0)
+                    }
+
+                    subFm.beginTransaction().hide(subActive).show(editProfileFragment).commit()
+                    subActive = editProfileFragment
                 }
             }
             false
         }
-
-//
-//        fm.beginTransaction().add(R.id.feed_frame_container, imageFullSizeFragment, "imageFullSizeFragment").hide(imageFullSizeFragment).commit()
-//        fm.beginTransaction().add(R.id.feed_frame_container, randomProfileNavHostFragment, "randomProfileNavHostFragment").hide(randomProfileNavHostFragment).commit()
-        fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment").commit()
-
-        subFm.beginTransaction()
-            .add(R.id.feed_subcontents_frame_container, imageFullSizeFragment, "imageFullSizeFragment").commit()
 
 
     }
@@ -139,55 +177,132 @@ class FeedActivity : AppCompatActivity() {
     }
 
 
-
     override fun onBackPressed() {
-//        super.onBackPressed()
 
-        if (mainFrame.visibility == View.GONE){
+        if (mainFrame.visibility == View.GONE) { // subframe is active
 
-            switchVisibility(0)
+            when (subActive) {
+
+                imageFullSizeFragment -> {
+                    switchVisibility(0)
+                    sharedViewModelImage.sharedImageObject.postValue(Images())
+                }
+                bucketFragment -> {
+
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+//                    subFm.beginTransaction().remove(bucketFragment).commit()
+
+                    subActive = imageFullSizeFragment
+                }
+
+                profileRandomUserFragment -> {
+
+                    imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+
+                    sharedViewModelRandomUser.randomUserObject.postValue(Users())
+                }
+
+                feedNotificationsFragment -> {
+                    switchVisibility(0)
+                }
+
+                openedQuestionFragment -> {
+                    switchVisibility(0)
+                    sharedViewModelQuestion.questionObject.postValue(Question())
+                }
+
+                boardNotificationsFragment -> {
+                    switchVisibility(0)
+                }
+
+                savedQuestionFragment -> {
+                    switchVisibility(0)
+                }
+
+                answerCommentFragment -> {
+                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                    subActive = openedQuestionFragment
+                }
+
+                answerFragment -> {
+                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                    subActive = openedQuestionFragment
+                }
+
+                newQuestionFragment -> {
+                    switchVisibility(0)
+                }
+
+            }
+
+
+        } else {
+
+            when (active) { // main frame is active
+
+                profileLoggedInUserFragment -> {
+
+                    fm.beginTransaction().hide(active).show(feedFragment).commit()
+                    active = feedFragment
+
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+                    menuItem.isChecked = true
+
+                    switchVisibility(0)
+
+                }
+
+                boardFragment -> {
+
+                    fm.beginTransaction().hide(active).show(feedFragment).commit()
+                    active = feedFragment
+
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+                    menuItem.isChecked = true
+
+                    switchVisibility(0)
+
+                }
+
+                feedFragment -> super.onBackPressed()
+            }
 
         }
 
-//        when (active){
-//
-//            imageFullSizeFragment -> {
-//                fm.beginTransaction().hide(active).show(feedFragment).commit()
-//                active = feedFragment
-//            } else -> {}
-//
-//        }
-
-
     }
-
-
-//
-//    private fun setupBottomNavMenu(navController: NavController) {
-//
-//
-//        bottom_nav.let {
-//            NavigationUI.setupWithNavController(it, navController)
-//        }
-//    }
 
 
 //    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
 //
+//        val id = item!!.getItemId()
+//
+//        //noinspection SimplifiableIfStatement
+//        if (id == co.getdere.R.id.destination_camera) {
+//            Toast.makeText(this, "Action clicked", Toast.LENGTH_LONG).show()
+//            return true
+//        } else {
+//            Toast.makeText(this, "Action clicked 2", Toast.LENGTH_LONG).show()
 //
 //
-////        val navController = Navigation.findNavController(this, R.id.feed_nav_host_fragment)
-////        val navigated = NavigationUI.onNavDestinationSelected(item!!, navController)
-////        return navigated || super.onOptionsItemSelected(item)
-////
+//        }
+//
+//        return super.onOptionsItemSelected(item)
 //
 //
 //    }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(co.getdere.R.menu.feed_navigation, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
+//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+////        menuInflater.inflate(co.getdere.R.menu.feed_navigation, menu)
+//        return super.onCreateOptionsMenu(menu)
+//    }
 
     private fun checkIfLoggedIn() {
 
@@ -216,13 +331,93 @@ class FeedActivity : AppCompatActivity() {
                 sharedViewModelCurrentUser.currentUserObject = p0.getValue(Users::class.java)!!
                 Log.d("checkLocation", "fetchCurrentUser")
 
+                addFragmentsToFragmentManagers()
+
 //                setupNavController()
             }
 
         })
     }
 
-//    private fun setupNavController() {
+
+    fun addFragmentsToFragmentManagers() {
+
+        //main container
+
+        feedFragment = FeedFragment()
+        boardFragment = BoardFragment()
+        profileLoggedInUserFragment = ProfileLoggedInUserFragment()
+
+        fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment").commit()
+
+        fm.beginTransaction().add(R.id.feed_frame_container, boardFragment, "boardFragment").hide(boardFragment)
+            .commit()
+        fm.beginTransaction()
+            .add(R.id.feed_frame_container, profileLoggedInUserFragment, "profileLoggedInUserFragment")
+            .hide(profileLoggedInUserFragment).commit()
+
+        active = feedFragment
+
+
+
+        //sub container
+        imageFullSizeFragment = ImageFullSizeFragment()
+        profileRandomUserFragment = ProfileRandomUserFragment()
+        bucketFragment = AddToBucketFragment()
+        openedQuestionFragment = OpenedQuestionFragment()
+        feedNotificationsFragment = FeedNotificationsFragment()
+        boardNotificationsFragment = BoardNotificationsFragment()
+        savedQuestionFragment = SavedQuestionsFragment()
+        answerCommentFragment = AnswerCommentFragment()
+        answerFragment = AnswerFragment()
+        newQuestionFragment = NewQuestionFragment()
+        editProfileFragment = EditProfileFragment()
+
+
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, imageFullSizeFragment, "imageFullSizeFragment").commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, profileRandomUserFragment, "profileRandomUserFragment")
+            .hide(profileRandomUserFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, bucketFragment, "bucketFragment").hide(bucketFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, openedQuestionFragment, "openedQuestionFragment")
+            .hide(openedQuestionFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, feedNotificationsFragment, "feedNotificationsFragment")
+            .hide(feedNotificationsFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, boardNotificationsFragment, "boardNotificationsFragment")
+            .hide(boardNotificationsFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, savedQuestionFragment, "savedQuestionFragment")
+            .hide(savedQuestionFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, answerCommentFragment, "answerCommentFragment")
+            .hide(answerCommentFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, answerFragment, "answerFragment")
+            .hide(answerFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, newQuestionFragment, "newQuestionFragment")
+            .hide(newQuestionFragment).commit()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editProfileFragment, "editProfileFragment")
+            .hide(editProfileFragment).commit()
+
+
+        subActive = imageFullSizeFragment
+
+
+    }
+
+
+    companion object {
+        fun newInstance(): FeedActivity = FeedActivity()
+    }
+
+
+    //    private fun setupNavController() {
 //        Log.d("checkLocation", "setupNavController")
 //
 //
@@ -238,8 +433,5 @@ class FeedActivity : AppCompatActivity() {
 //    }
 
 
-    companion object {
-        fun newInstance(): FeedActivity = FeedActivity()
-    }
 }
 

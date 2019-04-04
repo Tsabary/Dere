@@ -21,9 +21,7 @@ class SingleQuestion(
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
-        val refAnswers = FirebaseDatabase.getInstance().getReference("/answers/${question.id}")
-
-        var count = 0
+        val refAnswers = FirebaseDatabase.getInstance().getReference("/questions/${question.id}/answers")
 
         refAnswers.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -31,16 +29,14 @@ class SingleQuestion(
 
             override fun onDataChange(p0: DataSnapshot) {
 
-                for (ds in p0.children) {
-                    count += 1
-                }
+                val count = p0.childrenCount
 
                 val stampMills = question.timestamp
                 val pretty = PrettyTime()
                 val date = pretty.format(Date(stampMills))
 
 
-                viewHolder.itemView.board_question.text = question.title
+                viewHolder.itemView.board_question.text = "${question.title}?"
                 viewHolder.itemView.board_tags.text = question.tags.joinToString()
                 viewHolder.itemView.board_timestamp.text = date
                 viewHolder.itemView.board_answers.text = count.toString()

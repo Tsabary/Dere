@@ -11,20 +11,18 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.fragment.findNavController
 import androidx.viewpager.widget.ViewPager
 import co.getdere.Adapters.FeedPagerAdapter
-import co.getdere.CameraActivity2
+import co.getdere.CameraActivity
 import co.getdere.FeedActivity
 import co.getdere.Models.Users
-import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelCurrentUser
 import com.google.android.material.tabs.TabLayout
 
 
 class FeedFragment : Fragment() {
 
-
+//    lateinit var mToolbar: Toolbar
 
     val permissions = arrayOf(
         android.Manifest.permission.CAMERA,
@@ -62,7 +60,12 @@ class FeedFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        return inflater.inflate(co.getdere.R.layout.fragment_feed, container, false)
+        val view = inflater.inflate(co.getdere.R.layout.fragment_feed, container, false)
+//        val activity = activity as FeedActivity
+//        mToolbar = view.findViewById(R.id.my_toolbar)
+//        activity.setSupportActionBar(mToolbar)
+
+        return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -86,6 +89,7 @@ class FeedFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
+        val activity = activity as FeedActivity
 
         when (id) {
             co.getdere.R.id.destination_camera -> {
@@ -94,15 +98,18 @@ class FeedFragment : Fragment() {
                     requestPermission()
                 } else {
 
-                    val intent = Intent(this.context, CameraActivity2::class.java)
+                    val intent = Intent(activity, CameraActivity::class.java)
                     startActivity(intent)
                 }
             }
 
             co.getdere.R.id.destination_feed_notifications -> {
 
-                val action = FeedFragmentDirections.actionDestinationFeedToFeedNotificationsFragment()
-                findNavController().navigate(action)
+                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.feedNotificationsFragment).commit()
+                activity.subActive = activity.feedNotificationsFragment
+
+                activity.switchVisibility(1)
+
             }
 
         }
@@ -126,7 +133,7 @@ class FeedFragment : Fragment() {
     }
 
     private fun requestPermission() {
-        ActivityCompat.requestPermissions(feedActivity, permissions, 0)
+        ActivityCompat.requestPermissions(activity as FeedActivity, permissions, 0)
     }
 
 

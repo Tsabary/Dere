@@ -180,7 +180,7 @@ class PhotoCommentsFragment : Fragment(), DereMethods {
 
 }
 
-class SingleComment(var comment: Comments, val commentId : String, val imageId: String, val currentUser: Users) : Item<ViewHolder>(), DereMethods {
+class SingleCommentOG(var comment: Comments, val commentId : String, val imageId: String, val currentUser: Users) : Item<ViewHolder>(), DereMethods {
 
 //    val uid =FirebaseAuth.getInstance().uid
 

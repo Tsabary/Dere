@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import co.getdere.FeedActivity
 import co.getdere.Models.*
 
 import co.getdere.R
@@ -109,6 +110,12 @@ class FeedNotificationsFragment : Fragment() {
 
                         sharedViewModelImage.sharedImageObject.postValue(image)
 
+                        val activity = activity as FeedActivity
+
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
+                        activity.subActive = activity.imageFullSizeFragment
+
+
                         val refRandomUser =
                             FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
 
@@ -122,9 +129,9 @@ class FeedNotificationsFragment : Fragment() {
                                 if (randomUser != null) {
                                     sharedViewModelRandomUser.randomUserObject.postValue(randomUser)
 
-                                    val action =
-                                        FeedNotificationsFragmentDirections.actionDestinationFeedNotificationsToDestinationImageFullSize(image.id, "FeedActivity")
-                                    findNavController().navigate(action)
+//                                    val action =
+//                                        FeedNotificationsFragmentDirections.actionDestinationFeedNotificationsToDestinationImageFullSize(image.id, "FeedActivity")
+//                                    findNavController().navigate(action)
 
                                 }
                             }

@@ -32,7 +32,7 @@
                     app:layout_constraintTop_toTopOf="parent"/>
 
 
-            <EditText
+            <com.tobiasschuerg.prefixsuffix.PrefixSuffixEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
@@ -85,7 +85,8 @@
                     android:digits="abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 ?,'$/&quot;"
                     android:background="@android:color/transparent"
                     android:padding="8dp"
-                    android:paddingStart="0dp"/>
+                    android:paddingStart="0dp"
+                    android:gravity="top"/>
 
 
             <TextView
@@ -137,7 +138,7 @@
 
             <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="0dp"
-                    android:layout_height="200dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     app:layout_constraintTop_toBottomOf="@+id/image_information_tag_input"
                     app:layout_constraintEnd_toEndOf="parent"

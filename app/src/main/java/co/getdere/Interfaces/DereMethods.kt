@@ -1,5 +1,7 @@
 package co.getdere.Interfaces
 
+import android.app.Activity
+import android.content.Context
 import android.util.Log
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -8,6 +10,13 @@ import co.getdere.Models.*
 import co.getdere.R
 import com.google.firebase.database.*
 import com.xwray.groupie.ViewHolder
+import android.content.Context.INPUT_METHOD_SERVICE
+import androidx.core.content.ContextCompat.getSystemService
+import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import co.getdere.FeedActivity
+
 
 interface DereMethods {
 
@@ -31,7 +40,6 @@ interface DereMethods {
     ) {
 
         Log.d("gettingValueInitiatorId", "heeey $initiatorId")
-
 
 
         val refVotes = if (postType == 0) {
@@ -63,13 +71,14 @@ interface DereMethods {
 
                     val voteValue = postVotesSnapshot.child(initiatorId).getValue(Int::class.java)
 
-                                    Log.d("gettingvalueddd", voteValue.toString())
+                    Log.d("gettingvalueddd", voteValue.toString())
 
 
                     when (voteValue) {
 
                         1 -> {
-                            if (event == 1) {
+                            if (event == 1 && initiatorId!=receiverId) {
+
                                 when (vote) {
 
                                     "up" -> return
@@ -112,7 +121,7 @@ interface DereMethods {
                         }
 
                         0 -> {
-                            if (event == 1) {
+                            if (event == 1 && initiatorId!=receiverId) {
                                 when (vote) {
                                     "up" -> {
                                         upView(upvoteView, downvoteView)
@@ -191,7 +200,7 @@ interface DereMethods {
                         }
 
                         -1 -> {
-                            if (event == 1) {
+                            if (event == 1 && initiatorId!=receiverId) {
                                 when (vote) {
                                     "up" -> {
                                         defaultView(upvoteView, downvoteView)
@@ -226,7 +235,7 @@ interface DereMethods {
 
                 } else {
 
-                    if (event == 1) {
+                    if (event == 1 && initiatorId!=receiverId) {
                         when (vote) {
                             "up" -> {
                                 upView(upvoteView, downvoteView)
@@ -443,7 +452,7 @@ interface DereMethods {
                         override fun onDataChange(p0: DataSnapshot) {
                             if (p0.hasChild(image.id)) {
 
-                                if (event == 1) {
+                                if (event == 1 && initiatorId!=receiverId) {
 
                                     allUserLikesRef.child(image.id).removeValue().addOnSuccessListener {
 
@@ -479,7 +488,7 @@ interface DereMethods {
 
                             } else {
 
-                                if (event == 1) {
+                                if (event == 1 && initiatorId!=receiverId) {
 
                                     val refUserLikes =
                                         FirebaseDatabase.getInstance()
@@ -528,7 +537,7 @@ interface DereMethods {
 
 
                 } else {
-                    if (event == 1) {
+                    if (event == 1 && initiatorId!=receiverId) {
 
                         val refUserLikes =
                             FirebaseDatabase.getInstance()
@@ -683,7 +692,7 @@ interface DereMethods {
         receiverId: String
     ) {
 
-        if (postType == 0 || postType == 1) {
+        if (postType == 0 || postType == 1 && initiatorId!=receiverId) {
 
 
             val refUserBoardNotifications =
@@ -700,7 +709,7 @@ interface DereMethods {
                 )
             )
 
-        } else {
+        } else if (initiatorId!=receiverId) {
 
             val refUserGalleryNotifications =
                 FirebaseDatabase.getInstance()
@@ -966,7 +975,6 @@ interface DereMethods {
             }
 
 
-
         }
     }
 
@@ -1004,6 +1012,15 @@ interface DereMethods {
             }
 
         })
+    }
+
+    fun closeKeyboard(activity: Activity) {
+
+        val view = activity.currentFocus
+        if (view != null) {
+            val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
+            imm!!.hideSoftInputFromWindow(view.getWindowToken(), 0)
+        }
     }
 
 

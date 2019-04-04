@@ -106,14 +106,17 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
 
 
         likeButton.setOnClickListener {
-            executeLike(image, uid, likeCount, likeButton, 1, currentUser.name, image.photographer, authorReputation)
+
+            if (image.photographer != currentUser.uid){
+                executeLike(image, uid, likeCount, likeButton, 1, currentUser.name, image.photographer, authorReputation)
+            }
         }
 
-        bucketButton.setOnClickListener {
-
-            val action = FeedFragmentDirections.actionDestinationFeedToDestinationAddToBucket(image, currentUser)
-            viewHolder.root.findNavController().navigate(action)
-
-        }
+//        bucketButton.setOnClickListener {
+//
+//            val action = FeedFragmentDirections.actionDestinationFeedToDestinationAddToBucket(image, currentUser)
+//            viewHolder.root.findNavController().navigate(action)
+//
+//        }
     }
 }

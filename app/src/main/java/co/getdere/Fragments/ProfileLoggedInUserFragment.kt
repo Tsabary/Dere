@@ -1,9 +1,11 @@
 package co.getdere.Fragments
 
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -14,12 +16,15 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import co.getdere.FeedActivity
 import co.getdere.GroupieAdapters.FeedImage
+import co.getdere.GroupieAdapters.LinearFeedImage
 import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.R
 import co.getdere.RegisterLogin.LoginActivity
 import co.getdere.ViewModels.SharedViewModelCurrentUser
+import co.getdere.ViewModels.SharedViewModelImage
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -32,7 +37,6 @@ import kotlinx.android.synthetic.main.feed_single_photo.view.*
 
 class ProfileLoggedInUserFragment : Fragment() {
 
-
     lateinit var userProfile: Users
     val galleryRollAdapter = GroupAdapter<ViewHolder>()
     val galleryBucketAdapter = GroupAdapter<ViewHolder>()
@@ -40,11 +44,13 @@ class ProfileLoggedInUserFragment : Fragment() {
     lateinit var rollBtn: TextView
 
     lateinit var sharedViewModelForCurrentUser: SharedViewModelCurrentUser
+    lateinit var sharedViewModelImage: SharedViewModelImage
+
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-
+//        (activity as FeedActivity).mBottomNav.selectedItemId = R.id.destination_profile_logged_in_user
 
         return inflater.inflate(R.layout.fragment_profile_logged_in_user, container, false)
 
@@ -70,6 +76,7 @@ class ProfileLoggedInUserFragment : Fragment() {
 
         activity?.let {
             sharedViewModelForCurrentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java)
+            sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             userProfile = sharedViewModelForCurrentUser.currentUserObject
 
             Glide.with(this).load(userProfile.image).into(profilePicture)
@@ -77,7 +84,6 @@ class ProfileLoggedInUserFragment : Fragment() {
             profileReputation.text = userProfile.reputation
             profileTagline.text = userProfile.tagline
         }
-
 
 
         val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
@@ -97,7 +103,7 @@ class ProfileLoggedInUserFragment : Fragment() {
 
         })
 
-        followersRef.addValueEventListener(object : ValueEventListener{
+        followersRef.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
 
             }
@@ -153,11 +159,18 @@ class ProfileLoggedInUserFragment : Fragment() {
 
         profileEditButton.setOnClickListener {
 
-            val action =
-                ProfileLoggedInUserFragmentDirections.actionDestinationProfileLoggedInUserToEditProfileFragment(
-                    userProfile
-                )
-            findNavController().navigate(action)
+            val activity = activity as FeedActivity
+
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editProfileFragment).commit()
+            activity.subActive = activity.editProfileFragment
+
+            activity.switchVisibility(1)
+
+//            val action =
+//                ProfileLoggedInUserFragmentDirections.actionDestinationProfileLoggedInUserToEditProfileFragment(
+//                    userProfile
+//                )
+//            findNavController().navigate(action)
         }
 
 
@@ -180,12 +193,35 @@ class ProfileLoggedInUserFragment : Fragment() {
 
         galleryRollAdapter.setOnItemClickListener { item, _ ->
 
-            val row = item as FeedImage
-//            val imageId = row.image
-            val action =
-                ProfileLoggedInUserFragmentDirections.actionDestinationProfileLoggedInUserToDestinationImageFullSize(row.image.id, "ProfileActivity")
+            val activity = activity as FeedActivity
 
-            findNavController().navigate(action)
+            if (activity.subActive != activity.imageFullSizeFragment) {
+
+                activity.subFm.beginTransaction()
+                    .add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment")
+                    .commit()
+                activity.subActive = activity.imageFullSizeFragment
+            }
+
+            val image = item as FeedImage
+
+            sharedViewModelImage.sharedImageObject.postValue(image.image)
+
+            activity.switchVisibility(1)
+
+
+
+
+
+//            val row = item as FeedImage
+////            val imageId = row.image
+//            val action =
+//                ProfileLoggedInUserFragmentDirections.actionDestinationProfileLoggedInUserToDestinationImageFullSize(
+//                    row.image.id,
+//                    "ProfileActivity"
+//                )
+//
+//            findNavController().navigate(action)
 
         }
 
@@ -458,7 +494,10 @@ class SingleBucketRoll(val bucket: DataSnapshot, userId: String) : Item<ViewHold
             val singleImage = item as SingleImageToBucketRoll
 
             val action =
-                ProfileLoggedInUserFragmentDirections.actionDestinationProfileLoggedInUserToDestinationImageFullSize(singleImage.image.id, "ProfileActivity")
+                ProfileLoggedInUserFragmentDirections.actionDestinationProfileLoggedInUserToDestinationImageFullSize(
+                    singleImage.image.id,
+                    "ProfileActivity"
+                )
             viewHolder.root.findNavController().navigate(action)
 
         }

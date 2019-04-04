@@ -1,5 +1,6 @@
 package co.getdere.Fragments
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,6 +17,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import co.getdere.FeedActivity
 import co.getdere.Interfaces.DereMethods
 import co.getdere.Models.*
 import co.getdere.R
@@ -35,8 +37,6 @@ import java.util.*
 
 
 class OpenedQuestionFragment : Fragment(), DereMethods {
-
-    var question: Question? = null
 
     lateinit var sharedViewModelQuestion: SharedViewModelQuestion
     lateinit var questionObject: Question
@@ -61,7 +61,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
         activity?.let {
             sharedViewModelQuestion = ViewModelProviders.of(it).get(SharedViewModelQuestion::class.java)
-            questionObject = sharedViewModelQuestion.questionObject.value!!
+//            questionObject = sharedViewModelQuestion.questionObject.value!!
 
             currentUserObject = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
 
@@ -106,7 +106,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 val date = pretty.format(Date(stampMills))
 
 
-                openedQuestionTitle.text = questionObject.title
+                openedQuestionTitle.text = "${questionObject.title}?"
                 openedQuestionContent.text = questionObject.details
                 openedQuestionTimeStamp.text = date
                 openedQuestionTags.text = "tags: ${questionObject.tags.joinToString()}"
@@ -191,8 +191,10 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
         answerButton.setOnClickListener {
 
-            val action = OpenedQuestionFragmentDirections.actionOpenedQuestionFragmentToAnswerFragment(questionObject, currentUserObject)
-            findNavController().navigate(action)
+            val activity = activity as FeedActivity
+
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.answerFragment).commit()
+            activity.subActive = activity.answerFragment
         }
 
         val answersRecyclerLayoutManager = LinearLayoutManager(this.context)
@@ -223,7 +225,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                     answersAdapter.add(
                         SingleAnswer(
                             singleAnswerFromDB,
-                            currentUserObject
+                            currentUserObject, activity as FeedActivity
                         )
                     )
                 }
@@ -316,7 +318,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
 class SingleAnswer(
     val answer: Answers,
-    val currentUser : Users
+    val currentUser : Users, val activity : FeedActivity
 ) : Item<ViewHolder>(), DereMethods {
 
     val commentsAdapter = GroupAdapter<ViewHolder>()
@@ -447,12 +449,17 @@ class SingleAnswer(
 
         comment.setOnClickListener {
 
-            val action = OpenedQuestionFragmentDirections.actionDestinationQuestionOpenedToAnswerCommentFragment(
-                answer.questionId,
-                answer,
-                currentUser
-            )
-            viewHolder.root.findNavController().navigate(action)
+            activity.answerObject = answer
+
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.answerCommentFragment).commit()
+            activity.subActive = activity.answerCommentFragment
+
+//            val action = OpenedQuestionFragmentDirections.actionDestinationQuestionOpenedToAnswerCommentFragment(
+//                answer.questionId,
+//                answer,
+//                currentUser
+//            )
+//            viewHolder.root.findNavController().navigate(action)
 
         }
     }
@@ -479,6 +486,8 @@ class SingleAnswerComment(val comment : AnswerComments) : Item<ViewHolder>(){
                 if (author != null) {
 
                     viewHolder.itemView.answer_comment_author_name.text = author.name
+                    viewHolder.itemView.answer_comment_author_reputation.text = "(${author.reputation})"
+                    Glide.with(viewHolder.root.context).load(author.image).into(viewHolder.itemView.answer_comment_author_image)
 
                 }
             }

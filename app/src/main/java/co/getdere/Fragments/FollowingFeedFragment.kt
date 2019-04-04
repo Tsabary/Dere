@@ -20,11 +20,10 @@ import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelCurrentUser
 import co.getdere.ViewModels.SharedViewModelFollowedAccounts
 import co.getdere.ViewModels.SharedViewModelImage
+import co.getdere.ViewModels.SharedViewModelRandomUser
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 
@@ -34,6 +33,8 @@ open class FollowingFeedFragment : Fragment() {
     lateinit var sharedViewModelFollowedAccounts: SharedViewModelFollowedAccounts
 
     lateinit var sharedViewModelImage: SharedViewModelImage
+
+    lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
 
     lateinit var currentUser: Users
 
@@ -54,6 +55,8 @@ open class FollowingFeedFragment : Fragment() {
 
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
 
+            sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
+
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
 
             createFollowedAccountsList()
@@ -68,7 +71,6 @@ open class FollowingFeedFragment : Fragment() {
         val myView = inflater.inflate(R.layout.fragment_following_feed, container, false)
 
         feedRecycler = myView.findViewById(R.id.following_feed_gallary)
-        setUpGalleryAdapter()
 
         return myView
     }
@@ -77,19 +79,53 @@ open class FollowingFeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         activity!!.title = "Feed"
+
+        setUpGalleryAdapter()
 
 
         galleryAdapter.setOnItemClickListener { item, _ ->
+            val activity = activity as FeedActivity
+
+//            if (activity.subActive != activity.imageFullSizeFragment) {
+//
+//                activity.subFm.beginTransaction()
+//                    .add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment")
+//                    .commit()
+//                activity.subActive = activity.imageFullSizeFragment
+//            }
+
+            println(activity.subActive)
 
             val image = item as LinearFeedImage
 
             sharedViewModelImage.sharedImageObject.postValue(image.image)
 
-            val activity = activity as FeedActivity
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
 
             activity.switchVisibility(1)
+
+            activity.subActive = activity.imageFullSizeFragment
+
+
+
+            // meanwhile in the background it will load the random user object
+
+            val refRandomUser =
+                FirebaseDatabase.getInstance().getReference("/users/${image.image.photographer}/profile")
+
+            refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+
+                    val randomUserObject = p0.getValue(Users::class.java)!!
+
+                    sharedViewModelForRandomUser.randomUserObject.postValue(randomUserObject)
+                }
+
+            })
 
 //            activity.fm.beginTransaction().replace(R.id.feed_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment").addToBackStack(null).commit()
 
@@ -115,7 +151,6 @@ open class FollowingFeedFragment : Fragment() {
 
         listenToImages(currentUser)
 
-        Handler().postDelayed(Runnable { galleryLayoutManager.scrollToPosition(3) }, 2000)
     }
 
 

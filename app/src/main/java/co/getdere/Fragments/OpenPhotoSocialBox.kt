@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import co.getdere.Interfaces.DereMethods
 import co.getdere.Models.Images
 import co.getdere.Models.Users
@@ -67,7 +68,7 @@ class OpenPhotoSocialBox : Fragment(), DereMethods {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_open_photo_social_box, container, false)
+    ): View? = inflater.inflate(R.layout.fragment_open_photo_social_box2, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -75,15 +76,16 @@ class OpenPhotoSocialBox : Fragment(), DereMethods {
 
 
         val authorName = view.findViewById<TextView>(R.id.photo_social_author_name_and_text)
-        val currentUserImage = view.findViewById<ImageView>(R.id.photo_social_current_user_image)
+//        val currentUserImage = view.findViewById<ImageView>(R.id.photo_social_current_user_image)
         val authorUserImage = view.findViewById<ImageView>(R.id.photo_social_author_image)
         val imageTimestamp = view.findViewById<TextView>(R.id.photo_social_timestamp)
-        val addComment = view.findViewById<TextView>(R.id.photo_social_comment_cta)
+//        val addComment = view.findViewById<TextView>(R.id.photo_social_comment_cta)
         val commentButton = view.findViewById<ImageButton>(R.id.photo_social_comment_icon)
         val imageDetails = view.findViewById<TextView>(R.id.photo_social_image_details)
         val likeCount = view.findViewById<TextView>(R.id.photo_social_like_count)
         val likeButton = view.findViewById<ImageButton>(R.id.photo_social_like_button)
         val authorReputation = view.findViewById<TextView>(R.id.photo_social_author_reputation)
+        val commentsRecycler = view.findViewById<RecyclerView>(R.id.photo_social_comments_recycler)
 
         bucketCount = view.findViewById(R.id.photo_social_bucket_count)
         addToBucket = view.findViewById(R.id.photo_social_bucket_icon)
@@ -91,7 +93,7 @@ class OpenPhotoSocialBox : Fragment(), DereMethods {
 
 
 
-        Glide.with(this).load(currentUser.image).into(currentUserImage)
+//        Glide.with(this).load(currentUser.image).into(currentUserImage)
 
         sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
             it?.let { user ->
@@ -108,21 +110,18 @@ class OpenPhotoSocialBox : Fragment(), DereMethods {
             it?.let { image ->
                 imageObject = image
 
-                val stampMills = imageObject.timestamp
-                val pretty = PrettyTime()
-                val date = pretty.format(Date(stampMills))
-                imageTimestamp.text = date
+                imageTimestamp.text = PrettyTime().format(Date(image.timestamp))
 
-                imageDetails.text = imageObject.details
+                imageDetails.text = image.details
 
-                checkIfBucketed(addToBucket, imageObject, currentUser.uid)
-                listenToBucketCount(bucketCount, imageObject)
+                checkIfBucketed(addToBucket, image, currentUser.uid)
+//                listenToBucketCount(bucketCount, image)
 
 
-                listenToCommentCount(commentCount, imageObject)
+//                listenToCommentCount(commentCount, image)
 
-                listenToLikeCount(likeCount, image)
-                executeLike(imageObject, currentUser.uid, likeCount, likeButton, 0, currentUser.name, imageObject.photographer, authorReputation)
+//                listenToLikeCount(likeCount, image)
+                executeLike(image, currentUser.uid, likeCount, likeButton, 0, currentUser.name, image.photographer, authorReputation)
 
 
 
@@ -161,25 +160,25 @@ class OpenPhotoSocialBox : Fragment(), DereMethods {
 
         }
 
-        addComment.setOnClickListener {
-            goToComments()
-        }
+//        addComment.setOnClickListener {
+//            goToComments()
+//        }
+//
+//        currentUserImage.setOnClickListener {
+//            goToComments()
+//        }
 
-        currentUserImage.setOnClickListener {
-            goToComments()
-        }
+//        commentButton.setOnClickListener {
+//            goToComments()
+//        }
 
-        commentButton.setOnClickListener {
-            goToComments()
-        }
-
-        commentCount.setOnClickListener {
-            goToComments()
-        }
-
-        imageDetails.setOnClickListener {
-            goToComments()
-        }
+//        commentCount.setOnClickListener {
+//            goToComments()
+//        }
+//
+//        imageDetails.setOnClickListener {
+//            goToComments()
+//        }
 
 //
 //        followLink.setOnClickListener {

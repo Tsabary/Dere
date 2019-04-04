@@ -17,7 +17,7 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import co.getdere.Adapters.NewPhotoUploadPagerAdapter
-import co.getdere.CameraActivity2
+import co.getdere.CameraActivity
 import co.getdere.MainActivity
 import co.getdere.Models.Images
 import co.getdere.OtherClasses.SwipeLockableViewPager
@@ -117,7 +117,7 @@ class ApproveImageFragment : Fragment() {
     }
 
 //    private fun setUpViewPager() {
-//        boxPagerAdapter = NewPhotoUploadPagerAdapter((activity as CameraActivity).supportFragmentManager)
+//        boxPagerAdapter = NewPhotoUploadPagerAdapter((activity as CameraActivityOld).supportFragmentManager)
 //        val adapterOBJ= NewPhotoUploadPagerAdapter(childFragmentManager)
 //        viewPager = view!!.approve_image_pager_adapter
 //        viewPager.adapter = adapterOBJ
@@ -241,7 +241,7 @@ class ApproveImageFragment : Fragment() {
         val uid = FirebaseAuth.getInstance().uid ?: ""
         val ref = FirebaseDatabase.getInstance().getReference("/images/").push()
         val imageBodyRef = FirebaseDatabase.getInstance().getReference("/images/${ref.key}/body")
-//        val location = (activity as CameraActivity2).imageLocation
+//        val location = (activity as CameraActivity).imageLocation
 
 
 
@@ -250,7 +250,7 @@ class ApproveImageFragment : Fragment() {
 
 
 
-        airLocation = AirLocation((activity as CameraActivity2), true, true, object : AirLocation.Callbacks {
+        airLocation = AirLocation((activity as CameraActivity), true, true, object : AirLocation.Callbacks {
             override fun onSuccess(location: Location) {
 
                 val locationForImage = mutableListOf(location.latitude, location.longitude)
@@ -277,7 +277,7 @@ class ApproveImageFragment : Fragment() {
                             .addOnSuccessListener {
                                 Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
 
-                                val backToFeed = Intent((activity as CameraActivity2), MainActivity::class.java)
+                                val backToFeed = Intent((activity as CameraActivity), MainActivity::class.java)
                                 startActivity(backToFeed)
 
                             }

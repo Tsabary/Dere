@@ -8,7 +8,6 @@
         android:layout_height="wrap_content"
         android:background="@color/gray100">
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -17,8 +16,17 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginBottom="1dp"
-            android:background="@color/white">
+            android:background="@color/white"
+            android:id="@+id/constraintLayout4">
 
+        <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:id="@+id/answer_comment_author_image"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="98dp"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="16dp"/>
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -36,11 +44,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/answer_comment_author_name"
-                app:layout_constraintTop_toTopOf="parent"
-                android:layout_marginTop="16dp"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="98dp"
+                app:layout_constraintTop_toTopOf="@+id/answer_comment_author_image"
                 tools:text="User name"
-                android:fontFamily="@font/open_sans_bold"/>
+                android:fontFamily="@font/open_sans_bold"
+                app:layout_constraintStart_toEndOf="@+id/answer_comment_author_image"
+                android:layout_marginStart="16dp"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/answer_comment_author_reputation"
+                app:layout_constraintStart_toEndOf="@+id/answer_comment_author_name"
+                android:layout_marginStart="8dp"
+                app:layout_constraintBottom_toBottomOf="@+id/answer_comment_author_name"
+                android:fontFamily="@font/open_sans_semibold"
+                android:textColor="@color/gray500"
+                tools:text="(0)"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

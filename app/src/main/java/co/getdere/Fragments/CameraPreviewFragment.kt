@@ -4,7 +4,6 @@ package co.getdere.Fragments
 import android.content.Context
 import android.content.ContextWrapper
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -13,28 +12,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.fragment.app.Fragment
 
-import co.getdere.CameraActivity
-import co.getdere.CameraActivity2
 import co.getdere.MainActivity
-import co.getdere.Models.ImageFile
-import co.getdere.Models.Images
 import co.getdere.R
 import com.camerakit.CameraPreview
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.storage.FirebaseStorage
 import io.fotoapparat.Fotoapparat
 import io.fotoapparat.configuration.CameraConfiguration
 import io.fotoapparat.parameter.ScaleType
 import io.fotoapparat.selector.*
-import kotlinx.android.synthetic.main.activity_camera.*
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_camera.*
 import kotlinx.android.synthetic.main.fragment_camera_preview.*
-import me.echodev.resizer.Resizer
 import java.io.*
 import java.util.*
 
@@ -94,17 +82,17 @@ class CameraPreviewFragment : Fragment() {
             frameProcessor = { frame -> }            // (optional) receives each frame from preview stream
         )
 
-
-        fotoapparat = Fotoapparat(
-            context = this.context!!,
-            view = cameraView,
-            scaleType = ScaleType.CenterCrop,
-            lensPosition = back(),
-            cameraConfiguration = cameraConfiguration,
-            cameraErrorCallback = { error ->
-                println("Recorder errors: $error")
-            }
-        )
+//
+//        fotoapparat = Fotoapparat(
+//            context = this.context!!,
+//            view = camera_view,
+//            scaleType = ScaleType.CenterCrop,
+//            lensPosition = back(),
+//            cameraConfiguration = cameraConfiguration,
+//            cameraErrorCallback = { error ->
+//                println("Recorder errors: $error")
+//            }
+//        )
 
 
         camera_btn.setOnClickListener {
@@ -219,9 +207,9 @@ class CameraPreviewFragment : Fragment() {
 //                    .resizedBitmap
 
 
-                val action =
-                    CameraPreviewFragmentDirections.actionCameraPreviewFragmentToApproveImageFragment(imagePath)
-                findNavController(camera_nav_host_fragment).navigate(action)
+//                val action =
+//                    CameraPreviewFragmentDirections.actionCameraPreviewFragmentToApproveImageFragment(imagePath)
+//                findNavController(camera_nav_host_fragment).navigate(action)
             }
 
 
@@ -261,7 +249,7 @@ class CameraPreviewFragment : Fragment() {
 //
 //        val uid = FirebaseAuth.getInstance().uid ?: ""
 //        val ref = FirebaseDatabase.getInstance().getReference("/images/feed/").push()
-//        val location = (activity as CameraActivity).imageLocation
+//        val location = (activity as CameraActivityOld).imageLocation
 //
 //
 //        val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/images/byuser/$uid/${ref.key}")

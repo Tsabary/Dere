@@ -17,8 +17,10 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
+import co.getdere.FeedActivity
 import co.getdere.Models.Users
 import co.getdere.ProfileActivity
+import co.getdere.R
 import co.getdere.ViewModels.SharedViewModelCurrentUser
 import com.bumptech.glide.Glide
 import com.google.firebase.database.DataSnapshot
@@ -46,6 +48,8 @@ class EditProfileFragment : Fragment() {
 
         activity?.let {
             sharedViewModelForCurrentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java)
+
+            user = sharedViewModelForCurrentUser.currentUserObject
         }
 
     }
@@ -61,11 +65,11 @@ class EditProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        arguments?.let {
-            val safeArgs = EditProfileFragmentArgs.fromBundle(it)
-            user = safeArgs.user
-        }
+//
+//        arguments?.let {
+//            val safeArgs = EditProfileFragmentArgs.fromBundle(it)
+//            user = safeArgs.user
+//        }
 
 
         userImage = view.findViewById<CircleImageView>(co.getdere.R.id.edit_profile_image)
@@ -98,6 +102,11 @@ class EditProfileFragment : Fragment() {
 
         }
 
+        cancelButton.setOnClickListener {
+            val activity = activity as FeedActivity
+            activity.switchVisibility(0)
+        }
+
     }
 
     private var selectedPhotoUri: Uri? = null
@@ -109,7 +118,8 @@ class EditProfileFragment : Fragment() {
             Log.d("Main", "Photo was selected")
 
             selectedPhotoUri = data.data
-            val bitmap = MediaStore.Images.Media.getBitmap((activity as ProfileActivity).contentResolver, selectedPhotoUri)
+            val bitmap =
+                MediaStore.Images.Media.getBitmap((activity as ProfileActivity).contentResolver, selectedPhotoUri)
             userImage.setImageBitmap(bitmap)
 //            register_photo_pick.alpha = 0f
 
@@ -148,10 +158,22 @@ class EditProfileFragment : Fragment() {
 
                                         sharedViewModelForCurrentUser.currentUserObject = user!!
 
+                                        val activity = activity as FeedActivity
+
+                                        activity.fm.beginTransaction().detach(activity.profileLoggedInUserFragment).attach(activity.profileLoggedInUserFragment).commit()
 //
-                                        val action =
-                                            EditProfileFragmentDirections.actionDestinationEditProfileToDestinationProfileLoggedInUser()
-                                        findNavController().navigate(action)
+//                                        activity.fm.beginTransaction().remove(activity.profileLoggedInUserFragment).commit()
+//                                        activity.fm.beginTransaction().hide(activity.active).add(R.id.feed_frame_container, activity.profileLoggedInUserFragment, "profileLoggedInUserFragment").commit()
+
+//                                        activity.profileLoggedInUserFragment = ProfileLoggedInUserFragment.newInstance()
+
+                                        activity.switchVisibility(0)
+
+
+//
+//                                        val action =
+//                                            EditProfileFragmentDirections.actionDestinationEditProfileToDestinationProfileLoggedInUser()
+//                                        findNavController().navigate(action)
                                     }
 
                                 })
