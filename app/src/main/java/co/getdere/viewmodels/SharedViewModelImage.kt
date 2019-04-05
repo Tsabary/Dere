@@ -1,4 +1,4 @@
-package co.getdere.ViewModels
+package co.getdere.viewmodels
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

@@ -9,7 +9,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import co.getdere.MainActivity
+import co.getdere.FeedActivity
 import co.getdere.Models.Users
 import co.getdere.R
 import com.google.firebase.auth.FirebaseAuth
@@ -155,7 +155,7 @@ class RegisterActivity : AppCompatActivity() {
         ref.setValue(newUser)
             .addOnSuccessListener {
                 Log.d("RegisterActivity", "Saved user to Firebase Database")
-                val intent = Intent(this, MainActivity::class.java)
+                val intent = Intent(this, FeedActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
             }.addOnFailureListener {

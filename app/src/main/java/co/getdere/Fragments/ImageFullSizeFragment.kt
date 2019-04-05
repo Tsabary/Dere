@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.view.ViewCompat
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -20,9 +19,9 @@ import co.getdere.Models.Comments
 import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.R
-import co.getdere.ViewModels.SharedViewModelCurrentUser
-import co.getdere.ViewModels.SharedViewModelImage
-import co.getdere.ViewModels.SharedViewModelRandomUser
+import co.getdere.viewmodels.SharedViewModelCurrentUser
+import co.getdere.viewmodels.SharedViewModelImage
+import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter

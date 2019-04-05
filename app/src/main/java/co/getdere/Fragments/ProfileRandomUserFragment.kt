@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -21,8 +20,8 @@ import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.R
 import co.getdere.RegisterLogin.LoginActivity
-import co.getdere.ViewModels.SharedViewModelCurrentUser
-import co.getdere.ViewModels.SharedViewModelRandomUser
+import co.getdere.viewmodels.SharedViewModelCurrentUser
+import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*

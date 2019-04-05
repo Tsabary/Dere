@@ -14,16 +14,15 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import co.getdere.Interfaces.DereMethods
-import co.getdere.ViewModels.SharedViewModelCurrentUser
-import co.getdere.ViewModels.SharedViewModelImage
-import co.getdere.ViewModels.SharedViewModelRandomUser
+import co.getdere.viewmodels.SharedViewModelCurrentUser
+import co.getdere.viewmodels.SharedViewModelImage
+import co.getdere.viewmodels.SharedViewModelRandomUser
 import co.getdere.Models.Comments
 import co.getdere.Models.Images
 import co.getdere.Models.Users
 
 import co.getdere.R
 import com.bumptech.glide.Glide
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item

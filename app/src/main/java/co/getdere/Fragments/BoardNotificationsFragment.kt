@@ -8,15 +8,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import co.getdere.FeedActivity
 import co.getdere.Models.Notification
 import co.getdere.Models.Question
 import co.getdere.Models.Users
 import co.getdere.R
-import co.getdere.ViewModels.SharedViewModelQuestion
-import co.getdere.ViewModels.SharedViewModelRandomUser
+import co.getdere.viewmodels.SharedViewModelQuestion
+import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*

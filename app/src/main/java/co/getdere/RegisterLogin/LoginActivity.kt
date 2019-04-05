@@ -7,6 +7,7 @@ import android.util.Log
 import android.util.Patterns
 import android.view.View
 import android.widget.Toast
+import co.getdere.FeedActivity
 import co.getdere.MainActivity
 import co.getdere.R
 import com.google.firebase.auth.FirebaseAuth
@@ -49,7 +50,7 @@ class LoginActivity : AppCompatActivity() {
                 FirebaseAuth.getInstance().signInWithEmailAndPassword(logEmail, logPass).addOnCompleteListener {
                     if (it.isSuccessful) {
                         Log.d("Login", "Successfully logged a user in using uid: ${it.result?.user?.uid}")
-                        val intent = Intent(this, MainActivity::class.java)
+                        val intent = Intent(this, FeedActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
                         startActivity(intent)
                         return@addOnCompleteListener

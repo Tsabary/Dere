@@ -16,12 +16,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.fragment.findNavController
 import co.getdere.FeedActivity
 import co.getdere.Models.Users
 import co.getdere.ProfileActivity
-import co.getdere.R
-import co.getdere.ViewModels.SharedViewModelCurrentUser
+import co.getdere.viewmodels.SharedViewModelCurrentUser
 import com.bumptech.glide.Glide
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError

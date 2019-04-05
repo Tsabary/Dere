@@ -8,18 +8,19 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Looper
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
+//import android.support.v4.app.ActivityCompat
+//import android.support.v4.content.ContextCompat
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
+import mumayank.com.airlocationlibrary.NetworkUtil
 import java.lang.ref.WeakReference
 import java.util.ArrayList
 
 @SuppressLint("MissingPermission")
-class AirLocation(
+class MyAirLocation(
     activity: Activity,
     private val shouldWeRequestPermissions: Boolean,
     private val shouldWeRequestOptimization: Boolean,
@@ -147,10 +148,10 @@ class AirLocation(
         }
 
         val locationRequest = LocationRequest().apply {
-            interval = 10000
-            fastestInterval = 2000
+            interval = 2000
+            fastestInterval = 1000
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-            numUpdates = 1
+            numUpdates = 10
         }
 
         // check current location settings

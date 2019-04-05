@@ -16,7 +16,7 @@ import co.getdere.Adapters.FeedPagerAdapter
 import co.getdere.CameraActivity
 import co.getdere.FeedActivity
 import co.getdere.Models.Users
-import co.getdere.ViewModels.SharedViewModelCurrentUser
+import co.getdere.viewmodels.SharedViewModelCurrentUser
 import com.google.android.material.tabs.TabLayout
 
 
@@ -53,6 +53,8 @@ class FeedFragment : Fragment() {
         activity?.let {
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
             setHasOptionsMenu(true)
+
+
         }
 
     }
@@ -64,6 +66,7 @@ class FeedFragment : Fragment() {
 //        val activity = activity as FeedActivity
 //        mToolbar = view.findViewById(R.id.my_toolbar)
 //        activity.setSupportActionBar(mToolbar)
+
 
         return view
     }
@@ -143,10 +146,6 @@ class FeedFragment : Fragment() {
 //        state.putParcelable(LIST_STATE_KEY, layoutManager.onSaveInstanceState())
 //    }
 //
-
-
-
-
 
 
 

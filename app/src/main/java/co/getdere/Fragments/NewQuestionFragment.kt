@@ -1,6 +1,5 @@
 package co.getdere.Fragments
 
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.text.Editable
@@ -9,23 +8,19 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.fragment.findNavController
 import co.getdere.FeedActivity
 import co.getdere.Interfaces.DereMethods
 import co.getdere.Models.Question
 import co.getdere.R
-import co.getdere.ViewModels.SharedViewModelQuestion
-import co.getdere.ViewModels.SharedViewModelRandomUser
-import co.getdere.ViewModels.SharedViewModelTags
+import co.getdere.viewmodels.SharedViewModelQuestion
+import co.getdere.viewmodels.SharedViewModelRandomUser
+import co.getdere.viewmodels.SharedViewModelTags
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.firebase.auth.FirebaseAuth

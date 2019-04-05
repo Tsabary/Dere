@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import co.getdere.FeedActivity
@@ -15,13 +14,12 @@ import co.getdere.Models.Images
 import co.getdere.Models.Users
 
 import co.getdere.R
-import co.getdere.ViewModels.SharedViewModelCurrentUser
-import co.getdere.ViewModels.SharedViewModelImage
-import co.getdere.ViewModels.SharedViewModelRandomUser
+import co.getdere.viewmodels.SharedViewModelCurrentUser
+import co.getdere.viewmodels.SharedViewModelImage
+import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.fragment_recent_feed.*
 
 
 class RecentFeedFragment : Fragment() {

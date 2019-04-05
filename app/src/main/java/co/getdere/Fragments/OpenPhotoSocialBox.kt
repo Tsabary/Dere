@@ -21,9 +21,9 @@ import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.ProfileActivity
 import co.getdere.R
-import co.getdere.ViewModels.SharedViewModelCurrentUser
-import co.getdere.ViewModels.SharedViewModelImage
-import co.getdere.ViewModels.SharedViewModelRandomUser
+import co.getdere.viewmodels.SharedViewModelCurrentUser
+import co.getdere.viewmodels.SharedViewModelImage
+import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*

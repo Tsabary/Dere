@@ -13,7 +13,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import co.getdere.ViewModels.SharedViewModelImage
+import co.getdere.viewmodels.SharedViewModelImage
 
 import co.getdere.R
 

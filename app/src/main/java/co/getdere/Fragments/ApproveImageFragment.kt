@@ -27,7 +27,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import me.echodev.resizer.Resizer
-import mumayank.com.airlocationlibrary.AirLocation
 import java.io.File
 import java.util.*
 
@@ -45,21 +44,21 @@ class ApproveImageFragment : Fragment() {
     private lateinit var progress: ProgressBar
 
 
-    private var airLocation: AirLocation? = null
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        airLocation?.onActivityResult(requestCode, resultCode, data) // ADD THIS LINE INSIDE onActivityResult
-        super.onActivityResult(requestCode, resultCode, data)
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        airLocation?.onRequestPermissionsResult(
-            requestCode,
-            permissions,
-            grantResults
-        ) // ADD THIS LINE INSIDE onRequestPermissionResult
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
+//    private var airLocation: AirLocation = null
+//
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        airLocation?.onActivityResult(requestCode, resultCode, data) // ADD THIS LINE INSIDE onActivityResult
+//        super.onActivityResult(requestCode, resultCode, data)
+//    }
+//
+//    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+//        airLocation?.onRequestPermissionsResult(
+//            requestCode,
+//            permissions,
+//            grantResults
+//        ) // ADD THIS LINE INSIDE onRequestPermissionResult
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+//    }
 
 
     override fun onCreateView(
@@ -250,54 +249,54 @@ class ApproveImageFragment : Fragment() {
 
 
 
-        airLocation = AirLocation((activity as CameraActivity), true, true, object : AirLocation.Callbacks {
-            override fun onSuccess(location: Location) {
-
-                val locationForImage = mutableListOf(location.latitude, location.longitude)
-
-
-                val newImage = Images(
-                    ref.key!!,
-                    bigImage,
-                    smallImage,
-                    privacy,
-                    uid,
-                    imageUrl,
-                    imageDescription,
-                    locationForImage,
-                    System.currentTimeMillis()
-                )
-
-                imageBodyRef.setValue(newImage)
-                    .addOnSuccessListener {
-                        Log.d("imageToDatabase", "image saved to feed successfully: ${ref.key}")
-                        val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/users/$uid/images")
-
-                        refToUsersDatabase.setValue(mapOf(ref.key to true))
-                            .addOnSuccessListener {
-                                Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
-
-                                val backToFeed = Intent((activity as CameraActivity), MainActivity::class.java)
-                                startActivity(backToFeed)
-
-                            }
-                            .addOnFailureListener {
-                                Log.d("imageToDatabaseByUser", "image did not save to byUser")
-                            }
-                    }
-                    .addOnFailureListener {
-                        Log.d("imageToDatabase", "image did not save to feed")
-                    }
-
-
-            }
-
-            override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
-                // couldn't fetch location due to reason available in locationFailedEnum
-                // you may optionally do something to inform the user, even though the reason may be obvious
-            }
-
-        })
+//        airLocation = AirLocation((activity as CameraActivity), true, true, object : AirLocation.Callbacks {
+//            override fun onSuccess(location: Location) {
+//
+//                val locationForImage = mutableListOf(location.latitude, location.longitude)
+//
+//
+//                val newImage = Images(
+//                    ref.key!!,
+//                    bigImage,
+//                    smallImage,
+//                    privacy,
+//                    uid,
+//                    imageUrl,
+//                    imageDescription,
+//                    locationForImage,
+//                    System.currentTimeMillis()
+//                )
+//
+//                imageBodyRef.setValue(newImage)
+//                    .addOnSuccessListener {
+//                        Log.d("imageToDatabase", "image saved to feed successfully: ${ref.key}")
+//                        val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/users/$uid/images")
+//
+//                        refToUsersDatabase.setValue(mapOf(ref.key to true))
+//                            .addOnSuccessListener {
+//                                Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
+//
+//                                val backToFeed = Intent((activity as CameraActivity), MainActivity::class.java)
+//                                startActivity(backToFeed)
+//
+//                            }
+//                            .addOnFailureListener {
+//                                Log.d("imageToDatabaseByUser", "image did not save to byUser")
+//                            }
+//                    }
+//                    .addOnFailureListener {
+//                        Log.d("imageToDatabase", "image did not save to feed")
+//                    }
+//
+//
+//            }
+//
+//            override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
+//                // couldn't fetch location due to reason available in locationFailedEnum
+//                // you may optionally do something to inform the user, even though the reason may be obvious
+//            }
+//
+//        })
 
 
     }

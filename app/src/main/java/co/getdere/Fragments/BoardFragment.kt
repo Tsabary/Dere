@@ -4,26 +4,20 @@ package co.getdere.Fragments
 import android.content.Context
 import android.os.Bundle
 import android.view.*
-import android.widget.ImageButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.fragment.findNavController
 import co.getdere.FeedActivity
 import co.getdere.GroupieAdapters.SingleQuestion
 import co.getdere.Models.Question
 import co.getdere.Models.Users
 
 import co.getdere.R
-import co.getdere.ViewModels.SharedViewModelQuestion
-import co.getdere.ViewModels.SharedViewModelRandomUser
+import co.getdere.viewmodels.SharedViewModelQuestion
+import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.board_single_row.view.*
-import org.ocpsoft.prettytime.PrettyTime
-import java.util.*
 
 class BoardFragment : Fragment() {
 

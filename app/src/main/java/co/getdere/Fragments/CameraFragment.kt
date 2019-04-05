@@ -2,8 +2,10 @@ package co.getdere.Fragments
 
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.location.Location
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
@@ -21,17 +23,32 @@ import mumayank.com.airlocationlibrary.AirLocation
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
+import androidx.core.os.HandlerCompat.postDelayed
+import androidx.lifecycle.ViewModelProviders
+import co.getdere.R
+import co.getdere.roomclasses.LocalImagePost
+import co.getdere.roomclasses.LocalImageViewModel
+import com.bumptech.glide.Glide
 
 
 class CameraFragment : Fragment() {
 
-    val filename = "dere_ ${UUID.randomUUID().toString()}"
-    val sd = Environment.getExternalStorageDirectory().absolutePath
-    val dest = File(sd + File.separator + "Dere" + File.separator + filename + ".jpg")
-    var cameraStatus: CameraPreview.CameraState? = null
+//    val filename = "dere_ ${UUID.randomUUID().toString()}"
+//    val sd = Environment.getExternalStorageDirectory().absolutePath
+//    val dest = File(sd + File.separator + "Dere" + File.separator + filename + ".jpg")
+//    var cameraStatus: CameraPreview.CameraState? = null
 
-    lateinit var cameraKitView : CameraKitView
+    lateinit var cameraKitView: CameraKitView
 
+    val handler = Handler()
+    val delay: Long = 2000 //milliseconds
+
+//    lateinit var mActivity: Activity
+    lateinit var currentAccuracy: TextView
+
+    lateinit var mStatusChecker: Runnable
+
+    private lateinit var localImageViewModel: LocalImageViewModel
 
     private var airLocation: AirLocation? = null
 
@@ -40,8 +57,13 @@ class CameraFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
 
-
+        activity?.let {
+            localImageViewModel = ViewModelProviders.of(this).get(LocalImageViewModel::class.java)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,22 +74,73 @@ class CameraFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val mActivity = activity as CameraActivity
+
         cameraKitView = view.findViewById(co.getdere.R.id.camera_view)
+//        cameraKitView.aspectRatio = 0.8f
+
         val captureButton = view.findViewById<ImageButton>(co.getdere.R.id.camera_btn)
 
         captureButton.setOnClickListener {
 
-            cameraKitView.captureImage{ _, image ->
+            Log.d("photoActivity", "button clicked")
+
+
+            cameraKitView.captureImage { _, image ->
+
+
+                Log.d("photoActivity", "image captured")
+
 
                 val timeStamp = System.currentTimeMillis().toString()
-                val fileName = "Dere22$timeStamp.jpg"
+                val fileName = "Dere$timeStamp.jpg"
 
-                val savedPhoto = File(Environment.getExternalStorageDirectory(), fileName)
+                val path =
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
+                val outputDir = File(path)
+                outputDir.mkdir()
+                val savedPhoto = File(path + File.separator + fileName)
+
+                Log.d("photoActivity", "new file created")
+
                 try {
                     val outputStream = FileOutputStream(savedPhoto.path)
                     outputStream.write(image)
                     outputStream.close()
-                    Log.d("photoActivity", "Took photo")
+                    mActivity.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(savedPhoto)))
+
+                    Log.d("photoActivity", "Image saved to file and system rescaned the device")
+
+
+                    Glide.with(this).load(savedPhoto).into(mActivity.photoEditorFragment.view!!.findViewById(R.id.photo_editor_image))
+
+                    Log.d("photoActivity", "image loaded into new fragment")
+
+
+                    mActivity.switchVisibility(1)
+
+                    Log.d("photoActivity", "visibility switched")
+
+                    airLocation = AirLocation(mActivity, true, true, object : AirLocation.Callbacks {
+                        override fun onSuccess(location: Location) {
+
+                            val localImagePost = LocalImagePost(timeStamp.toLong(), location.longitude,  location.latitude, savedPhoto.path, "Description", "Url")
+                            Log.d("photoActivity", "Took photo")
+
+                            localImageViewModel.insert(localImagePost)
+
+                        }
+
+                        override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
+                            Log.d("locationAccuracy", "Fail")
+
+                        }
+
+                    })
+
+
+
+
 
                 } catch (e: java.io.IOException) {
                     e.printStackTrace()
@@ -79,61 +152,25 @@ class CameraFragment : Fragment() {
         }
 
 
-        val currentAccuracy = view.findViewById<TextView>(co.getdere.R.id.camera_accuracy)
-        val activity = activity as CameraActivity
+        currentAccuracy = view.findViewById<TextView>(co.getdere.R.id.camera_accuracy)
 
 
-        airLocation = AirLocation(activity, true, true, object : AirLocation.Callbacks {
-            override fun onSuccess(location: Location) {
-                currentAccuracy.text = location.accuracy.toString()
-                Log.d("locationAccuracy","Success")
-            }
-
-            override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
-                Log.d("locationAccuracy","Fail")
-
-            }
-
-        })
-
-
-
-
-        val handler = Handler()
-        val delay: Long = 2000 //milliseconds
-
-        handler.postDelayed(object : Runnable {
+        mStatusChecker = object : Runnable {
             override fun run() {
-
-                activity.runOnUiThread {
-                    object : Runnable {
-                        override fun run() {
-                            getAccuracy(activity, currentAccuracy)
-                        }
-                    }
+                try {
+                    updateStatus(mActivity, currentAccuracy) //this function can change value of mInterval.
+                } finally {
+                    // 100% guarantee that this always happens, even if
+                    // your update method throws an exception
+                    handler.postDelayed(this, delay)
                 }
-
-                handler.postDelayed(this, delay)
             }
-        }, delay)
-    }
+        }
 
 
 
-    fun getAccuracy(activity: Activity, currentAccuracy: TextView) {
+        startRepeatingTask()
 
-        airLocation = AirLocation(activity, true, true, object : AirLocation.Callbacks {
-            override fun onSuccess(location: Location) {
-                currentAccuracy.text = location.accuracy.toString()
-                Log.d("locationAccuracy","Success")
-            }
-
-            override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
-                Log.d("locationAccuracy","Fail")
-
-            }
-
-        })
 
     }
 
@@ -158,6 +195,34 @@ class CameraFragment : Fragment() {
         super.onStop()
     }
 
+
+    fun updateStatus(activity: Activity, currentAccuracy: TextView) {
+
+        airLocation = AirLocation(activity, true, true, object : AirLocation.Callbacks {
+            override fun onSuccess(location: Location) {
+
+                currentAccuracy.text = location.accuracy.toString()
+                Log.d("locationAccuracy", "Success")
+            }
+
+            override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
+                Log.d("locationAccuracy", "Fail")
+
+            }
+
+        })
+
+    }
+
+
+    fun startRepeatingTask() {
+        mStatusChecker.run()
+    }
+
+    fun stopRepeatingTask() {
+        handler.removeCallbacks(mStatusChecker)
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         airLocation?.onRequestPermissionsResult(
             requestCode,
@@ -167,6 +232,14 @@ class CameraFragment : Fragment() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         cameraKitView.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
+
+    override fun onDetach() {
+        super.onDetach()
+        stopRepeatingTask()
+    }
+
+
+
 
 
     companion object {

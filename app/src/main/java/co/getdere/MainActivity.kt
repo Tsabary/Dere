@@ -6,7 +6,6 @@ import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
@@ -14,17 +13,12 @@ import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
-import co.getdere.Fragments.BoardFragment
-import co.getdere.Fragments.FeedFragment
-import co.getdere.Fragments.ProfileLoggedInUserFragment
 import co.getdere.Models.Images
-import co.getdere.Models.Question
-import co.getdere.ViewModels.SharedViewModelCurrentUser
+import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.Models.Users
 import co.getdere.RegisterLogin.RegisterActivity
-import co.getdere.ViewModels.SharedViewModelImage
-import co.getdere.ViewModels.SharedViewModelQuestion
-import co.getdere.ViewModels.SharedViewModelRandomUser
+import co.getdere.viewmodels.SharedViewModelImage
+import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
@@ -32,7 +26,6 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.pusher.pushnotifications.PushNotifications
 import kotlinx.android.synthetic.main.activity_main.*
 
 

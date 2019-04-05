@@ -19,8 +19,8 @@ import co.getdere.Interfaces.DereMethods
 import co.getdere.Models.Images
 import co.getdere.Models.Users
 import co.getdere.R
-import co.getdere.ViewModels.SharedViewModelCurrentUser
-import co.getdere.ViewModels.SharedViewModelImage
+import co.getdere.viewmodels.SharedViewModelCurrentUser
+import co.getdere.viewmodels.SharedViewModelImage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter

@@ -18,8 +18,8 @@ import co.getdere.Models.Question
 import co.getdere.Models.Users
 
 import co.getdere.R
-import co.getdere.ViewModels.SharedViewModelCurrentUser
-import co.getdere.ViewModels.SharedViewModelQuestion
+import co.getdere.viewmodels.SharedViewModelCurrentUser
+import co.getdere.viewmodels.SharedViewModelQuestion
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.fragment_answer.*
 import kotlinx.android.synthetic.main.fragment_answer.view.*
