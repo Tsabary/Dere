@@ -1,17 +1,14 @@
 package co.getdere
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import co.getdere.Fragments.PhotoEditorFragment
+import co.getdere.fragments.NewPhotoFragment
+import co.getdere.fragments.PhotoEditorFragment
 import kotlinx.android.synthetic.main.content_camera.*
-import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.subcontent_camera.*
-import kotlinx.android.synthetic.main.subcontents_main.*
-import pub.devrel.easypermissions.EasyPermissions.onRequestPermissionsResult
 
 
 class CameraActivity : AppCompatActivity() {

@@ -3,21 +3,21 @@ package co.getdere
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.MenuItem
+import android.view.View
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.NavController
-import androidx.navigation.Navigation
-import androidx.navigation.findNavController
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.NavigationUI
-import co.getdere.Models.Images
+import co.getdere.fragments.*
+import co.getdere.models.Answers
+import co.getdere.models.Images
+import co.getdere.models.Question
+import co.getdere.models.Users
+import co.getdere.registerLogin.RegisterActivity
 import co.getdere.viewmodels.SharedViewModelCurrentUser
-import co.getdere.Models.Users
-import co.getdere.RegisterLogin.RegisterActivity
 import co.getdere.viewmodels.SharedViewModelImage
+import co.getdere.viewmodels.SharedViewModelQuestion
 import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
@@ -26,7 +26,8 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.subcontents_main.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -37,29 +38,50 @@ class MainActivity : AppCompatActivity() {
     lateinit var sharedViewModelCurrentUser: SharedViewModelCurrentUser
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
+    lateinit var sharedViewModelQuestion: SharedViewModelQuestion
 
-//    val fragment1: Fragment = FeedFragment()
-//    val fragment2: Fragment = BoardFragment()
-//    val fragment3: Fragment = ProfileLoggedInUserFragment()
-//    val fm = supportFragmentManager
-//    var active : Fragment = fragment1
+//    lateinit var feedNavHostFragment: Fragment
 
-    lateinit var navHostFragment: Fragment
+    lateinit var feedFragment: FeedFragment
+    lateinit var boardFragment: BoardFragment
+    lateinit var profileLoggedInUserFragment: ProfileLoggedInUserFragment
+
+    lateinit var imageFullSizeFragment: ImageFullSizeFragment
+    lateinit var profileRandomUserFragment: ProfileRandomUserFragment
+    lateinit var bucketFragment: AddToBucketFragment
+    lateinit var openedQuestionFragment: OpenedQuestionFragment
+    lateinit var feedNotificationsFragment: FeedNotificationsFragment
+    lateinit var boardNotificationsFragment: BoardNotificationsFragment
+    lateinit var savedQuestionFragment: SavedQuestionsFragment
+    lateinit var answerCommentFragment: AnswerCommentFragment
+    lateinit var answerFragment: AnswerFragment
+    lateinit var newQuestionFragment: NewQuestionFragment
+    lateinit var editProfileFragment: EditProfileFragment
+
+
+    lateinit var mainFrame: FrameLayout
+    lateinit var subFrame: FrameLayout
+
+    val fm = supportFragmentManager
+    val subFm = supportFragmentManager
+
+    lateinit var active: Fragment
+    lateinit var subActive: Fragment
+
+    var answerObject = Answers()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-//
-//        fm.beginTransaction().add(R.id.nav_host_fragment, fragment3, "3").hide(fragment3).commit()
-//        fm.beginTransaction().add(R.id.nav_host_fragment, fragment2, "2").hide(fragment2).commit()
-//        fm.beginTransaction().add(R.id.nav_host_fragment, fragment1, "1").commit()
-
-//        PushNotifications.start(getApplicationContext(), "8286cd5e-eaaa-4d81-a57b-0f4d985b0a47");
-//        PushNotifications.subscribe("hello");
+        setContentView(R.layout.activity_feed)
 
         sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
+        sharedViewModelQuestion = ViewModelProviders.of(this).get(SharedViewModelQuestion::class.java)
+
+        FirebaseApp.initializeApp(this)
+        checkIfLoggedIn()
+
+
 
         sharedViewModelImage = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
         sharedViewModelImage.sharedImageObject.postValue(Images())
@@ -67,74 +89,220 @@ class MainActivity : AppCompatActivity() {
         sharedViewModelRandomUser = ViewModelProviders.of(this).get(SharedViewModelRandomUser::class.java)
         sharedViewModelRandomUser.randomUserObject.postValue(Users())
 
-        FirebaseApp.initializeApp(this)
-        checkIfLoggedIn()
-        setupActionBar()
-
-        navHostFragment = nav_host_fragment
-        mBottomNav = findViewById(R.id.bottom_nav)
+        mainFrame = feed_frame_container
+        subFrame = feed_subcontents_frame_container
 
 
-//        mBottomNav.setOnNavigationItemSelectedListener { item ->
+        mToolbar = findViewById(R.id.my_toolbar)
+        setSupportActionBar(mToolbar)
+
+        mBottomNav = findViewById(co.getdere.R.id.feed_bottom_nav)
+
+        mBottomNav.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+
+
+                R.id.destination_feed -> {
+
+                    fm.beginTransaction().hide(active).show(feedFragment).commit()
+                    active = feedFragment
+
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+                    menuItem.isChecked = true
+
+
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+
+                    if (mainFrame.visibility == View.GONE) {
+                        switchVisibility(0)
+                    }
+
+
+                }
+
+                co.getdere.R.id.destination_board -> {
+
+                    fm.beginTransaction().hide(active).show(boardFragment).commit()
+                    active = boardFragment
+
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_board)
+                    menuItem.isChecked = true
+
+
+                    if (mainFrame.visibility == View.GONE) {
+                        switchVisibility(0)
+                    }
+
+                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                    subActive = openedQuestionFragment
+
+
+                }
+                R.id.destination_profile_logged_in_user -> {
+
+                    fm.beginTransaction().hide(active).show(profileLoggedInUserFragment).commit()
+                    active = profileLoggedInUserFragment
+
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_profile_logged_in_user)
+                    menuItem.isChecked = true
+
+
+                    if (mainFrame.visibility == View.GONE) {
+                        switchVisibility(0)
+                    }
+
+                    subFm.beginTransaction().hide(subActive).show(editProfileFragment).commit()
+                    subActive = editProfileFragment
+                }
+            }
+            false
+        }
+
+
+    }
+
+
+    fun switchVisibility(case: Int) {
+
+        if (case == 0) {
+            mainFrame.visibility = View.VISIBLE
+            subFrame.visibility = View.GONE
+        } else {
+            mainFrame.visibility = View.GONE
+            subFrame.visibility = View.VISIBLE
+        }
+
+
+    }
+
+
+    override fun onBackPressed() {
+
+        if (mainFrame.visibility == View.GONE) { // subframe is active
+
+            when (subActive) {
+
+                imageFullSizeFragment -> {
+                    switchVisibility(0)
+                    sharedViewModelImage.sharedImageObject.postValue(Images())
+                }
+                bucketFragment -> {
+
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+//                    subFm.beginTransaction().remove(bucketFragment).commit()
+
+                    subActive = imageFullSizeFragment
+                }
+
+                profileRandomUserFragment -> {
+
+                    imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+
+                    sharedViewModelRandomUser.randomUserObject.postValue(Users())
+                }
+
+                feedNotificationsFragment -> {
+                    switchVisibility(0)
+                }
+
+                openedQuestionFragment -> {
+                    switchVisibility(0)
+                    sharedViewModelQuestion.questionObject.postValue(Question())
+                }
+
+                boardNotificationsFragment -> {
+                    switchVisibility(0)
+                }
+
+                savedQuestionFragment -> {
+                    switchVisibility(0)
+                }
+
+                answerCommentFragment -> {
+                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                    subActive = openedQuestionFragment
+                }
+
+                answerFragment -> {
+                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                    subActive = openedQuestionFragment
+                }
+
+                newQuestionFragment -> {
+                    switchVisibility(0)
+                }
+
+            }
+
+
+        } else {
+
+            when (active) { // main frame is active
+
+                profileLoggedInUserFragment -> {
+
+                    fm.beginTransaction().hide(active).show(feedFragment).commit()
+                    active = feedFragment
+
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+                    menuItem.isChecked = true
+
+                    switchVisibility(0)
+
+                }
+
+                boardFragment -> {
+
+                    fm.beginTransaction().hide(active).show(feedFragment).commit()
+                    active = feedFragment
+
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+                    menuItem.isChecked = true
+
+                    switchVisibility(0)
+
+                }
+
+                feedFragment -> super.onBackPressed()
+            }
+
+        }
+
+    }
+
+
+//    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
 //
-//            when (item.itemId) {
+//        val id = item!!.getItemId()
 //
-//                R.id.destination_feed -> {
-//                    println(active)
-//                    fm.beginTransaction().hide(active).show(fragment1).commit()
-//                    active = fragment1
-//                    println(active)
-//                    return@setOnNavigationItemSelectedListener true
-//                }
+//        //noinspection SimplifiableIfStatement
+//        if (id == co.getdere.R.id.destination_camera) {
+//            Toast.makeText(this, "Action clicked", Toast.LENGTH_LONG).show()
+//            return true
+//        } else {
+//            Toast.makeText(this, "Action clicked 2", Toast.LENGTH_LONG).show()
 //
-//                R.id.destination_board -> {
-//                    println(active)
-//                    fm.beginTransaction().hide(active).show(fragment2).commit()
-//                    active = fragment2
-//                    println(active)
-//
-//                    return@setOnNavigationItemSelectedListener true
-//
-//                }
-//
-//                R.id.destination_profile_logged_in_user -> {
-//                    println(active)
-//                    fm.beginTransaction().hide(active).show(fragment3).commit()
-//                    active = fragment3
-//                    println(active)
-//
-//                    return@setOnNavigationItemSelectedListener true
-//
-//                }
-//
-//                else -> {
-//                    fm.beginTransaction().hide(active).show(fragment1).commit();
-//                    active = fragment1
-//                }
-//
-//            }
-//
-//            return@setOnNavigationItemSelectedListener false
 //
 //        }
+//
+//        return super.onOptionsItemSelected(item)
+//
+//
+//    }
 
-
-    }
-
-    private fun setupBottomNavMenu(navController: NavController) {
-
-
-        bottom_nav.let {
-            NavigationUI.setupWithNavController(it, navController)
-        }
-    }
-
-
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
-        val navigated = NavigationUI.onNavDestinationSelected(item!!, navController)
-        return navigated || super.onOptionsItemSelected(item)
-    }
+//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+////        menuInflater.inflate(co.getdere.R.menu.feed_navigation, menu)
+//        return super.onCreateOptionsMenu(menu)
+//    }
 
     private fun checkIfLoggedIn() {
 
@@ -159,38 +327,111 @@ class MainActivity : AppCompatActivity() {
 
             override fun onDataChange(p0: DataSnapshot) {
 
+
                 sharedViewModelCurrentUser.currentUserObject = p0.getValue(Users::class.java)!!
                 Log.d("checkLocation", "fetchCurrentUser")
 
-                setupNavController()
+                addFragmentsToFragmentManagers()
+
+//                setupNavController()
             }
 
         })
     }
 
-    private fun setupNavController() {
-        Log.d("checkLocation", "setupNavController")
+
+    fun addFragmentsToFragmentManagers() {
+
+        //main container
+
+        feedFragment = FeedFragment()
+        boardFragment = BoardFragment()
+        profileLoggedInUserFragment = ProfileLoggedInUserFragment()
+
+        fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment").commit()
+
+        fm.beginTransaction().add(R.id.feed_frame_container, boardFragment, "boardFragment").hide(boardFragment)
+            .commit()
+        fm.beginTransaction()
+            .add(R.id.feed_frame_container, profileLoggedInUserFragment, "profileLoggedInUserFragment")
+            .hide(profileLoggedInUserFragment).commit()
+
+        active = feedFragment
 
 
-        val myNavHostFragment: NavHostFragment = navHostFragment as NavHostFragment
-        val inflater = myNavHostFragment.navController.navInflater
-        val graph = inflater.inflate(R.navigation.feed_nav_graph)
-        myNavHostFragment.navController.graph = graph
+
+        //sub container
+        imageFullSizeFragment = ImageFullSizeFragment()
+        profileRandomUserFragment = ProfileRandomUserFragment()
+        bucketFragment = AddToBucketFragment()
+        openedQuestionFragment = OpenedQuestionFragment()
+        feedNotificationsFragment = FeedNotificationsFragment()
+        boardNotificationsFragment = BoardNotificationsFragment()
+        savedQuestionFragment = SavedQuestionsFragment()
+        answerCommentFragment = AnswerCommentFragment()
+        answerFragment = AnswerFragment()
+        newQuestionFragment = NewQuestionFragment()
+        editProfileFragment = EditProfileFragment()
 
 
-        val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
-        setupBottomNavMenu(navController)
-        this.findNavController(R.id.nav_host_fragment)
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, imageFullSizeFragment, "imageFullSizeFragment").commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, profileRandomUserFragment, "profileRandomUserFragment")
+            .hide(profileRandomUserFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, bucketFragment, "bucketFragment").hide(bucketFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, openedQuestionFragment, "openedQuestionFragment")
+            .hide(openedQuestionFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, feedNotificationsFragment, "feedNotificationsFragment")
+            .hide(feedNotificationsFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, boardNotificationsFragment, "boardNotificationsFragment")
+            .hide(boardNotificationsFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, savedQuestionFragment, "savedQuestionFragment")
+            .hide(savedQuestionFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, answerCommentFragment, "answerCommentFragment")
+            .hide(answerCommentFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, answerFragment, "answerFragment")
+            .hide(answerFragment).commit()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, newQuestionFragment, "newQuestionFragment")
+            .hide(newQuestionFragment).commit()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editProfileFragment, "editProfileFragment")
+            .hide(editProfileFragment).commit()
+
+
+        subActive = imageFullSizeFragment
+
+
     }
 
-    private fun setupActionBar() {
-
-        mToolbar = findViewById(R.id.my_toolbar)
-        setSupportActionBar(mToolbar)
-    }
 
     companion object {
         fun newInstance(): MainActivity = MainActivity()
     }
+
+
+    //    private fun setupNavController() {
+//        Log.d("checkLocation", "setupNavController")
+//
+//
+//        val myNavHostFragment: NavHostFragment = feedNavHostFragment as NavHostFragment
+//        val inflater = myNavHostFragment.navController.navInflater
+//        val graph = inflater.inflate(R.navigation.feed_nav_graph)
+//        myNavHostFragment.navController.graph = graph
+//
+//
+//        val navController = Navigation.findNavController(this, R.id.feed_nav_host_fragment)
+////        setupBottomNavMenu(navController)
+//        this.findNavController(R.id.feed_nav_host_fragment)
+//    }
+
+
 }
 

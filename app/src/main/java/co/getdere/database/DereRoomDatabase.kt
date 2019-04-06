@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import co.getdere.Interfaces.ImageDao
+import co.getdere.interfaces.ImageDao
 import co.getdere.roomclasses.LocalImagePost
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -2,7 +2,7 @@ package co.getdere.roomclasses
 
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
-import co.getdere.Interfaces.ImageDao
+import co.getdere.interfaces.ImageDao
 
 class ImagePostsRepository (private val imageDao : ImageDao) {
 
