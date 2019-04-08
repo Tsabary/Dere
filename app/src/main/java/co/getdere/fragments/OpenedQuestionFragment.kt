@@ -137,7 +137,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 Glide.with(this).load(user.image).into(openedQuestionAuthorImage)
                 openedQuestionAuthorName.text = user.name
 
-                openedQuestionAuthorReputation.text = "(${user.reputation})"
+                openedQuestionAuthorReputation.text = "(${numberCalculation(user.reputation.toLong())})"
 
                 randomUserObject = user // remove later this is just from pasr bad code - is it?
             }
@@ -409,7 +409,7 @@ class SingleAnswer(
                     viewHolder.itemView.answer_author_name.text = author.name
                     viewHolder.itemView.answer_content.text = answer.content
                     viewHolder.itemView.answer_timestamp.text = date
-                    viewHolder.itemView.answer_author_reputation.text = "(${author.reputation})"
+                    viewHolder.itemView.answer_author_reputation.text = "(${numberCalculation(author.reputation.toLong())})"
                 }
             }
         })
@@ -467,7 +467,7 @@ class SingleAnswer(
     }
 }
 
-class SingleAnswerComment(val comment : AnswerComments) : Item<ViewHolder>(){
+class SingleAnswerComment(val comment : AnswerComments) : Item<ViewHolder>(), DereMethods{
     override fun getLayout(): Int {
         return R.layout.answer_comment_layout
     }
@@ -488,7 +488,7 @@ class SingleAnswerComment(val comment : AnswerComments) : Item<ViewHolder>(){
                 if (author != null) {
 
                     viewHolder.itemView.answer_comment_author_name.text = author.name
-                    viewHolder.itemView.answer_comment_author_reputation.text = "(${author.reputation})"
+                    viewHolder.itemView.answer_comment_author_reputation.text = "(${numberCalculation(author.reputation.toLong())})"
                     Glide.with(viewHolder.root.context).load(author.image).into(viewHolder.itemView.answer_comment_author_image)
 
                 }

@@ -147,7 +147,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
             it?.let { user ->
 
                 authorName.text = user.name
-                authorReputation.text = "(${user.reputation})"
+                authorReputation.text = "(${numberCalculation(user.reputation.toLong())})"
                 Glide.with(context!!).load(user.image).into(authorImage)
             }
         })

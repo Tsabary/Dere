@@ -157,7 +157,7 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                 userProfile = user
                 Glide.with(this).load(it.image).into(profilePicture)
                 profileName.text = it.name
-                profileReputation.text = it.reputation
+                profileReputation.text = numberCalculation(it.reputation.toLong())
                 profileTagline.text = it.tagline
                 setUpGalleryAdapter(profileGallery, 0)
                 changeGalleryFeed("Roll")
@@ -175,7 +175,7 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
                     override fun onDataChange(p0: DataSnapshot) {
 
-                        profilePhotos.text = p0.childrenCount.toString()
+                        profilePhotos.text = numberCalculation(p0.childrenCount)
 
                     }
 
@@ -192,7 +192,7 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
                     override fun onDataChange(p0: DataSnapshot) {
 
-                        profileFollowers.text = p0.childrenCount.toString()
+                        profileFollowers.text = numberCalculation(p0.childrenCount)
 
                     }
 

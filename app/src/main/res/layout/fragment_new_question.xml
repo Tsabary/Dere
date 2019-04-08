@@ -134,7 +134,8 @@
                       android:padding="8dp"
                       android:paddingStart="0dp"
                       android:background="@android:color/transparent"
-                      android:layout_marginTop="8dp"/>
+                      android:layout_marginTop="8dp"
+                      android:inputType="textEmailAddress"/>
 
 
             <androidx.recyclerview.widget.RecyclerView

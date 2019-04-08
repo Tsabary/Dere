@@ -3,10 +3,14 @@ package co.getdere.fragments
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.*
+import android.widget.Toast
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.RecyclerView
 import co.getdere.MainActivity
 import co.getdere.groupieAdapters.SingleQuestion
 import co.getdere.models.Question
@@ -16,27 +20,32 @@ import co.getdere.R
 import co.getdere.viewmodels.SharedViewModelInterests
 import co.getdere.viewmodels.SharedViewModelQuestion
 import co.getdere.viewmodels.SharedViewModelRandomUser
+import co.getdere.viewmodels.SharedViewModelTags
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.board_toolbar.*
+import kotlinx.android.synthetic.main.fragment_board.*
 
 class BoardFragment : Fragment() {
 
+    val searchedQuestionsRecyclerAdapter = GroupAdapter<ViewHolder>()
     val questionsRecyclerAdapter = GroupAdapter<ViewHolder>()
     lateinit var sharedViewModelForQuestion: SharedViewModelQuestion
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var sharedViewModelInterests: SharedViewModelInterests
+    lateinit var sharedViewModelTags: SharedViewModelTags
 
+    private lateinit var questionsRecycler : RecyclerView
+    private lateinit var searchedQuestionsRecycler : RecyclerView
 
     var interestsList: MutableList<String> = mutableListOf()
+    val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
 
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        setHasOptionsMenu(true)
-    }
-
+    private lateinit var boardFilterChipGroup : ChipGroup
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -47,6 +56,9 @@ class BoardFragment : Fragment() {
 
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
             sharedViewModelInterests = ViewModelProviders.of(it).get(SharedViewModelInterests::class.java)
+
+            sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
+
         }
 
         val uid = FirebaseAuth.getInstance().uid
@@ -93,8 +105,32 @@ class BoardFragment : Fragment() {
 
         val activity = activity as MainActivity
 
-
+        val boardSearchBox = board_toolbar_search_box
+        val tagSuggestionRecycler = board_search_recycler
+        boardFilterChipGroup = board_toolbar_filter_chipgroup
         val fab: FloatingActionButton = view.findViewById(R.id.board_fab)
+
+        val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
+        tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
+        tagSuggestionRecycler.adapter = tagsFilteredAdapter
+
+        val boardNotificationIcon = board_toolbar_notifications_icon
+        val boardSavedQuestionIcon = board_toolbar_saved_questions_icon
+
+        boardNotificationIcon.setOnClickListener {
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.boardNotificationsFragment)
+                .commit()
+            activity.subActive = activity.boardNotificationsFragment
+
+            activity.switchVisibility(1)
+        }
+
+        boardSavedQuestionIcon.setOnClickListener {
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.savedQuestionFragment).commit()
+            activity.subActive = activity.savedQuestionFragment
+
+            activity.switchVisibility(1)
+        }
 
         fab.setOnClickListener {
 
@@ -104,13 +140,69 @@ class BoardFragment : Fragment() {
             activity.switchVisibility(1)
         }
 
-        val questionsRecycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.board_question_feed)
+        searchedQuestionsRecycler = board_question_feed_search
+        val searchedQuestionRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
+        searchedQuestionRecyclerLayoutManager.reverseLayout = true
+        searchedQuestionsRecycler.adapter = searchedQuestionsRecyclerAdapter
+        searchedQuestionsRecycler.layoutManager = searchedQuestionRecyclerLayoutManager
+
+
+        questionsRecycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.board_question_feed)
         val questionRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         questionRecyclerLayoutManager.reverseLayout = true
         questionsRecycler.adapter = questionsRecyclerAdapter
         questionsRecycler.layoutManager = questionRecyclerLayoutManager
 
         listenToQuestions()
+        recyclersVisibility(0)
+
+
+
+        boardSearchBox.addTextChangedListener(object : TextWatcher {
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                tagsFilteredAdapter.clear()
+
+                val userInput = s.toString()
+
+                if (userInput == "") {
+                    tagSuggestionRecycler.visibility = View.GONE
+
+                } else {
+
+                    val relevantTags: List<SingleTagForList> =
+                        sharedViewModelTags.tagList.filter { it.tagString.contains(userInput) }
+
+                    for (t in relevantTags) {
+                        tagSuggestionRecycler.visibility = View.VISIBLE
+                        tagsFilteredAdapter.add(SingleTagSuggestion(t))
+                    }
+
+                }
+
+            }
+
+
+            override fun afterTextChanged(s: Editable?) {
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+        })
+
+        tagsFilteredAdapter.setOnItemClickListener { item, _ ->
+            val row = item as SingleTagSuggestion
+            if (boardFilterChipGroup.childCount == 0) {
+                onTagSelected(row.tag.tagString)
+                boardSearchBox.text.clear()
+                searchQuestions(row.tag.tagString)
+                recyclersVisibility(1)
+            } else {
+                Toast.makeText(this.context, "You can only search one tag at a time", Toast.LENGTH_LONG).show()
+            }
+        }
+
 
         questionsRecyclerAdapter.setOnItemClickListener { item, _ ->
 
@@ -151,6 +243,82 @@ class BoardFragment : Fragment() {
 
     }
 
+    fun recyclersVisibility(case : Int){
+
+        if (case == 0){
+            searchedQuestionsRecycler.visibility = View.GONE
+            questionsRecycler.visibility = View.VISIBLE
+        } else {
+            searchedQuestionsRecycler.visibility = View.VISIBLE
+            questionsRecycler.visibility = View.GONE
+        }
+
+    }
+
+    private fun onTagSelected(selectedTag: String) {
+
+        val chip = Chip(this.context)
+        chip.text = selectedTag
+        chip.isCloseIconVisible = true
+        chip.isCheckable = false
+        chip.isClickable = false
+        chip.setChipBackgroundColorResource(R.color.green700)
+        chip.setTextAppearance(R.style.ChipSelectedStyle)
+        chip.setOnCloseIconClickListener {
+            boardFilterChipGroup.removeView(it)
+            recyclersVisibility(0)
+        }
+
+        boardFilterChipGroup.addView(chip)
+        boardFilterChipGroup.visibility = View.VISIBLE
+
+    }
+
+
+    private fun searchQuestions(searchTag : String) {
+
+        searchedQuestionsRecyclerAdapter.clear()
+
+        val ref = FirebaseDatabase.getInstance().getReference("/questions")
+        ref.addChildEventListener(object : ChildEventListener {
+
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+
+                val singleQuestionFromDB = p0.child("main").child("body").getValue(Question::class.java)
+
+
+                if (singleQuestionFromDB != null) {
+
+
+                        runThroughTags@for (tag in singleQuestionFromDB.tags) {
+
+                            if (searchTag == tag) {
+                                searchedQuestionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
+                                break@runThroughTags
+                            }
+                        }
+
+                }
+            }
+
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot) {
+            }
+
+        })
+
+    }
+
+
+
 
     private fun listenToQuestions() {
 
@@ -166,7 +334,7 @@ class BoardFragment : Fragment() {
 
                 if (singleQuestionFromDB != null) {
 
-                    singleQuestionLoop@for (interest in interestsList) {
+                    singleQuestionLoop@ for (interest in interestsList) {
 
                         for (tag in singleQuestionFromDB.tags) {
 
@@ -194,47 +362,6 @@ class BoardFragment : Fragment() {
         })
 
     }
-
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-
-        inflater.inflate(R.menu.board_navigation, menu)
-        super.onCreateOptionsMenu(menu, inflater)
-
-    }
-
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-
-        val activity = activity as MainActivity
-
-        when (id) {
-            R.id.destination_saved -> {
-
-                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.savedQuestionFragment).commit()
-                activity.subActive = activity.savedQuestionFragment
-
-                activity.switchVisibility(1)
-
-            }
-
-            R.id.destination_board_notifications -> {
-
-                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.boardNotificationsFragment)
-                    .commit()
-                activity.subActive = activity.boardNotificationsFragment
-
-                activity.switchVisibility(1)
-
-            }
-
-        }
-
-        return super.onOptionsItemSelected(item)
-
-    }
-
 
     companion object {
         fun newInstance(): BoardFragment = BoardFragment()

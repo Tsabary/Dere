@@ -50,14 +50,14 @@ class RecentFeedFragment : Fragment() {
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_recent_feed, container, false)
+        inflater.inflate(R.layout.fragment_following_feed, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         activity!!.title = "Feed"
 
-        feedRecycler = view.findViewById(R.id.recent_feed_gallary)
+        feedRecycler = view.findViewById(R.id.following_feed_gallery)
 
         setUpGalleryAdapter()
 
@@ -65,18 +65,6 @@ class RecentFeedFragment : Fragment() {
 
         galleryAdapter.setOnItemClickListener { item, _ ->
             val activity = activity as MainActivity
-
-//            if (activity.subActive != activity.imageFullSizeFragment) {
-//
-//                activity.subFm.beginTransaction()
-//                    .add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment")
-//                    .commit()
-//                activity.subActive = activity.imageFullSizeFragment
-//
-//            }
-
-//            activity.switchVisibility(1)
-
 
             val image = item as LinearFeedImage
 
@@ -105,13 +93,6 @@ class RecentFeedFragment : Fragment() {
                 }
 
             })
-
-
-//
-//            val row = item as LinearFeedImage
-//            val action = FeedFragmentDirections.actionDestinationFeedToDestinationImageFullSize(row.image.id, "MainActivity")
-//
-//            findNavController().navigate(action)
 
         }
 

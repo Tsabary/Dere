@@ -67,7 +67,7 @@ open class InterestsFeedFragment : Fragment() {
 
         val myView = inflater.inflate(R.layout.fragment_following_feed, container, false)
 
-        feedRecycler = myView.findViewById(R.id.following_feed_gallary)
+        feedRecycler = myView.findViewById(R.id.following_feed_gallery)
 
         return myView
     }
@@ -83,16 +83,6 @@ open class InterestsFeedFragment : Fragment() {
 
         galleryAdapter.setOnItemClickListener { item, _ ->
             val activity = activity as MainActivity
-
-//            if (activity.subActive != activity.imageFullSizeFragment) {
-//
-//                activity.subFm.beginTransaction()
-//                    .add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment")
-//                    .commit()
-//                activity.subActive = activity.imageFullSizeFragment
-//            }
-
-            println(activity.subActive)
 
             val image = item as LinearFeedImage
 
@@ -123,16 +113,6 @@ open class InterestsFeedFragment : Fragment() {
                 }
 
             })
-
-//            activity.fm.beginTransaction().replace(R.id.feed_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment").addToBackStack(null).commit()
-
-//            activity.fm.beginTransaction().hide(activity.active).show(activity.imageFullSizeFragment).commit()
-//            activity.active = activity.imageFullSizeFragment
-
-//            val row = item as LinearFeedImage
-//            val action =
-//                FeedFragmentDirections.actionDestinationFeedToDestinationImageFullSize(row.image.id, "MainActivity")
-//            findNavController().navigate(action)
 
         }
 
@@ -213,51 +193,6 @@ open class InterestsFeedFragment : Fragment() {
         })
 
     }
-//
-//    private fun createFollowedAccountsList() {
-//
-//        sharedViewModelInterests.interestList.clear()
-//
-//
-//        val followedAccountRef = FirebaseDatabase.getInstance().getReference("/users/$uid/following")
-//
-//        followedAccountRef.addChildEventListener(object : ChildEventListener {
-//
-//
-//            var followedUsersList: MutableList<String> = mutableListOf()
-//
-//
-//            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-//
-//
-//                Log.d("AccountToListP0", p0.toString())
-//
-//                val followedUserUid = p0.key.toString()
-//
-//                Log.d("AccountToList", followedUserUid)
-//
-//                followedUsersList.add(followedUserUid)
-//
-//                sharedViewModelFollowedAccounts.followedAccounts = followedUsersList
-//
-//            }
-//
-//            override fun onCancelled(p0: DatabaseError) {
-//
-//            }
-//
-//            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-//            }
-//
-//            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-//            }
-//
-//            override fun onChildRemoved(p0: DataSnapshot) {
-//            }
-//
-//        })
-//
-//    }
 
 
     companion object {

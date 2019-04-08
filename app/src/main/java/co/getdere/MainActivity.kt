@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
@@ -32,15 +33,13 @@ import kotlinx.android.synthetic.main.subcontents_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var mToolbar: Toolbar
+//    lateinit var mToolbar: Toolbar
     lateinit var mBottomNav: BottomNavigationView
 
     lateinit var sharedViewModelCurrentUser: SharedViewModelCurrentUser
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var sharedViewModelQuestion: SharedViewModelQuestion
-
-//    lateinit var feedNavHostFragment: Fragment
 
     lateinit var feedFragment: FeedFragment
     lateinit var boardFragment: BoardFragment
@@ -73,7 +72,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_feed)
+        setContentView(R.layout.activity_main)
 
         mBottomNav = findViewById(co.getdere.R.id.feed_bottom_nav)
 
@@ -93,20 +92,18 @@ class MainActivity : AppCompatActivity() {
         sharedViewModelRandomUser = ViewModelProviders.of(this).get(SharedViewModelRandomUser::class.java)
         sharedViewModelRandomUser.randomUserObject.postValue(Users())
 
-        mainFrame = feed_frame_container
-        subFrame = feed_subcontents_frame_container
+        subFrame = findViewById(R.id.feed_subcontents_frame_container)
 
+        mainFrame = findViewById(R.id.feed_frame_container)
 
-        mToolbar = findViewById(R.id.my_toolbar)
-        setSupportActionBar(mToolbar)
+        switchVisibility(0)
 
-
-
-
+//        mToolbar = findViewById(R.id.my_toolbar)
+//        setSupportActionBar(mToolbar)
 
     }
 
-    private fun setupBottomNav(){
+    private fun setupBottomNav() {
 
         mBottomNav.isClickable = true
 
@@ -368,7 +365,6 @@ class MainActivity : AppCompatActivity() {
         active = feedFragment
 
 
-
         //sub container
         imageFullSizeFragment = ImageFullSizeFragment()
         profileRandomUserFragment = ProfileRandomUserFragment()
@@ -417,30 +413,12 @@ class MainActivity : AppCompatActivity() {
 
         subActive = imageFullSizeFragment
 
-
     }
 
 
     companion object {
         fun newInstance(): MainActivity = MainActivity()
     }
-
-
-    //    private fun setupNavController() {
-//        Log.d("checkLocation", "setupNavController")
-//
-//
-//        val myNavHostFragment: NavHostFragment = feedNavHostFragment as NavHostFragment
-//        val inflater = myNavHostFragment.navController.navInflater
-//        val graph = inflater.inflate(R.navigation.feed_nav_graph)
-//        myNavHostFragment.navController.graph = graph
-//
-//
-//        val navController = Navigation.findNavController(this, R.id.feed_nav_host_fragment)
-////        setupBottomNavMenu(navController)
-//        this.findNavController(R.id.feed_nav_host_fragment)
-//    }
-
 
 }
 

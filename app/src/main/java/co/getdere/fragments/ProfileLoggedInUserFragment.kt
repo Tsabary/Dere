@@ -18,6 +18,7 @@ import co.getdere.groupieAdapters.FeedImage
 import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.R
+import co.getdere.interfaces.DereMethods
 import co.getdere.registerLogin.LoginActivity
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelImage
@@ -31,7 +32,7 @@ import kotlinx.android.synthetic.main.bucket_roll.view.*
 import kotlinx.android.synthetic.main.feed_single_photo.view.*
 
 
-class ProfileLoggedInUserFragment : Fragment() {
+class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
     lateinit var userProfile: Users
     val galleryRollAdapter = GroupAdapter<ViewHolder>()
@@ -77,7 +78,7 @@ class ProfileLoggedInUserFragment : Fragment() {
 
             Glide.with(this).load(userProfile.image).into(profilePicture)
             profileName.text = userProfile.name
-            profileReputation.text = userProfile.reputation
+            profileReputation.text = numberCalculation(userProfile.reputation.toLong())
             profileTagline.text = userProfile.tagline
         }
 
@@ -94,7 +95,7 @@ class ProfileLoggedInUserFragment : Fragment() {
 
             override fun onDataChange(p0: DataSnapshot) {
 
-                profilePhotos.text = p0.childrenCount.toString()
+                profilePhotos.text = numberCalculation(p0.childrenCount)
             }
 
         })
@@ -106,7 +107,7 @@ class ProfileLoggedInUserFragment : Fragment() {
 
             override fun onDataChange(p0: DataSnapshot) {
 
-                profileFollowers.text = p0.childrenCount.toString()
+                profileFollowers.text = numberCalculation(p0.childrenCount)
 
             }
 

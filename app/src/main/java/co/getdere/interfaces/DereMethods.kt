@@ -33,22 +33,11 @@ interface DereMethods {
         userReputationView: TextView
     ) {
 
-        Log.d("gettingValueInitiatorId", "heeey $initiatorId")
-
-
         val refVotes = if (postType == 0) {
             FirebaseDatabase.getInstance().getReference("/questions/$mainPostId/main/votes")
         } else {
             FirebaseDatabase.getInstance().getReference("/questions/$mainPostId/answers/$specificPostId/votes")
         }
-
-//        val refUserVote = if (postType == 0) {
-//            FirebaseDatabase.getInstance().getReference("/questions/$mainPostId/main/votes/$initiatorId")
-//        } else {
-//            FirebaseDatabase.getInstance()
-//                .getReference("/questions/$mainPostId/answers/$specificPostId/votes/$initiatorId")
-//        }
-
 
         refVotes.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -65,13 +54,10 @@ interface DereMethods {
 
                     val voteValue = postVotesSnapshot.child(initiatorId).getValue(Int::class.java)
 
-                    Log.d("gettingvalueddd", voteValue.toString())
-
-
                     when (voteValue) {
 
                         1 -> {
-                            if (event == 1 && initiatorId!=receiverId) {
+                            if (event == 1 && initiatorId != receiverId) {
 
                                 when (vote) {
 
@@ -80,8 +66,8 @@ interface DereMethods {
                                         defaultView(upvoteView, downvoteView)
 
                                         refVotes.setValue(mapOf(initiatorId to 0)).addOnSuccessListener {
-                                            // setVotesCount(specificPostId, mainPostId, votesView, postType)
-                                            setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote)
+                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
+//                                            setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote)
                                         }
                                         if (postType == 0) {
                                             changeReputation(
@@ -115,13 +101,13 @@ interface DereMethods {
                         }
 
                         0 -> {
-                            if (event == 1 && initiatorId!=receiverId) {
+                            if (event == 1 && initiatorId != receiverId) {
                                 when (vote) {
                                     "up" -> {
                                         upView(upvoteView, downvoteView)
                                         refVotes.setValue(mapOf(initiatorId to 1)).addOnSuccessListener {
-                                            //                                                    setVotesCount(specificPostId, mainPostId, votesView, postType)
-                                            setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote)
+                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
+//                                            setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote)
 
                                         }
 
@@ -152,9 +138,8 @@ interface DereMethods {
                                     }
                                     "down" -> {
                                         downView(upvoteView, downvoteView)
-//                                                setVotesCount(specificPostId, mainPostId, votesView, postType)
-                                        setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote)
-
+                                        setVotesCount(specificPostId, mainPostId, votesView, postType)
+//                                        setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote)
 
 
                                         refVotes.setValue(mapOf(initiatorId to -1)).addOnSuccessListener {
@@ -194,14 +179,14 @@ interface DereMethods {
                         }
 
                         -1 -> {
-                            if (event == 1 && initiatorId!=receiverId) {
+                            if (event == 1 && initiatorId != receiverId) {
                                 when (vote) {
                                     "up" -> {
                                         defaultView(upvoteView, downvoteView)
 
                                         refVotes.setValue(mapOf(initiatorId to 0)).addOnSuccessListener {
-                                            //                                                    setVotesCount(specificPostId, mainPostId, votesView, postType)
-                                            setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote)
+                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
+//                                            setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote)
 
                                         }
 
@@ -229,7 +214,7 @@ interface DereMethods {
 
                 } else {
 
-                    if (event == 1 && initiatorId!=receiverId) {
+                    if (event == 1 && initiatorId != receiverId) {
                         when (vote) {
                             "up" -> {
                                 upView(upvoteView, downvoteView)
@@ -341,7 +326,7 @@ interface DereMethods {
 
                 val rating = p0.value.toString().toInt()
                 count += rating
-                votesView.text = count.toString()
+                votesView.text = numberCalculation(count.toLong())
             }
 
             override fun onCancelled(p0: DatabaseError) {
@@ -402,7 +387,7 @@ interface DereMethods {
 
                             for (ds in p0.children) {
                                 count += 1
-                                likeCount.text = count.toString()
+                                likeCount.text = numberCalculation(count.toLong())
                             }
                         }
 
@@ -446,7 +431,7 @@ interface DereMethods {
                         override fun onDataChange(p0: DataSnapshot) {
                             if (p0.hasChild(image.id)) {
 
-                                if (event == 1 && initiatorId!=receiverId) {
+                                if (event == 1 && initiatorId != receiverId) {
 
                                     allUserLikesRef.child(image.id).removeValue().addOnSuccessListener {
 
@@ -482,7 +467,7 @@ interface DereMethods {
 
                             } else {
 
-                                if (event == 1 && initiatorId!=receiverId) {
+                                if (event == 1 && initiatorId != receiverId) {
 
                                     val refUserLikes =
                                         FirebaseDatabase.getInstance()
@@ -531,7 +516,7 @@ interface DereMethods {
 
 
                 } else {
-                    if (event == 1 && initiatorId!=receiverId) {
+                    if (event == 1 && initiatorId != receiverId) {
 
                         val refUserLikes =
                             FirebaseDatabase.getInstance()
@@ -592,7 +577,7 @@ interface DereMethods {
 
                 if (p0.hasChild("comments")) {
 
-                    commentCount.text = p0.child("comments").childrenCount.toString()
+                    commentCount.text = numberCalculation(p0.child("comments").childrenCount)
 
                 } else {
                     commentCount.text = "0"
@@ -632,7 +617,7 @@ interface DereMethods {
 
                             for (ds in p0.children) {
                                 count += 1
-                                bucketCount.text = count.toString()
+                                bucketCount.text = numberCalculation(count.toLong())
                             }
                         }
 
@@ -686,7 +671,7 @@ interface DereMethods {
         receiverId: String
     ) {
 
-        if (postType == 0 || postType == 1 && initiatorId!=receiverId) {
+        if (postType == 0 || postType == 1 && initiatorId != receiverId) {
 
 
             val refUserBoardNotifications =
@@ -703,7 +688,7 @@ interface DereMethods {
                 )
             )
 
-        } else if (initiatorId!=receiverId) {
+        } else if (initiatorId != receiverId) {
 
             val refUserGalleryNotifications =
                 FirebaseDatabase.getInstance()

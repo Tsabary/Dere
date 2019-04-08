@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
@@ -19,8 +18,6 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.tomer.fadingtextview.FadingTextView
 import kotlinx.android.synthetic.main.activity_register.*
-import me.echodev.resizer.Resizer
-import java.io.File
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -86,9 +83,9 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun performRegister() {
 
-        userName = register_name.text.toString()
-        userEmail = register_email.text.toString()
-        userPassword = register_password.text.toString()
+        userName = register_name.text.toString().trimEnd()
+        userEmail = register_email.text.toString().replace("\\s".toRegex(), "")
+        userPassword = register_password.text.toString().replace("\\s".toRegex(), "")
 
         Log.d("Main", "email is $userEmail")
         Log.d("Main", "pass is $userPassword")
@@ -156,23 +153,8 @@ class RegisterActivity : AppCompatActivity() {
 
         val filename = UUID.randomUUID().toString()
         val ref = FirebaseStorage.getInstance().getReference("/images/userprofile/$filename")
-        val path =
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
 
-
-        ref.putFile(
-
-
-            Uri.fromFile(
-                Resizer(this)
-                    .setTargetLength(400)
-                    .setQuality(100)
-                    .setOutputFormat("PNG")
-                    .setOutputFilename("DereTempProfilePhotoResized")
-                    .setOutputDirPath(path)
-                    .setSourceImage(File(selectedPhotoUri!!))
-                    .resizedFile
-            ))
+        ref.putFile(selectedPhotoUri!!)
             .addOnSuccessListener {
                 Log.d("RegisterActivity", "Successfully uploaded image ${it.metadata?.path}")
 

@@ -91,7 +91,7 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
                         .into(viewHolder.itemView.linear_feed__author_image)
 
                     viewHolder.itemView.linear_feed_author_name.text = user.name
-                    authorReputation.text = "(${user.reputation})"
+                    authorReputation.text = "(${numberCalculation(user.reputation.toLong())})"
 
                 }
             }

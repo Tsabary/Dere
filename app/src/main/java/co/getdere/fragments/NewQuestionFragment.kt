@@ -43,7 +43,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
     val tagsRef = FirebaseDatabase.getInstance().getReference("/tags")
 
-    val tagsFiltredAdapter = GroupAdapter<ViewHolder>()
+    val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
     lateinit var questionChipGroup: ChipGroup
     var tagsList: MutableList<String> = mutableListOf()
     lateinit var questionDetails: EditText
@@ -134,6 +134,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
         questionButton.setOnClickListener {
 
+
             if (questionTitle.text!!.length < 15) {
                 Toast.makeText(this.context, "Question title is too short", Toast.LENGTH_SHORT).show()
             } else if (questionDetails.text.isEmpty()) {
@@ -167,7 +168,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
             view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.new_question_tag_recycler)
         val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
-        tagSuggestionRecycler.adapter = tagsFiltredAdapter
+        tagSuggestionRecycler.adapter = tagsFilteredAdapter
 
 
 
@@ -177,7 +178,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
         questionTagsInput.addTextChangedListener(object : TextWatcher {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                tagsFiltredAdapter.clear()
+                tagsFilteredAdapter.clear()
 
                 val userInput = s.toString()
 
@@ -191,7 +192,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
                     for (t in relevantTags) {
 
 //                        tagSuggestionRecycler.visibility = View.VISIBLE
-//                        tagsFiltredAdapter.add(SingleTagSuggestion(t))
+//                        tagsFilteredAdapter.add(SingleTagSuggestion(t))
                         var countTagMatches = 0
                         for (i in 0 until questionChipGroup.childCount) {
                             val chip = questionChipGroup.getChildAt(i) as Chip
@@ -207,7 +208,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
                         if (countTagMatches == 0) {
                             tagSuggestionRecycler.visibility = View.VISIBLE
-                            tagsFiltredAdapter.add(SingleTagSuggestion(t))
+                            tagsFilteredAdapter.add(SingleTagSuggestion(t))
 
                         }
 
@@ -230,32 +231,34 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
         addTagButton.setOnClickListener {
 
-            var tagsMatchCount = 0
+            if (!questionTagsInput.text.isEmpty()){
 
-            for (i in 0 until questionChipGroup.childCount) {
-                val chip = questionChipGroup.getChildAt(i) as Chip
-                if (chip.text.toString() == questionTagsInput.text.toString()) {
-                    tagsMatchCount += 1
+                var tagsMatchCount = 0
+
+                for (i in 0 until questionChipGroup.childCount) {
+                    val chip = questionChipGroup.getChildAt(i) as Chip
+                    if (chip.text.toString() == questionTagsInput.text.toString()) {
+                        tagsMatchCount += 1
+                    }
                 }
-            }
 
-            if (tagsMatchCount == 0) {
-                if (questionChipGroup.childCount < 5) {
-                    onTagSelected(questionTagsInput.text.toString())
-                    questionTagsInput.text.clear()
+                if (tagsMatchCount == 0) {
+                    if (questionChipGroup.childCount < 5) {
+                        onTagSelected(questionTagsInput.text.toString())
+                        questionTagsInput.text.clear()
+                    } else {
+                        Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
+                    }
                 } else {
-                    Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this.context, "Tag had already been added", Toast.LENGTH_LONG).show()
                 }
-            } else {
-                Toast.makeText(this.context, "Tag had already been added", Toast.LENGTH_LONG).show()
             }
-
         }
 
 
 
 
-        tagsFiltredAdapter.setOnItemClickListener { item, _ ->
+        tagsFilteredAdapter.setOnItemClickListener { item, _ ->
             val row = item as SingleTagSuggestion
             if (questionChipGroup.childCount < 5) {
                 onTagSelected(row.tag.tagString)

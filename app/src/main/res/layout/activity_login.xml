@@ -111,8 +111,7 @@
                 android:textColor="@color/green600"
                 android:textAlignment="center"
                 app:layout_constraintHorizontal_bias="1.0"
-                android:layout_marginTop="24dp"
-                android:visibility="gone"/>
+                android:layout_marginTop="24dp"/>
 
         <TextView
                 android:text=""
@@ -130,8 +129,7 @@
                 android:textColor="@android:color/white"
                 android:textAlignment="center"
                 app:layout_constraintHorizontal_bias="1.0"
-                android:layout_marginTop="24dp"
-                android:visibility="gone"/>
+                android:layout_marginTop="24dp"/>
 
 
         <TextView

@@ -9,28 +9,38 @@
         android:background="@color/gray100">
 
 
-    <!--<androidx.appcompat.widget.Toolbar-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:background="?attr/colorPrimary"-->
-            <!--android:theme="?attr/actionBarTheme"-->
-            <!--android:minHeight="?attr/actionBarSize"-->
-            <!--android:id="@+id/my_toolbar"-->
-            <!--app:layout_constraintTop_toTopOf="parent"-->
-            <!--app:layout_constraintEnd_toEndOf="parent"-->
-            <!--app:layout_constraintStart_toStartOf="parent"-->
-    <!--android:visibility="invisible"/>-->
+    <include
+            layout="@layout/feed_toolbar"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:id="@+id/include2"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/include2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:id="@+id/feed_search_tags_recycler"
+            android:visibility="gone"/>
+
 
     <com.google.android.material.tabs.TabLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:id="@+id/feed_pager_tab_layout"
             app:tabIndicatorColor="@color/green500"
             app:tabTextColor="@color/gray500"
-            app:tabSelectedTextColor="@color/green700">
+            app:tabSelectedTextColor="@color/green700"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintTop_toBottomOf="@+id/feed_search_tags_recycler">
 
         <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
@@ -45,27 +55,40 @@
                 android:layout_height="wrap_content"/>
     </com.google.android.material.tabs.TabLayout>
 
+
     <androidx.viewpager.widget.ViewPager
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:id="@+id/feed_pager_pager"
             app:layout_constraintTop_toBottomOf="@+id/feed_pager_tab_layout"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/feed_pager_pager">
+    </androidx.viewpager.widget.ViewPager>
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/feed_pager_tab_layout"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/feed_search_results_recycler"
+            android:visibility="gone"/>
+
 
     <!--<com.google.android.material.bottomnavigation.BottomNavigationView-->
-            <!--android:id="@+id/feed_bottom_nav"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="50dp"-->
-            <!--android:background="?android:attr/windowBackground"-->
+    <!--android:id="@+id/feed_bottom_nav"-->
+    <!--android:layout_width="0dp"-->
+    <!--android:layout_height="50dp"-->
+    <!--android:background="?android:attr/windowBackground"-->
 
-            <!--app:itemBackground="@color/white"-->
-            <!--app:itemTextColor="@color/bottom_nav_color"-->
-            <!--app:itemIconTint="@color/bottom_nav_color"-->
-            <!--app:menu="@menu/navigation"-->
-            <!--app:labelVisibilityMode="unlabeled"-->
-            <!--app:layout_constraintBottom_toBottomOf="parent"-->
-            <!--app:layout_constraintEnd_toEndOf="parent"-->
-            <!--app:layout_constraintStart_toStartOf="parent"/>-->
+    <!--app:itemBackground="@color/white"-->
+    <!--app:itemTextColor="@color/bottom_nav_color"-->
+    <!--app:itemIconTint="@color/bottom_nav_color"-->
+    <!--app:menu="@menu/navigation"-->
+    <!--app:labelVisibilityMode="unlabeled"-->
+    <!--app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--app:layout_constraintEnd_toEndOf="parent"-->
+    <!--app:layout_constraintStart_toStartOf="parent"/>-->
 </androidx.constraintlayout.widget.ConstraintLayout>

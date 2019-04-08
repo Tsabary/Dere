@@ -54,8 +54,8 @@ class LoginActivity : AppCompatActivity() {
 
     private fun performLogin(){
 
-        val logEmail = login_email.text.toString()
-        val logPass = login_password.text.toString()
+        val logEmail = login_email.text.toString().trimEnd()
+        val logPass = login_password.text.toString().replace("\\s".toRegex(), "")
 
         Log.d("Main", "email is $logEmail")
         Log.d("Main", "pass is $logPass")
