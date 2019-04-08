@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
@@ -18,6 +19,8 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.tomer.fadingtextview.FadingTextView
 import kotlinx.android.synthetic.main.activity_register.*
+import me.echodev.resizer.Resizer
+import java.io.File
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -32,7 +35,7 @@ class RegisterActivity : AppCompatActivity() {
     lateinit var registerButtonBlinking : FadingTextView
     lateinit var registerButtonBlinkingBackground : TextView
 
-    var texts = arrayOf("REGISTERING", "REGISTERING")
+    var texts = arrayOf("CREATING ACCOUNT", "CREATING ACCOUNT")
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,6 +86,7 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun performRegister() {
 
+        userName = register_name.text.toString()
         userEmail = register_email.text.toString()
         userPassword = register_password.text.toString()
 
@@ -93,39 +97,42 @@ class RegisterActivity : AppCompatActivity() {
 
         if (selectedPhotoUri != null) {
 
+            if (userName.length > 3) {
+                if (userEmail.contains("@") && userEmail.contains(".")) {
 
-            if (userEmail.contains("@") && userEmail.contains(".")) {
+                    if (userPassword.length > 5) {
 
-                if (userPassword.length > 5) {
+                        FirebaseAuth.getInstance().createUserWithEmailAndPassword(userEmail, userPassword)
+                            .addOnCompleteListener {
+                                if (it.isSuccessful) {
+                                    Log.d(
+                                        "RegisterActivity",
+                                        "Succesflly created a user using uid: ${it.result?.user?.uid}"
+                                    )
+                                    uploadImageToFirebase()
 
-                    FirebaseAuth.getInstance().createUserWithEmailAndPassword(userEmail, userPassword)
-                        .addOnCompleteListener {
-                            if (it.isSuccessful) {
-                                Log.d(
-                                    "RegisterActivity",
-                                    "Succesflly created a user using uid: ${it.result?.user?.uid}"
-                                )
-                                uploadImageToFirebase()
+                                    return@addOnCompleteListener
+                                } else {
+                                    registerFail()
+                                    Log.d("RegisterActivity", "Failed creating a user using uid")
+                                }
 
-                                return@addOnCompleteListener
-                            } else {
+                            }.addOnFailureListener {
                                 registerFail()
-                                Log.d("RegisterActivity", "Failed creating a user using uid")
+                                Log.d("RegisterActivity", "Failed to create user : ${it.message}")
                             }
-
-                        }.addOnFailureListener {
-                            registerFail()
-                            Log.d("RegisterActivity", "Failed to create user : ${it.message}")
-                        }
+                    } else {
+                        registerFail()
+                        Toast.makeText(this, "Your password needs to be at least 6 characters long", Toast.LENGTH_LONG)
+                            .show()
+                    }
                 } else {
                     registerFail()
-                    Toast.makeText(this, "Your password needs to be at least 6 characters long", Toast.LENGTH_LONG)
-                        .show()
+                    Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_LONG).show()
                 }
-
             } else {
                 registerFail()
-                Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Please enter a valid name", Toast.LENGTH_LONG).show()
             }
         } else {
             registerFail()
@@ -138,9 +145,9 @@ class RegisterActivity : AppCompatActivity() {
 
 
     private fun registerFail(){
-        registerButton.visibility = View.GONE
-        registerButtonBlinking.visibility = View.VISIBLE
-        registerButtonBlinkingBackground.visibility = View.VISIBLE
+        registerButton.visibility = View.VISIBLE
+        registerButtonBlinking.visibility = View.GONE
+        registerButtonBlinkingBackground.visibility = View.GONE
     }
 
     private fun uploadImageToFirebase() {
@@ -149,8 +156,23 @@ class RegisterActivity : AppCompatActivity() {
 
         val filename = UUID.randomUUID().toString()
         val ref = FirebaseStorage.getInstance().getReference("/images/userprofile/$filename")
+        val path =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
 
-        ref.putFile(selectedPhotoUri!!)
+
+        ref.putFile(
+
+
+            Uri.fromFile(
+                Resizer(this)
+                    .setTargetLength(400)
+                    .setQuality(100)
+                    .setOutputFormat("PNG")
+                    .setOutputFilename("DereTempProfilePhotoResized")
+                    .setOutputDirPath(path)
+                    .setSourceImage(File(selectedPhotoUri!!))
+                    .resizedFile
+            ))
             .addOnSuccessListener {
                 Log.d("RegisterActivity", "Successfully uploaded image ${it.metadata?.path}")
 

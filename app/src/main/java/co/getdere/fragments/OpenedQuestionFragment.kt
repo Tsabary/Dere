@@ -288,6 +288,12 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                                 .getReference("/users/${currentUserObject.uid}/saved-questions")
                         refQuestionInUserSavedQuestions.setValue(mapOf(questionObject.id to true))
                             .addOnSuccessListener {
+
+                                for (t in questionObject.tags){
+                                    val refUserTags = FirebaseDatabase.getInstance().getReference("users/${currentUserObject.uid}/interests/$t")
+                                    refUserTags.setValue(true)
+                                }
+
                                 changeReputation(
                                     10,
                                     questionObject.id,

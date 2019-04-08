@@ -50,7 +50,8 @@
                     android:digits="abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 ?,'$/&quot;"
                     android:background="@android:color/transparent"
                     android:padding="8dp"
-                    android:paddingStart="0dp"/>
+                    android:paddingStart="0dp"
+                    android:gravity="top"/>
 
 
             <TextView

@@ -12,6 +12,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+
         <TextView
                 android:text="DERE"
                 android:layout_width="wrap_content"
@@ -34,8 +35,22 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/dere_title"
-        />
+                app:layout_constraintTop_toBottomOf="@+id/dere_title"/>
+
+
+        <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                app:civ_border_width="3dp"
+                app:civ_border_color="@android:color/white"
+                app:layout_constraintStart_toEndOf="@+id/register_name"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintEnd_toStartOf="@+id/register_name"
+                android:layout_marginTop="16dp"
+                android:id="@+id/register_circular_image_view"
+                app:layout_constraintTop_toBottomOf="@+id/login_title"
+                android:src="@drawable/user_profile"/>
+
 
         <EditText
                 android:layout_width="0dp"
@@ -88,69 +103,6 @@
                 android:inputType="textPassword"
                 android:elevation="2dp"/>
 
-        <TextView
-                android:text="Already have an account?"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/register_to_login"
-                android:layout_marginEnd="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="24dp"
-                app:layout_constraintTop_toBottomOf="@+id/register_button"
-                android:onClick="haveAccountClicked"/>
-
-        <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                app:civ_border_width="3dp"
-                app:civ_border_color="@android:color/white"
-                app:layout_constraintStart_toEndOf="@+id/register_name"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintEnd_toStartOf="@+id/register_name"
-                android:layout_marginTop="16dp"
-                android:id="@+id/register_circular_image_view"
-                app:layout_constraintTop_toBottomOf="@+id/login_title"
-                android:src="@drawable/user_profile"/>
-
-        <com.tomer.fadingtextview.FadingTextView
-                android:text="REGISTER"
-                android:layout_width="0dp"
-                android:layout_height="70dp"
-                android:gravity="center_vertical"
-                android:id="@+id/register_button_active_text"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="32dp"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="24dp"
-                app:layout_constraintTop_toBottomOf="@+id/register_password"
-                android:background="@drawable/login_register_button_working"
-                android:textSize="18sp"
-                android:textColor="@color/green600"
-                android:textAlignment="center"
-                android:visibility="gone"/>
-
-        <TextView
-                android:text=""
-                android:layout_width="0dp"
-                android:layout_height="70dp"
-                android:gravity="center_vertical"
-                android:id="@+id/register_button_regular_active_background"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="32dp"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="24dp"
-                app:layout_constraintTop_toBottomOf="@+id/register_password"
-                android:background="@drawable/login_register_button_working"
-                android:textSize="18sp"
-                android:textColor="@android:color/white"
-                android:textAlignment="center"
-                android:visibility="gone"/>
 
         <TextView
                 android:text="REGISTER"
@@ -169,6 +121,60 @@
                 android:textSize="18sp"
                 android:textColor="@android:color/white"
                 android:textAlignment="center"/>
+
+
+        <com.tomer.fadingtextview.FadingTextView
+                android:text="REGISTER"
+                android:layout_width="0dp"
+                android:layout_height="70dp"
+                android:gravity="center_vertical"
+                android:id="@+id/register_button_active_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="32dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="24dp"
+                app:layout_constraintTop_toBottomOf="@+id/register_button"
+                android:background="@drawable/login_register_button_working"
+                android:textSize="18sp"
+                android:textColor="@color/green600"
+                android:textAlignment="center"
+                android:visibility="gone"/>
+
+        <TextView
+                android:text=""
+                android:layout_width="0dp"
+                android:layout_height="70dp"
+                android:gravity="center_vertical"
+                android:id="@+id/register_button_regular_active_background"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="32dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="24dp"
+                app:layout_constraintTop_toBottomOf="@+id/register_button"
+                android:background="@drawable/login_register_button_working"
+                android:textSize="18sp"
+                android:textColor="@android:color/white"
+                android:textAlignment="center"
+                android:visibility="gone"/>
+
+
+
+        <TextView
+                android:text="Already have an account?"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/register_to_login"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                app:layout_constraintTop_toBottomOf="@+id/register_button_regular_active_background"
+                android:onClick="haveAccountClicked"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

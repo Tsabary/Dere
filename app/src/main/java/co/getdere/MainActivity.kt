@@ -75,6 +75,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_feed)
 
+        mBottomNav = findViewById(co.getdere.R.id.feed_bottom_nav)
+
+        mBottomNav.isClickable = false
+
         sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
         sharedViewModelQuestion = ViewModelProviders.of(this).get(SharedViewModelQuestion::class.java)
 
@@ -96,7 +100,15 @@ class MainActivity : AppCompatActivity() {
         mToolbar = findViewById(R.id.my_toolbar)
         setSupportActionBar(mToolbar)
 
-        mBottomNav = findViewById(co.getdere.R.id.feed_bottom_nav)
+
+
+
+
+    }
+
+    private fun setupBottomNav(){
+
+        mBottomNav.isClickable = true
 
         mBottomNav.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
@@ -158,10 +170,7 @@ class MainActivity : AppCompatActivity() {
             }
             false
         }
-
-
     }
-
 
     fun switchVisibility(case: Int) {
 
@@ -333,7 +342,7 @@ class MainActivity : AppCompatActivity() {
 
                 addFragmentsToFragmentManagers()
 
-//                setupNavController()
+                setupBottomNav()
             }
 
         })

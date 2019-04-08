@@ -12,6 +12,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.board_single_row.view.*
 import kotlinx.android.synthetic.main.linear_feed_post.view.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
@@ -36,6 +37,8 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
         val commentCount = viewHolder.itemView.linear_feed_comment_count
 
         val imageDescription = viewHolder.itemView.linear_feed_image_details
+
+        viewHolder.itemView.linear_feed_tags.text = image.tags.joinToString()
 
         if (image.details.isNotEmpty()){
             imageDescription.visibility = View.VISIBLE

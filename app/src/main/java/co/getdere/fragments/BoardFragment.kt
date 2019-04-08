@@ -13,8 +13,10 @@ import co.getdere.models.Question
 import co.getdere.models.Users
 
 import co.getdere.R
+import co.getdere.viewmodels.SharedViewModelInterests
 import co.getdere.viewmodels.SharedViewModelQuestion
 import co.getdere.viewmodels.SharedViewModelRandomUser
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
@@ -24,8 +26,10 @@ class BoardFragment : Fragment() {
     val questionsRecyclerAdapter = GroupAdapter<ViewHolder>()
     lateinit var sharedViewModelForQuestion: SharedViewModelQuestion
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
+    lateinit var sharedViewModelInterests: SharedViewModelInterests
 
 
+    var interestsList: MutableList<String> = mutableListOf()
 
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -42,7 +46,39 @@ class BoardFragment : Fragment() {
             sharedViewModelForQuestion.questionObject.postValue(Question())
 
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
+            sharedViewModelInterests = ViewModelProviders.of(it).get(SharedViewModelInterests::class.java)
         }
+
+        val uid = FirebaseAuth.getInstance().uid
+
+        val tagsRef = FirebaseDatabase.getInstance().getReference("/users/$uid/interests")
+
+        tagsRef.addChildEventListener(object : ChildEventListener {
+
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+
+                val tagName = p0.key.toString()
+
+                interestsList.add(tagName)
+
+                sharedViewModelInterests.interestList = interestsList
+            }
+
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot) {
+            }
+
+        })
+
     }
 
 
@@ -94,12 +130,11 @@ class BoardFragment : Fragment() {
             activity.subActive = activity.openedQuestionFragment
 
 
-
             // meanwhile in the background it will load the random user object
 
             val refRandomUser = FirebaseDatabase.getInstance().getReference("/users/$author/profile")
 
-            refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener{
+            refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
 
                 }
@@ -112,15 +147,6 @@ class BoardFragment : Fragment() {
                 }
 
             })
-
-
-
-//            val action = BoardFragmentDirections.actionDestinationBoardToOpenedQuestionFragment()
-////            action.questionId = question
-////            action.questionAuthor = author
-//            findNavController().navigate(action)
-
-
         }
 
     }
@@ -140,8 +166,16 @@ class BoardFragment : Fragment() {
 
                 if (singleQuestionFromDB != null) {
 
-                    questionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
+                    singleQuestionLoop@for (interest in interestsList) {
 
+                        for (tag in singleQuestionFromDB.tags) {
+
+                            if (interest == tag) {
+                                questionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
+                                break@singleQuestionLoop
+                            }
+                        }
+                    }
                 }
             }
 
@@ -187,7 +221,8 @@ class BoardFragment : Fragment() {
 
             R.id.destination_board_notifications -> {
 
-                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.boardNotificationsFragment).commit()
+                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.boardNotificationsFragment)
+                    .commit()
                 activity.subActive = activity.boardNotificationsFragment
 
                 activity.switchVisibility(1)
@@ -206,32 +241,3 @@ class BoardFragment : Fragment() {
     }
 
 }
-
-
-//class SingleQuestion(
-//    val questionId: String,
-//    val authorUid: String,
-//    val question: String,
-//    val details: String,
-//    val tags: MutableList<String>,
-//    val timestamp: String,
-//    val answers: Int,
-//    val resolved: Boolean
-//) : Item<ViewHolder>() {
-//    override fun getLayout(): Int {
-//        return R.layout.board_single_row
-//    }
-//
-//    override fun bind(viewHolder: ViewHolder, position: Int) {
-//
-//        viewHolder.itemView.board_question.text = question
-//        viewHolder.itemView.board_tags.text = tags.joinToString()
-//        viewHolder.itemView.board_timestamp.text = timestamp
-//        viewHolder.itemView.board_answers.text = answers.toString()
-//
-//    }
-//
-//}
-
-
-

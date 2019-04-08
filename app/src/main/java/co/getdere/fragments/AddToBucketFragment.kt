@@ -56,19 +56,6 @@ class AddToBucketFragment : Fragment(), DereMethods {
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
 
         }
-
-
-//        arguments?.let {
-//            val safeArgs = ImageFullSizeFragmentArgs.fromBundle(it)
-//
-////            val imageId = safeArgs.imageId
-//
-//            activityName = safeArgs.activityName
-//
-//
-//
-//        }
-
     }
 
 
@@ -80,13 +67,6 @@ class AddToBucketFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-//        arguments?.let {
-//            val safeArgs = AddToBucketFragmentArgs.fromBundle(it)
-//            image = safeArgs.image
-//            currentUser = safeArgs.currentUser
-//        }
-
-
         val recycler = view.findViewById<RecyclerView>(R.id.add_to_bucket_recycler)
         val newBucketInput = view.findViewById<EditText>(R.id.add_to_bucket_new_input)
         val bucketAddButton = view.findViewById<TextView>(R.id.add_to_bucket_new_button)
@@ -94,8 +74,6 @@ class AddToBucketFragment : Fragment(), DereMethods {
         recycler.adapter = bucketsAdapter
         bucketsLayoutManager = LinearLayoutManager(this.context)
         recycler.layoutManager = bucketsLayoutManager
-
-
 
         bucketAddButton.setOnClickListener {
 
@@ -127,6 +105,12 @@ class AddToBucketFragment : Fragment(), DereMethods {
                                         .getReference("/images/${imageObject.id}/buckets")
 
                                 imageBucketingRef.setValue(mapOf(currentUser.uid to true)).addOnSuccessListener {
+
+                                    for (t in imageObject.tags){
+                                        val refUserTags = FirebaseDatabase.getInstance().getReference("users/${currentUser.uid}/interests/$t")
+                                        refUserTags.setValue(true)
+                                    }
+
 
                                     newBucketInput.text.clear()
 
@@ -233,7 +217,7 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
     ) {
 
 
-        val refUser = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}")
+//        val refUser = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}")
         val refUserBuckets = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets")
         val refBucket = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets/$bucketName")
         val refImageBuckets =
@@ -310,6 +294,11 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
 
                                         refImageBuckets.setValue(mapOf(currentUser.uid to true))
                                             .addOnSuccessListener {
+
+                                                for (t in image.tags){
+                                                    val refUserTags = FirebaseDatabase.getInstance().getReference("users/${currentUser.uid}/interests/$t")
+                                                    refUserTags.setValue(true)
+                                                }
 
                                                 actionText.text = "REMOVE"
                                                 actionText.setTextColor(

@@ -40,10 +40,10 @@ class CameraFragment : Fragment() {
     val handler = Handler()
     val delay: Long = 2000 //milliseconds
 
-//    lateinit var mActivity: Activity
+    //    lateinit var mActivity: Activity
     lateinit var currentAccuracy: TextView
 
-    lateinit var mStatusChecker: Runnable
+//    lateinit var mStatusChecker: Runnable
 
     private lateinit var localImageViewModel: LocalImageViewModel
 
@@ -82,12 +82,8 @@ class CameraFragment : Fragment() {
 
             Log.d("photoActivity", "button clicked")
 
-
-            cameraKitView.captureImage { _, image ->
-
-
+            cameraKitView.captureImage { p0, p1 ->
                 Log.d("photoActivity", "image captured")
-
 
                 val timeStamp = System.currentTimeMillis().toString()
                 val fileName = "Dere$timeStamp.jpg"
@@ -102,14 +98,15 @@ class CameraFragment : Fragment() {
 
                 try {
                     val outputStream = FileOutputStream(savedPhoto.path)
-                    outputStream.write(image)
+                    outputStream.write(p1)
                     outputStream.close()
                     mActivity.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(savedPhoto)))
 
                     Log.d("photoActivity", "Image saved to file and system rescaned the device")
 
 
-                    Glide.with(this).load(savedPhoto).into(mActivity.photoEditorFragment.view!!.findViewById(R.id.photo_editor_image))
+                    Glide.with(mActivity).load(savedPhoto)
+                        .into(mActivity.photoEditorFragment.view!!.findViewById(R.id.photo_editor_image))
 
                     Log.d("photoActivity", "image loaded into new fragment")
 
@@ -121,7 +118,14 @@ class CameraFragment : Fragment() {
                     airLocation = AirLocation(mActivity, true, true, object : AirLocation.Callbacks {
                         override fun onSuccess(location: Location) {
 
-                            val localImagePost = LocalImagePost(timeStamp.toLong(), location.longitude,  location.latitude, savedPhoto.path, "Description", "Url")
+                            val localImagePost = LocalImagePost(
+                                timeStamp.toLong(),
+                                location.longitude,
+                                location.latitude,
+                                savedPhoto.path,
+                                "Description",
+                                "Url"
+                            )
                             Log.d("photoActivity", "Took photo")
 
                             localImageViewModel.insert(localImagePost)
@@ -136,16 +140,81 @@ class CameraFragment : Fragment() {
                     })
 
 
-
-
-
                 } catch (e: java.io.IOException) {
                     e.printStackTrace()
                     Log.d("photoActivity", "failed to take photo")
 
                 }
-
             }
+
+//            cameraKitView.captureImage { _, image ->
+//
+//
+//                Log.d("photoActivity", "image captured")
+//
+//
+//                val timeStamp = System.currentTimeMillis().toString()
+//                val fileName = "Dere$timeStamp.jpg"
+//
+//                val path =
+//                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
+//                val outputDir = File(path)
+//                outputDir.mkdir()
+//                val savedPhoto = File(path + File.separator + fileName)
+//
+//                Log.d("photoActivity", "new file created")
+//
+//                try {
+//                    val outputStream = FileOutputStream(savedPhoto.path)
+//                    outputStream.write(image)
+//                    outputStream.close()
+//                    mActivity.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(savedPhoto)))
+//
+//                    Log.d("photoActivity", "Image saved to file and system rescaned the device")
+//
+//
+//                    Glide.with(this).load(savedPhoto)
+//                        .into(mActivity.photoEditorFragment.view!!.findViewById(R.id.photo_editor_image))
+//
+//                    Log.d("photoActivity", "image loaded into new fragment")
+//
+//
+//                    mActivity.switchVisibility(1)
+//
+//                    Log.d("photoActivity", "visibility switched")
+//
+//                    airLocation = AirLocation(mActivity, true, true, object : AirLocation.Callbacks {
+//                        override fun onSuccess(location: Location) {
+//
+//                            val localImagePost = LocalImagePost(
+//                                timeStamp.toLong(),
+//                                location.longitude,
+//                                location.latitude,
+//                                savedPhoto.path,
+//                                "Description",
+//                                "Url"
+//                            )
+//                            Log.d("photoActivity", "Took photo")
+//
+//                            localImageViewModel.insert(localImagePost)
+//
+//                        }
+//
+//                        override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
+//                            Log.d("locationAccuracy", "Fail")
+//
+//                        }
+//
+//                    })
+//
+//
+//                } catch (e: java.io.IOException) {
+//                    e.printStackTrace()
+//                    Log.d("photoActivity", "failed to take photo")
+//
+//                }
+//
+//            }
         }
 
 
@@ -212,13 +281,13 @@ class CameraFragment : Fragment() {
     }
 
 
-    fun startRepeatingTask() {
-        mStatusChecker.run()
-    }
-
-    fun stopRepeatingTask() {
-        handler.removeCallbacks(mStatusChecker)
-    }
+//    fun startRepeatingTask() {
+//        mStatusChecker.run()
+//    }
+//
+//    fun stopRepeatingTask() {
+//        handler.removeCallbacks(mStatusChecker)
+//    }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         airLocation?.onRequestPermissionsResult(
@@ -230,13 +299,10 @@ class CameraFragment : Fragment() {
         cameraKitView.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-    override fun onDetach() {
-        super.onDetach()
-        stopRepeatingTask()
-    }
-
-
-
+//    override fun onDetach() {
+//        super.onDetach()
+//        stopRepeatingTask()
+//    }
 
 
     companion object {

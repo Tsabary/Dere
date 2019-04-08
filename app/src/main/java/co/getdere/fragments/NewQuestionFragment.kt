@@ -106,7 +106,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
         questionTitle = view.findViewById(R.id.new_question_title)
         questionTitle.requestFocus()
-        questionDetails = view.findViewById<EditText>(R.id.new_question_details)
+        questionDetails = view.findViewById(R.id.new_question_details)
         val questionButton = view.findViewById<TextView>(R.id.new_question_btn)
         val questionTagsInput = view.findViewById<EditText>(R.id.new_question_tag_input)
         val addTagButton = view.findViewById<ImageButton>(R.id.new_question_add_tag_button)
@@ -312,8 +312,10 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
                 for (t in tags) {
                     val refTag = FirebaseDatabase.getInstance().getReference("/tags/$t/${ref.key}")
+                    val refUserTags = FirebaseDatabase.getInstance().getReference("users/$uid/interests/$t")
 
-                    refTag.setValue(true)
+                    refTag.setValue("question")
+                    refUserTags.setValue(true)
 
 //                    refTag.setValue(mapOf(ref.key!! to true))
                 }
@@ -324,6 +326,9 @@ class NewQuestionFragment : Fragment(), DereMethods {
                     .commit()
                 activity.subActive = activity.openedQuestionFragment
 
+                activity.fm.beginTransaction().detach(activity.boardFragment).commit()
+                activity.fm.beginTransaction().attach(activity.boardFragment).commit()
+                activity.fm.beginTransaction().show(activity.boardFragment).commit()
 
                 questionTitle.text!!.clear()
                 questionDetails.text.clear()

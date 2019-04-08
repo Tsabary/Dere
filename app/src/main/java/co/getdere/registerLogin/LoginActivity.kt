@@ -12,6 +12,7 @@ import co.getdere.R
 import com.google.firebase.auth.FirebaseAuth
 import com.tomer.fadingtextview.FadingTextView
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.*
 import java.util.concurrent.TimeUnit
 
 class LoginActivity : AppCompatActivity() {
@@ -54,7 +55,7 @@ class LoginActivity : AppCompatActivity() {
     private fun performLogin(){
 
         val logEmail = login_email.text.toString()
-        val logPass = dark_room_edit_location_input.text.toString()
+        val logPass = login_password.text.toString()
 
         Log.d("Main", "email is $logEmail")
         Log.d("Main", "pass is $logPass")
