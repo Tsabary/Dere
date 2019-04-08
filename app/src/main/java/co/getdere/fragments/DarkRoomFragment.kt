@@ -12,10 +12,12 @@ import android.widget.ImageView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
+import co.getdere.CameraActivity
 
 import co.getdere.R
 import co.getdere.roomclasses.LocalImagePost
 import co.getdere.roomclasses.LocalImageViewModel
+import co.getdere.viewmodels.SharedViewModelLocalImagePost
 import com.bumptech.glide.Glide
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
@@ -25,12 +27,17 @@ import com.xwray.groupie.ViewHolder
 class DarkRoomFragment : Fragment() {
 
     private lateinit var localImageViewModel: LocalImageViewModel
+    lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
+//    lateinit var localImagePost: LocalImagePost
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
         activity?.let {
             localImageViewModel = ViewModelProviders.of(this).get(LocalImageViewModel::class.java)
+            sharedViewModelLocalImagePost = ViewModelProviders.of(it).get(SharedViewModelLocalImagePost::class.java)
+
         }
     }
 
@@ -45,6 +52,7 @@ class DarkRoomFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val activity = activity as CameraActivity
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.dark_room_recyclerview)
 //        val adapter = LocalImageListAdapter(this.context!!)
@@ -59,14 +67,20 @@ class DarkRoomFragment : Fragment() {
             Log.d("ClearInitiated", "and repopulating")
 
             images?.let {
-                for (i in images){
+                for (i in images) {
                     adapter.add(DarkRoomGroupieAdapter(i))
                 }
-
-//                adapter.seImagePosts(it)
             }
         })
 
+        adapter.setOnItemClickListener { item, _ ->
+
+            val adapterImage = item as DarkRoomGroupieAdapter
+
+            sharedViewModelLocalImagePost.sharedImagePostObject.postValue(adapterImage.image)
+
+            activity.switchVisibility(1)
+        }
 
     }
 

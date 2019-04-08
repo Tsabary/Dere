@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import co.getdere.MainActivity
@@ -15,8 +16,11 @@ import co.getdere.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
+import com.tomer.fadingtextview.FadingTextView
 import kotlinx.android.synthetic.main.activity_register.*
 import java.util.*
+import java.util.concurrent.TimeUnit
+
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -24,17 +28,33 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var userEmail: String
     private lateinit var userPassword: String
 
+    lateinit var registerButton : TextView
+    lateinit var registerButtonBlinking : FadingTextView
+    lateinit var registerButtonBlinkingBackground : TextView
+
+    var texts = arrayOf("REGISTERING", "REGISTERING")
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
-        register_button.setOnClickListener {
-            register_button.isClickable = false
+        registerButton = findViewById<TextView>(R.id.register_button)
+        registerButtonBlinking = findViewById<FadingTextView>(R.id.register_button_active_text)
+        registerButtonBlinkingBackground = findViewById<TextView>(R.id.register_button_regular_active_background)
+
+        registerButtonBlinking.setTexts(texts)
+        registerButtonBlinking.setTimeout(500, TimeUnit.MILLISECONDS)
+
+
+        registerButton.setOnClickListener {
+            registerButton.visibility = View.GONE
+            registerButtonBlinking.visibility = View.VISIBLE
+            registerButtonBlinkingBackground.visibility = View.VISIBLE
             performRegister()
         }
 
-        register_photo_pick.setOnClickListener {
+        register_circular_image_view.setOnClickListener {
 
             val intent = Intent(Intent.ACTION_PICK)
             intent.type = "image/*"
@@ -53,8 +73,6 @@ class RegisterActivity : AppCompatActivity() {
             selectedPhotoUri = data.data
             val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, selectedPhotoUri)
             register_circular_image_view.setImageBitmap(bitmap)
-            register_photo_pick.alpha = 0f
-
         }
     }
 
@@ -91,31 +109,38 @@ class RegisterActivity : AppCompatActivity() {
 
                                 return@addOnCompleteListener
                             } else {
-                                register_button.isClickable = true
+                                registerFail()
                                 Log.d("RegisterActivity", "Failed creating a user using uid")
                             }
 
                         }.addOnFailureListener {
-                        register_button.isClickable = true
-                        Log.d("RegisterActivity", "Failed to create user : ${it.message}")
-                    }
+                            registerFail()
+                            Log.d("RegisterActivity", "Failed to create user : ${it.message}")
+                        }
                 } else {
-                    register_button.isClickable = true
+                    registerFail()
                     Toast.makeText(this, "Your password needs to be at least 6 characters long", Toast.LENGTH_LONG)
                         .show()
                 }
 
             } else {
-                register_button.isClickable = true
+                registerFail()
                 Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_LONG).show()
             }
         } else {
-            register_button.isClickable = true
+            registerFail()
             Toast.makeText(this, "Please choose a profile photo", Toast.LENGTH_LONG)
                 .show()
         }
 
 
+    }
+
+
+    private fun registerFail(){
+        registerButton.visibility = View.GONE
+        registerButtonBlinking.visibility = View.VISIBLE
+        registerButtonBlinkingBackground.visibility = View.VISIBLE
     }
 
     private fun uploadImageToFirebase() {
@@ -150,7 +175,8 @@ class RegisterActivity : AppCompatActivity() {
 
         userName = register_name.text.toString()
 
-        val newUser = Users(uid, userName, userEmail, userImageUrl, "0", "Watch me as I get Dere", System.currentTimeMillis())
+        val newUser =
+            Users(uid, userName, userEmail, userImageUrl, "0", "Watch me as I get Dere", System.currentTimeMillis())
 
         ref.setValue(newUser)
             .addOnSuccessListener {

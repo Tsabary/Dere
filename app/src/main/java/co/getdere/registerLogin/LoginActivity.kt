@@ -5,20 +5,40 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import co.getdere.MainActivity
 import co.getdere.R
 import com.google.firebase.auth.FirebaseAuth
+import com.tomer.fadingtextview.FadingTextView
 import kotlinx.android.synthetic.main.activity_login.*
+import java.util.concurrent.TimeUnit
 
 class LoginActivity : AppCompatActivity() {
+
+    lateinit var loginButton : TextView
+    lateinit var loginButtonBlinking : FadingTextView
+    lateinit var loginButtonBlinkingBackground : TextView
+
+    var texts = arrayOf("LOGGING IN", "LOGGING IN", "LOGGING IN")
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        login_button.setOnClickListener {
+        loginButton = findViewById(R.id.login_button)
+        loginButtonBlinking = findViewById(R.id.login_button_active_text)
+        loginButtonBlinkingBackground = findViewById(R.id.login_button_active_background)
 
+        loginButtonBlinking.setTexts(texts)
+        loginButtonBlinking.setTimeout(500, TimeUnit.MILLISECONDS)
+
+        loginButton.setOnClickListener {
+            loginButton.isClickable = false
+            loginButton.visibility = View.INVISIBLE
+            loginButtonBlinking.visibility = View.VISIBLE
+//            loginButtonBlinkingBackground.visibility = View.VISIBLE
             performLogin()
 
         }
@@ -34,7 +54,7 @@ class LoginActivity : AppCompatActivity() {
     private fun performLogin(){
 
         val logEmail = login_email.text.toString()
-        val logPass = login_password.text.toString()
+        val logPass = dark_room_edit_location_input.text.toString()
 
         Log.d("Main", "email is $logEmail")
         Log.d("Main", "pass is $logPass")
@@ -54,21 +74,32 @@ class LoginActivity : AppCompatActivity() {
                         return@addOnCompleteListener
                     }
                     //else if successful
+                    registerFail()
                     Log.d("Login", "Failed to log in a user")
 
                 }.addOnFailureListener {
+                    registerFail()
                     Log.d("Main", "Failed to create user : ${it.message}")
                 }
             } else {
+                registerFail()
                 Toast.makeText(this, "Your password needs to be at least 6 characters long", Toast.LENGTH_LONG)
                     .show()
             }
 
 
         } else {
+            registerFail()
             Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_LONG).show()
         }
 
+    }
+
+    private fun registerFail(){
+        loginButton.isClickable = true
+        loginButton.visibility = View.VISIBLE
+        loginButtonBlinking.visibility = View.INVISIBLE
+        loginButtonBlinkingBackground.visibility = View.INVISIBLE
     }
 
 

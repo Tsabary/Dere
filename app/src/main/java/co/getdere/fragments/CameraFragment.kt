@@ -149,24 +149,24 @@ class CameraFragment : Fragment() {
         }
 
 
-        currentAccuracy = view.findViewById<TextView>(co.getdere.R.id.camera_accuracy)
-
-
-        mStatusChecker = object : Runnable {
-            override fun run() {
-                try {
-                    updateStatus(mActivity, currentAccuracy) //this function can change value of mInterval.
-                } finally {
-                    // 100% guarantee that this always happens, even if
-                    // your update method throws an exception
-                    handler.postDelayed(this, delay)
-                }
-            }
-        }
-
-
-
-        startRepeatingTask()
+//        currentAccuracy = view.findViewById<TextView>(co.getdere.R.id.camera_accuracy)
+//
+//
+//        mStatusChecker = object : Runnable {
+//            override fun run() {
+//                try {
+//                    updateStatus(mActivity, currentAccuracy) //this function can change value of mInterval.
+//                } finally {
+//                    // 100% guarantee that this always happens, even if
+//                    // your update method throws an exception
+//                    handler.postDelayed(this, delay)
+//                }
+//            }
+//        }
+//
+//
+//
+//        startRepeatingTask()
 
 
     }

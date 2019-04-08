@@ -56,7 +56,7 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
         Glide.with(viewHolder.root.context).load(image.imageBig).transition(DrawableTransitionOptions.withCrossFade())
             .apply(requestOption).into(viewHolder.itemView.linear_feed_image)
 
-        viewHolder.itemView.linear_feed_timestamp.text = PrettyTime().format(Date(image.timestamp))
+        viewHolder.itemView.linear_feed_timestamp.text = PrettyTime().format(Date(image.timestampUpload))
 
 
 

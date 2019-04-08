@@ -111,7 +111,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                 if (image.id.isNotEmpty()) {
 
                     Glide.with(this).load(image.imageBig).into(mainImage)
-                    imageTimestamp.text = PrettyTime().format(Date(image.timestamp))
+                    imageTimestamp.text = PrettyTime().format(Date(image.timestampUpload))
 
                     if (image.details.isNotEmpty()) {
                         imageContent.visibility = View.VISIBLE

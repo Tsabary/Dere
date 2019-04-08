@@ -66,9 +66,6 @@ class BoardFragment : Fragment() {
             activity.subActive = activity.newQuestionFragment
 
             activity.switchVisibility(1)
-
-//            val action = BoardFragmentDirections.actionDestinationBoardToDestinationNewQuestion()
-//            findNavController().navigate(action)
         }
 
         val questionsRecycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.board_question_feed)

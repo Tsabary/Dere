@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import co.getdere.fragments.DarkRoomEditFragment
 import co.getdere.fragments.NewPhotoFragment
 import co.getdere.fragments.PhotoEditorFragment
 import kotlinx.android.synthetic.main.content_camera.*
@@ -26,6 +27,7 @@ class CameraActivity : AppCompatActivity() {
 
     lateinit var newPhotoFragment: NewPhotoFragment
     lateinit var photoEditorFragment: PhotoEditorFragment
+    lateinit var darkRoomEditFragment : DarkRoomEditFragment
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,11 +39,15 @@ class CameraActivity : AppCompatActivity() {
 
         newPhotoFragment = NewPhotoFragment()
         photoEditorFragment = PhotoEditorFragment()
+        darkRoomEditFragment = DarkRoomEditFragment()
 
         fm.beginTransaction().add(R.id.camera_frame_container, newPhotoFragment, "newPhotoFragment").commit()
         active = newPhotoFragment
 
-        fm.beginTransaction().add(R.id.camera_subcontents_frame_container, photoEditorFragment, "photoEditorFragment").commit()
+        subFm.beginTransaction()
+            .add(R.id.camera_subcontents_frame_container, darkRoomEditFragment, "darkRoomEditFragment")
+            .hide(darkRoomEditFragment).commit()
+        subFm.beginTransaction().add(R.id.camera_subcontents_frame_container, photoEditorFragment, "photoEditorFragment").commit()
         subActive = photoEditorFragment
 
     }

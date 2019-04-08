@@ -108,9 +108,9 @@ class NewQuestionFragment : Fragment(), DereMethods {
         questionTitle.requestFocus()
         questionDetails = view.findViewById<EditText>(R.id.new_question_details)
         val questionButton = view.findViewById<TextView>(R.id.new_question_btn)
-        val questionTagsInput = view.findViewById<EditText>(R.id.image_information_tag_input)
+        val questionTagsInput = view.findViewById<EditText>(R.id.new_question_tag_input)
         val addTagButton = view.findViewById<ImageButton>(R.id.new_question_add_tag_button)
-        questionChipGroup = view.findViewById(R.id.image_information_chip_group)
+        questionChipGroup = view.findViewById(R.id.new_question_chip_group)
 
         questionTitle.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -132,8 +132,39 @@ class NewQuestionFragment : Fragment(), DereMethods {
         })
 
 
+        questionButton.setOnClickListener {
+
+            if (questionTitle.text!!.length < 15) {
+                Toast.makeText(this.context, "Question title is too short", Toast.LENGTH_SHORT).show()
+            } else if (questionDetails.text.isEmpty()) {
+                Toast.makeText(this.context, "Please give your question some more details", Toast.LENGTH_SHORT).show()
+            } else if (questionChipGroup.childCount == 0) {
+                Toast.makeText(this.context, "Please add at least one tag to your question", Toast.LENGTH_SHORT).show()
+            } else {
+
+
+                for (i in 0 until questionChipGroup.childCount) {
+                    val chip = questionChipGroup.getChildAt(i) as Chip
+                    tagsList.add(chip.text.toString())
+                }
+
+
+
+                postQuestion(
+                    questionTitle.text.toString(),
+                    questionDetails.text.toString(),
+                    tagsList,
+                    System.currentTimeMillis()
+                )
+
+
+            }
+
+        }
+
+
         val tagSuggestionRecycler =
-            view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.image_information_tag_recycler)
+            view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.new_question_tag_recycler)
         val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
         tagSuggestionRecycler.adapter = tagsFiltredAdapter
@@ -222,35 +253,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
         }
 
 
-        questionButton.setOnClickListener {
 
-            if (questionTitle.text!!.length < 15) {
-                Toast.makeText(this.context, "Question title is too short", Toast.LENGTH_SHORT).show()
-            } else if (questionDetails.text.isEmpty()) {
-                Toast.makeText(this.context, "Please give your question some more details", Toast.LENGTH_SHORT).show()
-            } else if (questionChipGroup.childCount == 0) {
-                Toast.makeText(this.context, "Please add at least one tag to your question", Toast.LENGTH_SHORT).show()
-            } else {
-
-
-                for (i in 0 until questionChipGroup.childCount) {
-                    val chip = questionChipGroup.getChildAt(i) as Chip
-                    tagsList.add(chip.text.toString())
-                }
-
-
-
-                postQuestion(
-                    questionTitle.text.toString(),
-                    questionDetails.text.toString(),
-                    tagsList,
-                    System.currentTimeMillis()
-                )
-
-
-            }
-
-        }
 
         tagsFiltredAdapter.setOnItemClickListener { item, _ ->
             val row = item as SingleTagSuggestion
