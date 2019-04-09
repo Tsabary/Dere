@@ -979,8 +979,8 @@ interface DereMethods {
                     userReputationView.text = "(0)"
                     Log.d("checkIfCountWorks", count.toString())
                 } else {
-                    userObject.updateChildren(mapOf("reputation" to count.toString()))
-                    userReputationView.text = "(${count.toString()})"
+                    userObject.updateChildren(mapOf("reputation" to count.toLong()))
+                    userReputationView.text = "(${numberCalculation(count.toLong())})"
                     Log.d("checkIfCountWorks", count.toString())
                 }
             }

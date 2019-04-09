@@ -26,8 +26,16 @@ import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
+import io.branch.indexing.BranchUniversalObject
+import io.branch.referral.Branch
+import io.branch.referral.BranchError
+import io.branch.referral.SharingHelper
+import io.branch.referral.util.ContentMetadata
+import io.branch.referral.util.LinkProperties
+import io.branch.referral.util.ShareSheetStyle
 import kotlinx.android.synthetic.main.answer_comment_layout.view.*
 import kotlinx.android.synthetic.main.answer_layout.view.*
+import kotlinx.android.synthetic.main.fragment_opened_question.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
 
@@ -48,7 +56,8 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
     lateinit var openedQuestionAuthorReputation: TextView
 
 
-//    val uid = FirebaseAuth.getInstance().uid
+    lateinit var buo: BranchUniversalObject
+    lateinit var lp: LinkProperties
 
     val answersAdapter = GroupAdapter<ViewHolder>()
 
@@ -75,9 +84,10 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity!!.title = "Board"
+        val activity = activity as MainActivity
 
-        saveButton = view.findViewById<TextView>(R.id.opened_question_save)
+        val shareButton = opened_question_share
+        saveButton = view.findViewById(R.id.opened_question_save)
         val answerButton = view.findViewById<TextView>(R.id.opened_question_answer_btn)
         val answersRecycler = view.findViewById<RecyclerView>(R.id.opened_question_answers_recycler)
         val openedQuestionTitle = view.findViewById<TextView>(R.id.opened_question_title)
@@ -123,6 +133,22 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                     openedQuestionAuthorReputation
                 )
 
+
+                buo = BranchUniversalObject()
+                    .setCanonicalIdentifier(question.id)
+                    .setTitle(question.title)
+                    .setContentDescription("")
+                    .setContentImageUrl("https://img1.10bestmedia.com/Images/Photos/352450/GettyImages-913753556_55_660x440.jpg")
+                    .setContentIndexingMode(BranchUniversalObject.CONTENT_INDEX_MODE.PUBLIC)
+                    .setLocalIndexMode(BranchUniversalObject.CONTENT_INDEX_MODE.PUBLIC)
+                    .setContentMetadata(ContentMetadata().addCustomMetadata("type", "question"))
+
+                lp = LinkProperties()
+                    .setFeature("sharing")
+                    .setCampaign("content 123 launch")
+                    .setStage("new user")
+
+
             }
         }
         )
@@ -137,7 +163,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 Glide.with(this).load(user.image).into(openedQuestionAuthorImage)
                 openedQuestionAuthorName.text = user.name
 
-                openedQuestionAuthorReputation.text = "(${numberCalculation(user.reputation.toLong())})"
+                openedQuestionAuthorReputation.text = "(${numberCalculation(user.reputation)})"
 
                 randomUserObject = user // remove later this is just from pasr bad code - is it?
             }
@@ -185,9 +211,27 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
             checkIfQuestionSaved(1)
         }
 
-        answerButton.setOnClickListener {
+        shareButton.setOnClickListener {
+            val ss = ShareSheetStyle(activity, "Check this out!", "This stuff is awesome: ")
+                .setCopyUrlStyle(resources.getDrawable(android.R.drawable.ic_menu_send), "Copy", "Added to clipboard")
+                .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
+                .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
+                .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK_MESSENGER)
+                .addPreferredSharingOption(SharingHelper.SHARE_WITH.WHATS_APP)
+                .addPreferredSharingOption(SharingHelper.SHARE_WITH.TWITTER)
+                .setAsFullWidthStyle(true)
+                .setSharingTitle("Share With")
 
-            val activity = activity as MainActivity
+            buo.showShareSheet(activity, lp, ss, object : Branch.BranchLinkShareListener {
+                override fun onShareLinkDialogLaunched() {}
+                override fun onShareLinkDialogDismissed() {}
+                override fun onLinkShareResponse(sharedLink: String, sharedChannel: String, error: BranchError) {}
+                override fun onChannelSelected(channelName: String) {}
+
+            })
+        }
+
+        answerButton.setOnClickListener {
 
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.answerFragment).commit()
             activity.subActive = activity.answerFragment
@@ -197,12 +241,12 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
         answersRecycler.adapter = answersAdapter
         answersRecycler.layoutManager = answersRecyclerLayoutManager
     }
-
-    override fun onDetach() {
-        super.onDetach()
-        sharedViewModelRandomUser.randomUserObject.postValue(Users())
-        sharedViewModelQuestion.questionObject.postValue(Question())
-    }
+//
+//    override fun onDetach() {
+//        super.onDetach()
+//        sharedViewModelRandomUser.randomUserObject.postValue(Users())
+//        sharedViewModelQuestion.questionObject.postValue(Question())
+//    }
 
     private fun listenToAnswers(qId: String) {
 
@@ -409,7 +453,7 @@ class SingleAnswer(
                     viewHolder.itemView.answer_author_name.text = author.name
                     viewHolder.itemView.answer_content.text = answer.content
                     viewHolder.itemView.answer_timestamp.text = date
-                    viewHolder.itemView.answer_author_reputation.text = "(${numberCalculation(author.reputation.toLong())})"
+                    viewHolder.itemView.answer_author_reputation.text = "(${numberCalculation(author.reputation)})"
                 }
             }
         })
@@ -488,7 +532,7 @@ class SingleAnswerComment(val comment : AnswerComments) : Item<ViewHolder>(), De
                 if (author != null) {
 
                     viewHolder.itemView.answer_comment_author_name.text = author.name
-                    viewHolder.itemView.answer_comment_author_reputation.text = "(${numberCalculation(author.reputation.toLong())})"
+                    viewHolder.itemView.answer_comment_author_reputation.text = "(${numberCalculation(author.reputation)})"
                     Glide.with(viewHolder.root.context).load(author.image).into(viewHolder.itemView.answer_comment_author_image)
 
                 }

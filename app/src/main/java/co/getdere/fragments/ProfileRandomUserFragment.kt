@@ -157,7 +157,7 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                 userProfile = user
                 Glide.with(this).load(it.image).into(profilePicture)
                 profileName.text = it.name
-                profileReputation.text = numberCalculation(it.reputation.toLong())
+                profileReputation.text = numberCalculation(it.reputation)
                 profileTagline.text = it.tagline
                 setUpGalleryAdapter(profileGallery, 0)
                 changeGalleryFeed("Roll")

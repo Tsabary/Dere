@@ -26,6 +26,7 @@ import co.getdere.R
 import co.getdere.roomclasses.LocalImagePost
 import co.getdere.roomclasses.LocalImageViewModel
 import com.bumptech.glide.Glide
+import com.camerakit.type.CameraFacing
 
 
 class CameraFragment : Fragment() {
@@ -82,8 +83,9 @@ class CameraFragment : Fragment() {
 
             Log.d("photoActivity", "button clicked")
 
-            cameraKitView.captureImage { p0, p1 ->
+            cameraKitView.captureFrame { _, p1 ->
                 Log.d("photoActivity", "image captured")
+
 
                 val timeStamp = System.currentTimeMillis().toString()
                 val fileName = "Dere$timeStamp.jpg"

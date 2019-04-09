@@ -27,13 +27,18 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import io.branch.indexing.BranchUniversalObject
+import io.branch.referral.Branch
+import io.branch.referral.BranchError
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.subcontents_main.*
+import org.json.JSONObject
 
 
 class MainActivity : AppCompatActivity() {
 
-//    lateinit var mToolbar: Toolbar
+    //    lateinit var mToolbar: Toolbar
     lateinit var mBottomNav: BottomNavigationView
 
     lateinit var sharedViewModelCurrentUser: SharedViewModelCurrentUser
@@ -74,7 +79,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        mBottomNav = findViewById(co.getdere.R.id.feed_bottom_nav)
+        mBottomNav = feed_bottom_nav
 
         mBottomNav.isClickable = false
 
@@ -413,6 +418,144 @@ class MainActivity : AppCompatActivity() {
 
         subActive = imageFullSizeFragment
 
+    }
+
+
+    override fun onStart() {
+        super.onStart()
+
+        println("branch on start")
+
+
+        Branch.getInstance().initSession({ branchUniversalObject, referringParams, error ->
+
+            if (error == null) {
+                println("branch no error")
+
+
+                if (branchUniversalObject != null) {
+
+                    val type = branchUniversalObject.contentMetadata.customMetadata["type"]
+
+                    when (type){
+
+                        "image" -> collectImage(branchUniversalObject)
+
+                        "question" -> collectQuestion(branchUniversalObject)
+
+                    }
+
+
+
+                }
+
+
+            } else {
+                println("branch definitely error" + error.message)
+
+            }
+
+
+        }, this.intent.data, this)
+
+
+    }
+
+
+
+    private fun collectImage(branchUniversalObject: BranchUniversalObject) {
+
+        val imageUrl = branchUniversalObject.canonicalIdentifier
+
+        val refImage = FirebaseDatabase.getInstance().getReference("/images/$imageUrl/body")
+
+        refImage.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+
+                val image = p0.getValue(Images::class.java)
+
+                sharedViewModelImage.sharedImageObject.postValue(image)
+
+                val refUser = FirebaseDatabase.getInstance().getReference("/users/${image!!.photographer}/profile")
+
+                refUser.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+
+                        sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
+
+                        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+
+                        switchVisibility(1)
+
+                        subActive = imageFullSizeFragment
+                    }
+
+                })
+            }
+
+
+        })
+
+    }
+
+
+
+    private fun collectQuestion(branchUniversalObject: BranchUniversalObject) {
+
+        val questionUrl = branchUniversalObject.canonicalIdentifier
+
+        val refImage = FirebaseDatabase.getInstance().getReference("/questions/$questionUrl/main/body")
+
+        refImage.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+
+                val question = p0.getValue(Question::class.java)
+
+                sharedViewModelQuestion.questionObject.postValue(question)
+
+                val refUser = FirebaseDatabase.getInstance().getReference("/users/${question!!.author}/profile")
+
+                refUser.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+
+                        sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
+
+                        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+
+                        switchVisibility(1)
+
+                        fm.beginTransaction().hide(active).show(boardFragment).commit()
+
+                        subActive = openedQuestionFragment
+                        active = boardFragment
+                    }
+
+                })
+            }
+
+
+        })
+
+    }
+
+
+
+
+
+    public override fun onNewIntent(intent: Intent) {
+        this.intent = intent
     }
 
 
