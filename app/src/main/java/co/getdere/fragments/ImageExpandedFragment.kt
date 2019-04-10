@@ -1,17 +1,13 @@
 package co.getdere.fragments
 
 
-import android.content.ClipData
 import android.content.Context
-import android.content.Context.CLIPBOARD_SERVICE
 import android.os.Bundle
-import android.text.ClipboardManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -79,7 +75,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.image_with_comments, container, false)
+    ): View? = inflater.inflate(R.layout.fragment_image_expanded, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -111,7 +107,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         val mainImage = view.findViewById<ImageView>(R.id.image_full_image)
 
-        layoutScroll = view.findViewById<NestedScrollView>(R.id.photo_social_scrollView)
+        layoutScroll = view.findViewById(R.id.photo_social_scrollView)
 
         val commentsRecycler = view.findViewById<RecyclerView>(R.id.comments_recycler)
 

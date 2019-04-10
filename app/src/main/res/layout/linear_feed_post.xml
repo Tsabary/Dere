@@ -148,7 +148,7 @@
                 android:text="Add a comment.."
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/linear_feed_acomment_cta"
+                android:id="@+id/linear_feed_add_a_comment_cta"
                 android:textSize="14sp"
                 android:fontFamily="@font/open_sans_semibold"
                 android:textColor="@color/gray500"

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:app="http://schemas.android.com/apk/res-auto"
->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+            android:id="@+id/profile_invite_a_friend"
+            android:icon="@drawable/feed_icon"
+            android:title="@string/invite_a_friend"
+    />
 
     <item
             android:id="@+id/profile_logout"

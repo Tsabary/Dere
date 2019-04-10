@@ -33,11 +33,11 @@ class AddToBucketFragment : Fragment(), DereMethods {
 
     private lateinit var sharedViewModelForImage: SharedViewModelImage
 
-    lateinit var imageObject : Images
+    lateinit var imageObject: Images
     private lateinit var currentUser: Users
 
     val bucketsAdapter = GroupAdapter<ViewHolder>()
-    lateinit var bucketsLayoutManager : LinearLayoutManager
+    lateinit var bucketsLayoutManager: LinearLayoutManager
 
 
     override fun onAttach(context: Context) {
@@ -50,7 +50,8 @@ class AddToBucketFragment : Fragment(), DereMethods {
                 it?.let { image ->
                     imageObject = image
                     listenToBuckets()
-                }})
+                }
+            })
 
 
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
@@ -95,19 +96,20 @@ class AddToBucketFragment : Fragment(), DereMethods {
                         } else {
 
                             val ref = FirebaseDatabase.getInstance()
-                                .getReference("/users/${currentUser.uid}/buckets/${newBucketInput.text}")
+                                .getReference("/users/${currentUser.uid}/buckets/${newBucketInput.text}/${imageObject.id}")
 
-                            ref.setValue(mapOf(imageObject.id to true)).addOnSuccessListener {
+                            ref.setValue(System.currentTimeMillis()).addOnSuccessListener {
 
 
                                 val imageBucketingRef =
                                     FirebaseDatabase.getInstance()
-                                        .getReference("/images/${imageObject.id}/buckets")
+                                        .getReference("/images/${imageObject.id}/buckets/${currentUser.uid}")
 
-                                imageBucketingRef.setValue(mapOf(currentUser.uid to true)).addOnSuccessListener {
+                                imageBucketingRef.setValue(true).addOnSuccessListener {
 
-                                    for (t in imageObject.tags){
-                                        val refUserTags = FirebaseDatabase.getInstance().getReference("users/${currentUser.uid}/interests/$t")
+                                    for (t in imageObject.tags) {
+                                        val refUserTags = FirebaseDatabase.getInstance()
+                                            .getReference("users/${currentUser.uid}/interests/$t")
                                         refUserTags.setValue(true)
                                     }
 
@@ -161,7 +163,7 @@ class AddToBucketFragment : Fragment(), DereMethods {
 
             override fun onDataChange(p0: DataSnapshot) {
 
-                for (ds in p0.children){
+                for (ds in p0.children) {
 
                     bucketsAdapter.add(SingleBucketSuggestion(ds.key!!, imageObject, currentUser))
 
@@ -221,7 +223,7 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
         val refUserBuckets = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets")
         val refBucket = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets/$bucketName")
         val refImageBuckets =
-            FirebaseDatabase.getInstance().getReference("/images/${image.id}/buckets")
+            FirebaseDatabase.getInstance().getReference("/images/${image.id}/buckets/${currentUser.uid}")
 
 
         refUserBuckets.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -256,7 +258,7 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
 
 
                                     refBucket.child(image.id).removeValue()
-                                    refImageBuckets.child(currentUser.uid).removeValue().addOnSuccessListener {
+                                    refImageBuckets.removeValue().addOnSuccessListener {
                                         addReputationIfExistsInAnyBucket(context)
                                     }
 
@@ -288,15 +290,16 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
 
                                     val ref =
                                         FirebaseDatabase.getInstance()
-                                            .getReference("/users/$uid/buckets/$bucketName")
+                                            .getReference("/users/$uid/buckets/$bucketName/${image.id}")
 
-                                    ref.setValue(mapOf(image.id to true)).addOnSuccessListener {
+                                    ref.setValue(System.currentTimeMillis()).addOnSuccessListener {
 
-                                        refImageBuckets.setValue(mapOf(currentUser.uid to true))
+                                        refImageBuckets.setValue(currentUser.uid)
                                             .addOnSuccessListener {
 
-                                                for (t in image.tags){
-                                                    val refUserTags = FirebaseDatabase.getInstance().getReference("users/${currentUser.uid}/interests/$t")
+                                                for (t in image.tags) {
+                                                    val refUserTags = FirebaseDatabase.getInstance()
+                                                        .getReference("users/${currentUser.uid}/interests/$t")
                                                     refUserTags.setValue(true)
                                                 }
 
@@ -398,13 +401,11 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
     }
 
 
-
-
-    private fun addReputationIfExistsInAnyBucket(context : Context){
+    private fun addReputationIfExistsInAnyBucket(context: Context) {
 
         val refUserBuckets = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets")
 
-        refUserBuckets.addChildEventListener(object : ChildEventListener{
+        refUserBuckets.addChildEventListener(object : ChildEventListener {
             override fun onCancelled(p0: DatabaseError) {
             }
 
@@ -416,7 +417,7 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                if (p0.hasChild(image.id)){
+                if (p0.hasChild(image.id)) {
 
                     changeReputation(
                         8,

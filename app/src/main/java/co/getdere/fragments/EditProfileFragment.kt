@@ -62,11 +62,6 @@ class EditProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-//
-//        arguments?.let {
-//            val safeArgs = EditProfileFragmentArgs.fromBundle(it)
-//            user = safeArgs.user
-//        }
 
 
         userImage = view.findViewById<CircleImageView>(co.getdere.R.id.edit_profile_image)
@@ -158,19 +153,9 @@ class EditProfileFragment : Fragment() {
                                         val activity = activity as MainActivity
 
                                         activity.fm.beginTransaction().detach(activity.profileLoggedInUserFragment).attach(activity.profileLoggedInUserFragment).commit()
-//
-//                                        activity.fm.beginTransaction().remove(activity.profileLoggedInUserFragment).commit()
-//                                        activity.fm.beginTransaction().hide(activity.active).add(R.id.feed_frame_container, activity.profileLoggedInUserFragment, "profileLoggedInUserFragment").commit()
-
-//                                        activity.profileLoggedInUserFragment = ProfileLoggedInUserFragment.newInstance()
 
                                         activity.switchVisibility(0)
 
-
-//
-//                                        val action =
-//                                            EditProfileFragmentDirections.actionDestinationEditProfileToDestinationProfileLoggedInUser()
-//                                        findNavController().navigate(action)
                                     }
 
                                 })

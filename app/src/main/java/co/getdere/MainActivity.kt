@@ -61,6 +61,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var answerFragment: AnswerFragment
     lateinit var newQuestionFragment: NewQuestionFragment
     lateinit var editProfileFragment: EditProfileFragment
+    lateinit var bucketGalleryFragment : BucketGalleryFragment
 
 
     lateinit var mainFrame: FrameLayout
@@ -102,9 +103,6 @@ class MainActivity : AppCompatActivity() {
         mainFrame = findViewById(R.id.feed_frame_container)
 
         switchVisibility(0)
-
-//        mToolbar = findViewById(R.id.my_toolbar)
-//        setSupportActionBar(mToolbar)
 
     }
 
@@ -201,7 +199,7 @@ class MainActivity : AppCompatActivity() {
                 bucketFragment -> {
 
                     subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-//                    subFm.beginTransaction().remove(bucketFragment).commit()
+                    fm.beginTransaction().detach(profileLoggedInUserFragment).attach(profileLoggedInUserFragment).commit()
 
                     subActive = imageFullSizeFragment
                 }
@@ -245,6 +243,11 @@ class MainActivity : AppCompatActivity() {
                 newQuestionFragment -> {
                     switchVisibility(0)
                 }
+
+                bucketGalleryFragment -> {
+                    switchVisibility(0)
+                }
+
 
             }
 
@@ -290,30 +293,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
-//    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-//
-//        val id = item!!.getItemId()
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == co.getdere.R.id.destination_camera) {
-//            Toast.makeText(this, "Action clicked", Toast.LENGTH_LONG).show()
-//            return true
-//        } else {
-//            Toast.makeText(this, "Action clicked 2", Toast.LENGTH_LONG).show()
-//
-//
-//        }
-//
-//        return super.onOptionsItemSelected(item)
-//
-//
-//    }
-
-//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-////        menuInflater.inflate(co.getdere.R.menu.feed_navigation, menu)
-//        return super.onCreateOptionsMenu(menu)
-//    }
 
     private fun checkIfLoggedIn() {
 
@@ -382,6 +361,7 @@ class MainActivity : AppCompatActivity() {
         answerFragment = AnswerFragment()
         newQuestionFragment = NewQuestionFragment()
         editProfileFragment = EditProfileFragment()
+        bucketGalleryFragment = BucketGalleryFragment()
 
 
         subFm.beginTransaction()
@@ -414,6 +394,8 @@ class MainActivity : AppCompatActivity() {
             .hide(newQuestionFragment).commit()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editProfileFragment, "editProfileFragment")
             .hide(editProfileFragment).commit()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, bucketGalleryFragment, "bucketGalleryFragment")
+            .hide(bucketGalleryFragment).commit()
 
 
         subActive = imageFullSizeFragment

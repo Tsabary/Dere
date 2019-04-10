@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,6 +24,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.fragment_following_feed.*
 
 
 open class FollowingFeedFragment : Fragment() {
@@ -41,6 +43,8 @@ open class FollowingFeedFragment : Fragment() {
     val uid = FirebaseAuth.getInstance().uid
 
     lateinit var galleryLayoutManager: LinearLayoutManager
+
+    lateinit var emptyFeedMessage : TextView
 
 
 
@@ -76,10 +80,9 @@ open class FollowingFeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity!!.title = "Feed"
-
         setUpGalleryAdapter()
 
+        emptyFeedMessage = following_feed_empty
 
         galleryAdapter.setOnItemClickListener { item, _ ->
             val activity = activity as MainActivity
@@ -161,7 +164,7 @@ open class FollowingFeedFragment : Fragment() {
                         if (accountUid == singleImageFromDB.photographer) {
                             if (!singleImageFromDB.private) {
                                 galleryAdapter.add(LinearFeedImage(singleImageFromDB, currentUser))
-
+                                emptyFeedMessage.visibility = View.GONE
 
                             }
                         }

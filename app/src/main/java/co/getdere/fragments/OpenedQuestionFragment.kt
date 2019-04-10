@@ -212,7 +212,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
         }
 
         shareButton.setOnClickListener {
-            val ss = ShareSheetStyle(activity, "Check this out!", "This stuff is awesome: ")
+            val ss = ShareSheetStyle(activity, "Check this out!", "Get Dere and start collecting destinations")
                 .setCopyUrlStyle(resources.getDrawable(android.R.drawable.ic_menu_send), "Copy", "Added to clipboard")
                 .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
                 .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
