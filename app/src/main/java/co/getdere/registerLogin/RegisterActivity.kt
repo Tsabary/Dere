@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import co.getdere.MainActivity
 import co.getdere.models.Users
 import co.getdere.R
+import co.getdere.interfaces.DereMethods
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
@@ -22,7 +23,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 
-class RegisterActivity : AppCompatActivity() {
+class RegisterActivity : AppCompatActivity(), DereMethods {
 
     private lateinit var userName: String
     private lateinit var userEmail: String
@@ -51,6 +52,7 @@ class RegisterActivity : AppCompatActivity() {
             registerButton.visibility = View.GONE
             registerButtonBlinking.visibility = View.VISIBLE
             registerButtonBlinkingBackground.visibility = View.VISIBLE
+            closeKeyboard(this)
             performRegister()
         }
 

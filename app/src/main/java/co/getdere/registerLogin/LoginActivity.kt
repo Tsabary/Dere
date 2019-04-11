@@ -9,13 +9,14 @@ import android.widget.TextView
 import android.widget.Toast
 import co.getdere.MainActivity
 import co.getdere.R
+import co.getdere.interfaces.DereMethods
 import com.google.firebase.auth.FirebaseAuth
 import com.tomer.fadingtextview.FadingTextView
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.fragment_dark_room_edit.*
 import java.util.concurrent.TimeUnit
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : AppCompatActivity(), DereMethods {
 
     lateinit var loginButton : TextView
     lateinit var loginButtonBlinking : FadingTextView
@@ -39,7 +40,9 @@ class LoginActivity : AppCompatActivity() {
             loginButton.isClickable = false
             loginButton.visibility = View.INVISIBLE
             loginButtonBlinking.visibility = View.VISIBLE
-//            loginButtonBlinkingBackground.visibility = View.VISIBLE
+            loginButtonBlinkingBackground.visibility = View.VISIBLE
+            closeKeyboard(this)
+
             performLogin()
 
         }

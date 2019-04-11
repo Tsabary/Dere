@@ -9,7 +9,7 @@
         tools:context=".fragments.ApproveImageFragment"
         android:background="@color/black"
         android:id="@+id/constraintLayout"
-        app:layout_constraintTop_toBottomOf="@+id/image_full_image"
+        app:layout_constraintTop_toBottomOf="@+id/image_full_viewpager"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

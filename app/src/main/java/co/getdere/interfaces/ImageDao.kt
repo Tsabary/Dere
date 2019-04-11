@@ -1,9 +1,7 @@
 package co.getdere.interfaces
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 import co.getdere.roomclasses.LocalImagePost
 
 @Dao
@@ -19,6 +17,9 @@ interface ImageDao {
     @Query("DELETE FROM image_posts")
     fun deleteAll()
 
+    @Update
+    fun update(image: LocalImagePost)
 
-
+    @Delete
+    fun delete(image: LocalImagePost)
 }

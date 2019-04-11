@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
@@ -8,12 +10,56 @@
         tools:context=".fragments.ImageFullSizeFragment"
         android:background="@color/black">
 
+    <!--<androidx.constraintlayout.widget.ConstraintLayout-->
+            <!--android:layout_height="0dp"-->
+            <!--android:layout_width="0dp"-->
+            <!--app:layout_constraintEnd_toEndOf="parent"-->
+            <!--app:layout_constraintStart_toStartOf="parent"-->
+            <!--app:layout_constraintHorizontal_bias="0.5"-->
+            <!--app:layout_constraintDimensionRatio="5:4"-->
+            <!--app:layout_constraintTop_toTopOf="parent"-->
+            <!--android:id="@+id/imageAndMapBox">-->
+
+
+        <!--&lt;!&ndash;<ImageView&ndash;&gt;-->
+                <!--&lt;!&ndash;android:layout_height="0dp"&ndash;&gt;-->
+                <!--&lt;!&ndash;android:layout_width="0dp"&ndash;&gt;-->
+                <!--&lt;!&ndash;app:layout_constraintEnd_toEndOf="parent"&ndash;&gt;-->
+                <!--&lt;!&ndash;app:layout_constraintStart_toStartOf="parent"&ndash;&gt;-->
+                <!--&lt;!&ndash;mapbox:layout_constraintBottom_toBottomOf="parent"&ndash;&gt;-->
+                <!--&lt;!&ndash;app:layout_constraintTop_toTopOf="parent"&ndash;&gt;-->
+                <!--&lt;!&ndash;android:id="@+id/image_expended_image"/>&ndash;&gt;-->
+
+    <!--</androidx.constraintlayout.widget.ConstraintLayout>-->
+
+    <!--<FrameLayout-->
+            <!--android:layout_height="0dp"-->
+            <!--android:layout_width="0dp"-->
+            <!--app:layout_constraintEnd_toEndOf="parent"-->
+            <!--app:layout_constraintStart_toStartOf="parent"-->
+            <!--app:layout_constraintHorizontal_bias="0.5"-->
+            <!--app:layout_constraintDimensionRatio="5:4"-->
+            <!--app:layout_constraintTop_toTopOf="parent"-->
+            <!--android:id="@+id/image_expended_container"/>-->
+
+
+    <co.getdere.otherClasses.SwipeLockableViewPager
+    android:id="@+id/image_full_viewpager"
+    android:layout_height="0dp"
+    android:layout_width="0dp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintHorizontal_bias="0.5"
+    app:layout_constraintDimensionRatio="5:4"
+    app:layout_constraintTop_toTopOf="parent"/>
+
+
 
     <androidx.core.widget.NestedScrollView
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/image_full_viewpager"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/comment_box"
             android:id="@+id/photo_social_scrollView"
@@ -26,24 +72,39 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent">
 
-            <ImageView
-                    android:layout_width="0dp"
-                    android:id="@+id/image_full_image"
-                    android:scaleType="centerCrop"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintHorizontal_bias="0.5"
-                    app:layout_constraintDimensionRatio="5:4"
-                    tools:srcCompat="@drawable/no_dread"
-                    app:layout_constraintTop_toTopOf="parent"
-                    android:layout_height="0dp"
-                    app:layout_constraintBottom_toTopOf="@+id/constraintLayout3"/>
+            <!--<com.mapbox.mapboxsdk.maps.MapView-->
+            <!--android:id="@+id/image_expended_map"-->
+            <!--mapbox:mapbox_cameraZoom="11"-->
+            <!--android:layout_height="0dp"-->
+            <!--android:layout_width="0dp"-->
+            <!--app:layout_constraintEnd_toEndOf="parent"-->
+            <!--app:layout_constraintStart_toStartOf="parent"-->
+            <!--app:layout_constraintHorizontal_bias="0.5"-->
+            <!--app:layout_constraintDimensionRatio="5:4"-->
+            <!--app:layout_constraintTop_toTopOf="parent"-->
+            <!--app:layout_constraintBottom_toTopOf="@+id/constraintLayout3"/>-->
+
+
+            <!--<include-->
+            <!--android:layout_height="0dp"-->
+            <!--android:layout_width="0dp"-->
+            <!--app:layout_constraintEnd_toEndOf="parent"-->
+            <!--app:layout_constraintStart_toStartOf="parent"-->
+            <!--app:layout_constraintHorizontal_bias="0.5"-->
+            <!--app:layout_constraintDimensionRatio="5:4"-->
+            <!--app:layout_constraintTop_toTopOf="parent"-->
+            <!--app:layout_constraintBottom_toTopOf="@+id/constraintLayout3"-->
+            <!--layout="@layout/fragment_image_map_view"-->
+            <!--android:visibility="gone"/>-->
+
+
+
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     tools:layout_editor_absoluteX="0dp"
                     android:background="@color/white"
-                    app:layout_constraintTop_toBottomOf="@+id/image_full_image"
+                    app:layout_constraintTop_toTopOf="parent"
                     android:id="@+id/constraintLayout3"
             >
 
@@ -53,8 +114,8 @@
                         android:id="@+id/photo_social_author_image"
                         tools:src="@drawable/no_dread"
                         app:layout_constraintStart_toStartOf="parent"
-                        android:layout_marginTop="24dp"
-                        app:layout_constraintTop_toBottomOf="@+id/photo_social_bucket_icon"
+                        android:layout_marginTop="32dp"
+                        app:layout_constraintTop_toBottomOf="@+id/photo_social_like_count"
                         android:layout_marginStart="32dp"
                         android:layout_marginBottom="24dp"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -62,16 +123,15 @@
                 <ImageButton
                         android:src="@drawable/bucket"
                         android:layout_width="25dp"
-                        android:layout_height="38dp"
+                        android:layout_height="wrap_content"
                         android:id="@+id/photo_social_bucket_icon"
                         android:background="@android:color/transparent"
                         android:scaleType="fitCenter"
-                        app:layout_constraintTop_toTopOf="@+id/photo_social_like_count"
-                        app:layout_constraintBottom_toBottomOf="@+id/photo_social_like_count"
-                        app:layout_constraintStart_toEndOf="@+id/photo_social_like_count"
-                        app:layout_constraintHorizontal_bias="0.5"
-                        app:layout_constraintEnd_toStartOf="@+id/photo_social_bucket_count"
-                        android:layout_marginEnd="8dp"/>
+                        mapbox:layout_constraintTop_toTopOf="@+id/photo_social_like_button"
+                        mapbox:layout_constraintBottom_toBottomOf="@+id/photo_social_like_button"
+                        mapbox:layout_constraintStart_toEndOf="@+id/photo_social_like_button"
+                        mapbox:layout_constraintHorizontal_bias="0.5"
+                        mapbox:layout_constraintEnd_toStartOf="@+id/photo_social_share"/>
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -116,8 +176,6 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.0"
                         android:fontFamily="@font/open_sans_semibold"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        android:layout_marginBottom="24dp"
                         android:visibility="gone"
                         android:layout_marginTop="16dp"/>
                 <TextView
@@ -126,12 +184,9 @@
                         android:id="@+id/photo_social_bucket_count"
                         tools:text="132"
                         android:fontFamily="@font/open_sans_semibold"
-                        app:layout_constraintTop_toTopOf="@+id/photo_social_bucket_icon"
-                        app:layout_constraintBottom_toBottomOf="@+id/photo_social_bucket_icon"
-                        app:layout_constraintStart_toEndOf="@+id/photo_social_bucket_icon"
-                        app:layout_constraintHorizontal_bias="0.5"
-                        app:layout_constraintEnd_toStartOf="@+id/photo_social_comment_icon"
-                        android:layout_marginEnd="24dp"/>
+                        app:layout_constraintEnd_toEndOf="@+id/photo_social_bucket_icon"
+                        app:layout_constraintStart_toStartOf="@+id/photo_social_bucket_icon"
+                        app:layout_constraintBaseline_toBaselineOf="@+id/photo_social_like_count"/>
                 <ImageButton
                         android:src="@drawable/comment"
                         android:layout_width="25dp"
@@ -154,26 +209,21 @@
                         android:id="@+id/photo_social_like_button"
                         android:background="@android:color/transparent"
                         android:scaleType="centerCrop"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintHorizontal_bias="0.0"
-                        app:layout_constraintEnd_toStartOf="@+id/photo_social_like_count"
-                        app:layout_constraintHorizontal_chainStyle="packed"
-                        android:layout_marginStart="32dp"
-                        android:layout_marginTop="32dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        android:layout_marginEnd="8dp"/>
+                        mapbox:layout_constraintTop_toTopOf="@+id/image_expended_map"
+                        mapbox:layout_constraintBottom_toBottomOf="@+id/image_expended_map"
+                        mapbox:layout_constraintStart_toEndOf="@+id/image_expended_map"
+                        mapbox:layout_constraintHorizontal_bias="0.5"
+                        mapbox:layout_constraintEnd_toStartOf="@+id/photo_social_bucket_icon"/>
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/photo_social_like_count"
                         tools:text="12"
                         android:fontFamily="@font/open_sans_semibold"
-                        app:layout_constraintTop_toTopOf="@+id/photo_social_like_button"
-                        app:layout_constraintBottom_toBottomOf="@+id/photo_social_like_button"
-                        app:layout_constraintStart_toEndOf="@+id/photo_social_like_button"
-                        app:layout_constraintHorizontal_bias="0.5"
-                        app:layout_constraintEnd_toStartOf="@+id/photo_social_bucket_icon"
-                        android:layout_marginEnd="24dp"/>
+                        android:layout_marginTop="8dp"
+                        app:layout_constraintTop_toBottomOf="@+id/photo_social_like_button"
+                        app:layout_constraintEnd_toEndOf="@+id/photo_social_like_button"
+                        app:layout_constraintStart_toStartOf="@+id/photo_social_like_button"/>
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -191,20 +241,50 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/photo_social_share"
                         android:background="@android:color/transparent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        android:layout_marginTop="32dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        android:layout_marginEnd="32dp"/>
+                        mapbox:layout_constraintTop_toTopOf="@+id/photo_social_bucket_icon"
+                        mapbox:layout_constraintBottom_toBottomOf="@+id/photo_social_bucket_icon"
+                        mapbox:layout_constraintStart_toEndOf="@+id/photo_social_bucket_icon"
+                        mapbox:layout_constraintHorizontal_bias="0.5"
+                        mapbox:layout_constraintEnd_toEndOf="parent"/>
                 <ImageButton
+                        android:src="@drawable/ic_map"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/image_expended_map"
+                        android:background="@android:color/transparent"
+                        mapbox:layout_constraintStart_toStartOf="parent"
+                        mapbox:layout_constraintHorizontal_bias="0.5"
+                        mapbox:layout_constraintEnd_toStartOf="@+id/photo_social_like_button"
+                        mapbox:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginTop="32dp"/>
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="21dp"
+                        android:id="@+id/image_expended_link_address"
+                        android:layout_marginBottom="24dp"
+                        mapbox:layout_constraintBottom_toBottomOf="parent"
+                        mapbox:layout_constraintTop_toBottomOf="@+id/photo_social_image_details"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginStart="32dp"
+                        mapbox:layout_constraintStart_toEndOf="@+id/photo_social_author_image"
+                        tools:text="httpssdfdsfsdf"
+                        android:visibility="visible"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:textColor="@color/green700"/>
+                <ImageView
                         android:src="@drawable/link"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:id="@+id/photo_social_link"
-                        app:layout_constraintTop_toTopOf="@+id/photo_social_share"
-                        app:layout_constraintBottom_toBottomOf="@+id/photo_social_share"
-                        app:layout_constraintEnd_toStartOf="@+id/photo_social_share"
-                        android:layout_marginEnd="24dp"
-                        android:background="@android:color/transparent"/>
+                        android:id="@+id/image_expended_link_icon"
+                        android:scaleType="centerCrop"
+                        mapbox:layout_constraintTop_toTopOf="@+id/image_expended_link_address"
+                        mapbox:layout_constraintBottom_toBottomOf="@+id/image_expended_link_address"
+                        android:visibility="visible"
+                        mapbox:layout_constraintEnd_toStartOf="@+id/image_expended_link_address"
+                        android:layout_marginEnd="16dp"
+                        mapbox:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="24dp"
+                        mapbox:layout_constraintHorizontal_bias="1.0"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
             <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="0dp"

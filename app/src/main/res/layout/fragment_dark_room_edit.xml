@@ -91,16 +91,15 @@
                     android:layout_marginEnd="32dp"
                     app:layout_constraintStart_toStartOf="parent"
                     android:layout_marginStart="32dp"
-                    android:hint="Can you share any information that would help other travelers when visiting this place?"
+                    android:hint="Any tips for other travelers?"
                     android:elevation="2dp"
-                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintHorizontal_bias="0.0"
                     android:inputType="textMultiLine"
                     android:lineSpacingExtra="4sp"
-                    android:layout_marginTop="16dp"
-                    android:paddingStart="0dp"
                     android:background="@android:color/transparent"
                     android:gravity="top"
-                    android:padding="16dp"/>
+                    android:padding="0dp"
+                    android:layout_marginTop="8dp"/>
 
 
             <TextView
@@ -128,14 +127,12 @@
                     android:hint="Any useful links that you can share?"
                     android:elevation="2dp"
                     app:layout_constraintHorizontal_bias="0.0"
-                    android:layout_marginTop="16dp"
                     app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_url_static"
-                    android:padding="16dp"
                     android:lineSpacingExtra="4sp"
                     android:inputType="textUri|textMultiLine"
                     android:background="@android:color/transparent"
-                    android:paddingStart="0dp"
-                    android:gravity="top"/>
+                    android:gravity="top"
+                    android:layout_marginTop="8dp"/>
 
 
             <TextView
@@ -161,29 +158,26 @@
                     app:layout_constraintStart_toStartOf="parent"
                     android:layout_marginStart="32dp"
                     app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_static_tags"
-                    android:layout_marginTop="16dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginEnd="32dp"
                     app:layout_constraintHorizontal_bias="0.0"
-                    app:chipSpacingVertical="10dp"/>
+                    app:chipSpacingVertical="10dp"
+                    android:layout_marginTop="16dp"/>
 
 
-            <EditText android:layout_width="match_parent"
+            <EditText android:layout_width="0dp"
                       android:layout_height="wrap_content"
                       android:hint="Enter tags"
                       android:id="@+id/dark_room_edit_tag_input"
                       app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_chip_group"
                       app:layout_constraintStart_toStartOf="parent"
                       android:layout_marginStart="32dp"
-                      app:layout_constraintEnd_toEndOf="parent"
-                      android:layout_marginEnd="32dp"
-                      app:layout_constraintHorizontal_bias="1.0"
                       android:digits="abcdefghijklmnopqrstuvwxyz0123456789-"
-                      android:padding="16dp"
-                      android:paddingStart="0dp"
                       android:background="@android:color/transparent"
-                      android:layout_marginTop="16dp"
-                      android:inputType="textEmailAddress"/>
+                      android:inputType="textEmailAddress"
+                      android:layout_marginTop="8dp"
+                      app:layout_constraintEnd_toStartOf="@+id/dark_room_edit_add_tag_button"
+                      android:layout_marginEnd="24dp"/>
 
 
             <androidx.recyclerview.widget.RecyclerView
@@ -223,10 +217,10 @@
                     android:id="@+id/dark_room_edit_add_tag_button"
                     app:layout_constraintTop_toTopOf="@+id/dark_room_edit_tag_input"
                     app:layout_constraintBottom_toBottomOf="@+id/dark_room_edit_tag_input"
-                    app:layout_constraintEnd_toEndOf="@+id/dark_room_edit_tag_input"
-                    android:layout_marginEnd="16dp"
                     android:scaleType="centerCrop"
-                    android:padding="8dp"/>
+                    android:padding="8dp"
+                    android:layout_marginEnd="24dp"
+                    app:layout_constraintEnd_toEndOf="parent"/>
 
             <TextView
                     android:text="SHARE"
@@ -241,11 +235,10 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginEnd="32dp"
                     android:textColor="@color/white"
-                    android:gravity="center_vertical"
+                    android:gravity="center"
                     app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_tag_instructions"
                     android:layout_marginTop="32dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    android:layout_marginBottom="32dp"/>
+            />
             <TextView
                     android:text="SAVE"
                     android:layout_width="0dp"
@@ -261,7 +254,64 @@
                     android:layout_marginStart="32dp"
                     android:layout_marginEnd="32dp"
                     android:textColor="@color/green700"
-                    android:gravity="center_vertical"/>
+                    android:gravity="center"/>
+            <TextView
+                    android:text="REMOVE"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/dark_room_edit_remove"
+                    android:fontFamily="@font/open_sans_bold"
+                    android:textColor="@color/gray500"
+                    android:layout_marginTop="40dp"
+                    app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_share"
+                    android:layout_marginBottom="32dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:visibility="visible"
+                    app:layout_constraintVertical_bias="0.0"/>
+            <TextView
+                    android:text="Are you sure you want to remove this photos?"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/dark_room_edit_delete_message"
+                    android:layout_marginEnd="32dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginTop="40dp"
+                    app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_share"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:visibility="gone"/>
+            <TextView
+                    android:text="CANCEL"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/dark_room_edit_delete_cancel_button"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:textColor="@color/gray500"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintEnd_toStartOf="@+id/dark_room_edit_delete_remove_button"
+                    android:layout_marginTop="24dp"
+                    app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_delete_message"
+                    android:layout_marginBottom="32dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:visibility="gone"/>
+            <TextView
+                    android:text="DELETE"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/dark_room_edit_delete_remove_button"
+                    android:textColor="@color/red700"
+                    android:fontFamily="@font/open_sans_semibold"
+                    app:layout_constraintTop_toTopOf="@+id/dark_room_edit_delete_cancel_button"
+                    app:layout_constraintBottom_toBottomOf="@+id/dark_room_edit_delete_cancel_button"
+                    app:layout_constraintStart_toEndOf="@+id/dark_room_edit_delete_cancel_button"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:visibility="gone"/>
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

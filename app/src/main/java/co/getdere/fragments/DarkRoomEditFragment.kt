@@ -23,6 +23,7 @@ import co.getdere.R
 import co.getdere.models.Images
 import co.getdere.otherClasses.MyCircleProgressBar
 import co.getdere.roomclasses.LocalImagePost
+import co.getdere.roomclasses.LocalImageViewModel
 import co.getdere.viewmodels.SharedViewModelLocalImagePost
 import co.getdere.viewmodels.SharedViewModelRandomUser
 import co.getdere.viewmodels.SharedViewModelTags
@@ -61,6 +62,8 @@ class DarkRoomEditFragment : Fragment() {
     lateinit var progressBar: MyCircleProgressBar
     private lateinit var shareButton : TextView
 
+    private lateinit var localImageViewModel: LocalImageViewModel
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -68,6 +71,7 @@ class DarkRoomEditFragment : Fragment() {
         activity?.let {
             sharedViewModelLocalImagePost = ViewModelProviders.of(it).get(SharedViewModelLocalImagePost::class.java)
             sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
+            localImageViewModel =  ViewModelProviders.of(it).get(LocalImageViewModel::class.java)
         }
 
 
@@ -116,13 +120,44 @@ class DarkRoomEditFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val imageVertical = view.findViewById<ImageView>(R.id.dark_room_edit_image_vertical)
-        val imageHorizontal = view.findViewById<ImageView>(R.id.dark_room_edit_image_horizontal)
-        val addTagButton = view.findViewById<ImageButton>(R.id.dark_room_edit_add_tag_button)
-        val imageTagsInput = view.findViewById<EditText>(R.id.dark_room_edit_tag_input)
-        imageChipGroup = view.findViewById(R.id.dark_room_edit_chip_group)
-        imageLocationInput = view.findViewById(R.id.dark_room_edit_location_input)
-        imageUrl = view.findViewById(R.id.dark_room_edit_url)
+        val imageVertical = dark_room_edit_image_vertical
+        val imageHorizontal = dark_room_edit_image_horizontal
+        val addTagButton = dark_room_edit_add_tag_button
+        val imageTagsInput = dark_room_edit_tag_input
+        imageChipGroup = dark_room_edit_chip_group
+        imageLocationInput = dark_room_edit_location_input
+        imageUrl = dark_room_edit_url
+
+        val removeButton = dark_room_edit_remove
+
+        val deleteMessage = dark_room_edit_delete_message
+        val deleteButton = dark_room_edit_delete_remove_button
+        val cancelButton = dark_room_edit_delete_cancel_button
+
+
+        removeButton.setOnClickListener {
+
+            removeButton.visibility = View.GONE
+
+            deleteMessage.visibility = View.VISIBLE
+            deleteButton.visibility = View.VISIBLE
+            cancelButton.visibility = View.VISIBLE
+        }
+
+        cancelButton.setOnClickListener {
+
+            removeButton.visibility = View.VISIBLE
+
+            deleteMessage.visibility = View.GONE
+            deleteButton.visibility = View.GONE
+            cancelButton.visibility = View.GONE
+        }
+
+        deleteButton.setOnClickListener {
+            localImageViewModel.delete(localImagePost)
+        }
+
+
 
         val saveButton = view.findViewById<TextView>(R.id.dark_room_edit_save)
         shareButton = dark_room_edit_share
@@ -133,6 +168,11 @@ class DarkRoomEditFragment : Fragment() {
             it?.let { localImageObject ->
                 Glide.with(this).load(localImageObject.imageUri).into(imageHorizontal)
                 localImagePost = localImageObject
+
+                imageLocationInput.text = localImageObject.details
+                imageUrl.text = localImageObject.url
+
+
             }
         })
 
@@ -249,6 +289,21 @@ class DarkRoomEditFragment : Fragment() {
             }
 
             uploadPhotoToStorage()
+        }
+
+
+        saveButton.setOnClickListener {
+
+            val locationInput = imageLocationInput.text.toString()
+            val url = imageUrl.text.toString()
+
+
+            val updatedImage = LocalImagePost(localImagePost.timestamp, localImagePost.locationLong, localImagePost.locationLat, localImagePost.imageUri, locationInput, url)
+
+            localImageViewModel.update(updatedImage).invokeOnCompletion {
+                Toast.makeText(this.context, "Photo details saved successfully", Toast.LENGTH_LONG).show()
+            }
+
         }
 
     }
@@ -371,6 +426,8 @@ class DarkRoomEditFragment : Fragment() {
                             refUserTags.setValue(true)
                             progressBar.progress = 100f
                         }
+
+                        localImageViewModel.delete(localImagePost)
 
 
                         val backToFeed = Intent((activity as CameraActivity), MainActivity::class.java)

@@ -39,6 +39,7 @@ import io.branch.referral.util.LinkProperties
 import io.branch.referral.util.ShareSheetStyle
 import kotlinx.android.synthetic.main.bucket_box_recycler.view.*
 import kotlinx.android.synthetic.main.bucket_box_single_photo.view.*
+import kotlinx.android.synthetic.main.fragment_profile_logged_in_user.*
 
 
 class ProfileLoggedInUserFragment : Fragment(), DereMethods {
@@ -79,6 +80,116 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         val profileEditButton = view.findViewById<ImageButton>(R.id.profile_li_edit_profile_button)
         val instagramButton = view.findViewById<ImageButton>(R.id.profile_li_insta_icon)
 
+        val toolbar = profile_li_toolbar
+        setHasOptionsMenu(true)
+        toolbar.inflateMenu(R.menu.profile_navigation)
+
+        toolbar.setOnMenuItemClickListener {
+
+            when (it.itemId) {
+
+                R.id.profile_logout -> {
+                    FirebaseAuth.getInstance().signOut()
+                    val intent = Intent(this.context, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    startActivity(intent)
+                    return@setOnMenuItemClickListener true
+                }
+
+                R.id.profile_invite_a_friend -> {
+
+
+                    val ss =
+                        ShareSheetStyle(this.context!!, "Check this out!", "Get Dere and start collecting destinations")
+                            .setCopyUrlStyle(
+                                resources.getDrawable(android.R.drawable.ic_menu_send),
+                                "Copy",
+                                "Added to clipboard"
+                            )
+                            .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
+                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
+                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK_MESSENGER)
+                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.WHATS_APP)
+                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.TWITTER)
+                            .setAsFullWidthStyle(true)
+                            .setSharingTitle("Share With")
+
+                    buo.showShareSheet(activity as MainActivity, lp, ss, object : Branch.BranchLinkShareListener {
+                        override fun onShareLinkDialogLaunched() {}
+                        override fun onShareLinkDialogDismissed() {}
+                        override fun onLinkShareResponse(
+                            sharedLink: String,
+                            sharedChannel: String,
+                            error: BranchError
+                        ) {
+                        }
+
+                        override fun onChannelSelected(channelName: String) {}
+
+
+                    })
+
+                    return@setOnMenuItemClickListener true
+
+
+                }
+                else -> return@setOnMenuItemClickListener false
+
+
+            }
+
+
+        }
+
+        toolbar.setNavigationOnClickListener {
+
+            when (it.id) {
+
+                R.id.profile_logout -> {
+                    FirebaseAuth.getInstance().signOut()
+
+                    val intent = Intent(this.context, LoginActivity::class.java)
+
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    startActivity(intent)
+                }
+
+                R.id.profile_invite_a_friend -> {
+
+
+                    val ss =
+                        ShareSheetStyle(this.context!!, "Check this out!", "Get Dere and start collecting destinations")
+                            .setCopyUrlStyle(
+                                resources.getDrawable(android.R.drawable.ic_menu_send),
+                                "Copy",
+                                "Added to clipboard"
+                            )
+                            .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
+                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
+                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK_MESSENGER)
+                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.WHATS_APP)
+                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.TWITTER)
+                            .setAsFullWidthStyle(true)
+                            .setSharingTitle("Share With")
+
+                    buo.showShareSheet(activity as MainActivity, lp, ss, object : Branch.BranchLinkShareListener {
+                        override fun onShareLinkDialogLaunched() {}
+                        override fun onShareLinkDialogDismissed() {}
+                        override fun onLinkShareResponse(
+                            sharedLink: String,
+                            sharedChannel: String,
+                            error: BranchError
+                        ) {
+                        }
+
+                        override fun onChannelSelected(channelName: String) {}
+
+                    })
+
+                }
+            }
+
+        }
 
         profileGalleryRoll.adapter = galleryRollAdapter
         val rollGalleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
@@ -218,7 +329,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         }
 
 
-        setHasOptionsMenu(true)
+//        setHasOptionsMenu(true)
 
 
         galleryRollAdapter.setOnItemClickListener { item, _ ->
@@ -255,61 +366,62 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
     }
 
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-
-        inflater.inflate(R.menu.profile_navigation, menu)
-        super.onCreateOptionsMenu(menu, inflater)
-
-    }
-
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-
-        when (id) {
-            R.id.profile_logout -> {
-                FirebaseAuth.getInstance().signOut()
-
-                val intent = Intent(this.context, LoginActivity::class.java)
-
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-            }
-
-            R.id.profile_invite_a_friend -> {
-
-
-                val ss =
-                    ShareSheetStyle(this.context!!, "Check this out!", "Get Dere and start collecting destinations")
-                        .setCopyUrlStyle(
-                            resources.getDrawable(android.R.drawable.ic_menu_send),
-                            "Copy",
-                            "Added to clipboard"
-                        )
-                        .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
-                        .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
-                        .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK_MESSENGER)
-                        .addPreferredSharingOption(SharingHelper.SHARE_WITH.WHATS_APP)
-                        .addPreferredSharingOption(SharingHelper.SHARE_WITH.TWITTER)
-                        .setAsFullWidthStyle(true)
-                        .setSharingTitle("Share With")
-
-                buo.showShareSheet(activity as MainActivity, lp, ss, object : Branch.BranchLinkShareListener {
-                    override fun onShareLinkDialogLaunched() {}
-                    override fun onShareLinkDialogDismissed() {}
-                    override fun onLinkShareResponse(sharedLink: String, sharedChannel: String, error: BranchError) {}
-                    override fun onChannelSelected(channelName: String) {}
-
-                })
-
-            }
-
-        }
-
-        return super.onOptionsItemSelected(item)
-
-    }
+//
+//
+//    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+//
+//        inflater.inflate(R.menu.profile_navigation, menu)
+//        super.onCreateOptionsMenu(menu, inflater)
+//
+//    }
+//
+//
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        val id = item.itemId
+//
+//        when (id) {
+//            R.id.profile_logout -> {
+//                FirebaseAuth.getInstance().signOut()
+//
+//                val intent = Intent(this.context, LoginActivity::class.java)
+//
+//                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+//                startActivity(intent)
+//            }
+//
+//            R.id.profile_invite_a_friend -> {
+//
+//
+//                val ss =
+//                    ShareSheetStyle(this.context!!, "Check this out!", "Get Dere and start collecting destinations")
+//                        .setCopyUrlStyle(
+//                            resources.getDrawable(android.R.drawable.ic_menu_send),
+//                            "Copy",
+//                            "Added to clipboard"
+//                        )
+//                        .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
+//                        .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
+//                        .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK_MESSENGER)
+//                        .addPreferredSharingOption(SharingHelper.SHARE_WITH.WHATS_APP)
+//                        .addPreferredSharingOption(SharingHelper.SHARE_WITH.TWITTER)
+//                        .setAsFullWidthStyle(true)
+//                        .setSharingTitle("Share With")
+//
+//                buo.showShareSheet(activity as MainActivity, lp, ss, object : Branch.BranchLinkShareListener {
+//                    override fun onShareLinkDialogLaunched() {}
+//                    override fun onShareLinkDialogDismissed() {}
+//                    override fun onLinkShareResponse(sharedLink: String, sharedChannel: String, error: BranchError) {}
+//                    override fun onChannelSelected(channelName: String) {}
+//
+//                })
+//
+//            }
+//
+//        }
+//
+//        return super.onOptionsItemSelected(item)
+//
+//    }
 
 
     private fun changeGalleryFeed(source: String) {
@@ -473,31 +585,31 @@ class SingleBucketBox(val bucket: DataSnapshot, val activity: MainActivity) : It
         }
 
 
-        imagesRecyclerAdapter.setOnItemClickListener { _, _ ->
+//        imagesRecyclerAdapter.setOnItemClickListener { _, _ ->
+//
+//            sharedViewModelBucket.sharedBucketObject.postValue(bucket)
+//
+//            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
+//            activity.subActive = activity.bucketGalleryFragment
+//
+//            activity.switchVisibility(1)
+//        }
 
-            sharedViewModelBucket.sharedBucketObject.postValue(bucket)
-
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
-            activity.subActive = activity.bucketGalleryFragment
-
-            activity.switchVisibility(1)
-        }
-
-        val card = viewHolder.itemView.cardView
-
-        card.setOnClickListener {
-            goToBuckerGalery()
-        }
-
-        val cardBackground = viewHolder.itemView.cardViewBackground
-
-        cardBackground.setOnClickListener {
-            goToBuckerGalery()
-        }
+//        val card = viewHolder.itemView.cardView
+//
+//        card.setOnClickListener {
+//            goToBuckerGalery()
+//        }
+//
+//        val cardBackground = viewHolder.itemView.cardViewBackground
+//
+//        cardBackground.setOnClickListener {
+//            goToBuckerGalery()
+//        }
 
     }
 
-    fun goToBuckerGalery(){
+    fun goToBuckerGalery() {
 
         sharedViewModelBucket.sharedBucketObject.postValue(bucket)
 
@@ -509,7 +621,6 @@ class SingleBucketBox(val bucket: DataSnapshot, val activity: MainActivity) : It
     }
 
 }
-
 
 
 class SingleImageToBucketRoll(val image: Images) : Item<ViewHolder>() {

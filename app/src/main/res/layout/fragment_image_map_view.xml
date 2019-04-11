@@ -6,15 +6,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".fragments.ImageMapViewFragment"
+        tools:showIn="@layout/fragment_image_expanded"
 >
 
 
     <com.mapbox.mapboxsdk.maps.MapView
-            android:id="@+id/mapView"
+            android:id="@+id/image_map_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            mapbox:mapbox_cameraTargetLat="40.73581"
-            mapbox:mapbox_cameraTargetLng="-73.99155"
             mapbox:mapbox_cameraZoom="11"/>
 
 

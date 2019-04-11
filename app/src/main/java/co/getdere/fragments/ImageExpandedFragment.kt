@@ -2,6 +2,7 @@ package co.getdere.fragments
 
 
 import android.content.Context
+import android.media.Image
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,15 +10,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.widget.NestedScrollView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import co.getdere.MainActivity
 import co.getdere.R
+import co.getdere.adapters.ImageExpandedPagerAdapter
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Comments
 import co.getdere.models.Images
 import co.getdere.models.Users
+import co.getdere.otherClasses.SwipeLockableViewPager
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelImage
 import co.getdere.viewmodels.SharedViewModelRandomUser
@@ -35,6 +40,7 @@ import io.branch.referral.util.ContentMetadata
 import io.branch.referral.util.LinkProperties
 import io.branch.referral.util.ShareSheetStyle
 import kotlinx.android.synthetic.main.comment_layout.view.*
+import kotlinx.android.synthetic.main.fragment_image_expanded.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
 
@@ -42,7 +48,12 @@ import java.util.*
 class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
 
-//    var viewPagerPosition = 0
+//    val imageFragment = ImageFragment()
+//    val imageMapView2Fragment = ImageMapViewFragment()
+//    lateinit var imageExpendedFm : FragmentManager
+//
+//    lateinit var activeFragment : Fragment
+
 
     lateinit var imageObject: Images
 
@@ -57,6 +68,9 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
     lateinit var buo: BranchUniversalObject
     lateinit var lp: LinkProperties
+
+    var viewPagerPosition = 0
+    lateinit var imageExpendedViewPager : SwipeLockableViewPager
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -82,7 +96,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         super.onViewCreated(view, savedInstanceState)
 
         val activity = activity as MainActivity
-
+//        imageExpendedFm = activity.supportFragmentManager
 
         val authorName = view.findViewById<TextView>(R.id.photo_social_author_name)
         val authorReputation = view.findViewById<TextView>(R.id.photo_social_author_reputation)
@@ -90,24 +104,36 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         val currentUserImage = view.findViewById<CircleImageView>(R.id.photo_comments_current_user_image)
 
+//        val mainImage = image_expended_image
+        val locationMap = image_expended_map
         val imageContent = view.findViewById<TextView>(R.id.photo_social_image_details)
         val imageTimestamp = view.findViewById<TextView>(R.id.photo_social_timestamp)
 
-        val likeCount = view.findViewById<TextView>(R.id.photo_social_like_count)
-        val likeButton = view.findViewById<ImageButton>(R.id.photo_social_like_button)
-        val bucketCount = view.findViewById<TextView>(R.id.photo_social_bucket_count)
-        val bucketButton = view.findViewById<ImageButton>(R.id.photo_social_bucket_icon)
-        val commentCount = view.findViewById<TextView>(R.id.photo_social_comment_count)
-        val linkButton = view.findViewById<ImageButton>(R.id.photo_social_link)
-        val shareButton = view.findViewById<ImageButton>(R.id.photo_social_share)
+        val likeCount = photo_social_like_count
+        val likeButton = photo_social_like_button
+        val bucketCount = photo_social_bucket_count
+        val bucketButton = photo_social_bucket_icon
+        val commentCount = photo_social_comment_count
+        val shareButton = photo_social_share
+        val linkIcon = image_expended_link_icon
+        val linkAddress = image_expended_link_address
 
 
-        val postButton = view.findViewById<TextView>(R.id.photo_comments_post_button)
-        val commentInput = view.findViewById<EditText>(R.id.photo_comments_comment_input)
+        val postButton = photo_comments_post_button
+        val commentInput = photo_comments_comment_input
 
-        val mainImage = view.findViewById<ImageView>(R.id.image_full_image)
+        imageExpendedViewPager = image_full_viewpager
+        val pagerAdapter = ImageExpandedPagerAdapter(childFragmentManager)
+        imageExpendedViewPager.adapter = pagerAdapter
 
-        layoutScroll = view.findViewById(R.id.photo_social_scrollView)
+//        imageExpendedFm.beginTransaction()
+//            .add(R.id.image_expended_container, imageFragment, "imageFragment").commit()
+//        imageExpendedFm.beginTransaction()
+//            .add(R.id.image_expended_container, imageMapView2Fragment, "imageMapView2Fragment")
+//            .hide(imageMapView2Fragment).commit()
+//        activeFragment = imageFragment
+
+        layoutScroll = photo_social_scrollView
 
         val commentsRecycler = view.findViewById<RecyclerView>(R.id.comments_recycler)
 
@@ -125,12 +151,19 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
                 if (image.id.isNotEmpty()) {
 
-                    Glide.with(this).load(image.imageBig).into(mainImage)
+//                    Glide.with(this).load(image.imageBig).into(mainImage)
                     imageTimestamp.text = PrettyTime().format(Date(image.timestampUpload))
 
                     if (image.details.isNotEmpty()) {
                         imageContent.visibility = View.VISIBLE
                         imageContent.text = image.details
+
+                    }
+
+                    if (image.link.isNotEmpty()){
+                        linkAddress.text = image.link
+                        linkAddress.visibility = View.VISIBLE
+                        linkIcon.visibility = View.VISIBLE
 
                     }
 
@@ -153,7 +186,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                         authorReputation
                     )
 
-                    listenToComments(image.id)
+                    listenToComments(image)
 
                     var contentDescription = ""
 
@@ -195,7 +228,10 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         })
 
 
+        locationMap.setOnClickListener {
 
+            switchImageAndMap()
+        }
 
 
         shareButton.setOnClickListener {
@@ -239,7 +275,6 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
 
         bucketButton.setOnClickListener {
-            val activity = activity as MainActivity
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketFragment).commit()
             activity.subActive = activity.bucketFragment
         }
@@ -267,6 +302,8 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                     imageObject.photographer
                 )
 
+                closeKeyboard(activity)
+
                 layoutScroll.fullScroll(View.FOCUS_DOWN)
 
                 Log.d("postCommentActivity", "Saved comment to Firebase Database")
@@ -289,6 +326,17 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         }
     }
 
+    private fun switchImageAndMap() {
+
+        if(viewPagerPosition ==0){
+            imageExpendedViewPager.currentItem = 1
+            viewPagerPosition = 1
+        } else {
+            imageExpendedViewPager.currentItem = 0
+            viewPagerPosition = 0
+        }
+    }
+
     private fun goToRandomUserProfile() {
 
         val activity = activity as MainActivity
@@ -299,12 +347,12 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
     }
 
 
-    private fun listenToComments(imageId: String) {
+    private fun listenToComments(image: Images) {
 
         commentsRecyclerAdapter.clear()
 
 
-        val ref = FirebaseDatabase.getInstance().getReference("/images/$imageId/comments/")
+        val ref = FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/")
 
         ref.addChildEventListener(object : ChildEventListener {
 
@@ -314,7 +362,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
                 if (singleCommentFromDB != null) {
 
-                    commentsRecyclerAdapter.add(SingleComment(singleCommentFromDB, p0.key!!, imageId, currentUser))
+                    commentsRecyclerAdapter.add(SingleComment(singleCommentFromDB, p0.key!!, image, currentUser))
 
                 }
             }
@@ -340,7 +388,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 }
 
 
-class SingleComment(var comment: Comments, val commentId: String, val imageId: String, val currentUser: Users) :
+class SingleComment(var comment: Comments, val commentId: String, val image: Images, val currentUser: Users) :
     Item<ViewHolder>(),
     DereMethods {
 
@@ -366,11 +414,14 @@ class SingleComment(var comment: Comments, val commentId: String, val imageId: S
         commentTimestamp.text = date
 
         listenToLikeCount(commentLikeCount)
-        executeLike(0, commentLikeButton, commentLikeCount, imageId, currentUser, viewHolder)
+        executeLike(0, commentLikeButton, commentLikeCount, image.id, currentUser, viewHolder)
 
 
         commentLikeButton.setOnClickListener {
-            executeLike(1, commentLikeButton, commentLikeCount, imageId, currentUser, viewHolder)
+
+            if(currentUser.uid != comment.authorId){
+                executeLike(1, commentLikeButton, commentLikeCount, image.id, currentUser, viewHolder)
+            }
         }
 
 
@@ -477,7 +528,7 @@ class SingleComment(var comment: Comments, val commentId: String, val imageId: S
 
     private fun listenToLikeCount(commentLikeCount: TextView) {
 
-        val commentLikeRef = FirebaseDatabase.getInstance().getReference("/images/$imageId/comments/$commentId/likes")
+        val commentLikeRef = FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/$commentId/likes")
 
         commentLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {

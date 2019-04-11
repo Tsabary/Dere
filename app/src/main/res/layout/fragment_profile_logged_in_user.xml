@@ -69,10 +69,10 @@
                     android:elevation="4dp"
                     android:id="@+id/profile_li_image"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
                     tools:src="@drawable/no_dread"
-                    android:layout_marginTop="80dp"
-                    app:layout_constraintEnd_toEndOf="parent"/>
+                    android:layout_marginTop="32dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/profile_li_toolbar"/>
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -217,6 +217,17 @@
                     android:layout_marginStart="8dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginEnd="8dp"/>
+            <androidx.appcompat.widget.Toolbar
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:background="@color/white"
+                    android:theme="?attr/actionBarTheme"
+                    android:minHeight="?attr/actionBarSize"
+                    android:id="@+id/profile_li_toolbar"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+            />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
     <!--<View-->

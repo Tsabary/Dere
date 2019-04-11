@@ -12,4 +12,12 @@ class ImagePostsRepository (private val imageDao : ImageDao) {
     suspend fun insert(imagePost: LocalImagePost) {
         imageDao.insert(imagePost)
     }
+
+    suspend fun update(imagePost: LocalImagePost) {
+        imageDao.update(imagePost)
+    }
+
+    suspend fun delete(imagePost: LocalImagePost) {
+        imageDao.delete(imagePost)
+    }
 }

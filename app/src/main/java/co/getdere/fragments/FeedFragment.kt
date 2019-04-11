@@ -166,7 +166,7 @@ class FeedFragment : Fragment(), DereMethods {
 
 
 
-        viewPager = view.findViewById<ViewPager>(co.getdere.R.id.feed_pager_pager)
+        viewPager = view.findViewById(co.getdere.R.id.feed_pager_pager)
         pagerAdapter = FeedPagerAdapter(childFragmentManager)
         viewPager.adapter = pagerAdapter
 

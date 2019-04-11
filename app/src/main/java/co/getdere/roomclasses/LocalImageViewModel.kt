@@ -33,6 +33,14 @@ class LocalImageViewModel(application: Application) : AndroidViewModel(applicati
         repository.insert(imagePost)
     }
 
+    fun update(imagePost: LocalImagePost) = scope.launch(Dispatchers.IO) {
+        repository.update(imagePost)
+    }
+
+    fun delete(imagePost: LocalImagePost) = scope.launch(Dispatchers.IO) {
+        repository.delete(imagePost)
+    }
+
     override fun onCleared() {
         super.onCleared()
         parentJob.cancel()

@@ -52,7 +52,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:id="@+id/board_answers"
-            android:gravity="center_vertical"
+            android:gravity="center"
             android:textColor="@color/green700"
             android:textAlignment="center"
             android:textSize="18sp"

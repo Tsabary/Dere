@@ -3,6 +3,7 @@ package co.getdere.interfaces
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -138,7 +139,7 @@ interface DereMethods {
                                     }
                                     "down" -> {
                                         downView(upvoteView, downvoteView)
-                                        setVotesCount(specificPostId, mainPostId, votesView, postType)
+//                                        setVotesCount(specificPostId, mainPostId, votesView, postType)
 //                                        setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote)
 
 
@@ -577,10 +578,15 @@ interface DereMethods {
 
                 if (p0.hasChild("comments")) {
 
-                    commentCount.text = numberCalculation(p0.child("comments").childrenCount)
+                    if (p0.child("comments").childrenCount>1){
+                        val count = numberCalculation(p0.child("comments").childrenCount)
 
+                        commentCount.text = "Read all $count comments"
+                    } else {
+                        commentCount.text = "Read one comment"
+                    }
                 } else {
-                    commentCount.text = "0"
+                    commentCount.visibility = View.GONE
                 }
 
             }
@@ -775,7 +781,7 @@ interface DereMethods {
                 val valueForInitiator = ReputationScore(specificPostId, initiatorId, -1)
                 refInitiatorReputation.setValue(valueForInitiator)
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
-                updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
+//                updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
                 sendNotification(0, 4, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
             }
@@ -799,7 +805,7 @@ interface DereMethods {
 
 
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
-                updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
+//                updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
             }
 
             6 -> {

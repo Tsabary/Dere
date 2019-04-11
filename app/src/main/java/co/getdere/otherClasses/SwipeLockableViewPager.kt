@@ -3,7 +3,9 @@ package co.getdere.otherClasses
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.View
 import androidx.viewpager.widget.ViewPager
+import java.util.ArrayList
 
 class SwipeLockableViewPager(context: Context, attrs: AttributeSet): ViewPager(context, attrs) {
     private var swipeEnabled = false
@@ -14,6 +16,7 @@ class SwipeLockableViewPager(context: Context, attrs: AttributeSet): ViewPager(c
             false -> false
         }
     }
+
 
     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
         return when (swipeEnabled) {

@@ -51,7 +51,7 @@ class CameraPreviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val locationAccuracyText = view.findViewById<TextView>(R.id.camera_accuracy)
+//        val locationAccuracyText = view.findViewById<TextView>(R.id.camera_accuracy)
 
 
         val cameraConfiguration = CameraConfiguration(
