@@ -17,12 +17,10 @@ import co.getdere.groupieAdapters.FeedImage
 import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.viewmodels.SharedViewModelBucket
+import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelImage
 import co.getdere.viewmodels.SharedViewModelRandomUser
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.fragment_bucket_feed.*
@@ -33,9 +31,9 @@ class BucketFeedFragment : Fragment() {
 
     lateinit var sharedViewModelBucket: SharedViewModelBucket
     lateinit var sharedViewModelImage: SharedViewModelImage
-    lateinit var sharedViewModelRandomUser : SharedViewModelRandomUser
+    lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
+    lateinit var currentUser: Users
     val galleryAdapter = GroupAdapter<ViewHolder>()
-
 
 
     override fun onCreateView(
@@ -50,8 +48,6 @@ class BucketFeedFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-
-
         val galleryRecycler = bucket_feed_recycler
 
         val imagesRecyclerLayoutManager =
@@ -64,16 +60,16 @@ class BucketFeedFragment : Fragment() {
 
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
-
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
             sharedViewModelBucket = ViewModelProviders.of(it).get(SharedViewModelBucket::class.java)
 
-            sharedViewModelBucket.sharedBucketObject.observe(this, Observer { dataSnapshot ->
-                dataSnapshot?.let { bucket ->
+            sharedViewModelBucket.sharedBucketId.observe(this, Observer { bucketName ->
+                bucketName?.let { bucket ->
 
                     galleryAdapter.clear()
 
-                    for (image in bucket.children) {
 
+                    for (image in bucket.children){
 
                         val imagePath = image.key
 
@@ -93,8 +89,8 @@ class BucketFeedFragment : Fragment() {
                             }
                         })
 
-                    }
 
+                    }
 
                 }
             })
@@ -119,7 +115,8 @@ class BucketFeedFragment : Fragment() {
 
                     val activity = activity as MainActivity
 
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
+                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment)
+                        .commit()
                     activity.subActive = activity.imageFullSizeFragment
 
                     activity.switchVisibility(1)
@@ -133,9 +130,8 @@ class BucketFeedFragment : Fragment() {
     }
 
 
-
     companion object {
-        fun newInstance(): BucketGalleryFragment = BucketGalleryFragment()
+        fun newInstance(): BucketFeedFragment = BucketFeedFragment()
     }
 
 

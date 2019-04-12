@@ -1,14 +1,15 @@
 package co.getdere.fragments
 
 
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.*
-import android.widget.ImageButton
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
@@ -66,19 +67,19 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val activity = activity as MainActivity
 
-        val profilePicture: ImageView = view.findViewById(R.id.profile_li_image)
-        val profileName: TextView = view.findViewById(R.id.profile_li_user_name)
-        val profileGalleryRoll: androidx.recyclerview.widget.RecyclerView =
-            view.findViewById(R.id.profile_li_gallery_roll)
-        val profileGalleryBuckets: androidx.recyclerview.widget.RecyclerView =
-            view.findViewById(R.id.profile_li_gallery_buckets)
-        val profileReputation = view.findViewById<TextView>(R.id.profile_li_reputation_count)
-        val profileFollowers = view.findViewById<TextView>(R.id.profile_li_followers_count)
-        val profilePhotos = view.findViewById<TextView>(R.id.profile_li_photos_count)
-        val profileTagline = view.findViewById<TextView>(R.id.profile_li_tagline)
-        val profileEditButton = view.findViewById<ImageButton>(R.id.profile_li_edit_profile_button)
-        val instagramButton = view.findViewById<ImageButton>(R.id.profile_li_insta_icon)
+        val profilePicture: ImageView = profile_li_image
+        val profileName: TextView = profile_li_user_name
+        val profileGalleryRoll = profile_li_gallery_roll
+        val profileGalleryBuckets = profile_li_gallery_buckets
+        val profileReputation = profile_li_reputation_count
+        val profileFollowers = profile_li_followers_count
+        val profilePhotos = profile_li_photos_count
+        val profileTagline = profile_li_tagline
+        val profileEditButton = profile_li_edit_profile_button
+        val instagramButton = profile_li_insta_icon
+        var instaLink = ""
 
         val toolbar = profile_li_toolbar
         setHasOptionsMenu(true)
@@ -141,62 +142,13 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         }
 
-        toolbar.setNavigationOnClickListener {
-
-            when (it.id) {
-
-                R.id.profile_logout -> {
-                    FirebaseAuth.getInstance().signOut()
-
-                    val intent = Intent(this.context, LoginActivity::class.java)
-
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    startActivity(intent)
-                }
-
-                R.id.profile_invite_a_friend -> {
-
-
-                    val ss =
-                        ShareSheetStyle(this.context!!, "Check this out!", "Get Dere and start collecting destinations")
-                            .setCopyUrlStyle(
-                                resources.getDrawable(android.R.drawable.ic_menu_send),
-                                "Copy",
-                                "Added to clipboard"
-                            )
-                            .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
-                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
-                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK_MESSENGER)
-                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.WHATS_APP)
-                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.TWITTER)
-                            .setAsFullWidthStyle(true)
-                            .setSharingTitle("Share With")
-
-                    buo.showShareSheet(activity as MainActivity, lp, ss, object : Branch.BranchLinkShareListener {
-                        override fun onShareLinkDialogLaunched() {}
-                        override fun onShareLinkDialogDismissed() {}
-                        override fun onLinkShareResponse(
-                            sharedLink: String,
-                            sharedChannel: String,
-                            error: BranchError
-                        ) {
-                        }
-
-                        override fun onChannelSelected(channelName: String) {}
-
-                    })
-
-                }
-            }
-
-        }
 
         profileGalleryRoll.adapter = galleryRollAdapter
-        val rollGalleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
+        val rollGalleryLayoutManager = GridLayoutManager(this.context, 3)
         profileGalleryRoll.layoutManager = rollGalleryLayoutManager
 
         profileGalleryBuckets.adapter = galleryBucketAdapter
-        val bucketsGalleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 2)
+        val bucketsGalleryLayoutManager = GridLayoutManager(this.context, 2)
         profileGalleryBuckets.layoutManager = bucketsGalleryLayoutManager
 
 
@@ -204,12 +156,15 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         bucketBtn = view.findViewById(R.id.profile_li_bucket_btn)
         rollBtn = view.findViewById(R.id.profile_li_roll_btn)
 
-        activity?.let {
+        activity.let {
             sharedViewModelForCurrentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             sharedViewModelBucket = ViewModelProviders.of(it).get(SharedViewModelBucket::class.java)
             userProfile = sharedViewModelForCurrentUser.currentUserObject
+
+            listenToImagesFromBucket()
+            listenToImagesFromRoll()
 
             Glide.with(this).load(userProfile.image).into(profilePicture)
             profileName.text = userProfile.name
@@ -276,36 +231,17 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             override fun onDataChange(p0: DataSnapshot) {
                 if (p0.hasChild("stax")) {
                     instagramButton.visibility = View.VISIBLE
+                    instaLink = "https://www.instagram.com/${p0.child("stax").child("instagram").value}"
                 }
             }
 
         })
 
-        changeGalleryFeed("Roll")
-
-
         instagramButton.setOnClickListener {
-
-            val userInstaRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/stax/instagram")
-            userInstaRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-
-                }
-
-                override fun onDataChange(p0: DataSnapshot) {
-
-                    val instaLink = "https://www.instagram.com/${p0.value}"
-                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(instaLink)))
-                }
-
-
-            })
-
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(instaLink)))
         }
 
         profileEditButton.setOnClickListener {
-
-            val activity = activity as MainActivity
 
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editProfileFragment).commit()
             activity.subActive = activity.editProfileFragment
@@ -329,99 +265,31 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         }
 
 
-//        setHasOptionsMenu(true)
-
-
         galleryRollAdapter.setOnItemClickListener { item, _ ->
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
+            activity.subActive = activity.imageFullSizeFragment
 
             val image = item as FeedImage
             sharedViewModelImage.sharedImageObject.postValue(image.image)
             sharedViewModelRandomUser.randomUserObject.postValue(userProfile)
 
-            val activity = activity as MainActivity
-
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
-            activity.subActive = activity.imageFullSizeFragment
-
             activity.switchVisibility(1)
-
         }
 
 
         galleryBucketAdapter.setOnItemClickListener { item, _ ->
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
 
             val bucket = item as SingleBucketBox
+            sharedViewModelBucket.sharedBucketId.postValue(bucket.bucket)
 
-            sharedViewModelBucket.sharedBucketObject.postValue(bucket.bucket)
-
-            val activity = activity as MainActivity
-
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
             activity.subActive = activity.bucketGalleryFragment
+            activity.isBucketGalleryActive = true
 
             activity.switchVisibility(1)
-
-
         }
 
     }
-
-//
-//
-//    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-//
-//        inflater.inflate(R.menu.profile_navigation, menu)
-//        super.onCreateOptionsMenu(menu, inflater)
-//
-//    }
-//
-//
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        val id = item.itemId
-//
-//        when (id) {
-//            R.id.profile_logout -> {
-//                FirebaseAuth.getInstance().signOut()
-//
-//                val intent = Intent(this.context, LoginActivity::class.java)
-//
-//                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-//                startActivity(intent)
-//            }
-//
-//            R.id.profile_invite_a_friend -> {
-//
-//
-//                val ss =
-//                    ShareSheetStyle(this.context!!, "Check this out!", "Get Dere and start collecting destinations")
-//                        .setCopyUrlStyle(
-//                            resources.getDrawable(android.R.drawable.ic_menu_send),
-//                            "Copy",
-//                            "Added to clipboard"
-//                        )
-//                        .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
-//                        .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
-//                        .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK_MESSENGER)
-//                        .addPreferredSharingOption(SharingHelper.SHARE_WITH.WHATS_APP)
-//                        .addPreferredSharingOption(SharingHelper.SHARE_WITH.TWITTER)
-//                        .setAsFullWidthStyle(true)
-//                        .setSharingTitle("Share With")
-//
-//                buo.showShareSheet(activity as MainActivity, lp, ss, object : Branch.BranchLinkShareListener {
-//                    override fun onShareLinkDialogLaunched() {}
-//                    override fun onShareLinkDialogDismissed() {}
-//                    override fun onLinkShareResponse(sharedLink: String, sharedChannel: String, error: BranchError) {}
-//                    override fun onChannelSelected(channelName: String) {}
-//
-//                })
-//
-//            }
-//
-//        }
-//
-//        return super.onOptionsItemSelected(item)
-//
-//    }
 
 
     private fun changeGalleryFeed(source: String) {
@@ -429,12 +297,9 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         if (source == "bucket") {
             rollBtn.setTextColor(resources.getColor(R.color.gray300))
             bucketBtn.setTextColor(resources.getColor(R.color.gray700))
-            listenToImagesFromBucket()
-
         } else {
             rollBtn.setTextColor(resources.getColor(R.color.gray700))
             bucketBtn.setTextColor(resources.getColor(R.color.gray300))
-            listenToImagesFromRoll()
         }
 
     }
@@ -443,7 +308,6 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     private fun listenToImagesFromRoll() { //This needs to be fixed to not update in real time. Or should it?
 
         galleryRollAdapter.clear()
-
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
 
@@ -494,13 +358,11 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/buckets")
 
-
-
         ref.addChildEventListener(object : ChildEventListener {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                galleryBucketAdapter.add(SingleBucketBox(p0, activity as MainActivity))
+                galleryBucketAdapter.add(SingleBucketBox(p0!!, userProfile.uid, activity as MainActivity))
 
             }
 
@@ -529,7 +391,8 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 }
 
 
-class SingleBucketBox(val bucket: DataSnapshot, val activity: MainActivity) : Item<ViewHolder>() {
+class SingleBucketBox(val bucket: DataSnapshot, val userUid: String, val activity : MainActivity) : Item<ViewHolder>() {
+
 
     val imagesRecyclerAdapter = GroupAdapter<ViewHolder>()
     private val sharedViewModelBucket = ViewModelProviders.of(activity).get(SharedViewModelBucket::class.java)
@@ -540,10 +403,6 @@ class SingleBucketBox(val bucket: DataSnapshot, val activity: MainActivity) : It
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
-        val bucketName = viewHolder.itemView.bucket_box_recycler_name
-        bucketName.text = bucket.key.toString()
-        viewHolder.itemView.bucket_box_recycler_photo_count.text = "${bucket.childrenCount} photos"
-
 
         val imagesRecycler = viewHolder.itemView.bucket_box_recycler_recycler
 
@@ -552,6 +411,10 @@ class SingleBucketBox(val bucket: DataSnapshot, val activity: MainActivity) : It
 
         imagesRecycler.layoutManager = imagesRecyclerLayoutManager
         imagesRecycler.adapter = imagesRecyclerAdapter
+
+        val bucketName = viewHolder.itemView.bucket_box_recycler_name
+        bucketName.text = bucket.key
+        viewHolder.itemView.bucket_box_recycler_photo_count.text = "${bucket.childrenCount} photos"
 
 
         var count = 0
@@ -585,42 +448,53 @@ class SingleBucketBox(val bucket: DataSnapshot, val activity: MainActivity) : It
         }
 
 
-//        imagesRecyclerAdapter.setOnItemClickListener { _, _ ->
-//
-//            sharedViewModelBucket.sharedBucketObject.postValue(bucket)
-//
-//            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
-//            activity.subActive = activity.bucketGalleryFragment
-//
-//            activity.switchVisibility(1)
-//        }
 
-//        val card = viewHolder.itemView.cardView
-//
-//        card.setOnClickListener {
-//            goToBuckerGalery()
-//        }
-//
-//        val cardBackground = viewHolder.itemView.cardViewBackground
-//
-//        cardBackground.setOnClickListener {
-//            goToBuckerGalery()
-//        }
+        imagesRecyclerAdapter.setOnItemClickListener { _, _ ->
+
+            sharedViewModelBucket.sharedBucketId.postValue(bucket)
+
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
+            activity.subActive = activity.bucketGalleryFragment
+            activity.isBucketGalleryActive = true
+
+            activity.switchVisibility(1)
+        }
+
+        val card = viewHolder.itemView.cardView
+
+        card.setOnClickListener {
+            goToBucketGallery()
+        }
+
+        val cardBackground = viewHolder.itemView.cardViewBackground
+
+        cardBackground.setOnClickListener {
+            goToBucketGallery()
+        }
+
 
     }
 
-    fun goToBuckerGalery() {
+    fun goToBucketGallery() {
 
-        sharedViewModelBucket.sharedBucketObject.postValue(bucket)
+        sharedViewModelBucket.sharedBucketId.postValue(bucket)
 
         activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
         activity.subActive = activity.bucketGalleryFragment
+        activity.isBucketGalleryActive = true
 
         activity.switchVisibility(1)
 
     }
 
+
+
+
+
 }
+
+
+
 
 
 class SingleImageToBucketRoll(val image: Images) : Item<ViewHolder>() {

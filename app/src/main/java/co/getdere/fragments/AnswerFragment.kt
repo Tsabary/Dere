@@ -11,6 +11,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.GridLayoutManager
 import co.getdere.MainActivity
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Answers
@@ -18,9 +19,15 @@ import co.getdere.models.Question
 import co.getdere.models.Users
 
 import co.getdere.R
+import co.getdere.groupieAdapters.FeedImage
+import co.getdere.viewmodels.SharedViewModelAnswerImages
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelQuestion
 import com.google.firebase.database.FirebaseDatabase
+import com.xwray.groupie.GroupAdapter
+import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.answer_layout.*
+import kotlinx.android.synthetic.main.answer_layout.view.*
 import kotlinx.android.synthetic.main.fragment_answer.*
 import kotlinx.android.synthetic.main.fragment_answer.view.*
 
@@ -29,12 +36,18 @@ class AnswerFragment : Fragment(), DereMethods {
 
     lateinit var question: Question
     lateinit var currentUser: Users
+    var imagesRecyclerAdapter = GroupAdapter<ViewHolder>()
+    var imageListFinal = mutableListOf<String>()
+
+    lateinit var sharedViewModelAnswerImages: SharedViewModelAnswerImages
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
         activity?.let {
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+
+            sharedViewModelAnswerImages = ViewModelProviders.of(it).get(SharedViewModelAnswerImages::class.java)
 
             val sharedViewModelQuestion = ViewModelProviders.of(it).get(SharedViewModelQuestion::class.java)
 
@@ -59,15 +72,34 @@ class AnswerFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity!!.title = "Answer"
+        val activity = activity as MainActivity
 
+        val addImage = answer_add_photos_button
+
+        val imagesRecycler = answer_photos_recycler
+        val imagesRecyclerLayoutManager = GridLayoutManager(this.context, 3)
+
+        imagesRecycler.adapter = imagesRecyclerAdapter
+        imagesRecycler.layoutManager = imagesRecyclerLayoutManager
 
         val content = view.answer_content
 
+        sharedViewModelAnswerImages.imageList.observe(this, Observer {
+            it?.let { existingImageList ->
+
+                imagesRecyclerAdapter.clear()
+                imageListFinal.clear()
+
+                for (image in existingImageList) {
+                    imagesRecyclerAdapter.add(FeedImage(image))
+                    imageListFinal.add(image.id)
+                }
+            }
+        })
 
         view.answer_btn.setOnClickListener {
 
-            if (answer_content.text.length > 15){
+            if (answer_content.text.length > 15) {
                 postAnswer(content.text.toString(), System.currentTimeMillis())
             } else {
                 Toast.makeText(this.context, "Your answer is too short, please elaborate", Toast.LENGTH_SHORT).show()
@@ -75,15 +107,10 @@ class AnswerFragment : Fragment(), DereMethods {
         }
 
 
-//        arguments?.let {
-//            val safeArgs = AnswerFragmentArgs.fromBundle(it)
-//            question = safeArgs.question
-//            currentUser = safeArgs.currentUser
-//
-//
-//        }
-//
-
+        addImage.setOnClickListener {
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.addImageToAnswer).commit()
+            activity.subActive = activity.addImageToAnswer
+        }
     }
 
     private fun postAnswer(content: String, timestamp: Long) {
@@ -93,7 +120,7 @@ class AnswerFragment : Fragment(), DereMethods {
         val refAnswerBody =
             FirebaseDatabase.getInstance().getReference("/questions/${question.id}/answers/${ref.key}/body")
 
-        val newAnswer = Answers(ref.key!!, question.id, content, timestamp, currentUser.uid)
+        val newAnswer = Answers(ref.key!!, question.id, content, timestamp, currentUser.uid, imageListFinal)
 
         refAnswerBody.setValue(newAnswer)
             .addOnSuccessListener {
@@ -110,7 +137,8 @@ class AnswerFragment : Fragment(), DereMethods {
                     "answer"
                 )
 
-                val refQuestionLastInteraction = FirebaseDatabase.getInstance().getReference("/questions/${question.id}/main/body/lastInteraction")
+                val refQuestionLastInteraction =
+                    FirebaseDatabase.getInstance().getReference("/questions/${question.id}/main/body/lastInteraction")
 
                 refQuestionLastInteraction.setValue(timestamp).addOnSuccessListener {
 
@@ -123,7 +151,6 @@ class AnswerFragment : Fragment(), DereMethods {
                     closeKeyboard(activity)
 
                 }
-
 
 
             }.addOnFailureListener {

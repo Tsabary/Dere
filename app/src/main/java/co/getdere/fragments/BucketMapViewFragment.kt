@@ -1,6 +1,8 @@
 package co.getdere.fragments
 
 import android.content.Context
+import android.content.Intent
+import android.location.Location
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,14 +11,15 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import co.getdere.MainActivity
 import co.getdere.R
+import co.getdere.groupieAdapters.FeedImage
 import co.getdere.models.Images
+import co.getdere.models.Users
 import co.getdere.viewmodels.SharedViewModelBucket
+import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelImage
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
@@ -29,6 +32,7 @@ import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
 import com.mapbox.mapboxsdk.utils.BitmapUtils
+import mumayank.com.airlocationlibrary.AirLocation
 
 
 class BucketMapViewFragment : Fragment(), PermissionsListener {
@@ -36,9 +40,17 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
     private val DERE_PIN = "derePin"
 
     private lateinit var sharedViewModelForBucket: SharedViewModelBucket
+    lateinit var currentUser: Users
 
     private var mapView: MapView? = null
     private lateinit var permissionsManager: PermissionsManager
+
+    private var airLocation: AirLocation? = null
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        airLocation?.onActivityResult(requestCode, resultCode, data) // ADD THIS LINE INSIDE onActivityResult
+        super.onActivityResult(requestCode, resultCode, data)
+    }
 
 
     override fun onAttach(context: Context) {
@@ -46,6 +58,7 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
 
         activity?.let {
             sharedViewModelForBucket = ViewModelProviders.of(it).get(SharedViewModelBucket::class.java)
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
         }
     }
 
@@ -86,24 +99,52 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
                 val symbolManager = SymbolManager(mapView!!, mapboxMap, style, null, geoJsonOptions)
                 symbolManager.iconAllowOverlap = true
 
-                sharedViewModelForBucket.sharedBucketObject.observe(this, Observer {
+
+
+
+
+
+
+                sharedViewModelForBucket.sharedBucketId.observe(this, Observer {
                     it?.let { bucket ->
 
-                        for (imageId in bucket.children) {
 
-                            val ref = FirebaseDatabase.getInstance().getReference("images/${imageId.key}/body")
+                        airLocation = AirLocation(activity as MainActivity, true, true, object : AirLocation.Callbacks{
+                            override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
 
-                            ref.addListenerForSingleValueEvent(object : ValueEventListener {
+                            }
+
+                            override fun onSuccess(location: Location) {
+
+                                val position = CameraPosition.Builder()
+                                    .target(LatLng(location.latitude, location.longitude))
+                                    .zoom(10.0)
+                                    .build()
+
+                                mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position))
+
+                            }
+
+                        })
+
+
+                        for (image in bucket.children){
+
+                            val imagePath = image.key
+
+                            val imageObjectPath =
+                                FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+
+                            imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
                                 override fun onCancelled(p0: DatabaseError) {
+
                                 }
 
                                 override fun onDataChange(p0: DataSnapshot) {
-
-
-                                    val image = p0.getValue(Images::class.java)
+                                    val imageObject = p0.getValue(Images::class.java)
 
                                     val symbolOptions = SymbolOptions()
-                                        .withLatLng(LatLng(image!!.location[0], image.location[1]))
+                                        .withLatLng(LatLng(imageObject!!.location[0], imageObject.location[1]))
                                         .withIconImage(DERE_PIN)
                                         .withIconSize(1.3f)
                                         .withZIndex(10)
@@ -112,22 +153,46 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
 
                                     symbolManager.create(symbolOptions)
 
+
                                 }
-
                             })
-
-
-
 
                         }
 
 
-//                        val position = CameraPosition.Builder()
-//                            .target(LatLng(image.location[0], image.location[1]))
-//                            .zoom(10.0)
-//                            .build()
+//
+//                        for (imageId in bucket.children) {
+//
+//                            val ref = FirebaseDatabase.getInstance().getReference("images/${imageId.key}/body")
+//
+//                            ref.addListenerForSingleValueEvent(object : ValueEventListener {
+//                                override fun onCancelled(p0: DatabaseError) {
+//                                }
+//
+//                                override fun onDataChange(p0: DataSnapshot) {
+//
+//
+//                                    val image = p0.getValue(Images::class.java)
+//
+//                                    val symbolOptions = SymbolOptions()
+//                                        .withLatLng(LatLng(image!!.location[0], image.location[1]))
+//                                        .withIconImage(DERE_PIN)
+//                                        .withIconSize(1.3f)
+//                                        .withZIndex(10)
+//                                        .withDraggable(false)
+//
+//
+//                                    symbolManager.create(symbolOptions)
+//
+//                                }
+//
+//                            })
+//
+//
+//                        }
 
-//                        mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position))
+
+
 
 
                     }
@@ -155,6 +220,11 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
+        airLocation?.onRequestPermissionsResult(
+            requestCode,
+            permissions,
+            grantResults
+        ) // ADD THIS LINE INSIDE onRequestPermissionResult
         permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 

@@ -12,12 +12,14 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import co.getdere.MainActivity
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.*
 import co.getdere.R
+import co.getdere.groupieAdapters.FeedImage
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelQuestion
 import co.getdere.viewmodels.SharedViewModelRandomUser
@@ -333,8 +335,9 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                         refQuestionInUserSavedQuestions.setValue(mapOf(questionObject.id to true))
                             .addOnSuccessListener {
 
-                                for (t in questionObject.tags){
-                                    val refUserTags = FirebaseDatabase.getInstance().getReference("users/${currentUserObject.uid}/interests/$t")
+                                for (t in questionObject.tags) {
+                                    val refUserTags = FirebaseDatabase.getInstance()
+                                        .getReference("users/${currentUserObject.uid}/interests/$t")
                                     refUserTags.setValue(true)
                                 }
 
@@ -364,10 +367,11 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
 class SingleAnswer(
     val answer: Answers,
-    val currentUser : Users, val activity : MainActivity
+    val currentUser: Users, val activity: MainActivity
 ) : Item<ViewHolder>(), DereMethods {
 
     val commentsAdapter = GroupAdapter<ViewHolder>()
+    val imagesAdapter = GroupAdapter<ViewHolder>()
 
     override fun getLayout(): Int {
         return R.layout.answer_layout
@@ -377,16 +381,20 @@ class SingleAnswer(
 
 //        val uid = FirebaseAuth.getInstance().uid
 
-        val upvote = viewHolder.itemView.findViewById<ImageButton>(R.id.answer_upvote)
-        val downvote = viewHolder.itemView.findViewById<ImageButton>(R.id.answer_downvote)
-        val comment = viewHolder.itemView.findViewById<TextView>(R.id.answer_comment_button)
+        val upvote = viewHolder.itemView.findViewById<ImageButton>(R.id.single_answer_upvote)
+        val downvote = viewHolder.itemView.findViewById<ImageButton>(R.id.single_answer_downvote)
+        val comment = viewHolder.itemView.findViewById<TextView>(R.id.single_answer_comment_button)
 
-        val commentsRecycler = viewHolder.itemView.findViewById<RecyclerView>(R.id.answer_comments_recycler)
+        val commentsRecycler = viewHolder.itemView.findViewById<RecyclerView>(R.id.single_answer_comments_recycler)
+        val imagesRecycler = viewHolder.itemView.findViewById<RecyclerView>(R.id.single_answer_photos_recycler)
 
         val commentsLayoutManager = LinearLayoutManager(viewHolder.root.context)
-
         commentsRecycler.adapter = commentsAdapter
         commentsRecycler.layoutManager = commentsLayoutManager
+
+        val imageLayoutManager = GridLayoutManager(viewHolder.root.context, 4)
+        imagesRecycler.adapter = imagesAdapter
+        imagesRecycler.layoutManager = imageLayoutManager
 
         val refAnswerComments = FirebaseDatabase.getInstance()
             .getReference("/questions/${answer.questionId}/answers/${answer.answerId}/comments")
@@ -396,7 +404,7 @@ class SingleAnswer(
 
                 val singleCommentFromDB = p0.getValue(AnswerComments::class.java)
 
-                if (singleCommentFromDB != null){
+                if (singleCommentFromDB != null) {
 
                     commentsAdapter.add(SingleAnswerComment(singleCommentFromDB))
 
@@ -418,6 +426,25 @@ class SingleAnswer(
 
         })
 
+        for (imagePath in answer.photos) {
+            val refAnswerImages = FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+            refAnswerImages.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+
+                    val imageObject = p0.getValue(Images::class.java)
+                    imagesAdapter.add(FeedImage(imageObject!!))
+                }
+
+            })
+
+        }
+
+
+
+
         executeVote(
             "checkStatus",
             answer.questionId,
@@ -425,12 +452,12 @@ class SingleAnswer(
             currentUser.name,
             answer.author,
             1,
-            viewHolder.itemView.answer_votes,
-            viewHolder.itemView.answer_upvote,
-            viewHolder.itemView.answer_downvote,
+            viewHolder.itemView.single_answer_votes,
+            viewHolder.itemView.single_answer_upvote,
+            viewHolder.itemView.single_answer_downvote,
             answer.answerId,
             0,
-            viewHolder.itemView.answer_author_reputation
+            viewHolder.itemView.single_answer_author_reputation
         )
 
 
@@ -449,11 +476,13 @@ class SingleAnswer(
                     val pretty = PrettyTime()
                     val date = pretty.format(Date(stampMills))
 
-                    Glide.with(viewHolder.root.context).load(author.image).into(viewHolder.itemView.answer_author_image)
-                    viewHolder.itemView.answer_author_name.text = author.name
-                    viewHolder.itemView.answer_content.text = answer.content
-                    viewHolder.itemView.answer_timestamp.text = date
-                    viewHolder.itemView.answer_author_reputation.text = "(${numberCalculation(author.reputation)})"
+                    Glide.with(viewHolder.root.context).load(author.image)
+                        .into(viewHolder.itemView.single_answer_author_image)
+                    viewHolder.itemView.single_answer_author_name.text = author.name
+                    viewHolder.itemView.single_answer_content.text = answer.content
+                    viewHolder.itemView.single_answer_timestamp.text = date
+                    viewHolder.itemView.single_answer_author_reputation.text =
+                        "(${numberCalculation(author.reputation)})"
                 }
             }
         })
@@ -467,12 +496,12 @@ class SingleAnswer(
                 currentUser.name,
                 answer.author,
                 1,
-                viewHolder.itemView.answer_votes,
-                viewHolder.itemView.answer_upvote,
-                viewHolder.itemView.answer_downvote,
+                viewHolder.itemView.single_answer_votes,
+                viewHolder.itemView.single_answer_upvote,
+                viewHolder.itemView.single_answer_downvote,
                 answer.answerId,
                 1,
-                viewHolder.itemView.answer_author_reputation
+                viewHolder.itemView.single_answer_author_reputation
             )
         }
 
@@ -484,12 +513,12 @@ class SingleAnswer(
                 currentUser.name,
                 answer.author,
                 1,
-                viewHolder.itemView.answer_votes,
-                viewHolder.itemView.answer_upvote,
-                viewHolder.itemView.answer_downvote,
+                viewHolder.itemView.single_answer_votes,
+                viewHolder.itemView.single_answer_upvote,
+                viewHolder.itemView.single_answer_downvote,
                 answer.answerId,
                 1,
-                viewHolder.itemView.answer_author_reputation
+                viewHolder.itemView.single_answer_author_reputation
             )
         }
 
@@ -500,18 +529,22 @@ class SingleAnswer(
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.answerCommentFragment).commit()
             activity.subActive = activity.answerCommentFragment
 
-//            val action = OpenedQuestionFragmentDirections.actionDestinationQuestionOpenedToAnswerCommentFragment(
-//                answer.questionId,
-//                answer,
-//                currentUser
-//            )
-//            viewHolder.root.findNavController().navigate(action)
+        }
 
+        imagesAdapter.setOnItemClickListener { item, _ ->
+
+            val imageItem = item as FeedImage
+
+            activity.sharedViewModelImage.sharedImageObject.postValue(imageItem.image)
+
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
+            activity.subActive = activity.imageFullSizeFragment
+            activity.isOpenedQuestionActive = true
         }
     }
 }
 
-class SingleAnswerComment(val comment : AnswerComments) : Item<ViewHolder>(), DereMethods{
+class SingleAnswerComment(val comment: AnswerComments) : Item<ViewHolder>(), DereMethods {
     override fun getLayout(): Int {
         return R.layout.answer_comment_layout
     }
@@ -532,8 +565,10 @@ class SingleAnswerComment(val comment : AnswerComments) : Item<ViewHolder>(), De
                 if (author != null) {
 
                     viewHolder.itemView.answer_comment_author_name.text = author.name
-                    viewHolder.itemView.answer_comment_author_reputation.text = "(${numberCalculation(author.reputation)})"
-                    Glide.with(viewHolder.root.context).load(author.image).into(viewHolder.itemView.answer_comment_author_image)
+                    viewHolder.itemView.answer_comment_author_reputation.text =
+                        "(${numberCalculation(author.reputation)})"
+                    Glide.with(viewHolder.root.context).load(author.image)
+                        .into(viewHolder.itemView.answer_comment_author_image)
 
                 }
             }

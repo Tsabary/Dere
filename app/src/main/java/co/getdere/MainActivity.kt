@@ -16,17 +16,11 @@ import co.getdere.models.Images
 import co.getdere.models.Question
 import co.getdere.models.Users
 import co.getdere.registerLogin.RegisterActivity
-import co.getdere.viewmodels.SharedViewModelCurrentUser
-import co.getdere.viewmodels.SharedViewModelImage
-import co.getdere.viewmodels.SharedViewModelQuestion
-import co.getdere.viewmodels.SharedViewModelRandomUser
+import co.getdere.viewmodels.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import io.branch.indexing.BranchUniversalObject
 import io.branch.referral.Branch
 import io.branch.referral.BranchError
@@ -45,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var sharedViewModelQuestion: SharedViewModelQuestion
+    lateinit var sharedViewModelBucket : SharedViewModelBucket
 
     lateinit var feedFragment: FeedFragment
     lateinit var boardFragment: BoardFragment
@@ -61,7 +56,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var answerFragment: AnswerFragment
     lateinit var newQuestionFragment: NewQuestionFragment
     lateinit var editProfileFragment: EditProfileFragment
-    lateinit var bucketGalleryFragment : BucketGalleryFragment
+    lateinit var bucketGalleryFragment: BucketGalleryFragment
+    lateinit var addImageToAnswer : AddImageToAnswerFragment
 
 
     lateinit var mainFrame: FrameLayout
@@ -74,6 +70,9 @@ class MainActivity : AppCompatActivity() {
     lateinit var subActive: Fragment
 
     var answerObject = Answers()
+
+    var isBucketGalleryActive = false
+    var isOpenedQuestionActive = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,6 +96,8 @@ class MainActivity : AppCompatActivity() {
 
         sharedViewModelRandomUser = ViewModelProviders.of(this).get(SharedViewModelRandomUser::class.java)
         sharedViewModelRandomUser.randomUserObject.postValue(Users())
+
+        sharedViewModelBucket = ViewModelProviders.of(this).get(SharedViewModelBucket::class.java)
 
         subFrame = findViewById(R.id.feed_subcontents_frame_container)
 
@@ -130,7 +131,11 @@ class MainActivity : AppCompatActivity() {
                         switchVisibility(0)
                     }
 
+                    isOpenedQuestionActive = false
+                    isBucketGalleryActive = false
 
+                    sharedViewModelImage.sharedImageObject.postValue(Images())
+                    sharedViewModelRandomUser.randomUserObject.postValue(Users())
                 }
 
                 co.getdere.R.id.destination_board -> {
@@ -149,6 +154,11 @@ class MainActivity : AppCompatActivity() {
                     subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
                     subActive = openedQuestionFragment
 
+                    isOpenedQuestionActive = false
+                    isBucketGalleryActive = false
+
+                    sharedViewModelImage.sharedImageObject.postValue(Images())
+                    sharedViewModelRandomUser.randomUserObject.postValue(Users())
 
                 }
                 R.id.destination_profile_logged_in_user -> {
@@ -166,6 +176,13 @@ class MainActivity : AppCompatActivity() {
 
                     subFm.beginTransaction().hide(subActive).show(editProfileFragment).commit()
                     subActive = editProfileFragment
+
+                    isOpenedQuestionActive = false
+                    isBucketGalleryActive = false
+
+                    sharedViewModelImage.sharedImageObject.postValue(Images())
+                    sharedViewModelRandomUser.randomUserObject.postValue(Users())
+
                 }
             }
             false
@@ -193,13 +210,25 @@ class MainActivity : AppCompatActivity() {
             when (subActive) {
 
                 imageFullSizeFragment -> {
-                    switchVisibility(0)
-                    sharedViewModelImage.sharedImageObject.postValue(Images())
+                    if (isBucketGalleryActive){
+                        subFm.beginTransaction().hide(subActive).show(bucketGalleryFragment).commit()
+                        subActive = bucketGalleryFragment
+                        sharedViewModelImage.sharedImageObject.postValue(Images())
+
+                    } else if (isOpenedQuestionActive){
+                        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                        subActive = openedQuestionFragment
+                        sharedViewModelImage.sharedImageObject.postValue(Images())
+                    } else {
+                        switchVisibility(0)
+                        sharedViewModelImage.sharedImageObject.postValue(Images())
+                    }
                 }
                 bucketFragment -> {
 
                     subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    fm.beginTransaction().detach(profileLoggedInUserFragment).attach(profileLoggedInUserFragment).commit()
+                    fm.beginTransaction().detach(profileLoggedInUserFragment).attach(profileLoggedInUserFragment)
+                        .commit()
 
                     subActive = imageFullSizeFragment
                 }
@@ -220,6 +249,7 @@ class MainActivity : AppCompatActivity() {
                 openedQuestionFragment -> {
                     switchVisibility(0)
                     sharedViewModelQuestion.questionObject.postValue(Question())
+                    isOpenedQuestionActive = false
                 }
 
                 boardNotificationsFragment -> {
@@ -245,6 +275,12 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 bucketGalleryFragment -> {
+                    switchVisibility(0)
+                    isBucketGalleryActive = false
+//                    sharedViewModelBucket.sharedBucketId.postValue(DataSnapshot(DatabaseReference(),""))
+                }
+
+                editProfileFragment -> {
                     switchVisibility(0)
                 }
 
@@ -362,6 +398,7 @@ class MainActivity : AppCompatActivity() {
         newQuestionFragment = NewQuestionFragment()
         editProfileFragment = EditProfileFragment()
         bucketGalleryFragment = BucketGalleryFragment()
+        addImageToAnswer = AddImageToAnswerFragment()
 
 
         subFm.beginTransaction()
@@ -396,6 +433,8 @@ class MainActivity : AppCompatActivity() {
             .hide(editProfileFragment).commit()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, bucketGalleryFragment, "bucketGalleryFragment")
             .hide(bucketGalleryFragment).commit()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, addImageToAnswer, "addImageToAnswer")
+            .hide(addImageToAnswer).commit()
 
 
         subActive = imageFullSizeFragment
@@ -419,14 +458,13 @@ class MainActivity : AppCompatActivity() {
 
                     val type = branchUniversalObject.contentMetadata.customMetadata["type"]
 
-                    when (type){
+                    when (type) {
 
                         "image" -> collectImage(branchUniversalObject)
 
                         "question" -> collectQuestion(branchUniversalObject)
 
                     }
-
 
 
                 }
@@ -442,7 +480,6 @@ class MainActivity : AppCompatActivity() {
 
 
     }
-
 
 
     private fun collectImage(branchUniversalObject: BranchUniversalObject) {
@@ -485,7 +522,6 @@ class MainActivity : AppCompatActivity() {
         })
 
     }
-
 
 
     private fun collectQuestion(branchUniversalObject: BranchUniversalObject) {
@@ -531,9 +567,6 @@ class MainActivity : AppCompatActivity() {
         })
 
     }
-
-
-
 
 
     public override fun onNewIntent(intent: Intent) {

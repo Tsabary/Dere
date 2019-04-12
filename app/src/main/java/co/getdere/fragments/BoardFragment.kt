@@ -214,8 +214,6 @@ class BoardFragment : Fragment() {
             sharedViewModelForQuestion.questionObject.postValue(question)
 
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment).commit()
-            activity.subActive = activity.openedQuestionFragment
-
 
             activity.switchVisibility(1)
 
