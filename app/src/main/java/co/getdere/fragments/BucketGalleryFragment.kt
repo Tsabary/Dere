@@ -67,6 +67,7 @@ class BucketGalleryFragment : Fragment() {
 
             sharedViewModelBucket.sharedBucketId.observe(this, Observer { dataSnapshot ->
                 dataSnapshot?.let { bucket ->
+                    galleryViewPager.currentItem = 0
 
                     bucket_gallery_title.text = bucket.key
                     bucket_gallery_photos_count.text = bucket.childrenCount.toString() + " photos"

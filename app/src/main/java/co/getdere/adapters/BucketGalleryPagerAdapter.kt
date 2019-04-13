@@ -11,7 +11,7 @@ class BucketGalleryPagerAdapter(fragmentManager: FragmentManager) : FragmentPage
 
         when (p0) {
             0 -> return BucketFeedFragment.newInstance()
-            1 -> return BucketMapViewFragment.newInstance()
+            1 -> return BucketMapViewFragment2.newInstance()
             else -> return BoardFragment.newInstance()
         }
     }

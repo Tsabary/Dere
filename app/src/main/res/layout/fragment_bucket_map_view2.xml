@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".fragments.ImageMapViewFragment">
+
+
+    <ImageButton
+            android:src="@drawable/focus"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:id="@+id/bucket_map_focus"
+            mapbox:layout_constraintEnd_toEndOf="@+id/bucket_map_view"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="#32ffffff"
+            android:scaleType="center"
+            mapbox:layout_constraintBottom_toBottomOf="@+id/bucket_map_view"
+            android:elevation="2dp"/>
+    <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="0dp"
+            android:layout_height="150dp"
+            mapbox:layout_constraintEnd_toEndOf="parent"
+            mapbox:layout_constraintStart_toStartOf="parent"
+            mapbox:layout_constraintBottom_toBottomOf="parent"
+            mapbox:layout_constraintDimensionRatio=""
+            android:id="@+id/bucket_map_images_recycler"
+            android:paddingEnd="250dp"
+            android:paddingStart="8dp"
+            android:clipToPadding="false">
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <com.mapbox.mapboxsdk.maps.MapView
+            android:id="@+id/bucket_map_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            mapbox:mapbox_cameraZoom="11"
+            mapbox:layout_constraintBottom_toTopOf="@+id/bucket_map_images_recycler"
+            mapbox:layout_constraintTop_toTopOf="parent"
+            mapbox:layout_constraintEnd_toEndOf="parent"
+            mapbox:layout_constraintStart_toStartOf="parent">
+    </com.mapbox.mapboxsdk.maps.MapView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

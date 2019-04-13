@@ -174,8 +174,8 @@ class MainActivity : AppCompatActivity() {
                         switchVisibility(0)
                     }
 
-                    subFm.beginTransaction().hide(subActive).show(editProfileFragment).commit()
-                    subActive = editProfileFragment
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
 
                     isOpenedQuestionActive = false
                     isBucketGalleryActive = false

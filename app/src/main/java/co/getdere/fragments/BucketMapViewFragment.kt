@@ -22,6 +22,9 @@ import co.getdere.viewmodels.SharedViewModelImage
 import com.google.firebase.database.*
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
@@ -30,7 +33,10 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
+import com.mapbox.mapboxsdk.style.sources.Source
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import mumayank.com.airlocationlibrary.AirLocation
 
@@ -46,6 +52,8 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
     private lateinit var permissionsManager: PermissionsManager
 
     private var airLocation: AirLocation? = null
+
+    var photosCoordinates = arrayListOf<Point>()
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         airLocation?.onActivityResult(requestCode, resultCode, data) // ADD THIS LINE INSIDE onActivityResult
@@ -94,16 +102,9 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
                     true
                 )
 
-
                 val geoJsonOptions = GeoJsonOptions().withTolerance(0.4f)
                 val symbolManager = SymbolManager(mapView!!, mapboxMap, style, null, geoJsonOptions)
                 symbolManager.iconAllowOverlap = true
-
-
-
-
-
-
 
                 sharedViewModelForBucket.sharedBucketId.observe(this, Observer {
                     it?.let { bucket ->
@@ -143,12 +144,20 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
                                 override fun onDataChange(p0: DataSnapshot) {
                                     val imageObject = p0.getValue(Images::class.java)
 
+//                                        photosCoordinates.add(Point.fromLngLat(imageObject!!.location[1], imageObject.location[0]))
+//
+//                                    val featureCollection = FeatureCollection.fromFeatures(photosCoordinates))
+
                                     val symbolOptions = SymbolOptions()
                                         .withLatLng(LatLng(imageObject!!.location[0], imageObject.location[1]))
                                         .withIconImage(DERE_PIN)
                                         .withIconSize(1.3f)
                                         .withZIndex(10)
                                         .withDraggable(false)
+
+                                    val symbolLayer = SymbolLayer(imagePath, imagePath).withProperties(
+                                    )
+
 
 
                                     symbolManager.create(symbolOptions)

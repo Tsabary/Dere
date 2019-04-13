@@ -2,6 +2,7 @@ package co.getdere.interfaces
 
 import android.app.Activity
 import android.content.Context
+import android.location.Location
 import android.util.Log
 import android.view.View
 import android.widget.ImageButton
@@ -11,6 +12,12 @@ import co.getdere.models.*
 import co.getdere.R
 import com.google.firebase.database.*
 import android.view.inputmethod.InputMethodManager
+import co.getdere.MainActivity
+import com.mapbox.mapboxsdk.camera.CameraPosition
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
+import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.maps.MapboxMap
+import mumayank.com.airlocationlibrary.AirLocation
 
 
 interface DereMethods {
@@ -1014,6 +1021,28 @@ interface DereMethods {
             return "" + number
         val exp = (Math.log(number.toDouble()) / Math.log(1000.0)).toInt()
         return String.format("%.1f %c", number / Math.pow(1000.0, exp.toDouble()), "kMBTPE"[exp - 1])
+    }
+
+
+    fun panToCurrentLocation(activity : Activity, myMapboxMap : MapboxMap){
+        var airLocation : AirLocation? = null
+        airLocation = AirLocation(activity as MainActivity, true, true, object : AirLocation.Callbacks {
+            override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
+
+            }
+
+            override fun onSuccess(location: Location) {
+
+                val position = CameraPosition.Builder()
+                    .target(LatLng(location.latitude, location.longitude))
+                    .zoom(10.0)
+                    .build()
+
+                myMapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 3000)
+
+            }
+
+        })
     }
 
 

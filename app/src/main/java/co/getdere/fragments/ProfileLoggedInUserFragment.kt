@@ -1,6 +1,7 @@
 package co.getdere.fragments
 
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -11,6 +12,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -255,19 +257,22 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             profileGalleryRoll.visibility = View.GONE
             profileGalleryBuckets.visibility = View.VISIBLE
             changeGalleryFeed("bucket")
-
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
+            activity.subActive = activity.bucketGalleryFragment
         }
 
         rollBtn.setOnClickListener {
             profileGalleryRoll.visibility = View.VISIBLE
             profileGalleryBuckets.visibility = View.GONE
             changeGalleryFeed("roll")
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
+            activity.subActive = activity.imageFullSizeFragment
         }
 
 
         galleryRollAdapter.setOnItemClickListener { item, _ ->
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
-            activity.subActive = activity.imageFullSizeFragment
+            //            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
+//            activity.subActive = activity.imageFullSizeFragment
 
             val image = item as FeedImage
             sharedViewModelImage.sharedImageObject.postValue(image.image)
@@ -278,14 +283,11 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
 
         galleryBucketAdapter.setOnItemClickListener { item, _ ->
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
-
             val bucket = item as SingleBucketBox
             sharedViewModelBucket.sharedBucketId.postValue(bucket.bucket)
-
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
             activity.subActive = activity.bucketGalleryFragment
             activity.isBucketGalleryActive = true
-
             activity.switchVisibility(1)
         }
 
@@ -391,7 +393,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 }
 
 
-class SingleBucketBox(val bucket: DataSnapshot, val userUid: String, val activity : MainActivity) : Item<ViewHolder>() {
+class SingleBucketBox(val bucket: DataSnapshot, val userUid: String, val activity: MainActivity) : Item<ViewHolder>() {
 
 
     val imagesRecyclerAdapter = GroupAdapter<ViewHolder>()
@@ -451,50 +453,35 @@ class SingleBucketBox(val bucket: DataSnapshot, val userUid: String, val activit
 
         imagesRecyclerAdapter.setOnItemClickListener { _, _ ->
 
-            sharedViewModelBucket.sharedBucketId.postValue(bucket)
-
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
-            activity.subActive = activity.bucketGalleryFragment
-            activity.isBucketGalleryActive = true
-
-            activity.switchVisibility(1)
+            goToBucketGallery(viewHolder.root.context)
         }
 
         val card = viewHolder.itemView.cardView
 
         card.setOnClickListener {
-            goToBucketGallery()
+            goToBucketGallery(viewHolder.root.context)
         }
 
         val cardBackground = viewHolder.itemView.cardViewBackground
 
         cardBackground.setOnClickListener {
-            goToBucketGallery()
+            goToBucketGallery(viewHolder.root.context)
         }
 
 
     }
 
-    fun goToBucketGallery() {
-
+    fun goToBucketGallery(context : Context) {
         sharedViewModelBucket.sharedBucketId.postValue(bucket)
-
         activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
         activity.subActive = activity.bucketGalleryFragment
         activity.isBucketGalleryActive = true
-
         activity.switchVisibility(1)
 
     }
 
 
-
-
-
 }
-
-
-
 
 
 class SingleImageToBucketRoll(val image: Images) : Item<ViewHolder>() {
