@@ -6,8 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".fragments.ImageMapViewFragment"
-        tools:showIn="@layout/fragment_image_expanded"
->
+        tools:showIn="@layout/fragment_image_expanded">
 
 
     <ImageButton

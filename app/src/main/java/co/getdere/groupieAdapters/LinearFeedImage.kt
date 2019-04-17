@@ -38,11 +38,40 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
 
         val imageDescription = viewHolder.itemView.linear_feed_image_details
 
+        val verifiedIcon = viewHolder.itemView.linear_feed_verified
+        val verifiedInfoText = viewHolder.itemView.linear_feed_verified_info
+        val verifiedInfoBox = viewHolder.itemView.linear_feed_verified_box
+
+
         viewHolder.itemView.linear_feed_tags.text = image.tags.joinToString()
 
         if (image.details.isNotEmpty()){
             imageDescription.visibility = View.VISIBLE
             imageDescription.text = image.details
+        }
+
+        if (image.verified){
+            verifiedIcon.visibility = View.VISIBLE
+        }
+
+
+        verifiedIcon.setOnClickListener {
+            if(verifiedInfoBox.visibility == View.GONE){
+                verifiedInfoBox.visibility = View.VISIBLE
+                verifiedInfoText.visibility = View.VISIBLE
+            } else {
+                verifiedInfoBox.visibility = View.GONE
+                verifiedInfoText.visibility = View.GONE
+            }
+        }
+
+        verifiedInfoBox.setOnClickListener {
+            verifiedInfoBox.visibility = View.GONE
+            verifiedInfoText.visibility = View.GONE
+        }
+        verifiedInfoText.setOnClickListener {
+            verifiedInfoBox.visibility = View.GONE
+            verifiedInfoText.visibility = View.GONE
         }
 
 

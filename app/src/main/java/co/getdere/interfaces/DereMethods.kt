@@ -1026,7 +1026,7 @@ interface DereMethods {
 
     fun panToCurrentLocation(activity : Activity, myMapboxMap : MapboxMap){
         var airLocation : AirLocation? = null
-        airLocation = AirLocation(activity as MainActivity, true, true, object : AirLocation.Callbacks {
+        airLocation = AirLocation(activity, true, true, object : AirLocation.Callbacks {
             override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
 
             }

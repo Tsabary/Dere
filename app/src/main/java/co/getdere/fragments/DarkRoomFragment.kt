@@ -1,8 +1,12 @@
 package co.getdere.fragments
 
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -22,13 +26,14 @@ import com.bumptech.glide.Glide
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.activity_register.*
+import kotlinx.android.synthetic.main.fragment_dark_room.*
 
 
 class DarkRoomFragment : Fragment() {
 
     private lateinit var localImageViewModel: LocalImageViewModel
     lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
-//    lateinit var localImagePost: LocalImagePost
 
 
     override fun onAttach(context: Context) {
@@ -54,8 +59,8 @@ class DarkRoomFragment : Fragment() {
 
         val activity = activity as CameraActivity
 
-        val recyclerView = view.findViewById<RecyclerView>(R.id.dark_room_recyclerview)
-//        val adapter = LocalImageListAdapter(this.context!!)
+        val recyclerView = dark_room_recyclerview
+        val addImageFab = dark_room_fab
         val adapter = GroupAdapter<ViewHolder>()
 
         recyclerView.adapter = adapter
@@ -82,6 +87,38 @@ class DarkRoomFragment : Fragment() {
             activity.switchVisibility(1)
         }
 
+
+        addImageFab.setOnClickListener {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+            intent.type = "image/*"
+            startActivityForResult(intent, 0)
+        }
+
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 0 && resultCode == Activity.RESULT_OK && data != null) {
+            Log.d("Main", "Photo was selected")
+
+            val selectedPhotoUri = data.data
+
+            if (selectedPhotoUri != null) {
+                val localImagePost = LocalImagePost(
+                    System.currentTimeMillis(),
+                    0.0,
+                    0.0,
+                    selectedPhotoUri.toString(),
+                    "",
+                    "",
+                    false
+                )
+
+                localImageViewModel.insert(localImagePost)
+            }
+        }
     }
 
 

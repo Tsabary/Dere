@@ -15,7 +15,8 @@ class Images(
     val location: MutableList<Double>,
     val timestampTaken: Long,
     val timestampUpload : Long,
-    val tags : MutableList<String>
+    val tags : MutableList<String>,
+    val verified : Boolean
 ) : Parcelable {
-    constructor() : this("", "", "", false, "",  "", "", mutableListOf(32.018374, 34.829601), 0, 0,  mutableListOf())
+    constructor() : this("", "", "", false, "",  "", "", mutableListOf(32.018374, 34.829601), 0, 0,  mutableListOf(), true)
 }

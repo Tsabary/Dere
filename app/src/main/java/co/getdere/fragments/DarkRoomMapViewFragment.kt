@@ -1,7 +1,6 @@
 package co.getdere.fragments
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,49 +9,27 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import co.getdere.MainActivity
+import co.getdere.CameraActivity
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
-import co.getdere.viewmodels.SharedViewModelImage
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
-import com.mapbox.mapboxsdk.camera.CameraPosition
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
-import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
-import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
-import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import kotlinx.android.synthetic.main.fragment_image_map_view.*
 
 
-class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
+class DarkRoomMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
     private val DERE_PIN = "derePin"
-//    lateinit var imageBitmap : Bitmap
     var myMapboxMap : MapboxMap? = null
-
-
-    private lateinit var sharedViewModelForImage: SharedViewModelImage
 
     private var mapView: MapView? = null
     private lateinit var permissionsManager: PermissionsManager
-
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
-        }
-    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +43,7 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
         Mapbox.getInstance(activity!!.applicationContext, getString(R.string.mapbox_access_token))
 
-        return inflater.inflate(R.layout.fragment_image_map_view, container, false)
+        return inflater.inflate(R.layout.fragment_dark_room_edit_map, container, false)
     }
 
 
@@ -78,7 +55,7 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
         val currentLocationFocus = image_map_focus
 
         currentLocationFocus.setOnClickListener {
-            panToCurrentLocation(activity as MainActivity, myMapboxMap!!)
+            panToCurrentLocation(activity as CameraActivity, myMapboxMap!!)
         }
 
 
@@ -110,6 +87,8 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                     // Set the component's render mode
                     locationComponent.renderMode = RenderMode.COMPASS
 
+                    panToCurrentLocation(activity as CameraActivity, myMapboxMap!!)
+
 
                 } else {
                     permissionsManager = PermissionsManager(this)
@@ -117,49 +96,11 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                 }
 
 
-
-
                 style.addImage(
                     DERE_PIN,
                     BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.pin_icon))!!,
                     true
                 )
-
-
-
-                val geoJsonOptions = GeoJsonOptions().withTolerance(0.4f)
-                val symbolManager = SymbolManager(mapView!!, mapboxMap, style, null, geoJsonOptions)
-                symbolManager.iconAllowOverlap = true
-
-                sharedViewModelForImage.sharedImageObject.observe(this, Observer {
-                    it?.let { image ->
-
-
-
-
-                        val symbolOptions = SymbolOptions()
-                            .withLatLng(LatLng(image.location[0], image.location[1]))
-                            .withIconImage(DERE_PIN)
-                            .withIconSize(1.3f)
-                            .withZIndex(10)
-                            .withDraggable(false)
-
-//                            .withIconImage(image.imageBig)
-
-
-                        symbolManager.create(symbolOptions)
-
-                        val position = CameraPosition.Builder()
-                            .target(LatLng(image.location[0], image.location[1]))
-                            .zoom(10.0)
-                            .build()
-
-                        mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position))
-
-
-                    }
-                })
-
 
             }
         }
@@ -224,7 +165,7 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
 
     companion object {
-        fun newInstance(): ImageMapViewFragment = ImageMapViewFragment()
+        fun newInstance(): DarkRoomMapViewFragment = DarkRoomMapViewFragment()
     }
 
 }

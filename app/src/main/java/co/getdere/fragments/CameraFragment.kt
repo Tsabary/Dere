@@ -126,7 +126,8 @@ class CameraFragment : Fragment() {
                                 location.latitude,
                                 savedPhoto.path,
                                 "",
-                                ""
+                                "",
+                                true
                             )
                             Log.d("photoActivity", "Took photo")
 
