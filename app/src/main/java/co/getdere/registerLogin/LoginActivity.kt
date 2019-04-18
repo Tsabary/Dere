@@ -11,6 +11,8 @@ import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.iid.FirebaseInstanceId
 import com.tomer.fadingtextview.FadingTextView
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.fragment_dark_room_edit.*
@@ -71,6 +73,18 @@ class LoginActivity : AppCompatActivity(), DereMethods {
 
                 FirebaseAuth.getInstance().signInWithEmailAndPassword(logEmail, logPass).addOnCompleteListener {
                     if (it.isSuccessful) {
+
+                        FirebaseInstanceId.getInstance().instanceId.addOnSuccessListener { idResult ->
+                            val uid = FirebaseAuth.getInstance().uid ?: ""
+
+                            val token = idResult.token
+
+                            val userRef = FirebaseDatabase.getInstance().getReference("/users/$uid/services/firebase-token")
+                            userRef.setValue(token)
+                            val userRefApprove = FirebaseDatabase.getInstance().getReference("/users/$uid/services/firebase-approve")
+                            userRefApprove.setValue("done")
+                        }
+
                         Log.d("Login", "Successfully logged a user in using uid: ${it.result?.user?.uid}")
                         val intent = Intent(this, MainActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -102,8 +116,8 @@ class LoginActivity : AppCompatActivity(), DereMethods {
     private fun registerFail(){
         loginButton.isClickable = true
         loginButton.visibility = View.VISIBLE
-        loginButtonBlinking.visibility = View.INVISIBLE
-        loginButtonBlinkingBackground.visibility = View.INVISIBLE
+        loginButtonBlinking.visibility = View.GONE
+        loginButtonBlinkingBackground.visibility = View.GONE
     }
 
 

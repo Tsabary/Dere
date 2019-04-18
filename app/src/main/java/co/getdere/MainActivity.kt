@@ -5,9 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.fragments.*
@@ -20,26 +18,26 @@ import co.getdere.viewmodels.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.pusher.pushnotifications.PushNotifications
+import com.pusher.pushnotifications.PushNotificationsInstance
 import io.branch.indexing.BranchUniversalObject
 import io.branch.referral.Branch
-import io.branch.referral.BranchError
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.android.synthetic.main.subcontents_main.*
-import org.json.JSONObject
 
 
 class MainActivity : AppCompatActivity() {
 
-    //    lateinit var mToolbar: Toolbar
     lateinit var mBottomNav: BottomNavigationView
 
     lateinit var sharedViewModelCurrentUser: SharedViewModelCurrentUser
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var sharedViewModelQuestion: SharedViewModelQuestion
-    lateinit var sharedViewModelBucket : SharedViewModelBucket
+    lateinit var sharedViewModelBucket: SharedViewModelBucket
 
     lateinit var feedFragment: FeedFragment
     lateinit var boardFragment: BoardFragment
@@ -57,7 +55,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var newQuestionFragment: NewQuestionFragment
     lateinit var editProfileFragment: EditProfileFragment
     lateinit var bucketGalleryFragment: BucketGalleryFragment
-    lateinit var addImageToAnswer : AddImageToAnswerFragment
+    lateinit var addImageToAnswer: AddImageToAnswerFragment
 
 
     lateinit var mainFrame: FrameLayout
@@ -75,9 +73,66 @@ class MainActivity : AppCompatActivity() {
     var isOpenedQuestionActive = false
 
 
+//    lateinit var notificationManager: NotificationManager
+//    lateinit var notificationChannel: NotificationChannel
+//    lateinit var builder: Notification.Builder
+//    val channelId = "co.getdere"
+//    var description = "My notification"
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        PushNotifications.start(applicationContext, "8286cd5e-eaaa-4d81-a57b-0f4d985b0a47")
+        PushNotifications.addDeviceInterest("hello")
+
+//        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//        val intent = Intent(applicationContext, MainActivity::class.java)
+//        val pendingIntent = PendingIntent.getActivity(this, 0 , intent, PendingIntent.FLAG_UPDATE_CURRENT)
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            notificationChannel = NotificationChannel(channelId, description, NotificationManager.IMPORTANCE_HIGH)
+//            notificationChannel.enableLights(true)
+//            notificationChannel.lightColor = Color.GREEN
+//            notificationChannel.enableVibration(true)
+//            notificationManager.createNotificationChannel(notificationChannel)
+//
+//            builder = Notification.Builder(this, channelId)
+//                .setContentTitle("My title youtube")
+//                .setContentText("My text youtube")
+//                .setSmallIcon(R.drawable.pin_icon)
+//                .setContentIntent(pendingIntent)
+//        } else {
+//            builder = Notification.Builder(this)
+//                .setContentTitle("My title youtube")
+//                .setContentText("My text youtube")
+//                .setSmallIcon(R.drawable.pin_icon)
+//                .setContentIntent(pendingIntent)
+//        }
+//
+//        notificationManager.notify(0, builder.build())
+
+
+
+
+
+
+        val instanceId = "YOUR_INSTANCE_ID_HERE"
+        val secretKey = "YOUR_SECRET_KEY_HERE"
+
+        val beamsClient = PushNotifications(instanceId, secretKey)
+
+        val interests = listOf("donuts", "pizza")
+        val publishRequest = hashMapOf(
+            "fcm" to hashMapOf("notification" to hashMapOf("title" to "hello", "body" to "Hello world"))
+        )
+
+        beamsClient.publish(interests, publishRequest)
+
+
+
+
+
 
         mBottomNav = feed_bottom_nav
 
@@ -88,7 +143,6 @@ class MainActivity : AppCompatActivity() {
 
         FirebaseApp.initializeApp(this)
         checkIfLoggedIn()
-
 
 
         sharedViewModelImage = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
@@ -138,7 +192,7 @@ class MainActivity : AppCompatActivity() {
                     sharedViewModelRandomUser.randomUserObject.postValue(Users())
                 }
 
-                co.getdere.R.id.destination_board -> {
+                R.id.destination_board -> {
 
                     fm.beginTransaction().hide(active).show(boardFragment).commit()
                     active = boardFragment
@@ -210,12 +264,12 @@ class MainActivity : AppCompatActivity() {
             when (subActive) {
 
                 imageFullSizeFragment -> {
-                    if (isBucketGalleryActive){
+                    if (isBucketGalleryActive) {
                         subFm.beginTransaction().hide(subActive).show(bucketGalleryFragment).commit()
                         subActive = bucketGalleryFragment
                         sharedViewModelImage.sharedImageObject.postValue(Images())
 
-                    } else if (isOpenedQuestionActive){
+                    } else if (isOpenedQuestionActive) {
                         subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
                         subActive = openedQuestionFragment
                         sharedViewModelImage.sharedImageObject.postValue(Images())
@@ -565,6 +619,11 @@ class MainActivity : AppCompatActivity() {
 
 
         })
+
+
+    }
+
+    fun sendNotification(){
 
     }
 

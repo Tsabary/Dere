@@ -14,8 +14,11 @@ import co.getdere.MainActivity
 import co.getdere.models.Users
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.iid.FirebaseInstanceId
+import com.google.firebase.iid.InstanceIdResult
 import com.google.firebase.storage.FirebaseStorage
 import com.tomer.fadingtextview.FadingTextView
 import kotlinx.android.synthetic.main.activity_register.*
@@ -53,6 +56,9 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
             registerButtonBlinking.visibility = View.VISIBLE
             registerButtonBlinkingBackground.visibility = View.VISIBLE
             closeKeyboard(this)
+
+
+
             performRegister()
         }
 
@@ -186,6 +192,16 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
 
         ref.setValue(newUser)
             .addOnSuccessListener {
+
+                FirebaseInstanceId.getInstance().instanceId.addOnSuccessListener {
+                    val token = it.token
+
+                    val userRef = FirebaseDatabase.getInstance().getReference("/users/$uid/services/firebase-token")
+                    userRef.setValue(token)
+                    val userRefApprove = FirebaseDatabase.getInstance().getReference("/users/$uid/services/firebase-approve")
+                    userRefApprove.setValue("done")
+                }
+
                 Log.d("RegisterActivity", "Saved user to Firebase Database")
                 val intent = Intent(this, MainActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)

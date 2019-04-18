@@ -585,7 +585,7 @@ interface DereMethods {
 
                 if (p0.hasChild("comments")) {
 
-                    if (p0.child("comments").childrenCount>1){
+                    if (p0.child("comments").childrenCount > 1) {
                         val count = numberCalculation(p0.child("comments").childrenCount)
 
                         commentCount.text = "Read all $count comments"
@@ -1006,6 +1006,45 @@ interface DereMethods {
         })
     }
 
+
+//    fun sendCloudNotification() {
+//
+//        val uid = FirebaseAuth.getInstance().uid
+//
+//        val userFirebaseTokenRef = FirebaseDatabase.getInstance().getReference("/users/$uid/services/firebase-token")
+//
+//        userFirebaseTokenRef.addListenerForSingleValueEvent(object : ValueEventListener {
+//            override fun onCancelled(p0: DatabaseError) {
+//            }
+//
+//            override fun onDataChange(p0: DataSnapshot) {
+//
+//                val registrationToken: String = p0.getValue(String::class.java)!!
+//
+//                // See documentation on defining a message payload.
+//                val message = RemoteMessage.Builder()
+////
+////
+////
+////                    .putData("score", "850")
+////                    .putData("time", "2:45")
+////                    .setToken(registrationToken)
+////                    .build()
+//
+//// Send a message to the device corresponding to the provided
+//// registration token.
+////                val response = FirebaseMessaging.getInstance().send(message)
+//// Response is a message ID string.
+////                println("Successfully sent message: $response")
+//
+//            }
+//
+//
+//        })
+//
+//    }
+
+
     fun closeKeyboard(activity: Activity) {
 
         val view = activity.currentFocus
@@ -1024,8 +1063,8 @@ interface DereMethods {
     }
 
 
-    fun panToCurrentLocation(activity : Activity, myMapboxMap : MapboxMap){
-        var airLocation : AirLocation? = null
+    fun panToCurrentLocation(activity: Activity, myMapboxMap: MapboxMap) {
+        var airLocation: AirLocation? = null
         airLocation = AirLocation(activity, true, true, object : AirLocation.Callbacks {
             override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
 
