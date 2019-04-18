@@ -18,6 +18,8 @@ import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import mumayank.com.airlocationlibrary.AirLocation
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.RemoteMessage
 
 
 interface DereMethods {
@@ -585,16 +587,25 @@ interface DereMethods {
 
                 if (p0.hasChild("comments")) {
 
-                    if (p0.child("comments").childrenCount>1){
-                        val count = numberCalculation(p0.child("comments").childrenCount)
+                    val count = numberCalculation(p0.child("comments").childrenCount)
 
-                        commentCount.text = "Read all $count comments"
-                    } else {
-                        commentCount.text = "Read one comment"
-                    }
+                    commentCount.text = count
+
+
                 } else {
-                    commentCount.visibility = View.GONE
+                    commentCount.text = "0"
                 }
+
+//                    if (p0.child("comments").childrenCount > 1) {
+//                        val count = numberCalculation(p0.child("comments").childrenCount)
+//
+//                        commentCount.text = "Read all $count comments"
+//                    } else {
+//                        commentCount.text = "Read one comment"
+//                    }
+//                } else {
+//                    commentCount.visibility = View.GONE
+//                }
 
             }
 
@@ -1006,6 +1017,48 @@ interface DereMethods {
         })
     }
 
+    fun sendCloudMessage(userId: String) {
+
+        val receiverRef = FirebaseDatabase.getInstance().getReference("/users/$userId/services/firebase-token")
+
+        receiverRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+
+                val registrationToken = p0.getValue(String::class.java)
+
+                val senderId = "15705730627"
+                val msgID = registrationToken + System.currentTimeMillis()
+
+                val fm = FirebaseMessaging.getInstance()
+
+                fm.send(
+                    RemoteMessage.Builder("$senderId@gcm.googleapis.com")
+                        .setMessageId(msgID)
+                        .addData("my_message", "Hello World")
+                        .addData("my_action", "SAY_HELLO")
+                        .build()
+                )
+
+                Log.d("tokencomplete", p0.toString())
+                Log.d("tokenonly", registrationToken)
+
+            }
+
+        })
+
+    }
+
+
+// See documentation on defining a message payload.
+
+// Send a message to the device corresponding to the provided
+// registration token.
+
+
     fun closeKeyboard(activity: Activity) {
 
         val view = activity.currentFocus
@@ -1024,8 +1077,8 @@ interface DereMethods {
     }
 
 
-    fun panToCurrentLocation(activity : Activity, myMapboxMap : MapboxMap){
-        var airLocation : AirLocation? = null
+    fun panToCurrentLocation(activity: Activity, myMapboxMap: MapboxMap) {
+        var airLocation: AirLocation? = null
         airLocation = AirLocation(activity, true, true, object : AirLocation.Callbacks {
             override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
 

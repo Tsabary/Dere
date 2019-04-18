@@ -11,6 +11,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.fragments.*
+import co.getdere.interfaces.DereMethods
 import co.getdere.models.Answers
 import co.getdere.models.Images
 import co.getdere.models.Question
@@ -30,7 +31,7 @@ import kotlinx.android.synthetic.main.subcontents_main.*
 import org.json.JSONObject
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), DereMethods {
 
     //    lateinit var mToolbar: Toolbar
     lateinit var mBottomNav: BottomNavigationView
@@ -136,6 +137,8 @@ class MainActivity : AppCompatActivity() {
 
                     sharedViewModelImage.sharedImageObject.postValue(Images())
                     sharedViewModelRandomUser.randomUserObject.postValue(Users())
+
+                    closeKeyboard(this)
                 }
 
                 co.getdere.R.id.destination_board -> {
@@ -160,6 +163,7 @@ class MainActivity : AppCompatActivity() {
                     sharedViewModelImage.sharedImageObject.postValue(Images())
                     sharedViewModelRandomUser.randomUserObject.postValue(Users())
 
+                    closeKeyboard(this)
                 }
                 R.id.destination_profile_logged_in_user -> {
 
@@ -182,6 +186,8 @@ class MainActivity : AppCompatActivity() {
 
                     sharedViewModelImage.sharedImageObject.postValue(Images())
                     sharedViewModelRandomUser.randomUserObject.postValue(Users())
+
+                    closeKeyboard(this)
 
                 }
             }

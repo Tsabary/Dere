@@ -6,7 +6,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@color/white">
+        android:background="@color/gray900">
 
 
     <ImageButton
@@ -52,11 +52,13 @@
             android:background="@android:color/transparent"
             android:textSize="15sp"
             android:hint="Search by tag"
+            android:textColorHint="@color/gray700"
             android:fontFamily="@font/open_sans_semibold"
             android:layout_marginEnd="24dp"
             app:layout_constraintEnd_toStartOf="@+id/feed_toolbar_notifications_icon"
             app:layout_constraintStart_toEndOf="@+id/feed_toolbar_chipgroup"
-            android:layout_marginStart="8dp"/>
+            android:layout_marginStart="8dp"
+            android:textColor="@android:color/white"/>
     <com.google.android.material.chip.ChipGroup
             android:layout_width="wrap_content"
             android:layout_height="0dp"

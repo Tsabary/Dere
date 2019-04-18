@@ -45,10 +45,10 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
 
         viewHolder.itemView.linear_feed_tags.text = image.tags.joinToString()
 
-        if (image.details.isNotEmpty()){
-            imageDescription.visibility = View.VISIBLE
-            imageDescription.text = image.details
-        }
+//        if (image.details.isNotEmpty()){
+//            imageDescription.visibility = View.VISIBLE
+//            imageDescription.text = image.details
+//        }
 
         if (image.verified){
             verifiedIcon.visibility = View.VISIBLE
@@ -133,8 +133,10 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
 
         likeButton.setOnClickListener {
 
+
             if (image.photographer != currentUser.uid){
                 executeLike(image, uid, likeCount, likeButton, 1, currentUser.name, image.photographer, authorReputation)
+                sendCloudMessage(image.photographer)
             }
         }
 

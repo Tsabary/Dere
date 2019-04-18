@@ -3,6 +3,7 @@ package co.getdere.fragments
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -86,6 +87,8 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         val toolbar = profile_li_toolbar
         setHasOptionsMenu(true)
         toolbar.inflateMenu(R.menu.profile_navigation)
+
+        toolbar.overflowIcon!!.setColorFilter(resources.getColor(R.color.gray500), PorterDuff.Mode.SRC_ATOP)
 
         toolbar.setOnMenuItemClickListener {
 

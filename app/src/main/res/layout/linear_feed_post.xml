@@ -32,19 +32,17 @@
                 app:layout_constraintEnd_toStartOf="@+id/linear_feed_bucket_count"
                 android:layout_marginEnd="8dp"/>
         <TextView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/linear_feed_comment_count"
                 tools:text="34"
-                app:layout_constraintTop_toBottomOf="@+id/linear_feed_image_details"
-                android:layout_marginTop="16dp"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="24dp"
-                android:fontFamily="@font/open_sans_semibold"
-                android:textColor="@color/gray500"
-                android:layout_marginEnd="32dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"/>
+                android:fontFamily="sans-serif"
+                android:visibility="visible"
+                app:layout_constraintTop_toTopOf="@+id/linear_feed_comment"
+                app:layout_constraintBottom_toBottomOf="@+id/linear_feed_comment"
+                app:layout_constraintStart_toEndOf="@+id/linear_feed_comment"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintEnd_toEndOf="parent"/>
         <de.hdodenhof.circleimageview.CircleImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
@@ -86,7 +84,8 @@
                 android:fontFamily="@font/open_sans_bold"
                 tools:text="Name Name"
                 app:layout_constraintBottom_toTopOf="@+id/linear_feed_timestamp"
-                android:textSize="15sp"/>
+                android:textSize="15sp"
+                android:textColor="@color/gray800"/>
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -115,28 +114,27 @@
                 app:srcCompat="@drawable/heart"
                 android:id="@+id/linear_feed_like"
                 android:background="@android:color/transparent"
-                android:layout_marginTop="16dp"
-                app:layout_constraintTop_toBottomOf="@+id/linear_feed_tags"
                 app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="24dp"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintEnd_toStartOf="@+id/linear_feed_like_count"
                 app:layout_constraintHorizontal_chainStyle="packed"
+                android:layout_marginStart="24dp"
                 android:layout_marginEnd="8dp"
-        />
+                android:layout_marginTop="24dp"
+                app:layout_constraintTop_toBottomOf="@+id/linear_feed_image"/>
         <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:srcCompat="@drawable/comment"
                 android:id="@+id/linear_feed_comment"
                 android:background="@android:color/transparent"
+                android:visibility="visible"
                 app:layout_constraintTop_toTopOf="@+id/linear_feed_bucket_count"
                 app:layout_constraintBottom_toBottomOf="@+id/linear_feed_bucket_count"
                 app:layout_constraintStart_toEndOf="@+id/linear_feed_bucket_count"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintEnd_toStartOf="@+id/linear_feed_comment_count"
-                android:layout_marginEnd="8dp"
-                android:visibility="gone"/>
+                android:layout_marginEnd="8dp"/>
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -189,13 +187,13 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:id="@+id/linear_feed_current_user_photo"
-                app:layout_constraintTop_toBottomOf="@+id/linear_feed_comment_count"
+                app:layout_constraintTop_toBottomOf="@+id/linear_feed_like"
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginStart="24dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:layout_marginBottom="24dp"
                 tools:src="@drawable/no_dread"
-                android:layout_marginTop="16dp"/>
+                android:layout_marginTop="24dp"/>
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -206,7 +204,8 @@
                 android:layout_marginStart="24dp"
                 android:fontFamily="@font/open_sans_semibold"
                 android:textColor="@color/gray500"
-                tools:text="tags"/>
+                tools:text="tags"
+                android:visibility="gone"/>
         <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

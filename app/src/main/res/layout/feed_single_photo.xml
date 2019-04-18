@@ -6,9 +6,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-    <ImageView
+    <androidx.cardview.widget.CardView
+            app:cardCornerRadius="0dp"
+            android:elevation="0dp"
             android:layout_height="0dp"
-            android:id="@+id/feed_single_photo_photo"
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginTop="1dp"
             app:layout_constraintStart_toStartOf="parent"
@@ -17,8 +18,13 @@
             android:layout_marginEnd="1dp"
             android:layout_width="0dp"
             app:layout_constraintDimensionRatio="1:1"
-            tools:srcCompat="@drawable/profile_icon"
-            android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="1dp"/>
+            android:layout_marginBottom="1dp">
+        <ImageView
+                android:id="@+id/feed_single_photo_photo"
+                tools:srcCompat="@drawable/profile_icon"
+                android:scaleType="centerCrop"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+    </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

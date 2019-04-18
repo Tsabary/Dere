@@ -113,7 +113,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         val likeButton = photo_social_like_button
         val bucketCount = photo_social_bucket_count
         val bucketButton = photo_social_bucket_icon
-        val commentCount = photo_social_comment_count
+//        val commentCount = photo_social_comment_count
         val shareButton = photo_social_share
         val linkIcon = image_expended_link_icon
         val linkAddress = image_expended_link_address
@@ -172,7 +172,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                     listenToBucketCount(bucketCount, image)
 
 
-                    listenToCommentCount(commentCount, image)
+//                    listenToCommentCount(commentCount, image)
 
                     listenToLikeCount(likeCount, image)
                     executeLike(

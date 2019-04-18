@@ -22,7 +22,7 @@
             mapbox:layout_constraintBottom_toBottomOf="@+id/image_map_view"
             android:elevation="2dp"/>
 
-    <com.mapbox.mapboxsdk.maps.MapView
+    <co.getdere.otherClasses.CustomMapView
             android:id="@+id/image_map_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
