@@ -109,6 +109,7 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
                 sharedViewModelForBucket.sharedBucketId.observe(this, Observer {
                     it?.let { bucket ->
 
+                        symbolManager.deleteAll()
 
                         airLocation = AirLocation(activity as MainActivity, true, true, object : AirLocation.Callbacks{
                             override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
@@ -144,10 +145,6 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
                                 override fun onDataChange(p0: DataSnapshot) {
                                     val imageObject = p0.getValue(Images::class.java)
 
-//                                        photosCoordinates.add(Point.fromLngLat(imageObject!!.location[1], imageObject.location[0]))
-//
-//                                    val featureCollection = FeatureCollection.fromFeatures(photosCoordinates))
-
                                     val symbolOptions = SymbolOptions()
                                         .withLatLng(LatLng(imageObject!!.location[0], imageObject.location[1]))
                                         .withIconImage(DERE_PIN)
@@ -155,13 +152,7 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
                                         .withZIndex(10)
                                         .withDraggable(false)
 
-                                    val symbolLayer = SymbolLayer(imagePath, imagePath).withProperties(
-                                    )
-
-
-
                                     symbolManager.create(symbolOptions)
-
 
                                 }
                             })

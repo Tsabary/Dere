@@ -807,7 +807,7 @@ interface DereMethods : FCMMethods {
                 refReceiverReputation.setValue(valueForReceiver)
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
                 sendNotification(1, 2, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName upvoted your answer")
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "upvoted your answer", initiatorName)
                 Log.d("check if execute", "yes it does")
             }
 
@@ -853,7 +853,7 @@ interface DereMethods : FCMMethods {
 
                 sendNotification(1, 6, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName answered your question")
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "answered your question", initiatorName)
                 Log.d("check if execute", "yes it does")
             }
 
@@ -877,7 +877,7 @@ interface DereMethods : FCMMethods {
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
                 sendNotification(2, 8, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName bucketed your photo")
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "bucketed your photo", initiatorName)
                 Log.d("check if execute", "yes it does")
             }
 
@@ -922,7 +922,7 @@ interface DereMethods : FCMMethods {
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
                 sendNotification(3, 12, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName liked your comment")
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "liked your comment", initiatorName)
                 Log.d("check if execute", "yes it does")
             }
 
@@ -947,7 +947,7 @@ interface DereMethods : FCMMethods {
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
                 sendNotification(2, 14, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName liked your photo")
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "liked your photo", initiatorName)
                 Log.d("check if execute", "yes it does")
             }
 
@@ -967,7 +967,7 @@ interface DereMethods : FCMMethods {
             16 -> {
                 sendNotification(2, 16, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName commented on your photo")
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "commented on your photo", initiatorName)
                 Log.d("check if execute", "yes it does")
             }
 
@@ -984,7 +984,7 @@ interface DereMethods : FCMMethods {
             18 -> {
                 sendNotification(1, 18, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName commented on your answer")
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "commented on your answer", initiatorName )
                 Log.d("check if execute", "yes it does")
             }
 
@@ -1001,7 +1001,7 @@ interface DereMethods : FCMMethods {
             20 -> {
                 sendNotification(4, 20, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName started following you")
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "started following you", initiatorName )
                 Log.d("check if execute", "yes it does")
             }
 

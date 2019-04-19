@@ -11,11 +11,16 @@ import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import co.getdere.MainActivity;
 import co.getdere.R;
 import co.getdere.models.Users;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.google.firebase.database.*;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -28,7 +33,7 @@ import java.util.Random;
 
 public class MyJavaFCM extends FirebaseMessagingService {
 
-    private final String ADMIN_CHANNEL_ID ="admin_channel";
+    private final String ADMIN_CHANNEL_ID = "admin_channel";
 
 
     @Override
@@ -36,7 +41,7 @@ public class MyJavaFCM extends FirebaseMessagingService {
         final Context something = this;
 
         final Intent intent = new Intent(this, MainActivity.class);
-        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         int notificationID = new Random().nextInt(3000);
 
       /*
@@ -48,7 +53,7 @@ public class MyJavaFCM extends FirebaseMessagingService {
         }
 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this , 0, intent,
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("/users/" + remoteMessage.getData().get("initiator") + "/profile");
@@ -58,23 +63,34 @@ public class MyJavaFCM extends FirebaseMessagingService {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Users initiatingUser = dataSnapshot.getValue(Users.class);
 
-//                Bitmap largeIcon = getBitmapFromURL(initiatingUser.getImage());
+                SimpleTarget<Bitmap> bitmap = Glide.with(something)
+                        .asBitmap()
+                        .load(initiatingUser.getImage())
+                        .into(new SimpleTarget<Bitmap>() {
 
-                Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.no_dread);
+                            @Override
+                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
 
-                Uri notificationSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(something, ADMIN_CHANNEL_ID)
-                        .setSmallIcon(R.drawable.logo_fallback)
-                        .setLargeIcon(largeIcon)
-//                        .setContentTitle(remoteMessage.getData().get("title"))
-                        .setContentText(remoteMessage.getData().get("message"))
-                        .setAutoCancel(true)
-                        .setSound(notificationSoundUri)
-                        .setContentIntent(pendingIntent);
+//                                Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.no_dread);
 
-                //Set notification color to match your app color template
-                notificationBuilder.setColor(getResources().getColor(R.color.colorPrimaryDark));
-                notificationManager.notify(notificationID, notificationBuilder.build());
+                                Uri notificationSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(something, ADMIN_CHANNEL_ID)
+                                        .setSmallIcon(R.drawable.logo_fallback)
+                                        .setLargeIcon(resource)
+                                        .setContentTitle(remoteMessage.getData().get("title"))
+                                        .setContentText(remoteMessage.getData().get("message"))
+                                        .setAutoCancel(true)
+                                        .setSound(notificationSoundUri)
+                                        .setContentIntent(pendingIntent);
+
+                                //Set notification color to match your app color template
+                                notificationBuilder.setColor(getResources().getColor(R.color.colorPrimaryDark));
+                                notificationManager.notify(notificationID, notificationBuilder.build());
+
+                            }
+                        });
+
+
 
             }
 
@@ -89,7 +105,7 @@ public class MyJavaFCM extends FirebaseMessagingService {
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void setupChannels(NotificationManager notificationManager){
+    private void setupChannels(NotificationManager notificationManager) {
         CharSequence adminChannelName = "New notification";
         String adminChannelDescription = "Device to devie notification";
 
@@ -104,18 +120,5 @@ public class MyJavaFCM extends FirebaseMessagingService {
         }
     }
 
-    public static Bitmap getBitmapFromURL(String src) {
-        try {
-            URL url = new URL(src);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            Bitmap myBitmap = BitmapFactory.decodeStream(input);
-            return myBitmap;
-        } catch (IOException e) {
-            // Log exception
-            return null;
-        }
-    }
+
 }

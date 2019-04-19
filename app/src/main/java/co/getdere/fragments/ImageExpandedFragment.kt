@@ -3,16 +3,14 @@ package co.getdere.fragments
 
 import android.app.Activity
 import android.content.Context
-import android.media.Image
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
@@ -41,6 +39,7 @@ import io.branch.referral.util.ContentMetadata
 import io.branch.referral.util.LinkProperties
 import io.branch.referral.util.ShareSheetStyle
 import kotlinx.android.synthetic.main.comment_layout.view.*
+import kotlinx.android.synthetic.main.fragment_image.*
 import kotlinx.android.synthetic.main.fragment_image_expanded.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
@@ -57,6 +56,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
 
     lateinit var imageObject: Images
+    lateinit var privacy: String
 
     lateinit var sharedViewModelForImage: SharedViewModelImage
     lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
@@ -71,7 +71,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
     lateinit var lp: LinkProperties
 
     var viewPagerPosition = 0
-    lateinit var imageExpendedViewPager : SwipeLockableViewPager
+    lateinit var imageExpendedViewPager: SwipeLockableViewPager
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -110,6 +110,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         val imageContent = view.findViewById<TextView>(R.id.photo_social_image_details)
         val imageTimestamp = view.findViewById<TextView>(R.id.photo_social_timestamp)
 
+
         val likeCount = photo_social_like_count
         val likeButton = photo_social_like_button
         val bucketCount = photo_social_bucket_count
@@ -136,7 +137,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         layoutScroll = photo_social_scrollView
 
-        val commentsRecycler = view.findViewById<RecyclerView>(R.id.comments_recycler)
+        val commentsRecycler = image_expended_comments_recycler
 
         commentsRecycler.adapter = commentsRecyclerAdapter
         commentsRecycler.layoutManager = commentsRecyclerLayoutManager
@@ -147,91 +148,89 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         sharedViewModelForImage.sharedImageObject.observe(this, Observer {
             it?.let { image ->
-
+                imageExpendedViewPager.currentItem = 0
                 imageObject = image
 
-                if (image.id.isNotEmpty()) {
+
+
 
 //                    Glide.with(this).load(image.imageBig).into(mainImage)
-                    imageTimestamp.text = PrettyTime().format(Date(image.timestampUpload))
+                imageTimestamp.text = PrettyTime().format(Date(image.timestampUpload))
 
-                    if (image.details.isNotEmpty()) {
-                        imageContent.visibility = View.VISIBLE
-                        imageContent.text = image.details
+                if (image.details.isNotEmpty()) {
+                    imageContent.visibility = View.VISIBLE
+                    imageContent.text = image.details
 
-                    }
+                }
 
-                    if (image.link.isNotEmpty()){
-                        linkAddress.text = image.link
-                        linkAddress.visibility = View.VISIBLE
-                        linkIcon.visibility = View.VISIBLE
+                if (image.link.isNotEmpty()) {
+                    linkAddress.text = image.link
+                    linkAddress.visibility = View.VISIBLE
+                    linkIcon.visibility = View.VISIBLE
 
-                    }
+                }
 
 
-                    checkIfBucketed(bucketButton, image, currentUser.uid)
-                    listenToBucketCount(bucketCount, image)
+                checkIfBucketed(bucketButton, image, currentUser.uid)
+                listenToBucketCount(bucketCount, image)
 
 
 //                    listenToCommentCount(commentCount, image)
 
-                    listenToLikeCount(likeCount, image)
-                    executeLike(
-                        image,
-                        currentUser.uid,
-                        likeCount,
-                        likeButton,
-                        0,
-                        currentUser.name,
-                        image.photographer,
-                        authorReputation,
-                        activity
-                    )
+                listenToLikeCount(likeCount, image)
+                executeLike(
+                    image,
+                    currentUser.uid,
+                    likeCount,
+                    likeButton,
+                    0,
+                    currentUser.name,
+                    image.photographer,
+                    authorReputation,
+                    activity
+                )
 
-                    listenToComments(image)
+                listenToComments(image)
 
-                    var contentDescription = ""
+                var contentDescription = ""
 
-                    if (image.details.isNotEmpty()) {
-                        contentDescription = image.details
-                    } else {
-                        contentDescription = "Save it. Get Dere."
-                    }
-
-                    sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
-                        it?.let { user ->
-
-                            authorName.text = user.name
-                            authorReputation.text = "(${numberCalculation(user.reputation)})"
-                            Glide.with(context!!).load(user.image).into(authorImage)
-
-
-                            buo = BranchUniversalObject()
-                                .setCanonicalIdentifier(image.id)
-                                .setTitle("Photograph by ${user.name}")
-                                .setContentDescription(contentDescription)
-                                .setContentImageUrl(image.imageBig)
-                                .setContentIndexingMode(BranchUniversalObject.CONTENT_INDEX_MODE.PUBLIC)
-                                .setLocalIndexMode(BranchUniversalObject.CONTENT_INDEX_MODE.PUBLIC)
-                                .setContentMetadata(ContentMetadata().addCustomMetadata("type", "image"))
-
-                            lp = LinkProperties()
-                                .setFeature("sharing")
-                                .setCampaign("content 123 launch")
-                                .setStage("new user")
-
-
-                        }
-                    })
-
-
+                if (image.details.isNotEmpty()) {
+                    contentDescription = image.details
+                } else {
+                    contentDescription = "Save it. Get Dere."
                 }
+
+                sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
+                    it?.let { user ->
+
+                        authorName.text = user.name
+                        authorReputation.text = "(${numberCalculation(user.reputation)})"
+                        Glide.with(context!!).load(user.image).into(authorImage)
+
+
+                        buo = BranchUniversalObject()
+                            .setCanonicalIdentifier(image.id)
+                            .setTitle("Photograph by ${user.name}")
+                            .setContentDescription(contentDescription)
+                            .setContentImageUrl(image.imageBig)
+                            .setContentIndexingMode(BranchUniversalObject.CONTENT_INDEX_MODE.PUBLIC)
+                            .setLocalIndexMode(BranchUniversalObject.CONTENT_INDEX_MODE.PUBLIC)
+                            .setContentMetadata(ContentMetadata().addCustomMetadata("type", "image"))
+
+                        lp = LinkProperties()
+                            .setFeature("sharing")
+                            .setCampaign("content 123 launch")
+                            .setStage("new user")
+
+
+                    }
+                })
+
             }
         })
 
 
         locationMap.setOnClickListener {
-
             switchImageAndMap()
         }
 
@@ -331,7 +330,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
     private fun switchImageAndMap() {
 
-        if(viewPagerPosition ==0){
+        if (viewPagerPosition == 0) {
             imageExpendedViewPager.currentItem = 1
             viewPagerPosition = 1
         } else {
@@ -361,12 +360,21 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
+                image_expended_comments_recycler.visibility = View.VISIBLE
+                image_expended_divider.visibility = View.VISIBLE
+
                 val singleCommentFromDB = p0.child("body").getValue(Comments::class.java)
 
                 if (singleCommentFromDB != null) {
-
-                    commentsRecyclerAdapter.add(SingleComment(singleCommentFromDB, p0.key!!, image, currentUser, activity as MainActivity))
-
+                    commentsRecyclerAdapter.add(
+                        SingleComment(
+                            singleCommentFromDB,
+                            p0.key!!,
+                            image,
+                            currentUser,
+                            activity as MainActivity
+                        )
+                    )
                 }
             }
 
@@ -391,7 +399,13 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 }
 
 
-class SingleComment(var comment: Comments, val commentId: String, val image: Images, val currentUser: Users, val activity : Activity) :
+class SingleComment(
+    var comment: Comments,
+    val commentId: String,
+    val image: Images,
+    val currentUser: Users,
+    val activity: Activity
+) :
     Item<ViewHolder>(),
     DereMethods {
 
@@ -422,7 +436,7 @@ class SingleComment(var comment: Comments, val commentId: String, val image: Ima
 
         commentLikeButton.setOnClickListener {
 
-            if(currentUser.uid != comment.authorId){
+            if (currentUser.uid != comment.authorId) {
                 executeLike(1, commentLikeButton, commentLikeCount, image.id, currentUser, viewHolder, activity)
             }
         }
@@ -458,7 +472,7 @@ class SingleComment(var comment: Comments, val commentId: String, val image: Ima
         imageId: String,
         currentUser: Users,
         viewHolder: ViewHolder,
-        activity : Activity
+        activity: Activity
     ) {
 
         Log.d("doesitknow", comment.ImageId)
@@ -514,7 +528,7 @@ class SingleComment(var comment: Comments, val commentId: String, val image: Ima
                             comment.authorId,
                             TextView(viewHolder.root.context),
                             "photoCommentLike",
-                             activity
+                            activity
                         )
 
                     } else {
@@ -534,7 +548,8 @@ class SingleComment(var comment: Comments, val commentId: String, val image: Ima
 
     private fun listenToLikeCount(commentLikeCount: TextView) {
 
-        val commentLikeRef = FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/$commentId/likes")
+        val commentLikeRef =
+            FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/$commentId/likes")
 
         commentLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {

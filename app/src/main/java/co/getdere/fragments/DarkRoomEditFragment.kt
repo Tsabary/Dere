@@ -59,6 +59,7 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.fragment_dark_room_edit.*
 import kotlinx.android.synthetic.main.fragment_dark_room_edit_map.*
+import kotlinx.android.synthetic.main.fragment_image.*
 import me.echodev.resizer.Resizer
 import org.apache.commons.io.FileUtils
 import java.io.File
@@ -247,6 +248,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                 sharedViewModelLocalImagePost.sharedImagePostObject.observe(this, Observer {
                     it?.let { localImageObject ->
+
                         Glide.with(this).load(localImageObject.imageUri).into(imageHorizontal)
                         localImagePost = localImageObject
 
@@ -254,6 +256,24 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                         imageUrl.text = localImageObject.url
                         imageLat = localImageObject.locationLat
                         imageLong = localImageObject.locationLong
+
+
+//                        dark_room_edit_privacy_text.text = if (localImageObject.private) {
+//                            "private"
+//                        } else {
+//                            "public"
+//                        }
+
+                        dark_room_edit_privacy_container.setOnClickListener {
+
+                            if (dark_room_edit_privacy_text.text == "private") {
+                                dark_room_edit_privacy_text.text = "public"
+                            } else {
+                                dark_room_edit_privacy_text.text = "private"
+                            }
+                        }
+
+
 
                         if (localImagePost.verified) {
                             mapContainer.visibility = View.GONE
@@ -461,6 +481,8 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
             val locationInput = imageLocationInput.text.toString()
             val url = imageUrl.text.toString()
+
+            val privacy = dark_room_edit_privacy_text.text == "private"
 
 
             val updatedImage = LocalImagePost(

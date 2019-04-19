@@ -16,15 +16,12 @@ import java.util.Map;
 public interface FCMMethods {
 
 
-    static void sendMessageTopic(String receiverId, String initiatorId, String post, Activity activity, String message) {
-
-        String NOTIFICATION_TITLE = "some title";
-
+    static void sendMessageTopic(String receiverId, String initiatorId, String post, Activity activity, String message, String title) {
 
         JSONObject notification = new JSONObject();
         JSONObject notificationBody = new JSONObject();
         try {
-//            notificationBody.put("title", NOTIFICATION_TITLE);
+            notificationBody.put("title", title);
             notificationBody.put("message", message);
             notificationBody.put("initiator", initiatorId);
             notificationBody.put("post", post);

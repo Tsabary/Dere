@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var sharedViewModelQuestion: SharedViewModelQuestion
-    lateinit var sharedViewModelBucket : SharedViewModelBucket
+    lateinit var sharedViewModelBucket: SharedViewModelBucket
 
     lateinit var feedFragment: FeedFragment
     lateinit var boardFragment: BoardFragment
@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var newQuestionFragment: NewQuestionFragment
     lateinit var editProfileFragment: EditProfileFragment
     lateinit var bucketGalleryFragment: BucketGalleryFragment
-    lateinit var addImageToAnswer : AddImageToAnswerFragment
+    lateinit var addImageToAnswer: AddImageToAnswerFragment
 
 
     lateinit var mainFrame: FrameLayout
@@ -216,12 +216,11 @@ class MainActivity : AppCompatActivity(), DereMethods {
             when (subActive) {
 
                 imageFullSizeFragment -> {
-                    if (isBucketGalleryActive){
+                    if (isBucketGalleryActive) {
                         subFm.beginTransaction().hide(subActive).show(bucketGalleryFragment).commit()
                         subActive = bucketGalleryFragment
                         sharedViewModelImage.sharedImageObject.postValue(Images())
-
-                    } else if (isOpenedQuestionActive){
+                    } else if (isOpenedQuestionActive) {
                         subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
                         subActive = openedQuestionFragment
                         sharedViewModelImage.sharedImageObject.postValue(Images())

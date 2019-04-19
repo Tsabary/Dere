@@ -113,7 +113,7 @@ class DarkRoomFragment : Fragment() {
                     selectedPhotoUri.toString(),
                     "",
                     "",
-                    false
+                    verified = false
                 )
 
                 localImageViewModel.insert(localImagePost)

@@ -432,24 +432,26 @@ class SingleAnswer(
 
         })
 
-        for (imagePath in answer.photos) {
-            val refAnswerImages = FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
-            refAnswerImages.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-                }
+        if (answer.photos.isNotEmpty()){
+            viewHolder.itemView.single_answer_photos_recycler.visibility = View.VISIBLE
 
-                override fun onDataChange(p0: DataSnapshot) {
+            for (imagePath in answer.photos) {
+                val refAnswerImages = FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+                refAnswerImages.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
 
-                    val imageObject = p0.getValue(Images::class.java)
-                    imagesAdapter.add(FeedImage(imageObject!!))
-                }
+                    override fun onDataChange(p0: DataSnapshot) {
 
-            })
+                        val imageObject = p0.getValue(Images::class.java)
+                        imagesAdapter.add(FeedImage(imageObject!!))
+                    }
 
+                })
+
+            }
         }
-
-
-
+        
 
         executeVote(
             "checkStatus",

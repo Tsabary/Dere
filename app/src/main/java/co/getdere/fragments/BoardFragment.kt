@@ -239,6 +239,43 @@ class BoardFragment : Fragment() {
             })
         }
 
+
+
+        searchedQuestionsRecyclerAdapter.setOnItemClickListener { item, _ ->
+
+            val row = item as SingleQuestion
+            val author = row.question.author
+            val question = row.question
+
+
+            sharedViewModelForQuestion.questionObject.postValue(question)
+
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment).commit()
+
+            activity.switchVisibility(1)
+
+            activity.subActive = activity.openedQuestionFragment
+
+
+            // meanwhile in the background it will load the random user object
+
+            val refRandomUser = FirebaseDatabase.getInstance().getReference("/users/$author/profile")
+
+            refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+
+                    val randomUserFromDB = p0.getValue(Users::class.java)
+
+                    sharedViewModelRandomUser.randomUserObject.postValue(randomUserFromDB)
+                }
+
+            })
+        }
+
     }
 
     fun recyclersVisibility(case : Int){

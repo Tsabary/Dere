@@ -227,7 +227,7 @@
                 />
             </androidx.constraintlayout.widget.ConstraintLayout>
             <View
-                    android:id="@+id/divider11"
+                    android:id="@+id/image_expended_divider"
                     android:layout_width="0dp"
                     android:layout_height="1dp"
                     android:background="@color/gray100"
@@ -235,11 +235,12 @@
                     android:layout_marginTop="16dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"/>
+
             <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:id="@+id/comments_recycler"
-                    app:layout_constraintTop_toBottomOf="@+id/divider11"
+                    android:id="@+id/image_expended_comments_recycler"
+                    app:layout_constraintTop_toBottomOf="@+id/image_expended_divider"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -248,7 +249,8 @@
                     android:paddingBottom="16dp"
                     app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintVertical_bias="1.0"
-                    android:layout_marginTop="16dp">
+                    android:layout_marginTop="16dp"
+                    android:visibility="gone">
             </androidx.recyclerview.widget.RecyclerView>
 
 

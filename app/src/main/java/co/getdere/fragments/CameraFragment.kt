@@ -140,7 +140,7 @@ class CameraFragment : Fragment() {
                                 savedPhoto.path,
                                 "",
                                 "",
-                                true
+                                verified = true
                             )
                             Log.d("photoActivity", "Took photo")
 

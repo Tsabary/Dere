@@ -11,7 +11,7 @@ interface ImageDao {
     fun insert(image: LocalImagePost)
 
     @Query("SELECT * from image_posts ORDER BY timestamp ASC")
-    fun getAllWords(): LiveData<List<LocalImagePost>>
+    fun getAllImages(): LiveData<List<LocalImagePost>>
 
 
     @Query("DELETE FROM image_posts")
