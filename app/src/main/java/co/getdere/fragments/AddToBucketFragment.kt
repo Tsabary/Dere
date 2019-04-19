@@ -1,6 +1,7 @@
 package co.getdere.fragments
 
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,6 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import co.getdere.MainActivity
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
 import co.getdere.models.Users
@@ -126,7 +128,8 @@ class AddToBucketFragment : Fragment(), DereMethods {
                                         currentUser.name,
                                         imageObject.photographer,
                                         TextView(context),
-                                        "bucket"
+                                        "bucket",
+                                        activity as MainActivity
                                     )
 
                                 }
@@ -165,7 +168,7 @@ class AddToBucketFragment : Fragment(), DereMethods {
 
                 for (ds in p0.children) {
 
-                    bucketsAdapter.add(SingleBucketSuggestion(ds.key!!, imageObject, currentUser))
+                    bucketsAdapter.add(SingleBucketSuggestion(ds.key!!, imageObject, currentUser, activity as MainActivity))
 
                 }
 
@@ -179,7 +182,7 @@ class AddToBucketFragment : Fragment(), DereMethods {
 }
 
 
-class SingleBucketSuggestion(val bucketName: String, val image: Images, val currentUser: Users) : Item<ViewHolder>(),
+class SingleBucketSuggestion(val bucketName: String, val image: Images, val currentUser: Users, val activity : Activity) : Item<ViewHolder>(),
     DereMethods {
 
 
@@ -197,11 +200,11 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
 
 
 
-        executeBucket(0, bucketName, image, currentUser, actionText, viewHolder.root.context)
+        executeBucket(0, bucketName, image, currentUser, actionText, viewHolder.root.context, activity)
 
         actionText.setOnClickListener {
 
-            executeBucket(1, bucketName, image, currentUser, actionText, viewHolder.root.context)
+            executeBucket(1, bucketName, image, currentUser, actionText, viewHolder.root.context, activity)
 
         }
 
@@ -215,7 +218,8 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
         image: Images,
         currentUser: Users,
         actionText: TextView,
-        context: Context
+        context: Context,
+        activity : Activity
     ) {
 
 
@@ -253,7 +257,8 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
                                         currentUser.name,
                                         image.photographer,
                                         TextView(context),
-                                        "bucket"
+                                        "bucket",
+                                        activity
                                     )
 
 
@@ -319,7 +324,8 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
                                                     currentUser.name,
                                                     image.photographer,
                                                     TextView(context),
-                                                    "bucket"
+                                                    "bucket",
+                                                    activity
                                                 )
                                             }
                                     }
@@ -373,7 +379,8 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
                                         currentUser.name,
                                         image.photographer,
                                         TextView(context),
-                                        "bucket"
+                                        "bucket",
+                                        activity
                                     )
                                 }
                         }
@@ -427,7 +434,8 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
                         currentUser.name,
                         image.photographer,
                         TextView(context),
-                        "bucket"
+                        "bucket",
+                        activity
                     )
 
                     val refImageBuckets =

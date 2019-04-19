@@ -14,6 +14,7 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.iid.FirebaseInstanceId
+import com.google.firebase.messaging.FirebaseMessaging
 import com.tomer.fadingtextview.FadingTextView
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.fragment_dark_room_edit.*
@@ -91,13 +92,18 @@ class LoginActivity : AppCompatActivity(), DereMethods {
                                 val userRef =
                                     FirebaseDatabase.getInstance().getReference("/users/$uid/services/firebase-token")
                                 userRef.setValue(token)
+
+                                FirebaseMessaging.getInstance().subscribeToTopic(uid).addOnSuccessListener {
+
+                                    val intent = Intent(this, MainActivity::class.java)
+                                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    startActivity(intent)
+//                                    return@addOnCompleteListener
+
+                                }
                             })
 
-                        Log.d("Login", "Successfully logged a user in using uid: ${it.result?.user?.uid}")
-                        val intent = Intent(this, MainActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        startActivity(intent)
-                        return@addOnCompleteListener
+
                     }
                     //else if successful
                     registerFail()

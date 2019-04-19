@@ -1,6 +1,7 @@
 package co.getdere.fragments
 
 
+import android.app.Activity
 import android.content.Context
 import android.media.Image
 import android.os.Bundle
@@ -183,7 +184,8 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                         0,
                         currentUser.name,
                         image.photographer,
-                        authorReputation
+                        authorReputation,
+                        activity
                     )
 
                     listenToComments(image)
@@ -268,7 +270,8 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                 1,
                 currentUser.name,
                 imageObject.photographer,
-                authorReputation
+                authorReputation,
+                activity
             )
         }
 
@@ -362,7 +365,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
                 if (singleCommentFromDB != null) {
 
-                    commentsRecyclerAdapter.add(SingleComment(singleCommentFromDB, p0.key!!, image, currentUser))
+                    commentsRecyclerAdapter.add(SingleComment(singleCommentFromDB, p0.key!!, image, currentUser, activity as MainActivity))
 
                 }
             }
@@ -388,7 +391,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 }
 
 
-class SingleComment(var comment: Comments, val commentId: String, val image: Images, val currentUser: Users) :
+class SingleComment(var comment: Comments, val commentId: String, val image: Images, val currentUser: Users, val activity : Activity) :
     Item<ViewHolder>(),
     DereMethods {
 
@@ -414,13 +417,13 @@ class SingleComment(var comment: Comments, val commentId: String, val image: Ima
         commentTimestamp.text = date
 
         listenToLikeCount(commentLikeCount)
-        executeLike(0, commentLikeButton, commentLikeCount, image.id, currentUser, viewHolder)
+        executeLike(0, commentLikeButton, commentLikeCount, image.id, currentUser, viewHolder, activity)
 
 
         commentLikeButton.setOnClickListener {
 
             if(currentUser.uid != comment.authorId){
-                executeLike(1, commentLikeButton, commentLikeCount, image.id, currentUser, viewHolder)
+                executeLike(1, commentLikeButton, commentLikeCount, image.id, currentUser, viewHolder, activity)
             }
         }
 
@@ -454,7 +457,8 @@ class SingleComment(var comment: Comments, val commentId: String, val image: Ima
         likeCount: TextView,
         imageId: String,
         currentUser: Users,
-        viewHolder: ViewHolder
+        viewHolder: ViewHolder,
+        activity : Activity
     ) {
 
         Log.d("doesitknow", comment.ImageId)
@@ -486,7 +490,8 @@ class SingleComment(var comment: Comments, val commentId: String, val image: Ima
                             currentUser.name,
                             comment.authorId,
                             TextView(viewHolder.root.context),
-                            "photoCommentLike"
+                            "photoCommentLike",
+                            activity
                         )
 
                     } else {
@@ -508,7 +513,8 @@ class SingleComment(var comment: Comments, val commentId: String, val image: Ima
                             currentUser.name,
                             comment.authorId,
                             TextView(viewHolder.root.context),
-                            "photoCommentLike"
+                            "photoCommentLike",
+                             activity
                         )
 
                     } else {

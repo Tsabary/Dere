@@ -163,7 +163,7 @@ open class FollowingFeedFragment : Fragment() {
 
                         if (accountUid == singleImageFromDB.photographer) {
                             if (!singleImageFromDB.private) {
-                                galleryAdapter.add(LinearFeedImage(singleImageFromDB, currentUser))
+                                galleryAdapter.add(LinearFeedImage(singleImageFromDB, currentUser, activity as MainActivity))
                                 emptyFeedMessage.visibility = View.GONE
 
                             }

@@ -126,7 +126,7 @@ class RecentFeedFragment : Fragment() {
                 if (singleImageFromDB != null) {
 
                     if (!singleImageFromDB.private) {
-                        galleryAdapter.add(LinearFeedImage(singleImageFromDB, currentUser))
+                        galleryAdapter.add(LinearFeedImage(singleImageFromDB, currentUser, activity as MainActivity))
                     }
                 }
             }

@@ -107,7 +107,8 @@ class AnswerCommentFragment : Fragment(), DereMethods {
                             currentUser.name,
                             answer.author,
                             TextView(this.context),
-                            "answercomment"
+                            "answercomment",
+                            activity
                         )
 
                         val refQuestionLastInteraction = FirebaseDatabase.getInstance()

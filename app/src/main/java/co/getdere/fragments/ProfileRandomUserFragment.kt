@@ -1,6 +1,7 @@
 package co.getdere.fragments
 
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -14,6 +15,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import co.getdere.MainActivity
 import co.getdere.groupieAdapters.FeedImage
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
@@ -128,7 +130,6 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 //
 
 
-
         return myView
 
     }
@@ -137,8 +138,7 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
-
+        val activity = activity as MainActivity
 
 
         val profileTagline = view.findViewById<TextView>(R.id.profile_ru_tagline)
@@ -162,7 +162,7 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                 setUpGalleryAdapter(profileGallery, 0)
                 changeGalleryFeed("Roll")
 
-                executeFollow(0, followButton)
+                executeFollow(0, followButton, activity)
 
 
                 val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
@@ -226,7 +226,7 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
 
         followButton.setOnClickListener {
-            executeFollow(1, followButton)
+            executeFollow(1, followButton, activity)
         }
 
 
@@ -253,12 +253,11 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 //            val imageId = row.image
 
 
-
         }
 
     }
 
-    private fun executeFollow(case: Int, followButton: TextView) {
+    private fun executeFollow(case: Int, followButton: TextView, activity: Activity) {
 
         val followerRef = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/following")
         val beingFollowedRef = FirebaseDatabase.getInstance().getReference("users/${userProfile.uid}/followers")
@@ -305,7 +304,17 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                         followButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray300))
                         followButton.text = "Unfollow"
 
-                        changeReputation(20,userProfile.uid, userProfile.uid, currentUser.uid, currentUser.name, userProfile.uid, TextView(context), "follow")
+                        changeReputation(
+                            20,
+                            userProfile.uid,
+                            userProfile.uid,
+                            currentUser.uid,
+                            currentUser.name,
+                            userProfile.uid,
+                            TextView(context),
+                            "follow",
+                            activity
+                        )
 
                     } else {
                         followButton.visibility = View.VISIBLE

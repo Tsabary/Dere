@@ -218,7 +218,7 @@ class FeedFragment : Fragment(), DereMethods {
 
                         if (imageTag == searchedTag) {
                             if (!singleImageFromDB.private) {
-                                searchedImagesRecyclerAdapter.add(LinearFeedImage(singleImageFromDB, currentUser))
+                                searchedImagesRecyclerAdapter.add(LinearFeedImage(singleImageFromDB, currentUser, activity as MainActivity))
                                 break@checkMatchWithPhoto
                             }
                         }

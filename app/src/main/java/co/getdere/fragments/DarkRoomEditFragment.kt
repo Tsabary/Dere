@@ -172,6 +172,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         imageUrl = dark_room_edit_url
 
         mapView = dark_room_edit_mapview
+        val mapContainer = dark_room_edit_mapview_container
 
         var symbolOptions: SymbolOptions
 
@@ -216,38 +217,50 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         }
 
 
-        val saveButton = view.findViewById<TextView>(R.id.dark_room_edit_save)
+        val saveButton = dark_room_edit_save
         shareButton = dark_room_edit_share
-
         progressBar = dark_room_edit_progress_bar
 
 
 
 
-        sharedViewModelLocalImagePost.sharedImagePostObject.observe(this, Observer {
-            it?.let { localImageObject ->
-                Glide.with(this).load(localImageObject.imageUri).into(imageHorizontal)
-                localImagePost = localImageObject
 
-                imageLocationInput.text = localImageObject.details
-                imageUrl.text = localImageObject.url
-                imageLat = localImageObject.locationLat
-                imageLong = localImageObject.locationLong
 
-                if (!localImagePost.verified) {
-                    mapView!!.visibility = View.VISIBLE
-                }
+        mapView?.getMapAsync { mapboxMap ->
+            mapboxMap.setStyle(Style.LIGHT) { style ->
 
-                mapView?.getMapAsync { mapboxMap ->
-                    mapboxMap.setStyle(Style.LIGHT) { style ->
+                myMapboxMap = mapboxMap
+                myStyle = style
 
-                        myMapboxMap = mapboxMap
-                        myStyle = style
+                val geoJsonOptions = GeoJsonOptions().withTolerance(0.4f)
+                val symbolManager = SymbolManager(mapView!!, myMapboxMap!!, myStyle, null, geoJsonOptions)
 
-                        val geoJsonOptions = GeoJsonOptions().withTolerance(0.4f)
-                        val symbolManager = SymbolManager(mapView!!, myMapboxMap!!, myStyle, null, geoJsonOptions)
+                symbolManager.iconAllowOverlap = true
 
-                        symbolManager.iconAllowOverlap = true
+
+                style.addImage(
+                    DERE_PIN,
+                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.pin_icon))!!,
+                    true
+                )
+
+
+                sharedViewModelLocalImagePost.sharedImagePostObject.observe(this, Observer {
+                    it?.let { localImageObject ->
+                        Glide.with(this).load(localImageObject.imageUri).into(imageHorizontal)
+                        localImagePost = localImageObject
+
+                        imageLocationInput.text = localImageObject.details
+                        imageUrl.text = localImageObject.url
+                        imageLat = localImageObject.locationLat
+                        imageLong = localImageObject.locationLong
+
+                        if (localImagePost.verified) {
+                            mapContainer.visibility = View.GONE
+                        } else {
+                            mapContainer.visibility = View.VISIBLE
+                        }
+
 
                         symbolOptions = SymbolOptions()
                             .withLatLng(LatLng(imageLat, imageLong))
@@ -258,28 +271,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
                         symbolManager.create(symbolOptions)
-
-                        setLocation.setOnClickListener {
-                            symbolManager.deleteAll()
-
-
-                            symbolOptions = SymbolOptions()
-                                .withLatLng(
-                                    LatLng(
-                                        mapboxMap.cameraPosition.target.latitude,
-                                        mapboxMap.cameraPosition.target.longitude
-                                    )
-                                )
-                                .withIconImage(DERE_PIN)
-                                .withIconSize(1.3f)
-                                .withZIndex(10)
-                                .withDraggable(false)
-
-                            symbolManager.create(symbolOptions)
-
-                            imageLat = mapboxMap.cameraPosition.target.latitude
-                            imageLong = mapboxMap.cameraPosition.target.longitude
-                        }
 
 
                         val position = CameraPosition.Builder()
@@ -319,18 +310,37 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                         }
 
 
-                        style.addImage(
-                            DERE_PIN,
-                            BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.pin_icon))!!,
-                            true
-                        )
+
+
+                        setLocation.setOnClickListener {
+                            symbolManager.deleteAll()
+
+                            symbolOptions = SymbolOptions()
+                                .withLatLng(
+                                    LatLng(
+                                        mapboxMap.cameraPosition.target.latitude,
+                                        mapboxMap.cameraPosition.target.longitude
+                                    )
+                                )
+                                .withIconImage(DERE_PIN)
+                                .withIconSize(1.3f)
+                                .withZIndex(10)
+                                .withDraggable(false)
+
+                            symbolManager.create(symbolOptions)
+
+                            imageLat = mapboxMap.cameraPosition.target.latitude
+                            imageLong = mapboxMap.cameraPosition.target.longitude
+                        }
+
+
 
                     }
-                }
+                })
 
 
             }
-        })
+        }
 
 
         val tagSuggestionRecycler =
@@ -471,7 +481,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
     }
 
-    var imageFile : File = File.createTempFile("smallfile","temporary")
+    var imageFile: File = File.createTempFile("smallfile", "temporary")
 
     private fun uploadPhotoToStorage() {
 
@@ -580,7 +590,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     }
 
 
-    private fun addImageToFirebaseDatabase(bigImage: String, smallImage: String, verified : Boolean) {
+    private fun addImageToFirebaseDatabase(bigImage: String, smallImage: String, verified: Boolean) {
 
         val uid = FirebaseAuth.getInstance().uid
         val ref = FirebaseDatabase.getInstance().getReference("/images/").push()

@@ -1,10 +1,14 @@
 package co.getdere.groupieAdapters
 
+import android.app.Activity
 import android.view.View
+import co.getdere.MainActivity
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.R
+import co.getdere.otherClasses.FCMMethods
+import co.getdere.otherClasses.FCMMethods.sendMessageTopic
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestOptions
@@ -18,7 +22,7 @@ import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
 
 
-class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHolder>(), DereMethods {
+class LinearFeedImage(val image: Images, val currentUser: Users, val activity : Activity) : Item<ViewHolder>(), DereMethods, FCMMethods {
 
     val uid = FirebaseAuth.getInstance().uid
 
@@ -50,13 +54,13 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
 //            imageDescription.text = image.details
 //        }
 
-        if (image.verified){
+        if (image.verified) {
             verifiedIcon.visibility = View.VISIBLE
         }
 
 
         verifiedIcon.setOnClickListener {
-            if(verifiedInfoBox.visibility == View.GONE){
+            if (verifiedInfoBox.visibility == View.GONE) {
                 verifiedInfoBox.visibility = View.VISIBLE
                 verifiedInfoText.visibility = View.VISIBLE
             } else {
@@ -77,7 +81,8 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
 
 
 
-        Glide.with(viewHolder.root.context).load(currentUser.image).into(viewHolder.itemView.linear_feed_current_user_photo)
+        Glide.with(viewHolder.root.context).load(currentUser.image)
+            .into(viewHolder.itemView.linear_feed_current_user_photo)
 
         val authorReputation = viewHolder.itemView.linear_feed_author_reputation
 
@@ -97,10 +102,9 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
         checkIfBucketed(bucketButton, image, uid!!)
 
         listenToLikeCount(likeCount, image)
-        executeLike(image, uid, likeCount, likeButton, 0, currentUser.name, image.photographer, authorReputation)
+        executeLike(image, uid, likeCount, likeButton, 0, currentUser.name, image.photographer, authorReputation, activity)
 
         listenToCommentCount(commentCount, image)
-
 
 
         val refAuthor = FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
@@ -134,9 +138,19 @@ class LinearFeedImage(val image: Images, val currentUser : Users) : Item<ViewHol
         likeButton.setOnClickListener {
 
 
-            if (image.photographer != currentUser.uid){
-                executeLike(image, uid, likeCount, likeButton, 1, currentUser.name, image.photographer, authorReputation)
-                sendCloudMessage(image.photographer)
+            if (image.photographer != currentUser.uid) {
+                executeLike(
+                    image,
+                    uid,
+                    likeCount,
+                    likeButton,
+                    1,
+                    currentUser.name,
+                    image.photographer,
+                    authorReputation,
+                    activity
+                )
+
             }
         }
 

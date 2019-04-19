@@ -162,7 +162,7 @@ open class InterestsFeedFragment : Fragment() {
 
                             if (interest == tag) {
                                 if (!singleImageFromDB.private) {
-                                    galleryAdapter.add(LinearFeedImage(singleImageFromDB, currentUser))
+                                    galleryAdapter.add(LinearFeedImage(singleImageFromDB, currentUser, activity as MainActivity))
                                     break@singlePhotoLoop
                                 }
                             }

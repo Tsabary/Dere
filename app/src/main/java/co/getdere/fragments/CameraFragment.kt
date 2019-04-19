@@ -15,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import co.getdere.CameraActivity
 import com.camerakit.CameraKitView
@@ -25,6 +26,7 @@ import androidx.lifecycle.ViewModelProviders
 import co.getdere.R
 import co.getdere.roomclasses.LocalImagePost
 import co.getdere.roomclasses.LocalImageViewModel
+import co.getdere.viewmodels.SharedViewModelLocalImagePost
 import com.bumptech.glide.Glide
 import com.camerakit.type.CameraFacing
 
@@ -35,6 +37,7 @@ class CameraFragment : Fragment() {
 //    val sd = Environment.getExternalStorageDirectory().absolutePath
 //    val dest = File(sd + File.separator + "Dere" + File.separator + filename + ".jpg")
 //    var cameraStatus: CameraPreview.CameraState? = null
+
 
     lateinit var cameraKitView: CameraKitView
 
@@ -47,6 +50,7 @@ class CameraFragment : Fragment() {
 //    lateinit var mStatusChecker: Runnable
 
     private lateinit var localImageViewModel: LocalImageViewModel
+    lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
 
     private var airLocation: AirLocation? = null
 
@@ -60,6 +64,7 @@ class CameraFragment : Fragment() {
 
         activity?.let {
             localImageViewModel = ViewModelProviders.of(this).get(LocalImageViewModel::class.java)
+            sharedViewModelLocalImagePost = ViewModelProviders.of(it).get(SharedViewModelLocalImagePost::class.java)
         }
     }
 
@@ -77,48 +82,56 @@ class CameraFragment : Fragment() {
         cameraKitView = view.findViewById(co.getdere.R.id.camera_view)
 //        cameraKitView.aspectRatio = 0.8f
 
-        val captureButton = view.findViewById<ImageButton>(co.getdere.R.id.camera_btn)
+        val captureButton = view.findViewById<ImageButton>(R.id.camera_btn)
 
         captureButton.setOnClickListener {
 
             Log.d("photoActivity", "button clicked")
 
-            cameraKitView.captureFrame { _, p1 ->
-                Log.d("photoActivity", "image captured")
+
+            airLocation = AirLocation(mActivity, true, true, object : AirLocation.Callbacks {
+                override fun onSuccess(location: Location) {
 
 
-                val timeStamp = System.currentTimeMillis().toString()
-                val fileName = "Dere$timeStamp.jpg"
-
-                val path =
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
-                val outputDir = File(path)
-                outputDir.mkdir()
-                val savedPhoto = File(path + File.separator + fileName)
-
-                Log.d("photoActivity", "new file created")
-
-                try {
-                    val outputStream = FileOutputStream(savedPhoto.path)
-                    outputStream.write(p1)
-                    outputStream.close()
-                    mActivity.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(savedPhoto)))
-
-                    Log.d("photoActivity", "Image saved to file and system rescaned the device")
+                    cameraKitView.captureImage() { _, p1 ->
+                        Log.d("photoActivity", "image captured")
 
 
-                    Glide.with(mActivity).load(savedPhoto)
-                        .into(mActivity.photoEditorFragment.view!!.findViewById(R.id.photo_editor_image))
+                        val timeStamp = System.currentTimeMillis().toString()
+                        val fileName = "Dere$timeStamp.jpg"
 
-                    Log.d("photoActivity", "image loaded into new fragment")
+                        val path =
+                            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
+                        val outputDir = File(path)
+                        outputDir.mkdir()
+                        val savedPhoto = File(path + File.separator + fileName)
+
+                        Log.d("photoActivity", "new file created")
+
+                        try {
+                            val outputStream = FileOutputStream(savedPhoto.path)
+                            outputStream.write(p1)
+                            outputStream.close()
+                            mActivity.sendBroadcast(
+                                Intent(
+                                    Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                                    Uri.fromFile(savedPhoto)
+                                )
+                            )
+
+                            Log.d("photoActivity", "Image saved to file and system rescaned the device")
 
 
-                    mActivity.switchVisibility(1)
+                            Glide.with(mActivity).load(savedPhoto)
+                                .into(mActivity.photoEditorFragment.view!!.findViewById(R.id.photo_editor_image))
 
-                    Log.d("photoActivity", "visibility switched")
+                            Log.d("photoActivity", "image loaded into new fragment")
 
-                    airLocation = AirLocation(mActivity, true, true, object : AirLocation.Callbacks {
-                        override fun onSuccess(location: Location) {
+
+                            mActivity.switchVisibility(1)
+
+                            Log.d("photoActivity", "visibility switched")
+
 
                             val localImagePost = LocalImagePost(
                                 timeStamp.toLong(),
@@ -133,91 +146,29 @@ class CameraFragment : Fragment() {
 
                             localImageViewModel.insert(localImagePost)
 
+                            sharedViewModelLocalImagePost.sharedImagePostObject.postValue(localImagePost)
+
+
+
+                        } catch (e: java.io.IOException) {
+                            e.printStackTrace()
+                            Log.d("photoActivity", "failed to take photo")
+
                         }
-
-                        override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
-                            Log.d("locationAccuracy", "Fail")
-
-                        }
-
-                    })
-
-
-                } catch (e: java.io.IOException) {
-                    e.printStackTrace()
-                    Log.d("photoActivity", "failed to take photo")
+                    }
 
                 }
-            }
 
-//            cameraKitView.captureImage { _, image ->
-//
-//
-//                Log.d("photoActivity", "image captured")
-//
-//
-//                val timeStamp = System.currentTimeMillis().toString()
-//                val fileName = "Dere$timeStamp.jpg"
-//
-//                val path =
-//                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
-//                val outputDir = File(path)
-//                outputDir.mkdir()
-//                val savedPhoto = File(path + File.separator + fileName)
-//
-//                Log.d("photoActivity", "new file created")
-//
-//                try {
-//                    val outputStream = FileOutputStream(savedPhoto.path)
-//                    outputStream.write(image)
-//                    outputStream.close()
-//                    mActivity.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(savedPhoto)))
-//
-//                    Log.d("photoActivity", "Image saved to file and system rescaned the device")
-//
-//
-//                    Glide.with(this).load(savedPhoto)
-//                        .into(mActivity.photoEditorFragment.view!!.findViewById(R.id.photo_editor_image))
-//
-//                    Log.d("photoActivity", "image loaded into new fragment")
-//
-//
-//                    mActivity.switchVisibility(1)
-//
-//                    Log.d("photoActivity", "visibility switched")
-//
-//                    airLocation = AirLocation(mActivity, true, true, object : AirLocation.Callbacks {
-//                        override fun onSuccess(location: Location) {
-//
-//                            val localImagePost = LocalImagePost(
-//                                timeStamp.toLong(),
-//                                location.longitude,
-//                                location.latitude,
-//                                savedPhoto.path,
-//                                "Description",
-//                                "Url"
-//                            )
-//                            Log.d("photoActivity", "Took photo")
-//
-//                            localImageViewModel.insert(localImagePost)
-//
-//                        }
-//
-//                        override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
-//                            Log.d("locationAccuracy", "Fail")
-//
-//                        }
-//
-//                    })
-//
-//
-//                } catch (e: java.io.IOException) {
-//                    e.printStackTrace()
-//                    Log.d("photoActivity", "failed to take photo")
-//
-//                }
-//
-//            }
+                override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
+                    Log.d("locationAccuracy", "Fail")
+                    Toast.makeText(
+                        activity,
+                        "Please turn your location on to take a photo. Wait 10 seconds for best accuracy",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+            })
         }
 
 

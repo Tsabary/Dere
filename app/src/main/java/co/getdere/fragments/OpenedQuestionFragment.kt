@@ -1,5 +1,6 @@
 package co.getdere.fragments
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -107,7 +108,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
         sharedViewModelQuestion.questionObject.observe(this, Observer {
             it?.let { question ->
                 questionObject = question
-                checkIfQuestionSaved(0)
+                checkIfQuestionSaved(0, activity)
 
                 val stampMills = questionObject.timestamp
                 val pretty = PrettyTime()
@@ -132,7 +133,8 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                     openedQuestionDownVote,
                     questionObject.id,
                     0,
-                    openedQuestionAuthorReputation
+                    openedQuestionAuthorReputation,
+                    activity
                 )
 
 
@@ -187,7 +189,8 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 openedQuestionDownVote,
                 questionObject.id,
                 1,
-                openedQuestionAuthorReputation
+                openedQuestionAuthorReputation,
+                activity
             )
         }
 
@@ -204,13 +207,14 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 openedQuestionDownVote,
                 questionObject.id,
                 1,
-                openedQuestionAuthorReputation
+                openedQuestionAuthorReputation,
+                activity
             )
         }
 
 
         saveButton.setOnClickListener {
-            checkIfQuestionSaved(1)
+            checkIfQuestionSaved(1, activity)
         }
 
         shareButton.setOnClickListener {
@@ -288,7 +292,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
         })
     }
 
-    private fun checkIfQuestionSaved(ranNum: Int) {
+    private fun checkIfQuestionSaved(ranNum: Int, activity : Activity) {
 
         val refCurrentUserSavedQuestions =
             FirebaseDatabase.getInstance().getReference("/users/${currentUserObject.uid}/saved-questions")
@@ -313,7 +317,8 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                                 currentUserObject.name,
                                 questionObject.author,
                                 openedQuestionAuthorReputation,
-                                "questionsave"
+                                "questionsave",
+                                activity
                             )
                         }
 
@@ -349,7 +354,8 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                                     currentUserObject.name,
                                     questionObject.author,
                                     openedQuestionAuthorReputation,
-                                    "questionsave"
+                                    "questionsave",
+                                    activity
                                 )
 
                             }
@@ -457,7 +463,8 @@ class SingleAnswer(
             viewHolder.itemView.single_answer_downvote,
             answer.answerId,
             0,
-            viewHolder.itemView.single_answer_author_reputation
+            viewHolder.itemView.single_answer_author_reputation,
+            activity
         )
 
 
@@ -501,7 +508,8 @@ class SingleAnswer(
                 viewHolder.itemView.single_answer_downvote,
                 answer.answerId,
                 1,
-                viewHolder.itemView.single_answer_author_reputation
+                viewHolder.itemView.single_answer_author_reputation,
+                activity
             )
         }
 
@@ -518,7 +526,8 @@ class SingleAnswer(
                 viewHolder.itemView.single_answer_downvote,
                 answer.answerId,
                 1,
-                viewHolder.itemView.single_answer_author_reputation
+                viewHolder.itemView.single_answer_author_reputation,
+                activity
             )
         }
 

@@ -1,5 +1,6 @@
 package co.getdere.fragments
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -100,7 +101,7 @@ class AnswerFragment : Fragment(), DereMethods {
         view.answer_btn.setOnClickListener {
 
             if (answer_content.text.length > 15) {
-                postAnswer(content.text.toString(), System.currentTimeMillis())
+                postAnswer(content.text.toString(), System.currentTimeMillis(), activity)
             } else {
                 Toast.makeText(this.context, "Your answer is too short, please elaborate", Toast.LENGTH_SHORT).show()
             }
@@ -113,7 +114,7 @@ class AnswerFragment : Fragment(), DereMethods {
         }
     }
 
-    private fun postAnswer(content: String, timestamp: Long) {
+    private fun postAnswer(content: String, timestamp: Long, activity : Activity) {
 
         val ref = FirebaseDatabase.getInstance().getReference("/questions/${question.id}/answers/").push()
 
@@ -134,7 +135,8 @@ class AnswerFragment : Fragment(), DereMethods {
                     currentUser.name,
                     question.author,
                     TextView(this.context),
-                    "answer"
+                    "answer",
+                    activity
                 )
 
                 val refQuestionLastInteraction =

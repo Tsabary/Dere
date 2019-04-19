@@ -4,25 +4,37 @@ import android.app.Activity
 import android.content.Context
 import android.location.Location
 import android.util.Log
-import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import co.getdere.models.*
-import co.getdere.R
-import com.google.firebase.database.*
-import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import co.getdere.MainActivity
+import co.getdere.R
+import co.getdere.models.Images
+import co.getdere.models.Notification
+import co.getdere.models.ReputationScore
+import co.getdere.otherClasses.FCMMethods
+import co.getdere.otherClasses.FCMMethods.sendMessageTopic
+import co.getdere.otherClasses.MySingleton
+import com.google.firebase.database.*
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.RemoteMessage
+import com.mapbox.mapboxsdk.Mapbox.getApplicationContext
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import mumayank.com.airlocationlibrary.AirLocation
-import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.messaging.RemoteMessage
+import org.json.JSONException
+import org.json.JSONObject
+import com.android.volley.AuthFailureError
+import com.android.volley.Response
+import com.android.volley.VolleyError
+import com.android.volley.toolbox.JsonObjectRequest
 
 
-interface DereMethods {
+interface DereMethods : FCMMethods {
 
 
     //following methods are for the forum_icon
@@ -40,7 +52,8 @@ interface DereMethods {
         downvoteView: ImageView,
         specificPostId: String,
         event: Int,
-        userReputationView: TextView
+        userReputationView: TextView,
+        activity : Activity
     ) {
 
         val refVotes = if (postType == 0) {
@@ -88,7 +101,8 @@ interface DereMethods {
                                                 initiatorName,
                                                 receiverId,
                                                 userReputationView,
-                                                "vote"
+                                                "vote",
+                                                activity
                                             )
                                         } else {
                                             changeReputation(
@@ -99,7 +113,8 @@ interface DereMethods {
                                                 initiatorName,
                                                 receiverId,
                                                 userReputationView,
-                                                "vote"
+                                                "vote",
+                                                activity
                                             )
                                         }
                                     }
@@ -131,7 +146,8 @@ interface DereMethods {
                                                 initiatorName,
                                                 receiverId,
                                                 userReputationView,
-                                                "vote"
+                                                "vote",
+                                                activity
                                             )
                                         } else {
                                             changeReputation(
@@ -142,7 +158,8 @@ interface DereMethods {
                                                 initiatorName,
                                                 receiverId,
                                                 userReputationView,
-                                                "vote"
+                                                "vote",
+                                                activity
                                             )
                                         }
                                     }
@@ -164,7 +181,8 @@ interface DereMethods {
                                                 initiatorName,
                                                 receiverId,
                                                 userReputationView,
-                                                "vote"
+                                                "vote",
+                                                activity
                                             )
                                         } else {
                                             changeReputation(
@@ -175,7 +193,8 @@ interface DereMethods {
                                                 initiatorName,
                                                 receiverId,
                                                 userReputationView,
-                                                "vote"
+                                                "vote",
+                                                activity
                                             )
                                         }
                                     }
@@ -208,7 +227,8 @@ interface DereMethods {
                                             initiatorName,
                                             receiverId,
                                             userReputationView,
-                                            "vote"
+                                            "vote",
+                                            activity
                                         )
 
                                     }
@@ -243,7 +263,8 @@ interface DereMethods {
                                         initiatorName,
                                         receiverId,
                                         userReputationView,
-                                        "vote"
+                                        "vote",
+                                        activity
                                     )
                                 } else {
                                     changeReputation(
@@ -254,7 +275,8 @@ interface DereMethods {
                                         initiatorName,
                                         receiverId,
                                         userReputationView,
-                                        "vote"
+                                        "vote",
+                                        activity
                                     )
                                 }
                             }
@@ -275,7 +297,8 @@ interface DereMethods {
                                         initiatorName,
                                         receiverId,
                                         userReputationView,
-                                        "vote"
+                                        "vote",
+                                        activity
                                     )
                                 } else {
                                     changeReputation(
@@ -286,7 +309,8 @@ interface DereMethods {
                                         initiatorName,
                                         receiverId,
                                         userReputationView,
-                                        "vote"
+                                        "vote",
+                                        activity
                                     )
                                 }
                             }
@@ -424,7 +448,8 @@ interface DereMethods {
         event: Int,
         initiatorName: String,
         receiverId: String,
-        userReputationView: TextView
+        userReputationView: TextView,
+        activity: Activity
     ) {
 
         val allUserRef = FirebaseDatabase.getInstance().getReference("/users/$initiatorId")
@@ -462,7 +487,7 @@ interface DereMethods {
                                                 initiatorName,
                                                 receiverId,
                                                 userReputationView,
-                                                "like"
+                                                "like",activity
                                             )
 
                                         }
@@ -503,7 +528,7 @@ interface DereMethods {
                                                 initiatorName,
                                                 receiverId,
                                                 userReputationView,
-                                                "like"
+                                                "like", activity
                                             )
 
                                         }
@@ -552,7 +577,7 @@ interface DereMethods {
                                     initiatorName,
                                     receiverId,
                                     userReputationView,
-                                    "like"
+                                    "like", activity
                                 )
                             }
 
@@ -743,7 +768,8 @@ interface DereMethods {
         initiatorName: String,
         receiverId: String,
         userReputationView: TextView,
-        action: String
+        action: String,
+        activity: Activity
     ) {
 
         val refReceiverReputation =
@@ -754,6 +780,8 @@ interface DereMethods {
 
         when (scenarioType) {
 
+
+            //   0 : question upvote +5 to receiver +notification // type 0
             0 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, 5)
                 refReceiverReputation.setValue(valueForReceiver)
@@ -761,10 +789,9 @@ interface DereMethods {
                 sendNotification(0, 0, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
             }
 
-            1 -> {
-//                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -5)
-//                refReceiverReputation.setValue(valueForReceiver)
 
+            //    1 : question upvote is removed -5 to receiver
+            1 -> {
                 val notificationRef = FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}0")
 
@@ -773,18 +800,19 @@ interface DereMethods {
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
 
+
+            //  2 : answer upvoted +10 to receiver +notification  // type 1
             2 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, 10)
                 refReceiverReputation.setValue(valueForReceiver)
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
                 sendNotification(1, 2, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
-
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName upvoted your answer")
+                Log.d("check if execute", "yes it does")
             }
 
+            // 3 : answer upvote is removed -10 to receiver
             3 -> {
-//                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -10)
-//                refReceiverReputation.setValue(valueForReceiver)
-
                 val notificationRef = FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}2")
 
@@ -793,39 +821,31 @@ interface DereMethods {
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
 
+
+            //  4 : question/answer downvote -2 for receiver -1 for initiator +notification without initiator  // type 0 or 1
             4 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, -2)
                 refReceiverReputation.setValue(valueForReceiver)
                 val valueForInitiator = ReputationScore(specificPostId, initiatorId, -1)
                 refInitiatorReputation.setValue(valueForInitiator)
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
-//                updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
                 sendNotification(0, 4, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
-
             }
 
-            5 -> {
-//                val valueForReceiver = ReputationScore(specificPostId, initiatorId, 2)
-//                refReceiverReputation.setValue(valueForReceiver)
 
+            // 5 : question/answer downvote is removed +2 for receiver +1 for initiator
+            5 -> {
                 val notificationRef = FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}4")
                 notificationRef.removeValue()
-
-
                 refReceiverReputation.removeValue()
-
-
-//                val valueForInitiator = ReputationScore(specificPostId, initiatorId, 1)
-//                refInitiatorReputation.setValue(valueForInitiator)
-
                 refInitiatorReputation.removeValue()
 
-
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
-//                updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
             }
 
+
+            //6 : answer given +2 to initiator
             6 -> {
                 val valueForInitiator = ReputationScore(specificPostId, initiatorId, 2)
                 refInitiatorReputation.setValue(valueForInitiator)
@@ -833,36 +853,37 @@ interface DereMethods {
 
                 sendNotification(1, 6, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName answered your question")
+                Log.d("check if execute", "yes it does")
             }
 
-            7 -> {
-//                val valueForInitiator = ReputationScore(specificPostId, initiatorId, -2)
-//                refInitiatorReputation.setValue(valueForInitiator)
 
+            //7 : answer removed -2 to initiator            ***not implemented yet***
+            7 -> {
                 refInitiatorReputation.removeValue()
 
                 val notificationRef = FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}6")
                 notificationRef.removeValue()
 
-
                 updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
-
-
             }
 
+
+            // 8 : photo bucketed +15 to receiver +notification  // type 2
             8 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, 15)
                 refReceiverReputation.setValue(valueForReceiver)
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
                 sendNotification(2, 8, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName bucketed your photo")
+                Log.d("check if execute", "yes it does")
             }
 
-            9 -> {
-//                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -15)
-//                refReceiverReputation.setValue(valueForReceiver)
 
+            //9 : photo unbucketed -15 to receiver
+            9 -> {
                 val notificationRef = FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/gallery/$mainPostId$specificPostId${initiatorId}8")
                 notificationRef.removeValue()
@@ -872,18 +893,18 @@ interface DereMethods {
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
 
+
+            //10 : question saved +5 to receiver +notification  // type 0
             10 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, 5)
                 refReceiverReputation.setValue(valueForReceiver)
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
                 sendNotification(0, 10, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
-
             }
 
-            11 -> {
-//                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -5)
-//                refReceiverReputation.setValue(valueForReceiver)
 
+            //11 : question unsaved - 5 to receiver
+            11 -> {
                 val notificationRef = FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}10")
                 notificationRef.removeValue()
@@ -893,14 +914,20 @@ interface DereMethods {
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
 
+
+            //12 : comment receives a like +1 to receiver +notification  // type 3
             12 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, 1)
                 refReceiverReputation.setValue(valueForReceiver)
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
                 sendNotification(3, 12, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName liked your comment")
+                Log.d("check if execute", "yes it does")
             }
 
+
+            //13 : comment like removed -1 to receiver
             13 -> {
 
                 val notificationRef = FirebaseDatabase.getInstance()
@@ -912,18 +939,20 @@ interface DereMethods {
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
 
+
+            //14 : photo receives a like +2 to receiver +notification  // type 2
             14 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, 2)
                 refReceiverReputation.setValue(valueForReceiver)
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
                 sendNotification(2, 14, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName liked your photo")
+                Log.d("check if execute", "yes it does")
             }
 
+            //15 : photo like removed -2 to receiver
             15 -> {
-//                val valueForReceiver = ReputationScore(specificPostId, initiatorId, -2)
-//                refReceiverReputation.setValue(valueForReceiver)
-
                 val notificationRef = FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/gallery/$mainPostId$specificPostId${initiatorId}14")
                 notificationRef.removeValue()
@@ -933,48 +962,56 @@ interface DereMethods {
                 updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
             }
 
+
+            //16 : photo receives a comment
             16 -> {
-
-
                 sendNotification(2, 16, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
-
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName commented on your photo")
+                Log.d("check if execute", "yes it does")
             }
 
-            17 -> {
 
+            //17 : photo comment removed
+            17 -> {
                 val notificationRef = FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/gallery/$mainPostId$specificPostId${initiatorId}16")
                 notificationRef.removeValue()
             }
 
+
+            //18 : answer receives a comment
             18 -> {
-
-
                 sendNotification(1, 18, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
-
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName commented on your answer")
+                Log.d("check if execute", "yes it does")
             }
 
-            19 -> {
 
+            //19: comment on answer removed // not implemented yet
+            19 -> {
                 val notificationRef = FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}18")
                 notificationRef.removeValue()
             }
 
-            20 -> {
 
+            //20 : profile receives a follow
+            20 -> {
                 sendNotification(4, 20, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "$initiatorName started following you")
+                Log.d("check if execute", "yes it does")
             }
 
-            21 -> {
 
+            //21 : profile unfollowed
+            21 -> {
                 val notificationRef = FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/gallery/$mainPostId$specificPostId${initiatorId}20")
 
                 notificationRef.removeValue()
-
             }
 
 
@@ -1016,6 +1053,53 @@ interface DereMethods {
 
         })
     }
+
+
+//    fun sendMessageTopic(receiverId: String, initiatorId : String, post : String, activity : Activity) {
+//
+//        val notificationTitle = "This is the title that would appear"
+//        val notificationMessage = "This is the message that would appear"
+//
+//        val notification = JSONObject()
+//        val notificationBody = JSONObject()
+//        try {
+//            notificationBody.put("title", notificationTitle)
+//            notificationBody.put("message", notificationMessage)
+//            notificationBody.put("initiator", initiatorId)
+//            notificationBody.put("post", post)
+//
+//            notification.put("to", receiverId)
+//            notification.put("data", notificationBody)
+//        } catch (e: JSONException) {
+//            Log.e("NOTIFICATION TAG", "onCreate: $e")
+//        }
+//        sendTopicNotification(notification, activity)
+//    }
+//
+//    fun sendTopicNotification(notification: JSONObject, activity : Activity) {
+//
+//        val FCM_API = "https://fcm.googleapis.com/fcm/send"
+//        val serverKey =
+//            "AAAAA6gibkM:APA91bHpYv3QKAF4_wfCpRB4dTT11pRr_uZUcLUpgv6OEO-acl7qvnSK0vFyA8iXloJfuQIBS3q61zgGRZ6iFgBrHMpIflEyeTNgD_LJbQZtMnPHlVdRoe-OK8dNUGss7YfR9Hf-4f7L"
+//
+//        val jsonObjectRequest = object : JsonObjectRequest(FCM_API, notification,
+//            Response.Listener<JSONObject> { response -> Log.i("NOTIFICATION TAG", "onResponse: $response") },
+//            Response.ErrorListener {
+//                Toast.makeText(activity, "Request error $it", Toast.LENGTH_LONG).show()
+//                Log.i("NOTIFICATION TAG", "onErrorResponse: Didn't work because $it")
+//            }) {
+//
+//            @Throws(AuthFailureError::class)
+//            override fun getHeaders(): Map<String, String> {
+//                val params = HashMap<String, String>()
+//                params["Authorization"] = serverKey
+//                params["Content-Type"] = "application/json"
+//                return params
+//            }
+//        }
+//        MySingleton.getInstance(activity).addToRequestQueue(jsonObjectRequest)
+//    }
+
 
     fun sendCloudMessage(userId: String) {
 

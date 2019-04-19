@@ -232,7 +232,8 @@
                     android:layout_marginEnd="32dp"
                     mapbox:layout_constraintStart_toStartOf="parent"
                     android:layout_marginStart="32dp"
-                    mapbox:layout_constraintDimensionRatio=""/>
+                    mapbox:layout_constraintDimensionRatio=""
+                    android:visibility="gone"/>
 
 
             <TextView

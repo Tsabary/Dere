@@ -134,8 +134,7 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                 sharedViewModelForImage.sharedImageObject.observe(this, Observer {
                     it?.let { image ->
 
-
-
+                        symbolManager.deleteAll()
 
                         val symbolOptions = SymbolOptions()
                             .withLatLng(LatLng(image.location[0], image.location[1]))
