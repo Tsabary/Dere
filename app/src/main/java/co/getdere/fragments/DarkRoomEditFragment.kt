@@ -11,13 +11,11 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -48,7 +46,6 @@ import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.modes.RenderMode
-import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
@@ -59,13 +56,9 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.fragment_dark_room_edit.*
 import kotlinx.android.synthetic.main.fragment_dark_room_edit_map.*
-import kotlinx.android.synthetic.main.fragment_image.*
 import me.echodev.resizer.Resizer
 import org.apache.commons.io.FileUtils
 import java.io.File
-import java.io.FileInputStream
-import java.io.InputStream
-import java.net.URI
 import java.util.*
 
 
@@ -173,7 +166,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         imageUrl = dark_room_edit_url
 
         mapView = dark_room_edit_mapview
-        val mapContainer = dark_room_edit_mapview_container
+        val mapContainer = dark_room_edit_map_include
 
         var symbolOptions: SymbolOptions
 
@@ -258,18 +251,16 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                         imageLong = localImageObject.locationLong
 
 
-//                        dark_room_edit_privacy_text.text = if (localImageObject.private) {
-//                            "private"
-//                        } else {
-//                            "public"
-//                        }
+                        dark_room_edit_privacy_text.text = "public"
 
                         dark_room_edit_privacy_container.setOnClickListener {
 
                             if (dark_room_edit_privacy_text.text == "private") {
                                 dark_room_edit_privacy_text.text = "public"
+                                imagePrivacy = false
                             } else {
                                 dark_room_edit_privacy_text.text = "private"
+                                imagePrivacy = true
                             }
                         }
 
@@ -622,7 +613,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             ref.key!!,
             bigImage,
             smallImage,
-            false,
+            imagePrivacy,
             uid!!,
             imageUrl.text.toString(),
             imageLocationInput.text.toString(),

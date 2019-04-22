@@ -250,7 +250,7 @@
 
             <include
                     layout="@layout/fragment_dark_room_edit_map"
-                    android:id="@+id/dark_room_edit_mapview_container"
+                    android:id="@+id/dark_room_edit_map_include"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     mapbox:layout_constraintTop_toBottomOf="@+id/dark_room_edit_tag_instructions"
@@ -279,7 +279,7 @@
                     android:gravity="center"
                     app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_mapview_container"
                     android:layout_marginTop="32dp"
-            />
+                    mapbox:layout_constraintTop_toBottomOf="@+id/dark_room_edit_map_include"/>
             <TextView
                     android:text="SAVE"
                     android:layout_width="0dp"

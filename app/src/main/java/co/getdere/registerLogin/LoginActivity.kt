@@ -111,7 +111,7 @@ class LoginActivity : AppCompatActivity(), DereMethods {
 
                 }.addOnFailureListener {
                     registerFail()
-                    Log.d("Main", "Failed to create user : ${it.message}")
+                    Log.d("Main", "Failed to log in user : ${it.message}")
                 }
             } else {
                 registerFail()
