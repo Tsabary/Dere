@@ -140,7 +140,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
             } else if (questionDetails.text.isEmpty()) {
                 Toast.makeText(this.context, "Please give your question some more details", Toast.LENGTH_SHORT).show()
             } else if (questionChipGroup.childCount == 0) {
-                Toast.makeText(this.context, "Please add at least one tag to your question", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this.context, "Please add at least one tag_unactive to your question", Toast.LENGTH_SHORT).show()
             } else {
 
 

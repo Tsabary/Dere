@@ -277,7 +277,6 @@
                     android:layout_marginEnd="32dp"
                     android:textColor="@color/white"
                     android:gravity="center"
-                    app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_mapview_container"
                     android:layout_marginTop="32dp"
                     mapbox:layout_constraintTop_toBottomOf="@+id/dark_room_edit_map_include"/>
             <TextView

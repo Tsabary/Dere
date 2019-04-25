@@ -96,26 +96,140 @@
                     android:visibility="gone"
                     tools:srcCompat="@drawable/no_dread"/>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <HorizontalScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="48dp"
                     android:id="@+id/dark_room_edit_buttons_container"
                     app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_image_vertical"
-                    android:layout_marginTop="24dp">
+                    android:layout_marginTop="24dp"
+                    mapbox:layout_constraintStart_toStartOf="parent"
+                    mapbox:layout_constraintEnd_toEndOf="parent">
 
-                <ImageButton
-                        android:src="@drawable/tag"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:id="@+id/dark_room_edit_tags_button_unactive"
-                        android:background="@drawable/image_fields_unactive"
-                        android:padding="14dp"
-                        android:scaleType="centerCrop"
-                        mapbox:layout_constraintTop_toTopOf="parent"
-                        mapbox:layout_constraintBottom_toBottomOf="parent"
-                        mapbox:layout_constraintStart_toStartOf="parent"
-                        android:layout_marginStart="32dp"/>
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            mapbox:layout_constraintTop_toTopOf="parent"
+                            mapbox:layout_constraintBottom_toBottomOf="parent"
+                            mapbox:layout_constraintStart_toStartOf="parent"
+                            android:layout_marginStart="24dp"
+                            android:id="@+id/dark_room_edit_info_buttons_container">
+
+
+                        <ImageButton
+                                android:src="@drawable/info_unactive"
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:id="@+id/dark_room_edit_info_button_unactive"
+                                android:background="@drawable/image_fields_unactive"
+                                android:padding="14dp"
+                                android:scaleType="centerCrop"
+                                mapbox:layout_constraintTop_toTopOf="parent"
+                                mapbox:layout_constraintBottom_toBottomOf="parent"
+                                mapbox:layout_constraintStart_toStartOf="parent"
+                                tools:visibility="gone"/>
+                        <ImageButton
+                                android:src="@drawable/info_active"
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:id="@+id/dark_room_edit_info_button_active"
+                                android:background="@drawable/image_fields_active"
+                                android:padding="14dp"
+                                android:scaleType="centerCrop"
+                                mapbox:layout_constraintTop_toTopOf="parent"
+                                mapbox:layout_constraintBottom_toBottomOf="parent"
+                                mapbox:layout_constraintVertical_bias="0.0"
+                                mapbox:layout_constraintStart_toEndOf="@+id/dark_room_edit_info_button_unactive"/>
+
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            mapbox:layout_constraintTop_toTopOf="parent"
+                            mapbox:layout_constraintBottom_toBottomOf="parent"
+                            mapbox:layout_constraintStart_toEndOf="@+id/dark_room_edit_info_buttons_container"
+                            android:layout_marginStart="24dp"
+                            android:id="@+id/dark_room_edit_tags_buttons_container"
+                    >
+
+
+                        <ImageButton
+                                android:src="@drawable/tag_unactive"
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:id="@+id/dark_room_edit_tags_button_unactive"
+                                android:background="@drawable/image_fields_unactive"
+                                android:padding="14dp"
+                                android:scaleType="centerCrop"
+                                mapbox:layout_constraintTop_toTopOf="parent"
+                                mapbox:layout_constraintBottom_toBottomOf="parent"
+                                mapbox:layout_constraintStart_toStartOf="parent"/>
+                        <ImageButton
+                                android:src="@drawable/tag_active"
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:id="@+id/dark_room_edit_tags_button_active"
+                                android:background="@drawable/image_fields_active"
+                                android:padding="14dp"
+                                android:scaleType="centerCrop"
+                                mapbox:layout_constraintTop_toTopOf="parent"
+                                mapbox:layout_constraintBottom_toBottomOf="parent"
+                                mapbox:layout_constraintVertical_bias="0.0"
+                                mapbox:layout_constraintStart_toEndOf="@+id/dark_room_edit_tags_button_unactive"
+                                android:visibility="gone"/>
+
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            mapbox:layout_constraintTop_toTopOf="parent"
+                            mapbox:layout_constraintBottom_toBottomOf="parent"
+                            mapbox:layout_constraintStart_toEndOf="@+id/dark_room_edit_tags_buttons_container"
+                            android:layout_marginStart="24dp"
+                            android:id="@+id/dark_room_edit_url_buttons_container">
+
+
+                        <ImageButton
+                                android:src="@drawable/link_unactive"
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:id="@+id/dark_room_edit_url_button_unactive"
+                                android:background="@drawable/image_fields_unactive"
+                                android:padding="14dp"
+                                android:scaleType="centerCrop"
+                                mapbox:layout_constraintTop_toTopOf="parent"
+                                mapbox:layout_constraintBottom_toBottomOf="parent"
+                                mapbox:layout_constraintStart_toStartOf="parent"/>
+                        <ImageButton
+                                android:src="@drawable/link_active"
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:id="@+id/dark_room_edit_url_button_active"
+                                android:background="@drawable/image_fields_active"
+                                android:padding="14dp"
+                                android:scaleType="centerCrop"
+                                mapbox:layout_constraintTop_toTopOf="parent"
+                                mapbox:layout_constraintBottom_toBottomOf="parent"
+                                mapbox:layout_constraintVertical_bias="0.0"
+                                mapbox:layout_constraintStart_toEndOf="@+id/dark_room_edit_url_button_unactive"
+                                android:visibility="gone"/>
+
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            </HorizontalScrollView>
+
 
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -123,7 +237,7 @@
                     android:id="@+id/dark_room_edit_information_container"
                     mapbox:layout_constraintTop_toBottomOf="@+id/dark_room_edit_buttons_container"
                     android:layout_marginTop="24dp"
-                    android:visibility="gone"
+                    android:visibility="visible"
                     mapbox:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginEnd="24dp"
                     mapbox:layout_constraintStart_toStartOf="parent"
@@ -180,14 +294,15 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:id="@+id/dark_room_edit_tags_container"
                     mapbox:layout_constraintTop_toBottomOf="@+id/dark_room_edit_information_container"
                     android:layout_marginTop="24dp"
                     mapbox:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginEnd="24dp"
                     mapbox:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginStart="24dp">
+                    android:layout_marginStart="24dp"
+                    android:visibility="gone">
 
                 <com.google.android.material.chip.ChipGroup
                         android:id="@+id/dark_room_edit_chip_group"

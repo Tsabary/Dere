@@ -214,7 +214,7 @@
                         mapbox:layout_constraintStart_toEndOf="@+id/image_expended_link_icon"
                         android:layout_marginStart="16dp"/>
                 <ImageView
-                        android:src="@drawable/link"
+                        android:src="@drawable/link_active"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/image_expended_link_icon"

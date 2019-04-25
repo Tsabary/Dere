@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -55,6 +56,24 @@ import com.mapbox.mapboxsdk.utils.BitmapUtils
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.fragment_dark_room_edit.*
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_add_tag_button
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_chip_group
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_delete_cancel_button
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_delete_message
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_delete_remove_button
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_image_horizontal
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_image_vertical
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_location_input
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_map_include
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_privacy_container
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_privacy_text
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_progress_bar
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_remove
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_save
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_share
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_tag_input
+import kotlinx.android.synthetic.main.fragment_dark_room_edit.dark_room_edit_url
+import kotlinx.android.synthetic.main.fragment_dark_room_edit2.*
 import kotlinx.android.synthetic.main.fragment_dark_room_edit_map.*
 import me.echodev.resizer.Resizer
 import org.apache.commons.io.FileUtils
@@ -151,7 +170,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
         Mapbox.getInstance(activity!!.applicationContext, getString(R.string.mapbox_access_token))
 
-        return inflater.inflate(R.layout.fragment_dark_room_edit, container, false)
+        return inflater.inflate(R.layout.fragment_dark_room_edit2, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -179,6 +198,66 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         val setLocation = dark_room_edit_set_location
 
         val focus = dark_room_edit_map_focus
+
+        //buttons
+        val infoActiveButton = dark_room_edit_info_button_active
+        val infoUnactiveButton = dark_room_edit_info_button_unactive
+        val tagsActiveButton = dark_room_edit_tags_button_active
+        val tagsUnactiveButton = dark_room_edit_tags_button_unactive
+        val urlActiveButton = dark_room_edit_url_button_active
+        val urlUnactiveButton = dark_room_edit_url_button_unactive
+
+        //containers
+        val infoButtonsContainer = dark_room_edit_info_buttons_container
+        val tagButtonsContainer = dark_room_edit_tags_buttons_container
+        val urlButtonsContainer = dark_room_edit_url_buttons_container
+
+
+        infoUnactiveButton.setOnClickListener {
+            infoUnactiveButton.visibility = View.GONE
+            infoActiveButton.visibility = View.VISIBLE
+            tagsUnactiveButton.visibility = View.VISIBLE
+            tagsActiveButton.visibility = View.GONE
+            urlUnactiveButton.visibility = View.VISIBLE
+            urlActiveButton.visibility = View.GONE
+
+            infoButtonsContainer.visibility = View.VISIBLE
+            tagButtonsContainer.visibility = View.GONE
+            urlButtonsContainer.visibility = View.GONE
+        }
+
+        tagsUnactiveButton.setOnClickListener {
+            infoUnactiveButton.visibility = View.VISIBLE
+            infoActiveButton.visibility = View.GONE
+            tagsUnactiveButton.visibility = View.GONE
+            tagsActiveButton.visibility = View.VISIBLE
+            urlUnactiveButton.visibility = View.VISIBLE
+            urlActiveButton.visibility = View.GONE
+
+            infoButtonsContainer.visibility = View.GONE
+            tagButtonsContainer.visibility = View.VISIBLE
+            urlButtonsContainer.visibility = View.GONE
+        }
+
+        urlUnactiveButton.setOnClickListener {
+            infoUnactiveButton.visibility = View.VISIBLE
+            infoActiveButton.visibility = View.GONE
+            tagsUnactiveButton.visibility = View.VISIBLE
+            tagsActiveButton.visibility = View.GONE
+            urlUnactiveButton.visibility = View.GONE
+            urlActiveButton.visibility = View.VISIBLE
+
+            infoButtonsContainer.visibility = View.GONE
+            tagButtonsContainer.visibility = View.GONE
+            urlButtonsContainer.visibility = View.VISIBLE
+        }
+
+
+
+
+
+
+
 
 
 

@@ -199,7 +199,7 @@ class BoardFragment : Fragment() {
                 searchQuestions(row.tag.tagString)
                 recyclersVisibility(1)
             } else {
-                Toast.makeText(this.context, "You can only search one tag at a time", Toast.LENGTH_LONG).show()
+                Toast.makeText(this.context, "You can only search one tag_unactive at a time", Toast.LENGTH_LONG).show()
             }
         }
 
