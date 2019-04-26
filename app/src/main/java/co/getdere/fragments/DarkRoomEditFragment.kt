@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.text.Editable
+import android.text.InputFilter
 import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
@@ -16,6 +17,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -100,6 +102,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     var imagePrivacy = false
 
     lateinit var progressBar: MyCircleProgressBar
+    lateinit var uploadBackground: ConstraintLayout
     private lateinit var shareButton: TextView
 
     private var mapView: CustomMapView? = null
@@ -110,6 +113,17 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
     var imageLat = 0.0
     var imageLong = 0.0
+
+    lateinit var infoActiveButton: ImageButton
+    lateinit var infoUnactiveButton: ImageButton
+    lateinit var tagsActiveButton: ImageButton
+    lateinit var tagsUnactiveButton: ImageButton
+    lateinit var urlActiveButton: ImageButton
+    lateinit var urlUnactiveButton: ImageButton
+
+    lateinit var infoContainer: ConstraintLayout
+    lateinit var tagsContainer: ConstraintLayout
+    lateinit var urlContainer: ConstraintLayout
 
 
     override fun onAttach(context: Context) {
@@ -200,56 +214,29 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         val focus = dark_room_edit_map_focus
 
         //buttons
-        val infoActiveButton = dark_room_edit_info_button_active
-        val infoUnactiveButton = dark_room_edit_info_button_unactive
-        val tagsActiveButton = dark_room_edit_tags_button_active
-        val tagsUnactiveButton = dark_room_edit_tags_button_unactive
-        val urlActiveButton = dark_room_edit_url_button_active
-        val urlUnactiveButton = dark_room_edit_url_button_unactive
+        infoActiveButton = dark_room_edit_info_button_active
+        infoUnactiveButton = dark_room_edit_info_button_unactive
+        tagsActiveButton = dark_room_edit_tags_button_active
+        tagsUnactiveButton = dark_room_edit_tags_button_unactive
+        urlActiveButton = dark_room_edit_url_button_active
+        urlUnactiveButton = dark_room_edit_url_button_unactive
 
         //containers
-        val infoButtonsContainer = dark_room_edit_info_buttons_container
-        val tagButtonsContainer = dark_room_edit_tags_buttons_container
-        val urlButtonsContainer = dark_room_edit_url_buttons_container
+        infoContainer = dark_room_edit_information_container
+        tagsContainer = dark_room_edit_tags_container
+        urlContainer = dark_room_edit_url_container
 
 
         infoUnactiveButton.setOnClickListener {
-            infoUnactiveButton.visibility = View.GONE
-            infoActiveButton.visibility = View.VISIBLE
-            tagsUnactiveButton.visibility = View.VISIBLE
-            tagsActiveButton.visibility = View.GONE
-            urlUnactiveButton.visibility = View.VISIBLE
-            urlActiveButton.visibility = View.GONE
-
-            infoButtonsContainer.visibility = View.VISIBLE
-            tagButtonsContainer.visibility = View.GONE
-            urlButtonsContainer.visibility = View.GONE
+            makeInfoActive()
         }
 
         tagsUnactiveButton.setOnClickListener {
-            infoUnactiveButton.visibility = View.VISIBLE
-            infoActiveButton.visibility = View.GONE
-            tagsUnactiveButton.visibility = View.GONE
-            tagsActiveButton.visibility = View.VISIBLE
-            urlUnactiveButton.visibility = View.VISIBLE
-            urlActiveButton.visibility = View.GONE
-
-            infoButtonsContainer.visibility = View.GONE
-            tagButtonsContainer.visibility = View.VISIBLE
-            urlButtonsContainer.visibility = View.GONE
+            makeTagsActive()
         }
 
         urlUnactiveButton.setOnClickListener {
-            infoUnactiveButton.visibility = View.VISIBLE
-            infoActiveButton.visibility = View.GONE
-            tagsUnactiveButton.visibility = View.VISIBLE
-            tagsActiveButton.visibility = View.GONE
-            urlUnactiveButton.visibility = View.GONE
-            urlActiveButton.visibility = View.VISIBLE
-
-            infoButtonsContainer.visibility = View.GONE
-            tagButtonsContainer.visibility = View.GONE
-            urlButtonsContainer.visibility = View.VISIBLE
+            makeUrlActive()
         }
 
 
@@ -293,6 +280,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         val saveButton = dark_room_edit_save
         shareButton = dark_room_edit_share
         progressBar = dark_room_edit_progress_bar
+        uploadBackground = dark_room_edit_white_background
 
 
 
@@ -424,7 +412,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                         }
 
 
-
                     }
                 })
 
@@ -442,7 +429,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
         addTagButton.setOnClickListener {
 
-            if (!imageTagsInput.text.isEmpty()) {
+            if (imageTagsInput.text.isNotEmpty()) {
 
                 var tagsMatchCount = 0
 
@@ -455,7 +442,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                 if (tagsMatchCount == 0) {
                     if (imageChipGroup.childCount < 5) {
-                        onTagSelected(imageTagsInput.text.toString())
+                        onTagSelected(imageTagsInput.text.toString().toLowerCase())
                         imageTagsInput.text.clear()
                     } else {
                         Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
@@ -487,7 +474,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 tagsFiltredAdapter.clear()
 
-                val userInput = s.toString()
+                val userInput = s.toString().toLowerCase()
 
                 if (userInput == "") {
                     tagSuggestionRecycler.visibility = View.GONE
@@ -536,14 +523,21 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
         shareButton.setOnClickListener {
 
-            shareButton.isClickable = false
-
-            for (i in 0 until imageChipGroup.childCount) {
-                val chip = imageChipGroup.getChildAt(i) as Chip
-                imageTagsList.add(chip.text.toString())
+            if (imageChipGroup.childCount > 0) {
+                Log.d("children", "are more than 0")
+                for (i in 0 until imageChipGroup.childCount) {
+                    val chip = imageChipGroup.getChildAt(i) as Chip
+                    imageTagsList.add(chip.text.toString())
+                }
+                progressBar.visibility = View.VISIBLE
+                uploadBackground.visibility = View.VISIBLE
+                uploadPhotoToStorage()
+            } else {
+                Toast.makeText(this.context, "Please add at least one tag", Toast.LENGTH_SHORT).show()
+                makeTagsActive()
             }
 
-            uploadPhotoToStorage()
+
         }
 
 
@@ -687,6 +681,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         val uid = FirebaseAuth.getInstance().uid
         val ref = FirebaseDatabase.getInstance().getReference("/images/").push()
         val imageBodyRef = FirebaseDatabase.getInstance().getReference("/images/${ref.key}/body")
+        val userImagesRef = FirebaseDatabase.getInstance().getReference("/users/$uid/images/${ref.key}")
 
         val newImage = Images(
             ref.key!!,
@@ -708,29 +703,32 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             .addOnSuccessListener {
                 progressBar.progress = 85f
                 Log.d("imageToDatabase", "image saved to feed successfully: ${ref.key}")
-                val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/users/$uid/images")
 
-                refToUsersDatabase.setValue(mapOf(ref.key to true))
-                    .addOnSuccessListener {
-                        progressBar.progress = 95f
-                        Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
+      
 
-                        for (t in imageTagsList) {
-                            val refTag = FirebaseDatabase.getInstance().getReference("/tags/$t/${ref.key}")
-                            val refUserTags = FirebaseDatabase.getInstance().getReference("users/$uid/interests/$t")
+                userImagesRef.setValue(true).addOnSuccessListener {
 
-                            refTag.setValue("image")
-                            refUserTags.setValue(true)
-                            progressBar.progress = 100f
-                        }
+                    progressBar.progress = 95f
+                    Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
 
-                        localImageViewModel.delete(localImagePost)
+                    for (t in imageTagsList) {
+                        val refTag = FirebaseDatabase.getInstance().getReference("/tags/$t/${ref.key}")
+                        val refUserTags = FirebaseDatabase.getInstance().getReference("users/$uid/interests/$t")
 
-
-                        val backToFeed = Intent((activity as CameraActivity), MainActivity::class.java)
-                        startActivity(backToFeed)
-
+                        refTag.setValue("image")
+                        refUserTags.setValue(true)
+                        progressBar.progress = 100f
                     }
+
+
+
+                    localImageViewModel.delete(localImagePost)
+
+
+                    val backToFeed = Intent((activity as CameraActivity), MainActivity::class.java)
+                    startActivity(backToFeed)
+                }
+
                     .addOnFailureListener {
                         uploadFail()
                         Log.d("imageToDatabaseByUser", "image did not save to byUser")
@@ -742,9 +740,57 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             }
     }
 
+    private fun makeTagsActive() {
+
+        infoUnactiveButton.visibility = View.VISIBLE
+        infoActiveButton.visibility = View.GONE
+
+        tagsUnactiveButton.visibility = View.GONE
+        tagsActiveButton.visibility = View.VISIBLE
+
+        urlUnactiveButton.visibility = View.VISIBLE
+        urlActiveButton.visibility = View.GONE
+
+        infoContainer.visibility = View.GONE
+        tagsContainer.visibility = View.VISIBLE
+        urlContainer.visibility = View.GONE
+
+    }
+
+    private fun makeUrlActive() {
+        infoUnactiveButton.visibility = View.VISIBLE
+        infoActiveButton.visibility = View.GONE
+
+        tagsUnactiveButton.visibility = View.VISIBLE
+        tagsActiveButton.visibility = View.GONE
+
+        urlUnactiveButton.visibility = View.GONE
+        urlActiveButton.visibility = View.VISIBLE
+
+        infoContainer.visibility = View.GONE
+        tagsContainer.visibility = View.GONE
+        urlContainer.visibility = View.VISIBLE
+    }
+
+    private fun makeInfoActive() {
+        infoUnactiveButton.visibility = View.GONE
+        infoActiveButton.visibility = View.VISIBLE
+
+        tagsUnactiveButton.visibility = View.VISIBLE
+        tagsActiveButton.visibility = View.GONE
+
+        urlUnactiveButton.visibility = View.VISIBLE
+        urlActiveButton.visibility = View.GONE
+
+        infoContainer.visibility = View.VISIBLE
+        tagsContainer.visibility = View.GONE
+        urlContainer.visibility = View.GONE
+    }
+
 
     private fun uploadFail() {
         progressBar.visibility = View.GONE
+        uploadBackground.visibility = View.GONE
         shareButton.isClickable = true
     }
 

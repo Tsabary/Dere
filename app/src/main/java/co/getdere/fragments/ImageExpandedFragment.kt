@@ -47,14 +47,6 @@ import java.util.*
 
 class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
-
-//    val imageFragment = ImageFragment()
-//    val imageMapView2Fragment = ImageMapViewFragment()
-//    lateinit var imageExpendedFm : FragmentManager
-//
-//    lateinit var activeFragment : Fragment
-
-
     lateinit var imageObject: Images
     lateinit var privacy: String
 
@@ -63,26 +55,25 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
     lateinit var currentUser: Users
 
     val commentsRecyclerAdapter = GroupAdapter<ViewHolder>()
-    val commentsRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
+    private val commentsRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
 
     lateinit var layoutScroll: NestedScrollView
 
     lateinit var buo: BranchUniversalObject
     lateinit var lp: LinkProperties
 
-    var viewPagerPosition = 0
-    lateinit var imageExpendedViewPager: SwipeLockableViewPager
+    private var viewPagerPosition = 0
+    private lateinit var imageExpendedViewPager: SwipeLockableViewPager
+
+    lateinit var actionsContainer: ConstraintLayout
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
         activity?.let {
             sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
-
             sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
-
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-
         }
     }
 
@@ -120,6 +111,15 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         val linkIcon = image_expended_link_icon
         val linkAddress = image_expended_link_address
 
+        val optionsButton = image_expended_options_button
+        val optionsContainer = image_expended_options_background
+        val editButton = image_expended_options_edit
+        val deleteButton = image_expended_options_delete
+        val deleteEditContainer = image_expended_options_edit_delete
+        val deleteContainer = image_expended_options_delete_container
+        val removeButton = image_expended_options_delete_remove
+        val cancelButton = image_expended_options_delete_cancel
+
 
         val postButton = photo_comments_post_button
         val commentInput = photo_comments_comment_input
@@ -128,12 +128,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         val pagerAdapter = ImageExpandedPagerAdapter(childFragmentManager)
         imageExpendedViewPager.adapter = pagerAdapter
 
-//        imageExpendedFm.beginTransaction()
-//            .add(R.id.image_expended_container, imageFragment, "imageFragment").commit()
-//        imageExpendedFm.beginTransaction()
-//            .add(R.id.image_expended_container, imageMapView2Fragment, "imageMapView2Fragment")
-//            .hide(imageMapView2Fragment).commit()
-//        activeFragment = imageFragment
+        actionsContainer = image_expended_actions_container
 
         layoutScroll = photo_social_scrollView
 
@@ -151,32 +146,6 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                 imageExpendedViewPager.currentItem = 0
                 imageObject = image
 
-
-
-
-//                    Glide.with(this).load(image.imageBig).into(mainImage)
-                imageTimestamp.text = PrettyTime().format(Date(image.timestampUpload))
-
-                if (image.details.isNotEmpty()) {
-                    imageContent.visibility = View.VISIBLE
-                    imageContent.text = image.details
-
-                }
-
-                if (image.link.isNotEmpty()) {
-                    linkAddress.text = image.link
-                    linkAddress.visibility = View.VISIBLE
-                    linkIcon.visibility = View.VISIBLE
-
-                }
-
-
-                checkIfBucketed(bucketButton, image, currentUser.uid)
-                listenToBucketCount(bucketCount, image)
-
-
-//                    listenToCommentCount(commentCount, image)
-
                 listenToLikeCount(likeCount, image)
                 executeLike(
                     image,
@@ -190,14 +159,68 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                     activity
                 )
 
-                listenToComments(image)
+                imageTimestamp.text = PrettyTime().format(Date(image.timestampUpload))
 
-                var contentDescription = ""
 
                 if (image.details.isNotEmpty()) {
-                    contentDescription = image.details
+                    imageContent.visibility = View.VISIBLE
+                    imageContent.text = image.details
+                }
+
+                if (image.link.isNotEmpty()) {
+                    linkAddress.text = image.link
+                    linkAddress.visibility = View.VISIBLE
+                    linkIcon.visibility = View.VISIBLE
+                }
+
+                if (image.photographer == currentUser.uid) {
+                    optionsButton.visibility = View.VISIBLE
+
+                    optionsButton.setOnClickListener {
+                        optionsContainer.visibility = View.VISIBLE
+                    }
+
+                    optionsContainer.setOnClickListener {
+                        optionsContainer.visibility = View.GONE
+                    }
+
+                    editButton.setOnClickListener {
+
+                    }
+
+                    deleteButton.setOnClickListener {
+                        deleteEditContainer.visibility = View.GONE
+                        deleteContainer.visibility = View.VISIBLE
+                    }
+
+                    cancelButton.setOnClickListener {
+                        deleteEditContainer.visibility = View.VISIBLE
+                        deleteContainer.visibility = View.GONE
+                    }
+
+                    removeButton.setOnClickListener {
+                        val imageRef = FirebaseDatabase.getInstance().getReference("/images/${image.id}")
+                        imageRef.removeValue()
+                        val imageAtUserRef =
+                            FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/images/${image.id}")
+                        imageAtUserRef.removeValue()
+                    }
+
                 } else {
-                    contentDescription = "Save it. Get Dere."
+                    optionsButton.visibility = View.GONE
+                }
+
+                checkIfBucketed(bucketButton, image, currentUser.uid)
+                listenToBucketCount(bucketCount, image)
+
+                actionsContainer.visibility = View.VISIBLE
+
+//                listenToComments(image)
+
+                val contentDescription = if (image.details.isNotEmpty()) {
+                    image.details
+                } else {
+                    "Save it. Get Dere."
                 }
 
                 sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {

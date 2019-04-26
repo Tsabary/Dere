@@ -24,7 +24,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.fragment_following_feed.*
+import kotlinx.android.synthetic.main.fragment_feeds_layout.*
 
 
 open class FollowingFeedFragment : Fragment() {
@@ -69,7 +69,7 @@ open class FollowingFeedFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        val myView = inflater.inflate(R.layout.fragment_following_feed, container, false)
+        val myView = inflater.inflate(R.layout.fragment_feeds_layout, container, false)
 
         feedRecycler = myView.findViewById(R.id.following_feed_gallery)
 

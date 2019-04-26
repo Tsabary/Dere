@@ -216,7 +216,7 @@
                     android:layout_marginStart="32dp"
                     android:id="@+id/dark_room_edit_tag_recycler"
                     android:scrollbars="vertical"
-                    android:background="@drawable/board_unresolved_count_background"
+                    android:background="@drawable/tag_suggestions_recycler"
                     android:visibility="gone"/>
 
 

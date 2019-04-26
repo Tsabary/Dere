@@ -65,7 +65,7 @@ open class InterestsFeedFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        val myView = inflater.inflate(R.layout.fragment_following_feed, container, false)
+        val myView = inflater.inflate(R.layout.fragment_feeds_layout, container, false)
 
         feedRecycler = myView.findViewById(R.id.following_feed_gallery)
 

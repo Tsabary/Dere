@@ -31,6 +31,7 @@ import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.google.firebase.messaging.FirebaseMessaging
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
@@ -95,10 +96,14 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             when (it.itemId) {
 
                 R.id.profile_logout -> {
-                    FirebaseAuth.getInstance().signOut()
-                    val intent = Intent(this.context, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    startActivity(intent)
+                    val uid = FirebaseAuth.getInstance().uid
+                    FirebaseMessaging.getInstance().unsubscribeFromTopic(uid).addOnSuccessListener {
+                        FirebaseAuth.getInstance().signOut()
+                        val intent = Intent(this.context, LoginActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(intent)
+                    }
+
                     return@setOnMenuItemClickListener true
                 }
 
@@ -150,6 +155,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         profileGalleryRoll.adapter = galleryRollAdapter
         val rollGalleryLayoutManager = GridLayoutManager(this.context, 3)
+        rollGalleryLayoutManager.reverseLayout = true
         profileGalleryRoll.layoutManager = rollGalleryLayoutManager
 
         profileGalleryBuckets.adapter = galleryBucketAdapter

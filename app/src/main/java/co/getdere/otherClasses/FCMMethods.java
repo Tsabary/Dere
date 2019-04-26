@@ -18,22 +18,24 @@ public interface FCMMethods {
 
     static void sendMessageTopic(String receiverId, String initiatorId, String post, Activity activity, String message, String title) {
 
-        JSONObject notification = new JSONObject();
-        JSONObject notificationBody = new JSONObject();
-        try {
-            notificationBody.put("title", title);
-            notificationBody.put("message", message);
-            notificationBody.put("initiator", initiatorId);
-            notificationBody.put("post", post);
+        if (!receiverId.equals(initiatorId)){
+            JSONObject notification = new JSONObject();
+            JSONObject notificationBody = new JSONObject();
+            try {
+                notificationBody.put("title", title);
+                notificationBody.put("message", message);
+                notificationBody.put("initiator", initiatorId);
+                notificationBody.put("post", post);
 
-            notification.put("to", "/topics/" + receiverId);
-            notification.put("data", notificationBody);
-        } catch (
-                JSONException e) {
-            Log.e("notificationStuff", "onCreate: " + e.getMessage());
+                notification.put("to", "/topics/" + receiverId);
+                notification.put("data", notificationBody);
+            } catch (
+                    JSONException e) {
+                Log.e("notificationStuff", "onCreate: " + e.getMessage());
+            }
+
+            sendNotification(notification, activity);
         }
-
-        sendNotification(notification, activity);
     }
 
     static void sendNotification(JSONObject notification, Activity activity) {

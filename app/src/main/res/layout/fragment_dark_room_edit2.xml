@@ -30,9 +30,19 @@
             cpb:layout_constraintEnd_toEndOf="parent"
             cpb:layout_constraintTop_toTopOf="parent"
             cpb:layout_constraintBottom_toBottomOf="parent"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:elevation="2dp"/>
 
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#80FFFFFF"
+            android:elevation="1dp"
+            android:id="@+id/dark_room_edit_white_background"
+            android:visibility="gone">
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -130,7 +140,7 @@
                                 mapbox:layout_constraintTop_toTopOf="parent"
                                 mapbox:layout_constraintBottom_toBottomOf="parent"
                                 mapbox:layout_constraintStart_toStartOf="parent"
-                                tools:visibility="gone"/>
+                                android:visibility="gone"/>
                         <ImageButton
                                 android:src="@drawable/info_active"
                                 android:layout_width="48dp"
@@ -264,36 +274,6 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:id="@+id/dark_room_edit_url_container"
-                    mapbox:layout_constraintTop_toBottomOf="@+id/dark_room_edit_tags_container"
-                    android:layout_marginTop="24dp"
-                    mapbox:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginEnd="24dp"
-                    mapbox:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginStart="24dp"
-                    android:visibility="gone">
-
-                <EditText
-                        android:id="@+id/dark_room_edit_url"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:hint="Any useful links that you can share?"
-                        android:elevation="2dp"
-                        android:inputType="textUri|textMultiLine"
-                        android:background="@android:color/transparent"
-                        android:gravity="top"
-                        android:lineSpacingExtra="4sp"
-                        mapbox:layout_constraintEnd_toEndOf="parent"
-                        mapbox:layout_constraintStart_toStartOf="parent"
-                        mapbox:layout_constraintBottom_toBottomOf="parent"
-                        mapbox:layout_constraintTop_toTopOf="parent"/>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/dark_room_edit_tags_container"
                     mapbox:layout_constraintTop_toBottomOf="@+id/dark_room_edit_information_container"
@@ -323,10 +303,11 @@
                         android:id="@+id/dark_room_edit_tag_input"
                         app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_chip_group"
                         app:layout_constraintStart_toStartOf="parent"
-                        android:digits="abcdefghijklmnopqrstuvwxyz0123456789-"
+                        android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
                         android:background="@android:color/transparent"
-                        android:inputType="textEmailAddress"
-                        app:layout_constraintEnd_toStartOf="@+id/dark_room_edit_add_tag_button"/>
+                        app:layout_constraintEnd_toStartOf="@+id/dark_room_edit_add_tag_button"
+                        android:layout_marginTop="8dp"
+                        android:inputType="textEmailAddress"/>
 
 
                 <ImageButton
@@ -349,10 +330,9 @@
                         app:layout_constraintStart_toStartOf="parent"
                         android:id="@+id/dark_room_edit_tag_recycler"
                         android:scrollbars="vertical"
-                        android:background="@drawable/board_unresolved_count_background"
+                        android:background="@drawable/tag_suggestions_recycler"
                         android:visibility="gone"
-                        tools:layout_editor_absoluteY="393dp"
-                        tools:layout_editor_absoluteX="206dp"/>
+                        android:layout_marginTop="16dp"/>
 
                 <TextView
                         android:text="Use a dash to seperate multi-word tags.\nMaximum 5 tags"
@@ -367,11 +347,44 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
 
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/dark_room_edit_url_container"
+                    mapbox:layout_constraintTop_toBottomOf="@+id/dark_room_edit_tags_container"
+                    android:layout_marginTop="24dp"
+                    mapbox:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginEnd="24dp"
+                    mapbox:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="24dp"
+                    android:visibility="gone">
+
+                <EditText
+                        android:id="@+id/dark_room_edit_url"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:hint="Any useful links that you can share?"
+                        android:elevation="2dp"
+                        android:inputType="textUri|textMultiLine"
+                        android:background="@android:color/transparent"
+                        android:gravity="top"
+                        android:lineSpacingExtra="4sp"
+                        mapbox:layout_constraintEnd_toEndOf="parent"
+                        mapbox:layout_constraintStart_toStartOf="parent"
+                        mapbox:layout_constraintBottom_toBottomOf="parent"
+                        mapbox:layout_constraintTop_toTopOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:id="@+id/dark_room_edit_map_container"
-                    app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_tags_container"
+                    app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_url_container"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     android:layout_marginTop="32dp">
@@ -384,7 +397,9 @@
                         mapbox:layout_constraintEnd_toEndOf="parent"
                         mapbox:layout_constraintStart_toStartOf="parent"
                         mapbox:layout_constraintTop_toTopOf="parent"
-                        mapbox:layout_constraintBottom_toBottomOf="parent"/>
+                        mapbox:layout_constraintBottom_toBottomOf="parent"
+                        mapbox:layout_constraintHorizontal_bias="0.0"
+                        mapbox:layout_constraintVertical_bias="0.0"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -410,7 +425,8 @@
                         android:textColor="@color/white"
                         android:gravity="center"
                         app:layout_constraintTop_toTopOf="parent"
-                        android:layout_marginTop="32dp"/>
+                        android:layout_marginTop="32dp"
+                        android:layout_marginEnd="32dp"/>
 
                 <TextView
                         android:text="SAVE"
@@ -425,7 +441,8 @@
                         app:layout_constraintHorizontal_bias="0.5"
                         app:layout_constraintEnd_toStartOf="@+id/dark_room_edit_share"
                         android:textColor="@color/green700"
-                        android:gravity="center"/>
+                        android:gravity="center"
+                        android:layout_marginStart="32dp"/>
 
 
                 <TextView
@@ -440,9 +457,9 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintHorizontal_bias="0.5"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintVertical_bias="0.0"/>
-
-
+                        app:layout_constraintVertical_bias="0.0"
+                        android:layout_marginTop="24dp"
+                        android:layout_marginBottom="32dp"/>
 
 
                 <TextView
@@ -454,7 +471,8 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_share"
                         android:fontFamily="@font/open_sans_semibold"
-                        android:visibility="gone"/>
+                        android:visibility="gone"
+                        android:layout_marginTop="24dp"/>
 
                 <TextView
                         android:text="DELETE"
@@ -482,7 +500,9 @@
                         app:layout_constraintEnd_toStartOf="@+id/dark_room_edit_delete_remove_button"
                         app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_delete_message"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        android:visibility="gone"/>
+                        android:visibility="gone"
+                        android:layout_marginBottom="32dp"
+                        android:layout_marginTop="16dp"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

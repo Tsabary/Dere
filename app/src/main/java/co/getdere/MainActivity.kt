@@ -220,13 +220,17 @@ class MainActivity : AppCompatActivity(), DereMethods {
                         subFm.beginTransaction().hide(subActive).show(bucketGalleryFragment).commit()
                         subActive = bucketGalleryFragment
                         sharedViewModelImage.sharedImageObject.postValue(Images())
+                        imageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
                     } else if (isOpenedQuestionActive) {
                         subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
                         subActive = openedQuestionFragment
                         sharedViewModelImage.sharedImageObject.postValue(Images())
+                        imageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
+
                     } else {
                         switchVisibility(0)
                         sharedViewModelImage.sharedImageObject.postValue(Images())
+                        imageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
                     }
                 }
                 bucketFragment -> {

@@ -78,9 +78,6 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity : 
             verifiedInfoText.visibility = View.GONE
         }
 
-
-
-
         Glide.with(viewHolder.root.context).load(currentUser.image)
             .into(viewHolder.itemView.linear_feed_current_user_photo)
 
@@ -94,8 +91,6 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity : 
             .apply(requestOption).into(viewHolder.itemView.linear_feed_image)
 
         viewHolder.itemView.linear_feed_timestamp.text = PrettyTime().format(Date(image.timestampUpload))
-
-
 
 
         listenToBucketCount(bucketCount, image)

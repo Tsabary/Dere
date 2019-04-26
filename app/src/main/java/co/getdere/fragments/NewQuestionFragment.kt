@@ -180,7 +180,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 tagsFilteredAdapter.clear()
 
-                val userInput = s.toString()
+                val userInput = s.toString().toLowerCase()
 
                 if (userInput == "") {
                     tagSuggestionRecycler.visibility = View.GONE
@@ -231,7 +231,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
         addTagButton.setOnClickListener {
 
-            if (!questionTagsInput.text.isEmpty()){
+            if (questionTagsInput.text.isNotEmpty()){
 
                 var tagsMatchCount = 0
 
@@ -244,7 +244,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
                 if (tagsMatchCount == 0) {
                     if (questionChipGroup.childCount < 5) {
-                        onTagSelected(questionTagsInput.text.toString())
+                        onTagSelected(questionTagsInput.text.toString().toLowerCase())
                         questionTagsInput.text.clear()
                     } else {
                         Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()

@@ -76,18 +76,18 @@ class DarkRoomMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
                         locationComponent.activateLocationComponent(this.context!!, mapboxMap.style!!)
-                    }
 
-                    // Enable to make component visible
-                    locationComponent.isLocationComponentEnabled = true
+                        // Enable to make component visible
+                        locationComponent.isLocationComponentEnabled = true
 
-                    // Set the component's camera mode
+                        // Set the component's camera mode
 //                    locationComponent.cameraMode = CameraMode.TRACKING
 
-                    // Set the component's render mode
-                    locationComponent.renderMode = RenderMode.COMPASS
+                        // Set the component's render mode
+                        locationComponent.renderMode = RenderMode.COMPASS
 
-                    panToCurrentLocation(activity as CameraActivity, myMapboxMap!!)
+                        panToCurrentLocation(activity as CameraActivity, mapboxMap)
+                    }
 
 
                 } else {

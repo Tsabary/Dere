@@ -132,6 +132,8 @@ class AddToBucketFragment : Fragment(), DereMethods {
                                         activity as MainActivity
                                     )
 
+                                    (activity as MainActivity).profileLoggedInUserFragment.galleryBucketAdapter.notifyDataSetChanged()
+
                                 }
 
                             }

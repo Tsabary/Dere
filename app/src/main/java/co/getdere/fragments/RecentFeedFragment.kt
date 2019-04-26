@@ -50,7 +50,7 @@ class RecentFeedFragment : Fragment() {
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_following_feed, container, false)
+        inflater.inflate(R.layout.fragment_feeds_layout, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -71,6 +71,9 @@ class RecentFeedFragment : Fragment() {
             sharedViewModelImage.sharedImageObject.postValue(image.image)
 
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
+
+//            activity.subFm.beginTransaction().setCustomAnimations(R.anim.slide_from_right,0).show(activity.imageFullSizeFragment).commit()
+
             activity.subActive = activity.imageFullSizeFragment
 
             activity.switchVisibility(1)
