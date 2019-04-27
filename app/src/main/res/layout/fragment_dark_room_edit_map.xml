@@ -8,7 +8,7 @@
         tools:context=".fragments.DarkRoomEditFragment"
         android:id="@+id/dark_room_edit_map_container"
         android:visibility="visible">
-    <!--tools:showIn="@layout/fragment_dark_room_edit">-->
+    <!--tools:showIn="@layout/fragment_dark_room_edit_old">-->
 
 
     <ImageButton

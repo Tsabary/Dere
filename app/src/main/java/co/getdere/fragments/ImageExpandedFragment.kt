@@ -170,7 +170,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                 if (image.link.isNotEmpty()) {
                     linkAddress.text = image.link
                     linkAddress.visibility = View.VISIBLE
-                    linkIcon.visibility = View.VISIBLE
+//                    linkIcon.visibility = View.VISIBLE
                 }
 
                 if (image.photographer == currentUser.uid) {
@@ -185,7 +185,9 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                     }
 
                     editButton.setOnClickListener {
-
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imagePostEditFragment)
+                            .commit()
+                        activity.subActive = activity.imagePostEditFragment
                     }
 
                     deleteButton.setOnClickListener {

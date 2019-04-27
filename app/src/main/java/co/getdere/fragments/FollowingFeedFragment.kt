@@ -84,6 +84,11 @@ open class FollowingFeedFragment : Fragment() {
 
         emptyFeedMessage = following_feed_empty
 
+        feed_swipe_refresh.setOnRefreshListener {
+            listenToImages(currentUser)
+            feed_swipe_refresh.isRefreshing = false
+        }
+
         galleryAdapter.setOnItemClickListener { item, _ ->
             val activity = activity as MainActivity
 

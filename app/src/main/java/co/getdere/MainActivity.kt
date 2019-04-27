@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var editProfileFragment: EditProfileFragment
     lateinit var bucketGalleryFragment: BucketGalleryFragment
     lateinit var addImageToAnswer: AddImageToAnswerFragment
+    lateinit var imagePostEditFragment: ImagePostEditFragment
 
 
     lateinit var mainFrame: FrameLayout
@@ -293,6 +294,10 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     switchVisibility(0)
                 }
 
+                imagePostEditFragment -> {
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+                }
 
             }
 
@@ -408,6 +413,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         editProfileFragment = EditProfileFragment()
         bucketGalleryFragment = BucketGalleryFragment()
         addImageToAnswer = AddImageToAnswerFragment()
+        imagePostEditFragment = ImagePostEditFragment()
 
 
         subFm.beginTransaction()
@@ -444,6 +450,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
             .hide(bucketGalleryFragment).commit()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, addImageToAnswer, "addImageToAnswer")
             .hide(addImageToAnswer).commit()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, imagePostEditFragment, "imagePostEditFragment")
+            .hide(imagePostEditFragment).commit()
 
 
         subActive = imageFullSizeFragment

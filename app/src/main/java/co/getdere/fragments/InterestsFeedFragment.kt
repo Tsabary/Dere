@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.fragment_feeds_layout.*
 
 
 open class InterestsFeedFragment : Fragment() {
@@ -39,7 +40,6 @@ open class InterestsFeedFragment : Fragment() {
     val uid = FirebaseAuth.getInstance().uid
 
     lateinit var galleryLayoutManager: LinearLayoutManager
-
 
 
     override fun onAttach(context: Context) {
@@ -63,23 +63,21 @@ open class InterestsFeedFragment : Fragment() {
     }
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
-        val myView = inflater.inflate(R.layout.fragment_feeds_layout, container, false)
-
-        feedRecycler = myView.findViewById(R.id.following_feed_gallery)
-
-        return myView
-    }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_feeds_layout, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity!!.title = "Feed"
+        feedRecycler = following_feed_gallery
 
         setUpGalleryAdapter()
 
+        feed_swipe_refresh.setOnRefreshListener {
+            listenToImages(currentUser)
+            feed_swipe_refresh.isRefreshing = false
+        }
 
         galleryAdapter.setOnItemClickListener { item, _ ->
             val activity = activity as MainActivity
@@ -93,7 +91,6 @@ open class InterestsFeedFragment : Fragment() {
             activity.switchVisibility(1)
 
             activity.subActive = activity.imageFullSizeFragment
-
 
 
             // meanwhile in the background it will load the random user object
@@ -127,11 +124,7 @@ open class InterestsFeedFragment : Fragment() {
         galleryLayoutManager.reverseLayout = true
 
         listenToImages(currentUser)
-
     }
-
-
-
 
 
     private fun listenToImages(currentUser: Users) { //This needs to be fixed to not update in real time. Or should it?
@@ -141,55 +134,52 @@ open class InterestsFeedFragment : Fragment() {
 
         val ref = FirebaseDatabase.getInstance().getReference("/images")
 
-        ref.addChildEventListener(object : ChildEventListener {
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
 
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                for (i in p0.children){
 
-                val singleImageFromDB = p0.child("body").getValue(Images::class.java)
+                    val singleImageFromDB = i.child("body").getValue(Images::class.java)
 
-                if (singleImageFromDB != null) {
+                    if (singleImageFromDB != null) {
 
-                    Log.d("AccountPhoto", singleImageFromDB.photographer)
+                        Log.d("AccountPhoto", singleImageFromDB.photographer)
 
 
-                    val completedInterestsList = sharedViewModelInterests.interestList
+                        val completedInterestsList = sharedViewModelInterests.interestList
 
-                    singlePhotoLoop@for (tag in singleImageFromDB.tags){
+                        singlePhotoLoop@ for (tag in singleImageFromDB.tags) {
 
-                        for (interest in completedInterestsList) {
+                            for (interest in completedInterestsList) {
 
-                            Log.d("AccountFromList", interest)
+                                Log.d("AccountFromList", interest)
 
-                            if (interest == tag) {
-                                if (!singleImageFromDB.private) {
-                                    galleryAdapter.add(LinearFeedImage(singleImageFromDB, currentUser, activity as MainActivity))
-                                    break@singlePhotoLoop
+                                if (interest == tag) {
+                                    if (!singleImageFromDB.private) {
+                                        galleryAdapter.add(
+                                            LinearFeedImage(
+                                                singleImageFromDB,
+                                                currentUser,
+                                                activity as MainActivity
+                                            )
+                                        )
+                                        break@singlePhotoLoop
+                                    }
                                 }
+
                             }
 
                         }
 
+
                     }
-
-
 
                 }
 
             }
 
             override fun onCancelled(p0: DatabaseError) {
-
             }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
-
         })
 
     }

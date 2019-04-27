@@ -29,6 +29,7 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.board_toolbar.*
 import kotlinx.android.synthetic.main.fragment_board.*
+import kotlinx.android.synthetic.main.fragment_feeds_layout.*
 
 class BoardFragment : Fragment() {
 
@@ -39,13 +40,13 @@ class BoardFragment : Fragment() {
     lateinit var sharedViewModelInterests: SharedViewModelInterests
     lateinit var sharedViewModelTags: SharedViewModelTags
 
-    private lateinit var questionsRecycler : RecyclerView
-    private lateinit var searchedQuestionsRecycler : RecyclerView
+    private lateinit var questionsRecycler: RecyclerView
+    private lateinit var searchedQuestionsRecycler: RecyclerView
 
     var interestsList: MutableList<String> = mutableListOf()
     val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
 
-    private lateinit var boardFilterChipGroup : ChipGroup
+    private lateinit var boardFilterChipGroup: ChipGroup
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -113,6 +114,11 @@ class BoardFragment : Fragment() {
         val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
         tagSuggestionRecycler.adapter = tagsFilteredAdapter
+
+        board_swipe_refresh.setOnRefreshListener {
+            listenToQuestions()
+            board_swipe_refresh.isRefreshing = false
+        }
 
         val boardNotificationIcon = board_toolbar_notifications_icon
         val boardSavedQuestionIcon = board_toolbar_saved_questions_icon
@@ -278,9 +284,9 @@ class BoardFragment : Fragment() {
 
     }
 
-    fun recyclersVisibility(case : Int){
+    fun recyclersVisibility(case: Int) {
 
-        if (case == 0){
+        if (case == 0) {
             searchedQuestionsRecycler.visibility = View.GONE
             questionsRecycler.visibility = View.VISIBLE
         } else {
@@ -310,7 +316,7 @@ class BoardFragment : Fragment() {
     }
 
 
-    private fun searchQuestions(searchTag : String) {
+    private fun searchQuestions(searchTag: String) {
 
         searchedQuestionsRecyclerAdapter.clear()
 
@@ -325,13 +331,13 @@ class BoardFragment : Fragment() {
                 if (singleQuestionFromDB != null) {
 
 
-                        runThroughTags@for (tag in singleQuestionFromDB.tags) {
+                    runThroughTags@ for (tag in singleQuestionFromDB.tags) {
 
-                            if (searchTag == tag) {
-                                searchedQuestionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
-                                break@runThroughTags
-                            }
+                        if (searchTag == tag) {
+                            searchedQuestionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
+                            break@runThroughTags
                         }
+                    }
 
                 }
             }
@@ -353,45 +359,35 @@ class BoardFragment : Fragment() {
     }
 
 
-
-
     private fun listenToQuestions() {
 
         questionsRecyclerAdapter.clear()
 
         val ref = FirebaseDatabase.getInstance().getReference("/questions")
-        ref.addChildEventListener(object : ChildEventListener {
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
 
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                for (i in p0.children) {
+                    val singleQuestionFromDB = i.child("main").child("body").getValue(Question::class.java)
 
-                val singleQuestionFromDB = p0.child("main").child("body").getValue(Question::class.java)
+                    if (singleQuestionFromDB != null) {
 
+                        singleQuestionLoop@ for (interest in interestsList) {
 
-                if (singleQuestionFromDB != null) {
+                            for (tag in singleQuestionFromDB.tags) {
 
-                    singleQuestionLoop@ for (interest in interestsList) {
-
-                        for (tag in singleQuestionFromDB.tags) {
-
-                            if (interest == tag) {
-                                questionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
-                                break@singleQuestionLoop
+                                if (interest == tag) {
+                                    questionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
+                                    break@singleQuestionLoop
+                                }
                             }
                         }
                     }
                 }
+
             }
 
             override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
             }
 
         })

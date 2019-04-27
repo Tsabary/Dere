@@ -20,6 +20,7 @@ import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.fragment_feeds_layout.*
 
 
 class RecentFeedFragment : Fragment() {
@@ -62,6 +63,10 @@ class RecentFeedFragment : Fragment() {
         setUpGalleryAdapter()
 
 
+        feed_swipe_refresh.setOnRefreshListener {
+            listenToImages()
+            feed_swipe_refresh.isRefreshing = false
+        }
 
         galleryAdapter.setOnItemClickListener { item, _ ->
             val activity = activity as MainActivity

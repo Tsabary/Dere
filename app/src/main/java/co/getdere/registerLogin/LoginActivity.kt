@@ -17,7 +17,7 @@ import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.messaging.FirebaseMessaging
 import com.tomer.fadingtextview.FadingTextView
 import kotlinx.android.synthetic.main.activity_login.*
-import kotlinx.android.synthetic.main.fragment_dark_room_edit.*
+import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.*
 import java.util.concurrent.TimeUnit
 
 class LoginActivity : AppCompatActivity(), DereMethods {
