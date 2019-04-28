@@ -82,6 +82,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
     lateinit var sharedViewModelTags: SharedViewModelTags
     lateinit var sharedViewModelImage: SharedViewModelImage
 
+    lateinit var myImageObject: Images
 
     val tagsFiltredAdapter = GroupAdapter<ViewHolder>()
     lateinit var imageChipGroup: ChipGroup
@@ -238,6 +239,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment)
                 .commit()
             activity.subActive = activity.imageFullSizeFragment
+            makeInfoActive()
         }
 
 
@@ -266,6 +268,10 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                 sharedViewModelImage.sharedImageObject.observe(this, Observer {
                     it?.let { imageObject ->
+                        myImageObject = imageObject
+
+                        imageTagsList.clear()
+//                        imageChipGroup.removeAllViews()
 
                         Glide.with(this).load(imageObject.imageBig).into(imageHorizontal)
 
@@ -274,7 +280,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                         imageLat = imageObject.location[0]
                         imageLong = imageObject.location[1]
 
-                        for (tag in imageObject.tags) {
+                        imageObject.tags.forEach { tag ->
                             imageTagsList.add(tag)
                             onTagSelected(tag)
                         }
@@ -296,14 +302,11 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                             }
                         }
 
-
-
                         if (imageObject.verified) {
                             mapContainer.visibility = View.GONE
                         } else {
                             mapContainer.visibility = View.VISIBLE
                         }
-
 
                         symbolOptions = SymbolOptions()
                             .withLatLng(LatLng(imageLat, imageLong))
@@ -312,9 +315,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                             .withZIndex(10)
                             .withDraggable(false)
 
-
                         symbolManager.create(symbolOptions)
-
 
                         val position = CameraPosition.Builder()
                             .target(LatLng(imageObject.location[0], imageObject.location[1]))
@@ -326,7 +327,6 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                         val locationComponent = mapboxMap.locationComponent
 
                         if (PermissionsManager.areLocationPermissionsGranted(this.context)) {
-
 
                             // Activate with options
                             if (ContextCompat.checkSelfPermission(
@@ -353,8 +353,6 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                         }
 
 
-
-
                         setLocation.setOnClickListener {
                             symbolManager.deleteAll()
 
@@ -379,28 +377,61 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                         saveButton.setOnClickListener {
 
-                            val locationInput = imageLocationInput.text.toString()
-                            val url = imageUrl.text.toString()
+                            if (imageChipGroup.childCount > 0){
+                                val locationInput = imageLocationInput.text.toString()
+                                val url = imageUrl.text.toString()
 
-                            val privacy = dark_room_edit_privacy_text.text == "private"
+                                val privacy = dark_room_edit_privacy_text.text == "private"
 
-                            val updatedImage = Images(
-                                imageObject.id,
-                                imageObject.imageBig,
-                                imageObject.imageSmall,
-                                privacy,
-                                imageObject.photographer,
-                                url,
-                                locationInput,
-                                mutableListOf(imageLat, imageLong),
-                                imageObject.timestampTaken,
-                                imageObject.timestampUpload,
-                                imageTagsList,
-                                imageObject.verified
-                            )
+                                for (i in 0 until imageChipGroup.childCount) {
+                                    val chip = imageChipGroup.getChildAt(i) as Chip
+                                    imageTagsList.add(chip.text.toString())
+                                }
 
-                            val imageRef = FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/body")
-                            imageRef.setValue(updatedImage)
+                                val updatedImage = Images(
+                                    imageObject.id,
+                                    imageObject.imageBig,
+                                    imageObject.imageSmall,
+                                    privacy,
+                                    imageObject.photographer,
+                                    url,
+                                    locationInput,
+                                    mutableListOf(imageLat, imageLong),
+                                    imageObject.timestampTaken,
+                                    imageObject.timestampUpload,
+                                    imageTagsList,
+                                    imageObject.verified
+                                )
+
+                                val imageRef = FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/body")
+                                imageRef.removeValue().addOnSuccessListener {
+                                    imageRef.setValue(updatedImage).addOnSuccessListener {
+
+                                        sharedViewModelImage.sharedImageObject.postValue(updatedImage)
+
+                                        activity.subFm.beginTransaction().hide(activity.subActive)
+                                            .show(activity.imageFullSizeFragment)
+                                            .commit()
+                                        activity.subActive = activity.imageFullSizeFragment
+
+                                        makeInfoActive()
+
+                                        for (t in imageTagsList) {
+                                            val refTag =
+                                                FirebaseDatabase.getInstance().getReference("/tags/$t/${imageObject.id}")
+                                            val refUserTags = FirebaseDatabase.getInstance()
+                                                .getReference("users/${imageObject.photographer}/interests/$t")
+
+                                            refTag.setValue("image")
+                                            refUserTags.setValue(true)
+                                        }
+                                    }
+                                }
+                                closeKeyboard(activity)
+                            } else {
+                                Toast.makeText(this.context, "Please add at least one tag", Toast.LENGTH_SHORT).show()
+                                makeTagsActive()
+                            }
                         }
                     }
                 })
@@ -438,10 +469,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                 } else {
                     Toast.makeText(this.context, "Tag had already been added", Toast.LENGTH_LONG).show()
                 }
-
             }
-
-
         }
 
 
@@ -480,18 +508,13 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                             val chip = imageChipGroup.getChildAt(i) as Chip
 
                             if (t.tagString == chip.text.toString()) {
-
                                 countTagMatches += 1
-
                             }
-
                         }
-
 
                         if (countTagMatches == 0) {
                             tagSuggestionRecycler.visibility = View.VISIBLE
                             tagsFiltredAdapter.add(SingleTagSuggestion(t))
-
                         }
                     }
                 }
@@ -506,39 +529,6 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         })
 
 
-    }
-
-
-    private fun makeTagsActive() {
-
-        infoUnactiveButton.visibility = View.VISIBLE
-        infoActiveButton.visibility = View.GONE
-
-        tagsUnactiveButton.visibility = View.GONE
-        tagsActiveButton.visibility = View.VISIBLE
-
-        urlUnactiveButton.visibility = View.VISIBLE
-        urlActiveButton.visibility = View.GONE
-
-        infoContainer.visibility = View.GONE
-        tagsContainer.visibility = View.VISIBLE
-        urlContainer.visibility = View.GONE
-
-    }
-
-    private fun makeUrlActive() {
-        infoUnactiveButton.visibility = View.VISIBLE
-        infoActiveButton.visibility = View.GONE
-
-        tagsUnactiveButton.visibility = View.VISIBLE
-        tagsActiveButton.visibility = View.GONE
-
-        urlUnactiveButton.visibility = View.GONE
-        urlActiveButton.visibility = View.VISIBLE
-
-        infoContainer.visibility = View.GONE
-        tagsContainer.visibility = View.GONE
-        urlContainer.visibility = View.VISIBLE
     }
 
     private fun makeInfoActive() {
@@ -557,6 +547,38 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
     }
 
 
+    private fun makeTagsActive() {
+
+        infoUnactiveButton.visibility = View.VISIBLE
+        infoActiveButton.visibility = View.GONE
+
+        tagsUnactiveButton.visibility = View.GONE
+        tagsActiveButton.visibility = View.VISIBLE
+
+        urlUnactiveButton.visibility = View.VISIBLE
+        urlActiveButton.visibility = View.GONE
+
+        infoContainer.visibility = View.GONE
+        tagsContainer.visibility = View.VISIBLE
+        urlContainer.visibility = View.GONE
+    }
+
+    private fun makeUrlActive() {
+        infoUnactiveButton.visibility = View.VISIBLE
+        infoActiveButton.visibility = View.GONE
+
+        tagsUnactiveButton.visibility = View.VISIBLE
+        tagsActiveButton.visibility = View.GONE
+
+        urlUnactiveButton.visibility = View.GONE
+        urlActiveButton.visibility = View.VISIBLE
+
+        infoContainer.visibility = View.GONE
+        tagsContainer.visibility = View.GONE
+        urlContainer.visibility = View.VISIBLE
+    }
+
+
     private fun onTagSelected(selectedTag: String) {
 
         val chip = Chip(this.context)
@@ -564,15 +586,17 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         chip.isCloseIconVisible = true
         chip.isCheckable = false
         chip.isClickable = false
+        chip.setCloseIconTintResource(R.color.green100)
         chip.setChipBackgroundColorResource(R.color.green700)
         chip.setTextAppearance(R.style.ChipSelectedStyle)
         chip.setOnCloseIconClickListener {
             imageChipGroup.removeView(it)
+            imageTagsList.remove(selectedTag)
+            val refTag = FirebaseDatabase.getInstance().getReference("/tags/$selectedTag/${myImageObject.id}")
+            refTag.removeValue()
         }
-
         imageChipGroup.addView(chip)
         imageChipGroup.visibility = View.VISIBLE
-
     }
 
     override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
@@ -630,10 +654,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         mapView?.onDestroy()
     }
 
-
     companion object {
         fun newInstance(): ImagePostEditFragment = ImagePostEditFragment()
     }
-
-
 }

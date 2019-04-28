@@ -57,11 +57,11 @@ class AddImageToAnswerFragment : Fragment() {
         activity.let {
             sharedViewModelAnswerImages = ViewModelProviders.of(it).get(SharedViewModelAnswerImages::class.java)
 
-            sharedViewModelAnswerImages.imageList.observe(this, Observer {
-                it?.let { existingImageList ->
-                    imageList = existingImageList
-                }
-            })
+//            sharedViewModelAnswerImages.imageList.observe(this, Observer {
+//                it?.let { existingImageList ->
+//                    imageList = existingImageList
+//                }
+//            })
 
 
 

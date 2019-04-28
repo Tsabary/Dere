@@ -20,6 +20,7 @@ import co.getdere.models.Question
 import co.getdere.models.Users
 
 import co.getdere.R
+import co.getdere.groupieAdapters.AnswerPhoto
 import co.getdere.groupieAdapters.FeedImage
 import co.getdere.viewmodels.SharedViewModelAnswerImages
 import co.getdere.viewmodels.SharedViewModelCurrentUser
@@ -91,8 +92,14 @@ class AnswerFragment : Fragment(), DereMethods {
                 imagesRecyclerAdapter.clear()
                 imageListFinal.clear()
 
+                imagesRecycler.visibility = if (existingImageList.isNotEmpty()) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
+
                 for (image in existingImageList) {
-                    imagesRecyclerAdapter.add(FeedImage(image))
+                    imagesRecyclerAdapter.add(AnswerPhoto(image, activity))
                     imageListFinal.add(image.id)
                 }
             }
@@ -114,7 +121,9 @@ class AnswerFragment : Fragment(), DereMethods {
         }
     }
 
-    private fun postAnswer(content: String, timestamp: Long, activity : Activity) {
+    private fun postAnswer(content: String, timestamp: Long, activity: Activity) {
+
+        activity as MainActivity
 
         val ref = FirebaseDatabase.getInstance().getReference("/questions/${question.id}/answers/").push()
 
@@ -143,8 +152,6 @@ class AnswerFragment : Fragment(), DereMethods {
                     FirebaseDatabase.getInstance().getReference("/questions/${question.id}/main/body/lastInteraction")
 
                 refQuestionLastInteraction.setValue(timestamp).addOnSuccessListener {
-
-                    val activity = activity as MainActivity
 
                     activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
                         .commit()

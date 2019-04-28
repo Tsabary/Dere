@@ -20,11 +20,13 @@ import co.getdere.MainActivity
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.*
 import co.getdere.R
+import co.getdere.groupieAdapters.AnswerPhoto
 import co.getdere.groupieAdapters.FeedImage
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelQuestion
 import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
@@ -118,8 +120,26 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 openedQuestionTitle.text = "${questionObject.title}?"
                 openedQuestionContent.text = questionObject.details
                 openedQuestionTimeStamp.text = date
-                openedQuestionTags.text = "tags: ${questionObject.tags.joinToString()}"
+                openedQuestionTags.text = questionObject.tags.joinToString()
                 listenToAnswers(questionObject.id)
+
+                if (question.author == currentUserObject.uid) {
+                    opened_question_delete.visibility = View.VISIBLE
+                    opened_question_edit.visibility = View.VISIBLE
+
+                    opened_question_delete.setOnClickListener {
+
+                    }
+
+                    opened_question_edit.setOnClickListener {
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editQuestionFragment)
+                            .commit()
+                        activity.subActive = activity.editQuestionFragment
+                    }
+                } else {
+                    opened_question_delete.visibility = View.GONE
+                    opened_question_edit.visibility = View.GONE
+                }
 
                 executeVote(
                     "checkStatus",
@@ -292,7 +312,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
         })
     }
 
-    private fun checkIfQuestionSaved(ranNum: Int, activity : Activity) {
+    private fun checkIfQuestionSaved(ranNum: Int, activity: Activity) {
 
         val refCurrentUserSavedQuestions =
             FirebaseDatabase.getInstance().getReference("/users/${currentUserObject.uid}/saved-questions")
@@ -390,6 +410,8 @@ class SingleAnswer(
         val upvote = viewHolder.itemView.findViewById<ImageButton>(R.id.single_answer_upvote)
         val downvote = viewHolder.itemView.findViewById<ImageButton>(R.id.single_answer_downvote)
         val comment = viewHolder.itemView.findViewById<TextView>(R.id.single_answer_comment_button)
+        val edit = viewHolder.itemView.findViewById<TextView>(R.id.single_answer_edit)
+        val delete = viewHolder.itemView.findViewById<TextView>(R.id.single_answer_delete)
 
         val commentsRecycler = viewHolder.itemView.findViewById<RecyclerView>(R.id.single_answer_comments_recycler)
         val imagesRecycler = viewHolder.itemView.findViewById<RecyclerView>(R.id.single_answer_photos_recycler)
@@ -411,9 +433,7 @@ class SingleAnswer(
                 val singleCommentFromDB = p0.getValue(AnswerComments::class.java)
 
                 if (singleCommentFromDB != null) {
-
                     commentsAdapter.add(SingleAnswerComment(singleCommentFromDB))
-
                 }
 
             }
@@ -432,7 +452,7 @@ class SingleAnswer(
 
         })
 
-        if (answer.photos.isNotEmpty()){
+        if (answer.photos.isNotEmpty()) {
             viewHolder.itemView.single_answer_photos_recycler.visibility = View.VISIBLE
 
             for (imagePath in answer.photos) {
@@ -451,7 +471,7 @@ class SingleAnswer(
 
             }
         }
-        
+
 
         executeVote(
             "checkStatus",
@@ -492,6 +512,14 @@ class SingleAnswer(
                     viewHolder.itemView.single_answer_timestamp.text = date
                     viewHolder.itemView.single_answer_author_reputation.text =
                         "(${numberCalculation(author.reputation)})"
+
+                    if (answer.author==currentUser.uid){
+                        delete.visibility = View.VISIBLE
+                        edit.visibility = View.VISIBLE
+                    } else {
+                        edit.visibility = View.GONE
+                        delete.visibility = View.GONE
+                    }
                 }
             }
         })
@@ -562,7 +590,20 @@ class SingleAnswerComment(val comment: AnswerComments) : Item<ViewHolder>(), Der
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
+        val uid = FirebaseAuth.getInstance().uid
+
         viewHolder.itemView.answer_comment_comment.text = comment.content
+
+        val edit = viewHolder.itemView.findViewById<TextView>(R.id.answer_comment_edit)
+        val delete = viewHolder.itemView.findViewById<TextView>(R.id.answer_comment_delete)
+
+        if(comment.author == uid){
+            edit.visibility = View.VISIBLE
+            delete.visibility = View.VISIBLE
+        } else {
+            edit.visibility = View.GONE
+            delete.visibility = View.GONE
+        }
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${comment.author}/profile")
         ref.addListenerForSingleValueEvent(object : ValueEventListener {

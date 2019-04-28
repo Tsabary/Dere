@@ -7,6 +7,54 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:background="@color/white"
+            android:elevation="1dp"
+            android:id="@+id/single_comment_delete_container"
+            android:visibility="gone">
+
+        <TextView
+                android:text="Are you sure you want to delete your comment?"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/single_comment_delete_message"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="24dp"/>
+        <TextView
+                android:text="@android:string/cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/single_comment_cancel"
+                android:layout_marginTop="32dp"
+                android:textSize="15sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintEnd_toStartOf="@+id/single_comment_remove"
+                app:layout_constraintTop_toBottomOf="@+id/single_comment_delete_message"
+                android:layout_marginBottom="24dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:textColor="@color/gray500"/>
+        <TextView
+                android:text="Remove"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/single_comment_remove"
+                android:textSize="15sp"
+                app:layout_constraintTop_toTopOf="@+id/single_comment_cancel"
+                app:layout_constraintBottom_toBottomOf="@+id/single_comment_cancel"
+                app:layout_constraintStart_toEndOf="@+id/single_comment_cancel"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:textColor="@color/red700"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -38,13 +86,33 @@
             android:layout_marginEnd="16dp"
             android:layout_marginTop="8dp"
             app:layout_constraintEnd_toStartOf="@+id/single_comment_like_button"
-            android:textColor="@color/gray800"/>
+            android:textColor="@color/gray800"
+            android:textSize="15sp"/>
+
+    <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/single_comment_content_editable"
+            app:layout_constraintTop_toBottomOf="@+id/single_comment_content"
+            android:layout_marginStart="32dp"
+            app:layout_constraintStart_toEndOf="@+id/single_comment_photo"
+            tools:text="comment comment comment"
+            app:layout_constraintHorizontal_bias="0.0"
+            android:fontFamily="@font/open_sans_semibold"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toStartOf="@+id/single_comment_like_button"
+            android:textColor="@color/gray800"
+            android:visibility="gone"
+            android:textSize="15sp"
+            android:background="@android:color/transparent"/>
+
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/single_comment_timestamp"
             android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@+id/single_comment_content"
+            app:layout_constraintTop_toBottomOf="@+id/single_comment_content_editable"
             app:layout_constraintStart_toEndOf="@+id/single_comment_photo"
             android:layout_marginStart="32dp"
             tools:text="time time"
@@ -75,4 +143,41 @@
             app:layout_constraintTop_toTopOf="@+id/single_comment_like_button"
             android:textColor="@color/gray700"/>
 
+    <TextView
+            android:text="Edit"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/single_comment_edit"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:textColor="@color/green700"
+            android:visibility="gone"
+            android:gravity="center_horizontal"/>
+
+    <TextView
+            android:text="@string/Save"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/single_comment_save"
+            app:layout_constraintEnd_toStartOf="@+id/single_comment_edit"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:textColor="@color/green700"
+            android:visibility="gone"
+            android:gravity="center_horizontal"/>
+
+    <TextView
+            android:text="Delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/single_comment_delete"
+            app:layout_constraintEnd_toStartOf="@+id/single_comment_save"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:textColor="@color/red700"
+            android:visibility="gone"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -38,6 +38,7 @@ import io.branch.referral.SharingHelper
 import io.branch.referral.util.ContentMetadata
 import io.branch.referral.util.LinkProperties
 import io.branch.referral.util.ShareSheetStyle
+import kotlinx.android.synthetic.main.answer_comment_layout.*
 import kotlinx.android.synthetic.main.comment_layout.view.*
 import kotlinx.android.synthetic.main.fragment_image.*
 import kotlinx.android.synthetic.main.fragment_image_expanded.*
@@ -66,6 +67,9 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
     private lateinit var imageExpendedViewPager: SwipeLockableViewPager
 
     lateinit var actionsContainer: ConstraintLayout
+    lateinit var optionsContainer: ConstraintLayout
+    lateinit var deleteContainer: ConstraintLayout
+    lateinit var deleteEditContainer: ConstraintLayout
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -110,13 +114,14 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         val shareButton = photo_social_share
         val linkIcon = image_expended_link_icon
         val linkAddress = image_expended_link_address
+        val tags = image_expended_tags
 
         val optionsButton = image_expended_options_button
-        val optionsContainer = image_expended_options_background
+        optionsContainer = image_expended_options_background
         val editButton = image_expended_options_edit
         val deleteButton = image_expended_options_delete
-        val deleteEditContainer = image_expended_options_edit_delete
-        val deleteContainer = image_expended_options_delete_container
+        deleteEditContainer = image_expended_options_edit_delete
+        deleteContainer = image_expended_options_delete_container
         val removeButton = image_expended_options_delete_remove
         val cancelButton = image_expended_options_delete_cancel
 
@@ -160,7 +165,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                 )
 
                 imageTimestamp.text = PrettyTime().format(Date(image.timestampUpload))
-
+                tags.text = image.tags.joinToString()
 
                 if (image.details.isNotEmpty()) {
                     imageContent.visibility = View.VISIBLE
@@ -171,6 +176,12 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                     linkAddress.text = image.link
                     linkAddress.visibility = View.VISIBLE
 //                    linkIcon.visibility = View.VISIBLE
+
+                    linkAddress.setOnClickListener {
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.webViewFragment)
+                            .commit()
+                        activity.subActive = activity.webViewFragment
+                    }
                 }
 
                 if (image.photographer == currentUser.uid) {
@@ -188,6 +199,9 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                         activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imagePostEditFragment)
                             .commit()
                         activity.subActive = activity.imagePostEditFragment
+                        optionsContainer.visibility = View.GONE
+                        deleteEditContainer.visibility = View.VISIBLE
+                        deleteContainer.visibility = View.GONE
                     }
 
                     deleteButton.setOnClickListener {
@@ -217,7 +231,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
                 actionsContainer.visibility = View.VISIBLE
 
-//                listenToComments(image)
+                listenToComments(image)
 
                 val contentDescription = if (image.details.isNotEmpty()) {
                     image.details
@@ -447,12 +461,22 @@ class SingleComment(
         val commentLikeCount = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_like_count)
         val commentLikeButton = viewHolder.itemView.findViewById<ImageButton>(R.id.single_comment_like_button)
         val commentAuthor = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_author)
+        val commentEditButton = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_edit)
+        val commentSaveButton = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_save)
+        val commentDeleteButton = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_delete)
+        val commentContentEditable = viewHolder.itemView.findViewById<EditText>(R.id.single_comment_content_editable)
+        val commentDeleteContainer =
+            viewHolder.itemView.findViewById<ConstraintLayout>(R.id.single_comment_delete_container)
+        val commentCancelButton = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_cancel)
+        val commentRemoveButton = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_remove)
+
 
         val stampMills = comment.timeStamp
         val pretty = PrettyTime()
         val date = pretty.format(Date(stampMills))
 
         commentContent.text = comment.content
+        commentContentEditable.setText(comment.content)
         commentTimestamp.text = date
 
         listenToLikeCount(commentLikeCount)
@@ -486,6 +510,69 @@ class SingleComment(
 
         })
 
+        if (comment.authorId == currentUser.uid) {
+            commentEditButton.visibility = View.VISIBLE
+            commentDeleteButton.visibility = View.VISIBLE
+
+            commentEditButton.setOnClickListener {
+                commentEditButton.visibility = View.GONE
+                commentSaveButton.visibility = View.VISIBLE
+                commentContent.visibility = View.GONE
+                commentContentEditable.visibility = View.VISIBLE
+                commentContentEditable.requestFocus()
+                commentContentEditable.setSelection(commentContentEditable.text.length)
+            }
+
+            commentSaveButton.setOnClickListener {
+                val commentRef =
+                    FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/$commentId/body/content")
+                commentRef.setValue(commentContentEditable.text.toString())
+                commentContent.text = commentContentEditable.text.toString()
+                commentEditButton.visibility = View.VISIBLE
+                commentSaveButton.visibility = View.GONE
+                commentContent.visibility = View.VISIBLE
+                commentContentEditable.visibility = View.GONE
+
+                val newComment = Comments(
+                    comment.authorId,
+                    commentContentEditable.text.toString(),
+                    comment.timeStamp,
+                    comment.ImageId
+                )
+                comment = newComment
+                closeKeyboard(activity)
+            }
+
+            commentDeleteButton.setOnClickListener {
+                commentDeleteContainer.visibility = View.VISIBLE
+            }
+
+            commentCancelButton.setOnClickListener {
+                commentDeleteContainer.visibility = View.GONE
+            }
+
+            commentRemoveButton.setOnClickListener {
+                val commentRef = FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/$commentId")
+                commentRef.removeValue()
+
+
+                (activity as MainActivity).imageFullSizeFragment.commentsRecyclerAdapter.removeGroup(position)
+                activity.imageFullSizeFragment.commentsRecyclerAdapter.notifyDataSetChanged()
+                commentDeleteContainer.visibility = View.GONE
+
+
+//                (activity as MainActivity).imageFullSizeFragment.commentsRecyclerAdapter.remove(
+//                    SingleComment(
+//                        comment,
+//                        commentId,
+//                        image,
+//                        currentUser,
+//                        activity
+//                    )
+//                )
+            }
+        }
+
 
     }
 
@@ -499,10 +586,6 @@ class SingleComment(
         viewHolder: ViewHolder,
         activity: Activity
     ) {
-
-        Log.d("doesitknow", comment.ImageId)
-        Log.d("doesitknow", comment.content)
-
         val commentLikeRef = FirebaseDatabase.getInstance().getReference("/images/$imageId/comments/$commentId/likes")
 
         commentLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -559,16 +642,9 @@ class SingleComment(
                     } else {
                         likeButton.setImageResource(R.drawable.heart)
                     }
-
-
                 }
-
             }
-
-
         })
-
-
     }
 
     private fun listenToLikeCount(commentLikeCount: TextView) {

@@ -534,8 +534,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                 Toast.makeText(this.context, "Please add at least one tag", Toast.LENGTH_SHORT).show()
                 makeTagsActive()
             }
-
-
         }
 
 
@@ -689,7 +687,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             uid!!,
             imageUrl.text.toString(),
             imageLocationInput.text.toString(),
-            mutableListOf(localImagePost.locationLat, localImagePost.locationLong),
+            mutableListOf(imageLat, imageLong),
             localImagePost.timestamp,
             System.currentTimeMillis(),
             imageTagsList,

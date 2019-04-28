@@ -13,6 +13,7 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.MainActivity
 import co.getdere.interfaces.DereMethods
@@ -32,14 +33,16 @@ import com.tobiasschuerg.prefixsuffix.PrefixSuffixEditText
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.fragment_new_question.*
 import kotlinx.android.synthetic.main.tag_auto_complete.view.*
 
 
-class NewQuestionFragment : Fragment(), DereMethods {
+class EditQuestionFragment : Fragment(), DereMethods {
 
     lateinit var sharedViewModelTags: SharedViewModelTags
     lateinit var sharedViewModelQuestion: SharedViewModelQuestion
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
+    lateinit var myQuestionObject: Question
 
     val tagsRef = FirebaseDatabase.getInstance().getReference("/tags")
 
@@ -48,6 +51,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
     var tagsList: MutableList<String> = mutableListOf()
     lateinit var questionDetails: EditText
     lateinit var questionTitle: PrefixSuffixEditText
+    lateinit var questionTagsInput: EditText
 
 
     override fun onAttach(context: Context) {
@@ -103,14 +107,68 @@ class NewQuestionFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val activity = activity as MainActivity
 
-        questionTitle = view.findViewById(R.id.new_question_title)
+        questionTitle = new_question_title
         questionTitle.requestFocus()
-        questionDetails = view.findViewById(R.id.new_question_details)
-        val questionButton = view.findViewById<TextView>(R.id.new_question_btn)
-        val questionTagsInput = view.findViewById<EditText>(R.id.new_question_tag_input)
-        val addTagButton = view.findViewById<ImageButton>(R.id.new_question_add_tag_button)
-        questionChipGroup = view.findViewById(R.id.new_question_chip_group)
+        questionDetails = new_question_details
+        val questionButton = new_question_btn
+        questionButton.text = "Save question"
+        questionTagsInput = new_question_tag_input
+        val addTagButton = new_question_add_tag_button
+        questionChipGroup = new_question_chip_group
+
+
+
+        sharedViewModelQuestion.questionObject.observe(this, Observer {
+            it?.let { question ->
+                myQuestionObject = question
+                questionTitle.setText(question.title)
+                questionTitle.setSelection(question.title.length)
+                questionDetails.setText(question.details)
+
+                tagsList.clear()
+                questionChipGroup.removeAllViews()
+                question.tags.forEach { tag ->
+                    addTag(tag)
+//                    tagsList.add(tag)
+                }
+
+
+                questionButton.setOnClickListener {
+                    if (questionTitle.text!!.length < 15) {
+                        Toast.makeText(this.context, "Question title is too short", Toast.LENGTH_SHORT).show()
+                    } else if (questionDetails.text.isEmpty()) {
+                        Toast.makeText(this.context, "Please give your question some more details", Toast.LENGTH_SHORT).show()
+                    } else if (questionChipGroup.childCount == 0) {
+                        Toast.makeText(
+                            this.context,
+                            "Please add at least one tag to your question",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+
+                        for (i in 0 until questionChipGroup.childCount) {
+                            val chip = questionChipGroup.getChildAt(i) as Chip
+                            tagsList.add(chip.text.toString())
+                        }
+
+                        val updatedQuestion = Question(question.id, questionTitle.text.toString(), questionDetails.text.toString(), tagsList, question.timestamp, question.author, System.currentTimeMillis())
+
+                        val questionRef = FirebaseDatabase.getInstance().getReference("/questions/${question.id}/main/body")
+                        questionRef.removeValue()
+                        questionRef.setValue(updatedQuestion)
+
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment).commit()
+                        activity.subActive = activity.openedQuestionFragment
+                    }
+                }
+
+
+            }
+        })
+
+
 
         questionTitle.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -126,42 +184,9 @@ class NewQuestionFragment : Fragment(), DereMethods {
                 if (questionTitle.text!!.isNotEmpty()) {
                     questionTitle.suffix = "?"
                 }
-
             }
-
         })
 
-
-        questionButton.setOnClickListener {
-
-
-            if (questionTitle.text!!.length < 15) {
-                Toast.makeText(this.context, "Question title is too short", Toast.LENGTH_SHORT).show()
-            } else if (questionDetails.text.isEmpty()) {
-                Toast.makeText(this.context, "Please give your question some more details", Toast.LENGTH_SHORT).show()
-            } else if (questionChipGroup.childCount == 0) {
-                Toast.makeText(this.context, "Please add at least one tag_unactive to your question", Toast.LENGTH_SHORT).show()
-            } else {
-
-
-                for (i in 0 until questionChipGroup.childCount) {
-                    val chip = questionChipGroup.getChildAt(i) as Chip
-                    tagsList.add(chip.text.toString())
-                }
-
-
-
-                postQuestion(
-                    questionTitle.text.toString(),
-                    questionDetails.text.toString(),
-                    tagsList,
-                    System.currentTimeMillis()
-                )
-
-
-            }
-
-        }
 
 
         val tagSuggestionRecycler =
@@ -169,10 +194,6 @@ class NewQuestionFragment : Fragment(), DereMethods {
         val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
         tagSuggestionRecycler.adapter = tagsFilteredAdapter
-
-
-
-        activity!!.title = "New question"
 
 
         questionTagsInput.addTextChangedListener(object : TextWatcher {
@@ -211,47 +232,22 @@ class NewQuestionFragment : Fragment(), DereMethods {
                             tagsFilteredAdapter.add(SingleTagSuggestion(t))
 
                         }
-
-
                     }
-
                 }
-
             }
-
 
             override fun afterTextChanged(s: Editable?) {
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
-
         })
 
 
         addTagButton.setOnClickListener {
-
-            if (questionTagsInput.text.isNotEmpty()){
-
-                var tagsMatchCount = 0
-
-                for (i in 0 until questionChipGroup.childCount) {
-                    val chip = questionChipGroup.getChildAt(i) as Chip
-                    if (chip.text.toString() == questionTagsInput.text.toString()) {
-                        tagsMatchCount += 1
-                    }
-                }
-
-                if (tagsMatchCount == 0) {
-                    if (questionChipGroup.childCount < 5) {
-                        onTagSelected(questionTagsInput.text.toString().toLowerCase())
-                        questionTagsInput.text.clear()
-                    } else {
-                        Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
-                    }
-                } else {
-                    Toast.makeText(this.context, "Tag had already been added", Toast.LENGTH_LONG).show()
-                }
+            if (questionTagsInput.text.isNotEmpty()) {
+                addTag(questionTagsInput.text.toString())
+//                tagsList.add(questionTagsInput.text.toString())
             }
         }
 
@@ -262,12 +258,37 @@ class NewQuestionFragment : Fragment(), DereMethods {
             val row = item as SingleTagSuggestion
             if (questionChipGroup.childCount < 5) {
                 onTagSelected(row.tag.tagString)
+//                tagsList.add(row.tag.tagString)
+
                 questionTagsInput.text.clear()
             } else {
                 Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
             }
         }
 
+    }
+
+    private fun addTag(tag: String) {
+
+        var tagsMatchCount = 0
+
+        for (i in 0 until questionChipGroup.childCount) {
+            val chip = questionChipGroup.getChildAt(i) as Chip
+            if (chip.text.toString() == tag) {
+                tagsMatchCount += 1
+            }
+        }
+
+        if (tagsMatchCount == 0) {
+            if (questionChipGroup.childCount < 5) {
+                onTagSelected(tag.toLowerCase())
+                questionTagsInput.text.clear()
+            } else {
+                Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
+            }
+        } else {
+            Toast.makeText(this.context, "Tag had already been added edit", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun onTagSelected(selectedTag: String) {
@@ -281,6 +302,9 @@ class NewQuestionFragment : Fragment(), DereMethods {
         chip.setTextAppearance(R.style.ChipSelectedStyle)
         chip.setOnCloseIconClickListener {
             questionChipGroup.removeView(it)
+            tagsList.remove(selectedTag)
+            val tagRef = FirebaseDatabase.getInstance().getReference("/tags/$selectedTag/${myQuestionObject.id}")
+            tagRef.removeValue()
         }
 
         questionChipGroup.addView(chip)
@@ -352,20 +376,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
 
     companion object {
-        fun newInstance(): NewQuestionFragment = NewQuestionFragment()
+        fun newInstance(): EditQuestionFragment = EditQuestionFragment()
     }
 
 }
-
-class SingleTagSuggestion(val tag: SingleTagForList) : Item<ViewHolder>() {
-    override fun getLayout(): Int {
-        return R.layout.tag_auto_complete
-    }
-
-    override fun bind(viewHolder: ViewHolder, position: Int) {
-        viewHolder.itemView.tag_name.text = tag.tagString
-        viewHolder.itemView.tag_count.text = tag.tagCount.toString()
-    }
-}
-
-class SingleTagForList(val tagString: String, val tagCount: Int)

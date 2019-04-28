@@ -46,14 +46,12 @@ class WebViewFragment : Fragment() {
 
                 val url = image.link
 
-                Log.d("checkUrl", image.link)
-
                 webView.settings.loadWithOverviewMode = true
                 webView.settings.useWideViewPort = true
                 webView.settings.builtInZoomControls = true
                 webView.settings.pluginState = WebSettings.PluginState.ON
                 webView.webViewClient = WebViewClient()
-                webView.loadUrl("https://www.ycombinator.com/")
+                webView.loadUrl(url)
 
             }
         }

@@ -60,7 +60,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var bucketGalleryFragment: BucketGalleryFragment
     lateinit var addImageToAnswer: AddImageToAnswerFragment
     lateinit var imagePostEditFragment: ImagePostEditFragment
-
+    lateinit var webViewFragment: WebViewFragment
+    lateinit var editQuestionFragment: EditQuestionFragment
 
     lateinit var mainFrame: FrameLayout
     lateinit var subFrame: FrameLayout
@@ -209,6 +210,14 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
     }
 
+    private fun resetImageExpended() {
+        sharedViewModelImage.sharedImageObject.postValue(Images())
+        imageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
+        imageFullSizeFragment.optionsContainer.visibility = View.GONE
+        imageFullSizeFragment.deleteEditContainer.visibility = View.VISIBLE
+        imageFullSizeFragment.deleteContainer.visibility = View.GONE
+    }
+
 
     override fun onBackPressed() {
 
@@ -220,18 +229,14 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     if (isBucketGalleryActive) {
                         subFm.beginTransaction().hide(subActive).show(bucketGalleryFragment).commit()
                         subActive = bucketGalleryFragment
-                        sharedViewModelImage.sharedImageObject.postValue(Images())
-                        imageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
+                        resetImageExpended()
                     } else if (isOpenedQuestionActive) {
                         subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
                         subActive = openedQuestionFragment
-                        sharedViewModelImage.sharedImageObject.postValue(Images())
-                        imageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
-
+                        resetImageExpended()
                     } else {
                         switchVisibility(0)
-                        sharedViewModelImage.sharedImageObject.postValue(Images())
-                        imageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
+                        resetImageExpended()
                     }
                 }
                 bucketFragment -> {
@@ -297,6 +302,16 @@ class MainActivity : AppCompatActivity(), DereMethods {
                 imagePostEditFragment -> {
                     subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
                     subActive = imageFullSizeFragment
+                }
+
+                webViewFragment -> {
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+                }
+
+                editQuestionFragment -> {
+                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                    subActive = openedQuestionFragment
                 }
 
             }
@@ -414,6 +429,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
         bucketGalleryFragment = BucketGalleryFragment()
         addImageToAnswer = AddImageToAnswerFragment()
         imagePostEditFragment = ImagePostEditFragment()
+        webViewFragment = WebViewFragment()
+        editQuestionFragment = EditQuestionFragment()
 
 
         subFm.beginTransaction()
@@ -452,6 +469,10 @@ class MainActivity : AppCompatActivity(), DereMethods {
             .hide(addImageToAnswer).commit()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, imagePostEditFragment, "imagePostEditFragment")
             .hide(imagePostEditFragment).commit()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, webViewFragment, "webViewFragment")
+            .hide(webViewFragment).commit()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editQuestionFragment, "editQuestionFragment")
+            .hide(editQuestionFragment).commit()
 
 
         subActive = imageFullSizeFragment

@@ -166,10 +166,10 @@
                     app:layout_constraintTop_toTopOf="@+id/photo_social_author_name"
                     app:layout_constraintBottom_toBottomOf="@+id/photo_social_author_name"
                     app:layout_constraintStart_toEndOf="@+id/photo_social_author_name"
-                    android:layout_marginStart="8dp"
                     mapbox:layout_constraintEnd_toStartOf="@+id/image_expended_options_button"
                     android:layout_marginEnd="16dp"
-                    mapbox:layout_constraintHorizontal_bias="0.0"/>
+                    mapbox:layout_constraintHorizontal_bias="0.0"
+                    android:layout_marginStart="8dp"/>
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -198,9 +198,9 @@
                     android:layout_height="wrap_content"
                     tools:layout_editor_absoluteX="0dp"
                     android:background="@color/white"
-                    app:layout_constraintTop_toBottomOf="@id/image_full_viewpager"
                     android:id="@+id/image_expended_actions_container"
-            >
+                    android:layout_marginTop="16dp"
+                    mapbox:layout_constraintTop_toBottomOf="@+id/image_expended_tags">
 
                 <ImageButton
                         android:src="@drawable/bucket"
@@ -215,17 +215,17 @@
                         mapbox:layout_constraintHorizontal_bias="0.5"
                         mapbox:layout_constraintEnd_toStartOf="@+id/photo_social_share"/>
                 <!--<TextView-->
-                        <!--android:layout_width="wrap_content"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--android:id="@+id/photo_social_comment_count"-->
-                        <!--tools:text="12"-->
-                        <!--android:fontFamily="@font/open_sans_semibold"-->
-                        <!--app:layout_constraintTop_toTopOf="@+id/photo_social_comment_icon"-->
-                        <!--app:layout_constraintBottom_toBottomOf="@+id/photo_social_comment_icon"-->
-                        <!--app:layout_constraintStart_toEndOf="@+id/photo_social_comment_icon"-->
-                        <!--app:layout_constraintHorizontal_bias="0.5"-->
-                        <!--app:layout_constraintEnd_toStartOf="@+id/photo_social_timestamp"-->
-                        <!--android:visibility="visible"/>-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:id="@+id/photo_social_comment_count"-->
+                <!--tools:text="12"-->
+                <!--android:fontFamily="@font/open_sans_semibold"-->
+                <!--app:layout_constraintTop_toTopOf="@+id/photo_social_comment_icon"-->
+                <!--app:layout_constraintBottom_toBottomOf="@+id/photo_social_comment_icon"-->
+                <!--app:layout_constraintStart_toEndOf="@+id/photo_social_comment_icon"-->
+                <!--app:layout_constraintHorizontal_bias="0.5"-->
+                <!--app:layout_constraintEnd_toStartOf="@+id/photo_social_timestamp"-->
+                <!--android:visibility="visible"/>-->
                 <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -250,19 +250,19 @@
                         app:layout_constraintBaseline_toBaselineOf="@+id/photo_social_like_count"
                         android:textColor="@color/gray800"/>
                 <!--<ImageButton-->
-                        <!--android:src="@drawable/comment"-->
-                        <!--android:layout_width="25dp"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--android:id="@+id/photo_social_comment_icon"-->
-                        <!--android:background="@android:color/transparent"-->
-                        <!--android:scaleType="fitCenter"-->
-                        <!--app:layout_constraintTop_toTopOf="@+id/photo_social_bucket_count"-->
-                        <!--app:layout_constraintBottom_toBottomOf="@+id/photo_social_bucket_count"-->
-                        <!--app:layout_constraintStart_toEndOf="@+id/photo_social_bucket_count"-->
-                        <!--app:layout_constraintHorizontal_bias="0.5"-->
-                        <!--app:layout_constraintEnd_toStartOf="@+id/photo_social_comment_count"-->
-                        <!--android:layout_marginEnd="8dp"-->
-                        <!--android:visibility="gone"/>-->
+                <!--android:src="@drawable/comment"-->
+                <!--android:layout_width="25dp"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:id="@+id/photo_social_comment_icon"-->
+                <!--android:background="@android:color/transparent"-->
+                <!--android:scaleType="fitCenter"-->
+                <!--app:layout_constraintTop_toTopOf="@+id/photo_social_bucket_count"-->
+                <!--app:layout_constraintBottom_toBottomOf="@+id/photo_social_bucket_count"-->
+                <!--app:layout_constraintStart_toEndOf="@+id/photo_social_bucket_count"-->
+                <!--app:layout_constraintHorizontal_bias="0.5"-->
+                <!--app:layout_constraintEnd_toStartOf="@+id/photo_social_comment_count"-->
+                <!--android:layout_marginEnd="8dp"-->
+                <!--android:visibility="gone"/>-->
 
                 <ImageButton
                         android:src="@drawable/heart"
@@ -374,6 +374,16 @@
                     android:layout_marginEnd="16dp"
                     android:background="@android:color/transparent"
                     android:visibility="gone"/>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/image_expended_tags"
+                    mapbox:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="16dp"
+                    mapbox:layout_constraintTop_toBottomOf="@+id/image_full_viewpager"
+                    android:layout_marginTop="16dp"
+                    android:textSize="15sp"
+                    android:textColor="@color/gray500"/>
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

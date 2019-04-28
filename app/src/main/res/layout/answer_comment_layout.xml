@@ -38,9 +38,9 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginEnd="32dp"
                 app:layout_constraintHorizontal_bias="0.0"
+                android:textColor="@color/gray800"
                 android:layout_marginBottom="16dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                android:textColor="@color/gray800"/>
+                app:layout_constraintBottom_toTopOf="@+id/answer_comment_delete"/>
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -61,5 +61,28 @@
                 android:fontFamily="@font/open_sans_semibold"
                 android:textColor="@color/gray500"
                 tools:text="(0)"/>
+        <TextView
+                android:text="Delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/answer_comment_delete"
+                android:textColor="@color/red700"
+                android:fontFamily="@font/open_sans_semibold"
+                android:layout_marginBottom="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/answer_comment_comment"
+                android:visibility="gone"/>
+        <TextView
+                android:text="Edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/answer_comment_edit"
+                app:layout_constraintTop_toTopOf="@+id/answer_comment_delete"
+                app:layout_constraintBottom_toBottomOf="@+id/answer_comment_delete"
+                android:layout_marginStart="16dp"
+                app:layout_constraintStart_toEndOf="@+id/answer_comment_delete"
+                android:textColor="@color/green700"
+                android:fontFamily="@font/open_sans_semibold"
+                android:visibility="gone"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
