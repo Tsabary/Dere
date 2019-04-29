@@ -24,6 +24,35 @@
             mapbox:layout_constraintBottom_toBottomOf="@+id/dark_room_edit_mapview"
             android:elevation="2dp"/>
 
+    <ImageButton
+            android:src="@drawable/ic_map"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:id="@+id/dark_room_edit_map_pin"
+            mapbox:layout_constraintEnd_toEndOf="@+id/dark_room_edit_mapview"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="#CCffffff"
+            android:scaleType="center"
+            mapbox:layout_constraintBottom_toTopOf="@+id/dark_room_edit_map_focus"
+            android:elevation="2dp"
+            android:visibility="visible"/>
+
+    <ImageView
+            android:src="@drawable/ic_map"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/dark_room_edit_pin_hint"
+            mapbox:layout_constraintEnd_toEndOf="@+id/dark_room_edit_mapview"
+            mapbox:layout_constraintStart_toStartOf="@+id/dark_room_edit_mapview"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            mapbox:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="8dp"
+            mapbox:layout_constraintBottom_toTopOf="@+id/dark_room_edit_set_location"
+            android:elevation="1dp"
+            android:visibility="visible"
+            android:background="@android:color/transparent"/>
     <co.getdere.otherClasses.CustomMapView
             android:id="@+id/dark_room_edit_mapview"
             android:layout_width="0dp"
@@ -36,7 +65,8 @@
             mapbox:layout_constraintStart_toStartOf="parent"
             android:layout_marginBottom="8dp"
             mapbox:layout_constraintBottom_toTopOf="@+id/dark_room_edit_set_location"
-            mapbox:layout_constraintDimensionRatio="5:4"/>
+            mapbox:layout_constraintDimensionRatio="5:4">
+    </co.getdere.otherClasses.CustomMapView>
     <TextView
             android:text="Set location"
             android:layout_width="0dp"
@@ -46,6 +76,6 @@
             mapbox:layout_constraintStart_toStartOf="parent"
             mapbox:layout_constraintBottom_toBottomOf="parent"
             android:gravity="center"
-    />
+            android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

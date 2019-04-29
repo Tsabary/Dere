@@ -36,7 +36,6 @@ import kotlinx.android.synthetic.main.fragment_image_map_view.*
 class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
     private val DERE_PIN = "derePin"
-//    lateinit var imageBitmap : Bitmap
     var myMapboxMap : MapboxMap? = null
 
 

@@ -32,6 +32,7 @@ import com.tobiasschuerg.prefixsuffix.PrefixSuffixEditText
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.fragment_new_question.*
 import kotlinx.android.synthetic.main.tag_auto_complete.view.*
 
 
@@ -104,13 +105,13 @@ class NewQuestionFragment : Fragment(), DereMethods {
         super.onViewCreated(view, savedInstanceState)
 
 
-        questionTitle = view.findViewById(R.id.new_question_title)
+        questionTitle = new_question_title
         questionTitle.requestFocus()
-        questionDetails = view.findViewById(R.id.new_question_details)
-        val questionButton = view.findViewById<TextView>(R.id.new_question_btn)
-        val questionTagsInput = view.findViewById<EditText>(R.id.new_question_tag_input)
-        val addTagButton = view.findViewById<ImageButton>(R.id.new_question_add_tag_button)
-        questionChipGroup = view.findViewById(R.id.new_question_chip_group)
+        questionDetails = new_question_details
+        val questionButton = new_question_btn
+        val questionTagsInput = new_question_tag_input
+        val addTagButton = new_question_add_tag_button
+        questionChipGroup = new_question_chip_group
 
         questionTitle.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -319,8 +320,6 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
                     refTag.setValue("question")
                     refUserTags.setValue(true)
-
-//                    refTag.setValue(mapOf(ref.key!! to true))
                 }
 
 

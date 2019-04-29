@@ -8,30 +8,20 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
-import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.models.Images
 import co.getdere.models.Notification
 import co.getdere.models.ReputationScore
 import co.getdere.otherClasses.FCMMethods
 import co.getdere.otherClasses.FCMMethods.sendMessageTopic
-import co.getdere.otherClasses.MySingleton
 import com.google.firebase.database.*
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.RemoteMessage
-import com.mapbox.mapboxsdk.Mapbox.getApplicationContext
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import mumayank.com.airlocationlibrary.AirLocation
-import org.json.JSONException
-import org.json.JSONObject
-import com.android.volley.AuthFailureError
-import com.android.volley.Response
-import com.android.volley.VolleyError
-import com.android.volley.toolbox.JsonObjectRequest
 
 
 interface DereMethods : FCMMethods {
@@ -53,13 +43,14 @@ interface DereMethods : FCMMethods {
         specificPostId: String,
         event: Int,
         userReputationView: TextView,
-        activity : Activity
+        activity: Activity
     ) {
 
         val refVotes = if (postType == 0) {
             FirebaseDatabase.getInstance().getReference("/questions/$mainPostId/main/votes/$initiatorId")
         } else {
-            FirebaseDatabase.getInstance().getReference("/questions/$mainPostId/answers/$specificPostId/votes/$initiatorId")
+            FirebaseDatabase.getInstance()
+                .getReference("/questions/$mainPostId/answers/$specificPostId/votes/$initiatorId")
         }
 
         refVotes.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -453,7 +444,7 @@ interface DereMethods : FCMMethods {
         activity: Activity
     ) {
 
-        if (image.id.isNotEmpty()){
+        if (image.id.isNotEmpty()) {
 
             val allUserRef = FirebaseDatabase.getInstance().getReference("/users/$initiatorId")
 
@@ -488,7 +479,7 @@ interface DereMethods : FCMMethods {
                                                     initiatorName,
                                                     receiverId,
                                                     userReputationView,
-                                                    "like",activity
+                                                    "like", activity
                                                 )
 
                                             }
@@ -593,7 +584,6 @@ interface DereMethods : FCMMethods {
             })
 
 
-
         } else {
             likeButton.setImageResource(R.drawable.heart)
         }
@@ -688,21 +678,29 @@ interface DereMethods : FCMMethods {
     }
 
 
-    fun checkIfBucketed(addToBucket: ImageView, image: Images, uid: String) {
+    fun checkIfBucketed(bucketButton: ImageView, image: Images, uid: String) {
+        Log.d("Image Bucketed", "function called")
+
+
 
         val refUserBucket = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets")
 
-        refUserBucket.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
+        refUserBucket.addChildEventListener(object : ChildEventListener {
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                Log.d("ImageBucketed", "child added ${p0.key}}")
+
+
                 if (p0.hasChild(image.id)) {
-                    addToBucket.setImageResource(R.drawable.bucket_saved)
-                } else {
-                    addToBucket.setImageResource(R.drawable.bucket)
+                    bucketButton.setImageResource(R.drawable.bucket_saved)
                 }
             }
-
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
+            override fun onChildRemoved(p0: DataSnapshot) {
+            }
             override fun onCancelled(p0: DatabaseError) {
-
             }
 
         })
@@ -970,7 +968,14 @@ interface DereMethods : FCMMethods {
             16 -> {
                 sendNotification(2, 16, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "commented on your photo", initiatorName)
+                sendMessageTopic(
+                    receiverId,
+                    initiatorId,
+                    mainPostId,
+                    activity,
+                    "commented on your photo",
+                    initiatorName
+                )
                 Log.d("check if execute", "yes it does")
             }
 
@@ -987,7 +992,14 @@ interface DereMethods : FCMMethods {
             18 -> {
                 sendNotification(1, 18, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "commented on your answer", initiatorName )
+                sendMessageTopic(
+                    receiverId,
+                    initiatorId,
+                    mainPostId,
+                    activity,
+                    "commented on your answer",
+                    initiatorName
+                )
                 Log.d("check if execute", "yes it does")
             }
 
@@ -1004,7 +1016,7 @@ interface DereMethods : FCMMethods {
             20 -> {
                 sendNotification(4, 20, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
 
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "started following you", initiatorName )
+                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "started following you", initiatorName)
                 Log.d("check if execute", "yes it does")
             }
 

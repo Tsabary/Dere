@@ -153,11 +153,20 @@ class EditQuestionFragment : Fragment(), DereMethods {
                             tagsList.add(chip.text.toString())
                         }
 
-                        val updatedQuestion = Question(question.id, questionTitle.text.toString(), questionDetails.text.toString(), tagsList, question.timestamp, question.author, System.currentTimeMillis())
-
                         val questionRef = FirebaseDatabase.getInstance().getReference("/questions/${question.id}/main/body")
-                        questionRef.removeValue()
-                        questionRef.setValue(updatedQuestion)
+
+                        questionRef.child("title").setValue(questionTitle.text.toString())
+                        questionRef.child("details").setValue(questionDetails.text.toString())
+                        questionRef.child("tags").setValue(tagsList)
+                        questionRef.child("lastInteraction").setValue(System.currentTimeMillis())
+
+                        for (tag in tagsList){
+                            val userInterests = FirebaseDatabase.getInstance().getReference("/users/${question.author}/interests/$tag")
+                            userInterests.setValue(true)
+                            val refTag =
+                                FirebaseDatabase.getInstance().getReference("/tags/$tag/${question.id}")
+                            refTag.setValue("question")
+                        }
 
                         activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment).commit()
                         activity.subActive = activity.openedQuestionFragment

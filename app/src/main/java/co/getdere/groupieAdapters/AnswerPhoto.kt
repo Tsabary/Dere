@@ -1,6 +1,7 @@
 package co.getdere.groupieAdapters
 
 import android.app.Activity
+import android.view.View
 import android.widget.ImageButton
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -40,7 +41,7 @@ class AnswerPhoto(val image: Images, val activity: Activity) : Item<ViewHolder>(
         sharedViewModelAnswerImages.imageList.observe(activity as MainActivity, Observer {
             it?.let { existingImageList ->
 
-                viewHolder.itemView.findViewById<ImageButton>(R.id.answer_photo_remove).setOnClickListener {
+                viewHolder.itemView.answer_photo_remove.setOnClickListener {
                     existingImageList.remove(image)
                     sharedViewModelAnswerImages.imageList.postValue(existingImageList)
                 }

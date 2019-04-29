@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -22,9 +23,7 @@ import co.getdere.models.*
 import co.getdere.R
 import co.getdere.groupieAdapters.AnswerPhoto
 import co.getdere.groupieAdapters.FeedImage
-import co.getdere.viewmodels.SharedViewModelCurrentUser
-import co.getdere.viewmodels.SharedViewModelQuestion
-import co.getdere.viewmodels.SharedViewModelRandomUser
+import co.getdere.viewmodels.*
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -59,6 +58,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
     lateinit var saveButton: TextView
 
     lateinit var openedQuestionAuthorReputation: TextView
+    lateinit var deleteBox: ConstraintLayout
 
 
     lateinit var buo: BranchUniversalObject
@@ -92,19 +92,24 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
         val activity = activity as MainActivity
 
         val shareButton = opened_question_share
-        saveButton = view.findViewById(R.id.opened_question_save)
-        val answerButton = view.findViewById<TextView>(R.id.opened_question_answer_btn)
-        val answersRecycler = view.findViewById<RecyclerView>(R.id.opened_question_answers_recycler)
-        val openedQuestionTitle = view.findViewById<TextView>(R.id.opened_question_title)
-        val openedQuestionContent = view.findViewById<TextView>(R.id.opened_question_content)
-        val openedQuestionTimeStamp = view.findViewById<TextView>(R.id.opened_question_timestamp)
-        val openedQuestionTags = view.findViewById<TextView>(R.id.opened_question_tags)
-        val openedQuestionUpVote = view.findViewById<ImageButton>(R.id.opened_question_upvote)
-        val openedQuestionDownVote = view.findViewById<ImageButton>(R.id.opened_question_downvote)
-        val openedQuestionVotes = view.findViewById<TextView>(R.id.opened_question_votes)
-        val openedQuestionAuthorImage = view.findViewById<ImageView>(R.id.opened_question_author_image)
-        val openedQuestionAuthorName = view.findViewById<TextView>(R.id.opened_question_author_name)
-        openedQuestionAuthorReputation = view.findViewById(R.id.opened_question_author_reputation)
+        saveButton = opened_question_save
+        val answerButton = opened_question_answer_btn
+        val answersRecycler = opened_question_answers_recycler
+        val openedQuestionTitle = opened_question_title
+        val openedQuestionContent = opened_question_content
+        val openedQuestionTimeStamp = opened_question_timestamp
+        val openedQuestionTags = opened_question_tags
+        val openedQuestionUpVote = opened_question_upvote
+        val openedQuestionDownVote = opened_question_downvote
+        val openedQuestionVotes = opened_question_votes
+        val openedQuestionAuthorImage = opened_question_author_image
+        val openedQuestionAuthorName = opened_question_author_name
+        deleteBox = opened_question_delete_box
+        val deleteButton = opened_question_delete
+        val editButton = opened_question_edit
+        val removeButton = opened_question_remove
+        val cancelButton = opened_question_remove
+        openedQuestionAuthorReputation = opened_question_author_reputation
 
 
         sharedViewModelQuestion.questionObject.observe(this, Observer {
@@ -124,21 +129,41 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 listenToAnswers(questionObject.id)
 
                 if (question.author == currentUserObject.uid) {
-                    opened_question_delete.visibility = View.VISIBLE
-                    opened_question_edit.visibility = View.VISIBLE
+                    deleteButton.visibility = View.VISIBLE
+                    editButton.visibility = View.VISIBLE
 
-                    opened_question_delete.setOnClickListener {
-
-                    }
-
-                    opened_question_edit.setOnClickListener {
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editQuestionFragment)
-                            .commit()
-                        activity.subActive = activity.editQuestionFragment
-                    }
                 } else {
-                    opened_question_delete.visibility = View.GONE
-                    opened_question_edit.visibility = View.GONE
+                    deleteButton.visibility = View.GONE
+                    editButton.visibility = View.GONE
+                }
+
+                deleteButton.setOnClickListener {
+                    deleteBox.visibility = View.VISIBLE
+                }
+
+                editButton.setOnClickListener {
+                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editQuestionFragment)
+                        .commit()
+                    activity.subActive = activity.editQuestionFragment
+                }
+
+                removeButton.setOnClickListener {
+                    val questionRef = FirebaseDatabase.getInstance().getReference("/questions/${question.id}")
+                    questionRef.removeValue().addOnSuccessListener {
+
+                        for (tag in question.tags){
+                            val refTag =
+                                FirebaseDatabase.getInstance().getReference("/tags/$tag/${question.id}")
+                            refTag.removeValue()
+                        }
+
+                        activity.switchVisibility(0)
+                        activity.boardFragment.listenToQuestions()
+                    }
+                }
+
+                cancelButton.setOnClickListener {
+                    deleteBox.visibility = View.GONE
                 }
 
                 executeVote(
@@ -405,16 +430,17 @@ class SingleAnswer(
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
-//        val uid = FirebaseAuth.getInstance().uid
+        val upvote = viewHolder.itemView.single_answer_upvote
+        val downvote = viewHolder.itemView.single_answer_downvote
+        val comment = viewHolder.itemView.single_answer_comment_button
+        val edit = viewHolder.itemView.single_answer_edit
+        val delete = viewHolder.itemView.single_answer_delete
+        val deleteBox = viewHolder.itemView.single_answer_delete_box
+        val cancel = viewHolder.itemView.single_answer_cancel
+        val remove = viewHolder.itemView.single_answer_remove
 
-        val upvote = viewHolder.itemView.findViewById<ImageButton>(R.id.single_answer_upvote)
-        val downvote = viewHolder.itemView.findViewById<ImageButton>(R.id.single_answer_downvote)
-        val comment = viewHolder.itemView.findViewById<TextView>(R.id.single_answer_comment_button)
-        val edit = viewHolder.itemView.findViewById<TextView>(R.id.single_answer_edit)
-        val delete = viewHolder.itemView.findViewById<TextView>(R.id.single_answer_delete)
-
-        val commentsRecycler = viewHolder.itemView.findViewById<RecyclerView>(R.id.single_answer_comments_recycler)
-        val imagesRecycler = viewHolder.itemView.findViewById<RecyclerView>(R.id.single_answer_photos_recycler)
+        val commentsRecycler = viewHolder.itemView.single_answer_comments_recycler
+        val imagesRecycler = viewHolder.itemView.single_answer_photos_recycler
 
         val commentsLayoutManager = LinearLayoutManager(viewHolder.root.context)
         commentsRecycler.adapter = commentsAdapter
@@ -424,30 +450,70 @@ class SingleAnswer(
         imagesRecycler.adapter = imagesAdapter
         imagesRecycler.layoutManager = imageLayoutManager
 
+
+        if (answer.author == currentUser.uid) {
+            delete.visibility = View.VISIBLE
+            edit.visibility = View.VISIBLE
+        } else {
+            delete.visibility = View.GONE
+            edit.visibility = View.GONE
+        }
+
+
+        activity.let {
+            val sharedViewModelAnswer = ViewModelProviders.of(it).get(SharedViewModelAnswer::class.java)
+            edit.setOnClickListener {
+                sharedViewModelAnswer.sharedAnswerObject.postValue(answer)
+                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editAnswerFragment).commit()
+                activity.subActive = activity.editAnswerFragment
+                activity.isEditAnswerActive = true
+            }
+        }
+
+
+        delete.setOnClickListener {
+            deleteBox.visibility = View.VISIBLE
+        }
+
+
+        cancel.setOnClickListener {
+            deleteBox.visibility = View.GONE
+        }
+
+        remove.setOnClickListener {
+            val answerRef = FirebaseDatabase.getInstance()
+                .getReference("/questions/${answer.questionId}/answers/${answer.answerId}")
+            answerRef.removeValue()
+            activity.openedQuestionFragment.answersAdapter.removeGroup(position)
+            activity.openedQuestionFragment.answersAdapter.notifyDataSetChanged()
+        }
+
         val refAnswerComments = FirebaseDatabase.getInstance()
             .getReference("/questions/${answer.questionId}/answers/${answer.answerId}/comments")
 
         refAnswerComments.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                val singleCommentFromDB = p0.getValue(AnswerComments::class.java)
+                val singleCommentFromDB = p0.child("body").getValue(AnswerComments::class.java)
 
                 if (singleCommentFromDB != null) {
-                    commentsAdapter.add(SingleAnswerComment(singleCommentFromDB))
+                    commentsAdapter.add(SingleAnswerComment(singleCommentFromDB, activity))
                 }
-
-            }
-
-            override fun onCancelled(p0: DatabaseError) {
             }
 
             override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+
             }
 
             override fun onChildChanged(p0: DataSnapshot, p1: String?) {
             }
 
+
             override fun onChildRemoved(p0: DataSnapshot) {
+            }
+
+
+            override fun onCancelled(p0: DatabaseError) {
             }
 
         })
@@ -464,11 +530,9 @@ class SingleAnswer(
                     override fun onDataChange(p0: DataSnapshot) {
 
                         val imageObject = p0.getValue(Images::class.java)
-                        imagesAdapter.add(FeedImage(imageObject!!))
+                        imagesAdapter.add(FeedImage(imageObject!!, 1))
                     }
-
                 })
-
             }
         }
 
@@ -488,7 +552,6 @@ class SingleAnswer(
             viewHolder.itemView.single_answer_author_reputation,
             activity
         )
-
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${answer.author}/profile")
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -512,18 +575,9 @@ class SingleAnswer(
                     viewHolder.itemView.single_answer_timestamp.text = date
                     viewHolder.itemView.single_answer_author_reputation.text =
                         "(${numberCalculation(author.reputation)})"
-
-                    if (answer.author==currentUser.uid){
-                        delete.visibility = View.VISIBLE
-                        edit.visibility = View.VISIBLE
-                    } else {
-                        edit.visibility = View.GONE
-                        delete.visibility = View.GONE
-                    }
                 }
             }
         })
-
 
         upvote.setOnClickListener {
             executeVote(
@@ -562,9 +616,7 @@ class SingleAnswer(
         }
 
         comment.setOnClickListener {
-
             activity.answerObject = answer
-
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.answerCommentFragment).commit()
             activity.subActive = activity.answerCommentFragment
 
@@ -583,7 +635,7 @@ class SingleAnswer(
     }
 }
 
-class SingleAnswerComment(val comment: AnswerComments) : Item<ViewHolder>(), DereMethods {
+class SingleAnswerComment(val comment: AnswerComments, val activity: MainActivity) : Item<ViewHolder>(), DereMethods {
     override fun getLayout(): Int {
         return R.layout.answer_comment_layout
     }
@@ -592,17 +644,77 @@ class SingleAnswerComment(val comment: AnswerComments) : Item<ViewHolder>(), Der
 
         val uid = FirebaseAuth.getInstance().uid
 
-        viewHolder.itemView.answer_comment_comment.text = comment.content
+        val commentContent = viewHolder.itemView.answer_comment_comment
+        val commentContentEditable = viewHolder.itemView.answer_comment_comment_editable
+        val edit = viewHolder.itemView.answer_comment_edit
+        val save = viewHolder.itemView.answer_comment_save
+        val delete = viewHolder.itemView.answer_comment_delete
+        val deleteBox = viewHolder.itemView.answer_comment_delete_box
+        val cancel = viewHolder.itemView.answer_comment_cancel
+        val remove = viewHolder.itemView.answer_comment_remove
 
-        val edit = viewHolder.itemView.findViewById<TextView>(R.id.answer_comment_edit)
-        val delete = viewHolder.itemView.findViewById<TextView>(R.id.answer_comment_delete)
+        commentContent.text = comment.content
+        commentContentEditable.setText(comment.content)
 
-        if(comment.author == uid){
+
+        val commentRef = FirebaseDatabase.getInstance()
+            .getReference("/questions/${comment.questionId}/answers/${comment.answerId}/comments/${comment.commentId}/body")
+
+
+        if (comment.author == uid) {
             edit.visibility = View.VISIBLE
             delete.visibility = View.VISIBLE
         } else {
             edit.visibility = View.GONE
             delete.visibility = View.GONE
+        }
+
+        delete.setOnClickListener {
+            deleteBox.visibility = View.VISIBLE
+        }
+
+        cancel.setOnClickListener {
+            deleteBox.visibility = View.GONE
+        }
+
+        remove.setOnClickListener {
+            commentRef.removeValue()
+            viewHolder.itemView.answer_comment_removed_filler_box.visibility = View.VISIBLE
+            deleteBox.visibility = View.GONE
+            delete.isClickable = false
+            edit.isClickable = false
+        }
+
+        edit.setOnClickListener {
+            commentContent.visibility = View.GONE
+            commentContentEditable.visibility = View.VISIBLE
+            commentContentEditable.requestFocus()
+            commentContentEditable.setSelection(commentContentEditable.text.length)
+            delete.visibility = View.GONE
+            edit.visibility = View.GONE
+            save.visibility = View.VISIBLE
+        }
+
+        save.setOnClickListener {
+            delete.visibility = View.VISIBLE
+            edit.visibility = View.VISIBLE
+            save.visibility = View.GONE
+
+            commentContent.visibility = View.VISIBLE
+            commentContentEditable.visibility = View.GONE
+
+            commentContent.text = commentContentEditable.text.toString()
+
+//            val updatedComment = AnswerComments(
+//                comment.commentId,
+//                comment.answerId,
+//                comment.questionId,
+//                commentContentEditable.text.toString(),
+//                comment.timestamp,
+//                comment.author
+//            )
+
+            commentRef.child("content").setValue(commentContentEditable.text.toString())
         }
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${comment.author}/profile")
@@ -621,13 +733,8 @@ class SingleAnswerComment(val comment: AnswerComments) : Item<ViewHolder>(), Der
                         "(${numberCalculation(author.reputation)})"
                     Glide.with(viewHolder.root.context).load(author.image)
                         .into(viewHolder.itemView.answer_comment_author_image)
-
                 }
             }
         })
-
-
     }
-
-
 }

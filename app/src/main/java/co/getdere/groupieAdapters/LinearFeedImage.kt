@@ -2,6 +2,8 @@ package co.getdere.groupieAdapters
 
 import android.app.Activity
 import android.view.View
+import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import co.getdere.MainActivity
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
@@ -9,6 +11,8 @@ import co.getdere.models.Users
 import co.getdere.R
 import co.getdere.otherClasses.FCMMethods
 import co.getdere.otherClasses.FCMMethods.sendMessageTopic
+import co.getdere.viewmodels.SharedViewModelImage
+import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestOptions
@@ -22,15 +26,28 @@ import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
 
 
-class LinearFeedImage(val image: Images, val currentUser: Users, val activity : Activity) : Item<ViewHolder>(), DereMethods, FCMMethods {
+class LinearFeedImage(val image: Images, val currentUser: Users, val activity: Activity) : Item<ViewHolder>(),
+    DereMethods, FCMMethods {
 
     val uid = FirebaseAuth.getInstance().uid
+
+    lateinit var sharedViewModelImage: SharedViewModelImage
+    lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
+
 
     override fun getLayout(): Int {
         return R.layout.linear_feed_post
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
+
+        activity as MainActivity
+
+        activity.let {
+            sharedViewModelImage = ViewModelProviders.of(activity).get(SharedViewModelImage::class.java)
+            sharedViewModelRandomUser = ViewModelProviders.of(activity).get(SharedViewModelRandomUser::class.java)
+        }
+
 
         val bucketCount = viewHolder.itemView.linear_feed_bucket_count
         val bucketButton = viewHolder.itemView.linear_feed_bucket
@@ -45,6 +62,8 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity : 
         val verifiedIcon = viewHolder.itemView.linear_feed_verified
         val verifiedInfoText = viewHolder.itemView.linear_feed_verified_info
         val verifiedInfoBox = viewHolder.itemView.linear_feed_verified_box
+
+        val imageView = viewHolder.itemView.linear_feed_image
 
 
         viewHolder.itemView.linear_feed_tags.text = image.tags.joinToString()
@@ -83,21 +102,31 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity : 
 
         val authorReputation = viewHolder.itemView.linear_feed_author_reputation
 
-
         val requestOption = RequestOptions()
             .placeholder(R.color.gray500).centerCrop()
 
         Glide.with(viewHolder.root.context).load(image.imageBig).transition(DrawableTransitionOptions.withCrossFade())
-            .apply(requestOption).into(viewHolder.itemView.linear_feed_image)
+            .apply(requestOption).into(imageView)
 
         viewHolder.itemView.linear_feed_timestamp.text = PrettyTime().format(Date(image.timestampUpload))
 
 
         listenToBucketCount(bucketCount, image)
+
         checkIfBucketed(bucketButton, image, uid!!)
 
         listenToLikeCount(likeCount, image)
-        executeLike(image, uid, likeCount, likeButton, 0, currentUser.name, image.photographer, authorReputation, activity)
+        executeLike(
+            image,
+            uid,
+            likeCount,
+            likeButton,
+            0,
+            currentUser.name,
+            image.photographer,
+            authorReputation,
+            activity
+        )
 
         listenToCommentCount(commentCount, image)
 
@@ -126,9 +155,14 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity : 
         })
 
 
+        imageView.setOnLongClickListener {
+            goToBucket()
+            return@setOnLongClickListener true
+        }
 
+        imageView.setOnClickListener {
 
-
+        }
 
         likeButton.setOnClickListener {
 
@@ -149,11 +183,32 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity : 
             }
         }
 
-//        bucketButton.setOnClickListener {
-//
-//            val action = FeedFragmentDirections.actionDestinationFeedToDestinationAddToBucket(image, currentUser)
-//            viewHolder.root.findNavController().navigate(action)
-//
-//        }
+        bucketButton.setOnClickListener {
+            goToBucket()
+        }
+    }
+
+    private fun goToBucket() {
+
+        sharedViewModelImage.sharedImageObject.postValue(image)
+
+        val randomUserRef = FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
+        randomUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                val user = p0.getValue(Users::class.java)
+                sharedViewModelRandomUser.randomUserObject.postValue(user)
+
+                activity as MainActivity
+                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketFragment).commit()
+                activity.subActive = activity.bucketFragment
+                activity.switchVisibility(1)
+            }
+
+        })
+
     }
 }

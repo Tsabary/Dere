@@ -84,7 +84,7 @@ class BucketFeedFragment : Fragment() {
                             override fun onDataChange(p0: DataSnapshot) {
                                 val imageObject = p0.getValue(Images::class.java)
 
-                                galleryAdapter.add(FeedImage(imageObject!!))
+                                galleryAdapter.add(FeedImage(imageObject!!, 0))
 
                             }
                         })

@@ -38,6 +38,7 @@ import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
 import com.mapbox.mapboxsdk.style.sources.Source
 import com.mapbox.mapboxsdk.utils.BitmapUtils
+import kotlinx.android.synthetic.main.fragment_image_map_view.*
 import mumayank.com.airlocationlibrary.AirLocation
 
 
@@ -89,9 +90,7 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        mapView = view.findViewById(co.getdere.R.id.image_map_view)
-
-
+        mapView = image_map_view
 
         mapView?.getMapAsync { mapboxMap ->
             mapboxMap.setStyle(Style.LIGHT) { style ->

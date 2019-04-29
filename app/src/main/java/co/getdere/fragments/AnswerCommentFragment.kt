@@ -20,6 +20,7 @@ import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelQuestion
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.android.synthetic.main.fragment_answer_comment.*
 import kotlinx.android.synthetic.main.fragment_answer_comment.view.*
 
 
@@ -54,26 +55,14 @@ class AnswerCommentFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity!!.title = "Comment"
-
-        val content = view.answer_comment_content_input
+        val content = answer_comment_content_input
         val uid = FirebaseAuth.getInstance().uid
 
-        view.answer_comment_post_btn.setOnClickListener {
+        answer_comment_post_btn.setOnClickListener {
 
             postComment(content.text.toString(), System.currentTimeMillis(), uid!!)
+            content.text.clear()
         }
-
-
-//        arguments?.let {
-//            val safeArgs = AnswerCommentFragmentArgs.fromBundle(it)
-//            questionId = safeArgs.questionId
-//            answer = safeArgs.answer
-////            currentUser = safeArgs.currentUser
-//
-//        }
-
-
     }
 
     private fun postComment(content: String, timestamp: Long, author: String) {
@@ -92,10 +81,13 @@ class AnswerCommentFragment : Fragment(), DereMethods {
                         .getReference("/questions/${questionObject.id}/answers/${answer.answerId}/comments")
                         .push()
 
+                val refCommentBody = FirebaseDatabase.getInstance()
+                    .getReference("/questions/${questionObject.id}/answers/${answer.answerId}/comments/${refComment.key}/body")
+
                 val newComment =
                     AnswerComments(refComment.key!!, answer.answerId, questionObject.id, content, timestamp, author)
 
-                refComment.setValue(newComment)
+                refCommentBody.setValue(newComment)
                     .addOnSuccessListener {
                         Log.d("postAnswerComment", "Saved comment to Firebase Database")
 
@@ -121,7 +113,6 @@ class AnswerCommentFragment : Fragment(), DereMethods {
                             activity.subActive = activity.openedQuestionFragment
 
                             closeKeyboard(activity)
-
                         }
 
 

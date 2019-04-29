@@ -194,13 +194,17 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
         dark_room_edit_actions_container.visibility = View.GONE
         dark_room_edit_after_post_actions_container.visibility = View.VISIBLE
+        dark_room_edit_privacy_container.visibility = View.VISIBLE
 
         val saveButton = dark_room_edit_after_post_save
         val cancelButton = dark_room_edit_after_post_cancel
 
-        val setLocation = dark_room_edit_set_location
+//        val setLocation = dark_room_edit_set_location
 
         val focus = dark_room_edit_map_focus
+        val pinHint = dark_room_edit_pin_hint
+        val pinAction = dark_room_edit_map_pin
+
 
         //buttons
         infoActiveButton = dark_room_edit_info_button_active
@@ -229,6 +233,8 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         }
 
 
+
+
         focus.setOnClickListener {
             panToCurrentLocation(activity, myMapboxMap!!)
         }
@@ -243,14 +249,11 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         }
 
 
-
-
-
-
         mapView?.getMapAsync { mapboxMap ->
             mapboxMap.setStyle(Style.LIGHT) { style ->
 
                 myMapboxMap = mapboxMap
+
                 myStyle = style
 
                 val geoJsonOptions = GeoJsonOptions().withTolerance(0.4f)
@@ -311,7 +314,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                         symbolOptions = SymbolOptions()
                             .withLatLng(LatLng(imageLat, imageLong))
                             .withIconImage(DERE_PIN)
-                            .withIconSize(1.3f)
+                            .withIconSize(1f)
                             .withZIndex(10)
                             .withDraggable(false)
 
@@ -353,7 +356,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                         }
 
 
-                        setLocation.setOnClickListener {
+                        pinAction.setOnClickListener {
                             symbolManager.deleteAll()
 
                             symbolOptions = SymbolOptions()
@@ -364,7 +367,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                                     )
                                 )
                                 .withIconImage(DERE_PIN)
-                                .withIconSize(1.3f)
+                                .withIconSize(1f)
                                 .withZIndex(10)
                                 .withDraggable(false)
 
@@ -388,6 +391,17 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                                     imageTagsList.add(chip.text.toString())
                                 }
 
+                                val imageRef = FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/body")
+
+                                imageRef.child("private").setValue(privacy)
+                                imageRef.child("link").setValue(url)
+                                imageRef.child("details").setValue(locationInput)
+                                imageRef.child("tags").setValue(imageTagsList)
+                                imageRef.child("location").setValue(mutableListOf(imageLat, imageLong))
+
+
+
+
                                 val updatedImage = Images(
                                     imageObject.id,
                                     imageObject.imageBig,
@@ -403,30 +417,26 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                                     imageObject.verified
                                 )
 
-                                val imageRef = FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/body")
-                                imageRef.removeValue().addOnSuccessListener {
-                                    imageRef.setValue(updatedImage).addOnSuccessListener {
 
-                                        sharedViewModelImage.sharedImageObject.postValue(updatedImage)
+                                sharedViewModelImage.sharedImageObject.postValue(updatedImage)
 
-                                        activity.subFm.beginTransaction().hide(activity.subActive)
-                                            .show(activity.imageFullSizeFragment)
-                                            .commit()
-                                        activity.subActive = activity.imageFullSizeFragment
+                                activity.subFm.beginTransaction().hide(activity.subActive)
+                                    .show(activity.imageFullSizeFragment)
+                                    .commit()
+                                activity.subActive = activity.imageFullSizeFragment
 
-                                        makeInfoActive()
+                                makeInfoActive()
 
-                                        for (t in imageTagsList) {
-                                            val refTag =
-                                                FirebaseDatabase.getInstance().getReference("/tags/$t/${imageObject.id}")
-                                            val refUserTags = FirebaseDatabase.getInstance()
-                                                .getReference("users/${imageObject.photographer}/interests/$t")
+                                for (t in imageTagsList) {
+                                    val refTag =
+                                        FirebaseDatabase.getInstance().getReference("/tags/$t/${imageObject.id}")
+                                    val refUserTags = FirebaseDatabase.getInstance()
+                                        .getReference("users/${imageObject.photographer}/interests/$t")
 
-                                            refTag.setValue("image")
-                                            refUserTags.setValue(true)
-                                        }
-                                    }
+                                    refTag.setValue("image")
+                                    refUserTags.setValue(true)
                                 }
+
                                 closeKeyboard(activity)
                             } else {
                                 Toast.makeText(this.context, "Please add at least one tag", Toast.LENGTH_SHORT).show()

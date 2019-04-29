@@ -62,6 +62,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var imagePostEditFragment: ImagePostEditFragment
     lateinit var webViewFragment: WebViewFragment
     lateinit var editQuestionFragment: EditQuestionFragment
+    lateinit var editAnswerFragment: EditAnswerFragment
 
     lateinit var mainFrame: FrameLayout
     lateinit var subFrame: FrameLayout
@@ -76,6 +77,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
     var isBucketGalleryActive = false
     var isOpenedQuestionActive = false
+    var isEditAnswerActive = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -130,20 +132,10 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
                     subActive = imageFullSizeFragment
 
-                    if (mainFrame.visibility == View.GONE) {
-                        switchVisibility(0)
-                    }
-
-                    isOpenedQuestionActive = false
-                    isBucketGalleryActive = false
-
-                    sharedViewModelImage.sharedImageObject.postValue(Images())
-                    sharedViewModelRandomUser.randomUserObject.postValue(Users())
-
-                    closeKeyboard(this)
+                    resetFragments()
                 }
 
-                co.getdere.R.id.destination_board -> {
+                R.id.destination_board -> {
 
                     fm.beginTransaction().hide(active).show(boardFragment).commit()
                     active = boardFragment
@@ -152,20 +144,11 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     menuItem.isChecked = true
 
 
-                    if (mainFrame.visibility == View.GONE) {
-                        switchVisibility(0)
-                    }
-
                     subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
                     subActive = openedQuestionFragment
 
-                    isOpenedQuestionActive = false
-                    isBucketGalleryActive = false
 
-                    sharedViewModelImage.sharedImageObject.postValue(Images())
-                    sharedViewModelRandomUser.randomUserObject.postValue(Users())
-
-                    closeKeyboard(this)
+                    resetFragments()
                 }
                 R.id.destination_profile_logged_in_user -> {
 
@@ -176,21 +159,11 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     menuItem.isChecked = true
 
 
-                    if (mainFrame.visibility == View.GONE) {
-                        switchVisibility(0)
-                    }
-
                     subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
                     subActive = imageFullSizeFragment
 
-                    isOpenedQuestionActive = false
-                    isBucketGalleryActive = false
 
-                    sharedViewModelImage.sharedImageObject.postValue(Images())
-                    sharedViewModelRandomUser.randomUserObject.postValue(Users())
-
-                    closeKeyboard(this)
-
+                    resetFragments()
                 }
             }
             false
@@ -265,6 +238,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     switchVisibility(0)
                     sharedViewModelQuestion.questionObject.postValue(Question())
                     isOpenedQuestionActive = false
+                    openedQuestionFragment.deleteBox.visibility = View.GONE
                 }
 
                 boardNotificationsFragment -> {
@@ -314,6 +288,22 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     subActive = openedQuestionFragment
                 }
 
+                editAnswerFragment-> {
+                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                    subActive = openedQuestionFragment
+                    isEditAnswerActive = false
+                }
+
+                addImageToAnswer -> {
+                    if(isEditAnswerActive){
+                        subFm.beginTransaction().hide(subActive).show(editAnswerFragment).commit()
+                        subActive = editAnswerFragment
+                    } else
+                    {
+                        subFm.beginTransaction().hide(subActive).show(answerFragment).commit()
+                        subActive = answerFragment
+                    }
+                }
             }
 
 
@@ -357,6 +347,23 @@ class MainActivity : AppCompatActivity(), DereMethods {
         }
 
     }
+
+    private fun resetFragments(){
+        openedQuestionFragment.deleteBox.visibility = View.GONE
+        closeKeyboard(this)
+
+        isOpenedQuestionActive = false
+        isBucketGalleryActive = false
+
+        sharedViewModelImage.sharedImageObject.postValue(Images())
+        sharedViewModelRandomUser.randomUserObject.postValue(Users())
+        sharedViewModelQuestion.questionObject.postValue(Question())
+
+        if (mainFrame.visibility == View.GONE) {
+            switchVisibility(0)
+        }
+    }
+
 
 
     private fun checkIfLoggedIn() {
@@ -431,6 +438,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         imagePostEditFragment = ImagePostEditFragment()
         webViewFragment = WebViewFragment()
         editQuestionFragment = EditQuestionFragment()
+        editAnswerFragment = EditAnswerFragment()
 
 
         subFm.beginTransaction()
@@ -473,18 +481,15 @@ class MainActivity : AppCompatActivity(), DereMethods {
             .hide(webViewFragment).commit()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editQuestionFragment, "editQuestionFragment")
             .hide(editQuestionFragment).commit()
-
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editAnswerFragment, "editAnswerFragment")
+            .hide(editAnswerFragment).commit()
 
         subActive = imageFullSizeFragment
-
     }
 
 
     override fun onStart() {
         super.onStart()
-
-        println("branch on start")
-
 
         Branch.getInstance().initSession({ branchUniversalObject, referringParams, error ->
 

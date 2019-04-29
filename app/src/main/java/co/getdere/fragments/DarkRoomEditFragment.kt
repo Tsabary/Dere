@@ -89,7 +89,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
     private lateinit var localImageViewModel: LocalImageViewModel
 
-
     val tagsFiltredAdapter = GroupAdapter<ViewHolder>()
     lateinit var imageChipGroup: ChipGroup
     val tagsRef = FirebaseDatabase.getInstance().getReference("/tags")
@@ -210,7 +209,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         val setLocation = dark_room_edit_set_location
 
         val focus = dark_room_edit_map_focus
-
+        val pinAction = dark_room_edit_map_pin
         //buttons
         infoActiveButton = dark_room_edit_info_button_active
         infoUnactiveButton = dark_room_edit_info_button_unactive
@@ -388,7 +387,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
 
-                        setLocation.setOnClickListener {
+                        pinAction.setOnClickListener {
                             symbolManager.deleteAll()
 
                             symbolOptions = SymbolOptions()
@@ -700,7 +699,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                 progressBar.progress = 85f
                 Log.d("imageToDatabase", "image saved to feed successfully: ${ref.key}")
 
-      
+
 
                 userImagesRef.setValue(true).addOnSuccessListener {
 

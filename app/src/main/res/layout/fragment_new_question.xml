@@ -81,7 +81,7 @@
                     app:layout_constraintHorizontal_bias="0.0"
                     android:layout_marginStart="32dp"
                     android:layout_marginEnd="32dp"
-                    android:digits="abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 ?,'$/&quot;"
+                    android:digits=".abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 ?,'$/&quot;"
                     android:background="@android:color/transparent"
                     android:gravity="top"/>
 

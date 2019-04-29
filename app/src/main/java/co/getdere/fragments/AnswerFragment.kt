@@ -92,7 +92,7 @@ class AnswerFragment : Fragment(), DereMethods {
                 imagesRecyclerAdapter.clear()
                 imageListFinal.clear()
 
-                imagesRecycler.visibility = if (existingImageList.isNotEmpty()) {
+                imagesRecycler.visibility = if (existingImageList.isNotEmpty()){
                     View.VISIBLE
                 } else {
                     View.GONE
@@ -121,7 +121,7 @@ class AnswerFragment : Fragment(), DereMethods {
         }
     }
 
-    private fun postAnswer(content: String, timestamp: Long, activity: Activity) {
+    private fun postAnswer(content: String, timestamp: Long, activity : Activity) {
 
         activity as MainActivity
 

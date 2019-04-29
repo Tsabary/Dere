@@ -339,7 +339,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
                     override fun onDataChange(p0: DataSnapshot) {
                         val imageObject = p0.getValue(Images::class.java)
 
-                        galleryRollAdapter.add(FeedImage(imageObject!!))
+                        galleryRollAdapter.add(FeedImage(imageObject!!, 0))
                     }
                 })
 

@@ -359,7 +359,7 @@ class BoardFragment : Fragment() {
     }
 
 
-    private fun listenToQuestions() {
+    fun listenToQuestions() {
 
         questionsRecyclerAdapter.clear()
 
