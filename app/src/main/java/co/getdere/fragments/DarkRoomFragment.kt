@@ -27,6 +27,7 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.activity_register.*
+import kotlinx.android.synthetic.main.feed_single_photo.view.*
 import kotlinx.android.synthetic.main.fragment_dark_room.*
 
 
@@ -136,7 +137,7 @@ class DarkRoomGroupieAdapter(val image: LocalImagePost) : Item<ViewHolder>() {
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
-        val photoHolder = viewHolder.itemView.findViewById<ImageView>(R.id.feed_single_photo_photo)
+        val photoHolder = viewHolder.itemView.feed_single_photo_photo
         Glide.with(viewHolder.root.context).load(image.imageUri).into(photoHolder)
     }
 

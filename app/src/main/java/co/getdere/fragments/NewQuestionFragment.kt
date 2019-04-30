@@ -165,8 +165,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
         }
 
 
-        val tagSuggestionRecycler =
-            view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.new_question_tag_recycler)
+        val tagSuggestionRecycler = new_question_tag_recycler
         val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
         tagSuggestionRecycler.adapter = tagsFilteredAdapter

@@ -29,6 +29,8 @@ import co.getdere.roomclasses.LocalImageViewModel
 import co.getdere.viewmodels.SharedViewModelLocalImagePost
 import com.bumptech.glide.Glide
 import com.camerakit.type.CameraFacing
+import kotlinx.android.synthetic.main.fragment_camera.*
+import kotlinx.android.synthetic.main.fragment_photo_editor.view.*
 
 
 class CameraFragment : Fragment() {
@@ -79,10 +81,10 @@ class CameraFragment : Fragment() {
 
         val mActivity = activity as CameraActivity
 
-        cameraKitView = view.findViewById(co.getdere.R.id.camera_view)
+        cameraKitView = camera_view
 //        cameraKitView.aspectRatio = 0.8f
 
-        val captureButton = view.findViewById<ImageButton>(R.id.camera_btn)
+        val captureButton = camera_btn
 
         captureButton.setOnClickListener {
 
@@ -123,7 +125,7 @@ class CameraFragment : Fragment() {
 
 
                             Glide.with(mActivity).load(savedPhoto)
-                                .into(mActivity.photoEditorFragment.view!!.findViewById(R.id.photo_editor_image))
+                                .into(mActivity.photoEditorFragment.view!!.photo_editor_image)
 
                             Log.d("photoActivity", "image loaded into new fragment")
 

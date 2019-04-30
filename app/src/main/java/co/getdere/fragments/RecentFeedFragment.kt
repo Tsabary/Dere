@@ -58,7 +58,7 @@ class RecentFeedFragment : Fragment() {
 
         activity!!.title = "Feed"
 
-        feedRecycler = view.findViewById(R.id.following_feed_gallery)
+        feedRecycler = following_feed_gallery
 
         setUpGalleryAdapter()
 

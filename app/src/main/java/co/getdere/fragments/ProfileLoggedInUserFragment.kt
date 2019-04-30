@@ -109,9 +109,8 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
                 R.id.profile_invite_a_friend -> {
 
-
                     val ss =
-                        ShareSheetStyle(this.context!!, "Check this out!", "Get Dere and start collecting destinations")
+                        ShareSheetStyle(this.context!!, "Check out my profile", "Follow me around the world")
                             .setCopyUrlStyle(
                                 resources.getDrawable(android.R.drawable.ic_menu_send),
                                 "Copy",
@@ -125,7 +124,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
                             .setAsFullWidthStyle(true)
                             .setSharingTitle("Share With")
 
-                    buo.showShareSheet(activity as MainActivity, lp, ss, object : Branch.BranchLinkShareListener {
+                    buo.showShareSheet(activity, lp, ss, object : Branch.BranchLinkShareListener {
                         override fun onShareLinkDialogLaunched() {}
                         override fun onShareLinkDialogDismissed() {}
                         override fun onLinkShareResponse(
@@ -164,8 +163,8 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
 
 
-        bucketBtn = view.findViewById(R.id.profile_li_bucket_btn)
-        rollBtn = view.findViewById(R.id.profile_li_roll_btn)
+        bucketBtn = profile_li_bucket_btn
+        rollBtn = profile_li_roll_btn
 
         activity.let {
             sharedViewModelForCurrentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java)
@@ -187,10 +186,10 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
                 .setCanonicalIdentifier(userProfile.uid)
                 .setTitle("Get Dere and join traveler communities")
                 .setContentDescription("")
-                .setContentImageUrl("https://img1.10bestmedia.com/Images/Photos/352450/GettyImages-913753556_55_660x440.jpg")
+                .setContentImageUrl(userProfile.image)
                 .setContentIndexingMode(BranchUniversalObject.CONTENT_INDEX_MODE.PUBLIC)
                 .setLocalIndexMode(BranchUniversalObject.CONTENT_INDEX_MODE.PUBLIC)
-                .setContentMetadata(ContentMetadata().addCustomMetadata("type", "invite"))
+                .setContentMetadata(ContentMetadata().addCustomMetadata("type", "user"))
 
             lp = LinkProperties()
                 .setFeature("inviting")
@@ -207,7 +206,6 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         photosRef.addValueEventListener(object : ValueEventListener {
 
             override fun onCancelled(p0: DatabaseError) {
-
             }
 
             override fun onDataChange(p0: DataSnapshot) {

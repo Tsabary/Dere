@@ -117,9 +117,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 questionObject = question
                 checkIfQuestionSaved(0, activity)
 
-                val stampMills = questionObject.timestamp
-                val pretty = PrettyTime()
-                val date = pretty.format(Date(stampMills))
+                val date = PrettyTime().format(Date(questionObject.timestamp))
 
 
                 openedQuestionTitle.text = "${questionObject.title}?"
@@ -564,9 +562,7 @@ class SingleAnswer(
 
                 if (author != null) {
 
-                    val stampMills = answer.timestamp
-                    val pretty = PrettyTime()
-                    val date = pretty.format(Date(stampMills))
+                    val date =PrettyTime().format(Date(answer.timestamp))
 
                     Glide.with(viewHolder.root.context).load(author.image)
                         .into(viewHolder.itemView.single_answer_author_image)

@@ -56,9 +56,6 @@ class FeedFragment : Fragment(), DereMethods {
     lateinit var viewPager : ViewPager
 
 
-
-
-
     private val permissions = arrayOf(
         android.Manifest.permission.CAMERA,
         android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -76,9 +73,7 @@ class FeedFragment : Fragment(), DereMethods {
         activity?.let {
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
             sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
-
         }
-
     }
 
 
@@ -91,7 +86,6 @@ class FeedFragment : Fragment(), DereMethods {
 
         val activity = activity as MainActivity
 
-
         val feedSearchBox = feed_toolbar_search_box
         val tagSuggestionRecycler = feed_search_tags_recycler
         feedFilterChipGroup = feed_toolbar_chipgroup
@@ -100,15 +94,11 @@ class FeedFragment : Fragment(), DereMethods {
         tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
         tagSuggestionRecycler.adapter = tagsFilteredAdapter
 
-
-
         searchedImagesRecycler = feed_search_results_recycler
         val searchedImagesRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         searchedImagesRecyclerLayoutManager.reverseLayout = true
         searchedImagesRecycler.adapter = searchedImagesRecyclerAdapter
         searchedImagesRecycler.layoutManager = searchedImagesRecyclerLayoutManager
-
-
 
 
         feedSearchBox.addTextChangedListener(object : TextWatcher {
@@ -135,18 +125,14 @@ class FeedFragment : Fragment(), DereMethods {
                         tagSuggestionRecycler.visibility = View.VISIBLE
                         tagsFilteredAdapter.add(SingleTagSuggestion(t))
                     }
-
                 }
-
             }
-
 
             override fun afterTextChanged(s: Editable?) {
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
-
         })
 
 
@@ -166,11 +152,11 @@ class FeedFragment : Fragment(), DereMethods {
 
 
 
-        viewPager = view.findViewById(co.getdere.R.id.feed_pager_pager)
+        viewPager = feed_pager_pager
         pagerAdapter = FeedPagerAdapter(childFragmentManager)
         viewPager.adapter = pagerAdapter
 
-        val tabLayout = view.findViewById<TabLayout>(co.getdere.R.id.feed_pager_tab_layout)
+        val tabLayout = feed_pager_tab_layout
         tabLayout.setupWithViewPager(viewPager)
 
         val feedNotifications = feed_toolbar_notifications_icon
@@ -180,6 +166,7 @@ class FeedFragment : Fragment(), DereMethods {
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.feedNotificationsFragment).commit()
             activity.subActive = activity.feedNotificationsFragment
             activity.switchVisibility(1)
+            activity.isFeedNotificationsActive = true
         }
 
         feedToCamera.setOnClickListener {
@@ -191,9 +178,7 @@ class FeedFragment : Fragment(), DereMethods {
             }
 
         }
-
         recyclersVisibility(0)
-
     }
 
 

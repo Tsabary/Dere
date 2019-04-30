@@ -29,6 +29,7 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.add_to_bucket_row.view.*
+import kotlinx.android.synthetic.main.fragment_add_to_bucket.*
 
 
 class AddToBucketFragment : Fragment(), DereMethods {
@@ -70,9 +71,9 @@ class AddToBucketFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val recycler = view.findViewById<RecyclerView>(R.id.add_to_bucket_recycler)
-        val newBucketInput = view.findViewById<EditText>(R.id.add_to_bucket_new_input)
-        val bucketAddButton = view.findViewById<TextView>(R.id.add_to_bucket_new_button)
+        val recycler = add_to_bucket_recycler
+        val newBucketInput = add_to_bucket_new_input
+        val bucketAddButton = add_to_bucket_new_button
 
         recycler.adapter = bucketsAdapter
         bucketsLayoutManager = LinearLayoutManager(this.context)

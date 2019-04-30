@@ -31,9 +31,7 @@ class SingleQuestion(
 
                 val count = p0.childrenCount
 
-                val stampMills = question.timestamp
-                val pretty = PrettyTime()
-                val date = pretty.format(Date(stampMills))
+                val date = PrettyTime().format(Date(question.timestamp))
 
 
                 viewHolder.itemView.board_question.text = "${question.title}?"

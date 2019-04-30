@@ -40,9 +40,9 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
-        registerButton = findViewById<TextView>(R.id.register_button)
-        registerButtonBlinking = findViewById<FadingTextView>(R.id.register_button_active_text)
-        registerButtonBlinkingBackground = findViewById<TextView>(R.id.register_button_regular_active_background)
+        registerButton = register_button
+        registerButtonBlinking = register_button_active_text
+        registerButtonBlinkingBackground = register_button_regular_active_background
 
         registerButtonBlinking.setTexts(texts)
         registerButtonBlinking.setTimeout(500, TimeUnit.MILLISECONDS)

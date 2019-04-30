@@ -734,7 +734,9 @@ interface DereMethods : FCMMethods {
                     initiatorId,
                     initiatorName,
                     mainPostId,
-                    specificPostId
+                    specificPostId,
+                    System.currentTimeMillis(),
+                    0
                 )
             )
 
@@ -751,7 +753,9 @@ interface DereMethods : FCMMethods {
                     initiatorId,
                     initiatorName,
                     mainPostId,
-                    specificPostId
+                    specificPostId,
+                    System.currentTimeMillis(),
+                    0
                 )
             )
 

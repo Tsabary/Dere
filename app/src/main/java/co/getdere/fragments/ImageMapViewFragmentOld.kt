@@ -29,6 +29,7 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
+import kotlinx.android.synthetic.main.fragment_image_map_view.*
 
 
 //import android.R
@@ -78,7 +79,7 @@ class ImageMapViewFragmentOld : Fragment(), PermissionsListener {
 
         val view = inflater.inflate(co.getdere.R.layout.fragment_image_map_view, container, false)
 
-        mapView = view.findViewById(co.getdere.R.id.image_map_view)
+        mapView = image_map_view
 
         sharedViewModelForImage.sharedImageObject.observe(this, Observer {
             it?.let { image ->

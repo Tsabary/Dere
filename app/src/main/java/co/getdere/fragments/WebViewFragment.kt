@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProviders
 import co.getdere.viewmodels.SharedViewModelImage
 
 import co.getdere.R
+import kotlinx.android.synthetic.main.fragment_web_view.*
 
 class WebViewFragment : Fragment() {
 
@@ -39,7 +40,7 @@ class WebViewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val webView = view.findViewById<WebView>(R.id.webview_view)
+        val webView = webview_view
 
         sharedViewModelForImage.sharedImageObject.observe(this, Observer {
             it?.let {image->

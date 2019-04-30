@@ -102,14 +102,14 @@ class BoardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity!!.title = "Board"
-
+        val notificationBadge = board_toolbar_notifications_badge
+        notificationBadge.setNumber(3)
         val activity = activity as MainActivity
 
         val boardSearchBox = board_toolbar_search_box
         val tagSuggestionRecycler = board_search_recycler
         boardFilterChipGroup = board_toolbar_filter_chipgroup
-        val fab: FloatingActionButton = view.findViewById(R.id.board_fab)
+        val fab: FloatingActionButton = board_fab
 
         val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
@@ -129,6 +129,7 @@ class BoardFragment : Fragment() {
             activity.subActive = activity.boardNotificationsFragment
 
             activity.switchVisibility(1)
+            activity.isBoardNotificationsActive = true
         }
 
         boardSavedQuestionIcon.setOnClickListener {
@@ -153,7 +154,7 @@ class BoardFragment : Fragment() {
         searchedQuestionsRecycler.layoutManager = searchedQuestionRecyclerLayoutManager
 
 
-        questionsRecycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.board_question_feed)
+        questionsRecycler = board_question_feed
         val questionRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         questionRecyclerLayoutManager.reverseLayout = true
         questionsRecycler.adapter = questionsRecyclerAdapter

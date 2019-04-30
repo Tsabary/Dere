@@ -29,6 +29,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.fragment_profile_random_user.*
 
 
 class ProfileRandomUserFragment : Fragment(), DereMethods {
@@ -141,14 +142,14 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
         val activity = activity as MainActivity
 
 
-        val profileTagline = view.findViewById<TextView>(R.id.profile_ru_tagline)
-        val profilePicture: ImageView = view.findViewById(R.id.profile_ru_image)
-        val profileName: TextView = view.findViewById(R.id.profile_ru_user_name)
-        profileGallery = view.findViewById(R.id.profile_ru_gallery)
-        val profileReputation = view.findViewById<TextView>(R.id.profile_ru_reputation_count)
-        val profilePhotos = view.findViewById<TextView>(R.id.profile_ru_photos_count)
-        val profileFollowers = view.findViewById<TextView>(R.id.profile_ru_followers_count)
-        followButton = view.findViewById(R.id.profile_ru_follow_button)
+        val profileTagline = profile_ru_tagline
+        val profilePicture: ImageView = profile_ru_image
+        val profileName: TextView = profile_ru_user_name
+        profileGallery = profile_ru_gallery
+        val profileReputation = profile_ru_reputation_count
+        val profilePhotos = profile_ru_photos_count
+        val profileFollowers = profile_ru_followers_count
+        followButton = profile_ru_follow_button
 
 
 
@@ -217,8 +218,8 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
 
 
-        bucketBtn = view.findViewById(R.id.profile_ru_bucket_btn)
-        rollBtn = view.findViewById(R.id.profile_ru_roll_btn)
+        bucketBtn = profile_ru_bucket_btn
+        rollBtn = profile_ru_roll_btn
 
 
 

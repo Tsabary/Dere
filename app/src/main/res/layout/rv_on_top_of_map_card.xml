@@ -17,7 +17,7 @@
             android:layout_marginBottom="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:srcCompat="@drawable/no_dread"
-            app:layout_constraintDimensionRatio="w,5:4"
+            app:layout_constraintDimensionRatio="w,1:1"
             android:scaleType="centerCrop"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"/>

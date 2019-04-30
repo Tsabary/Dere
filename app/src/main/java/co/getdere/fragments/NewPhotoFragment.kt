@@ -11,6 +11,7 @@ import co.getdere.CameraActivity
 import co.getdere.adapters.CameraPagerAdapter
 import co.getdere.R
 import com.google.android.material.tabs.TabLayout
+import kotlinx.android.synthetic.main.fragment_new_photo.*
 
 
 class NewPhotoFragment : Fragment() {
@@ -30,7 +31,7 @@ class NewPhotoFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        val viewPager = view.findViewById<ViewPager>(R.id.new_photo_pager_pager)
+        val viewPager = new_photo_pager_pager
         pagerAdapter = CameraPagerAdapter(childFragmentManager)
         viewPager.adapter = pagerAdapter
 
@@ -64,7 +65,7 @@ class NewPhotoFragment : Fragment() {
 
         })
 
-        val tabLayout = view.findViewById<TabLayout>(R.id.new_photo_pager_tab_layout)
+        val tabLayout = new_photo_pager_tab_layout
         tabLayout.setupWithViewPager(viewPager)
     }
 

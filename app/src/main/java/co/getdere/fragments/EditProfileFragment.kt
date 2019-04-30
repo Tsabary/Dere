@@ -26,6 +26,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.android.synthetic.main.fragment_edit_profile.*
 import java.util.*
 
 
@@ -64,13 +65,13 @@ class EditProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        userImage = view.findViewById<CircleImageView>(co.getdere.R.id.edit_profile_image)
-        tagLineInput = view.findViewById<EditText>(co.getdere.R.id.edit_profile_description)
-        userNameInput = view.findViewById<EditText>(co.getdere.R.id.edit_profile_name)
-        userInstagramInput = view.findViewById<EditText>(co.getdere.R.id.edit_profile_instagram)
+        userImage = edit_profile_image
+        tagLineInput = edit_profile_description
+        userNameInput = edit_profile_name
+        userInstagramInput = edit_profile_instagram
 
-        val saveButton = view.findViewById<TextView>(co.getdere.R.id.edit_profile_save)
-        val cancelButton = view.findViewById<TextView>(co.getdere.R.id.edit_profile_cancel)
+        val saveButton = edit_profile_save
+        val cancelButton = edit_profile_cancel
 
 
         setUpUserDetails()

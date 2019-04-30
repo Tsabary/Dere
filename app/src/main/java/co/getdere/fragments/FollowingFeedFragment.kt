@@ -67,22 +67,18 @@ open class FollowingFeedFragment : Fragment() {
     }
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?  = inflater.inflate(R.layout.fragment_feeds_layout, container, false)
 
-        val myView = inflater.inflate(R.layout.fragment_feeds_layout, container, false)
-
-        feedRecycler = myView.findViewById(R.id.following_feed_gallery)
-
-        return myView
-    }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setUpGalleryAdapter()
 
         emptyFeedMessage = following_feed_empty
+        feedRecycler = following_feed_gallery
+
+        setUpGalleryAdapter()
 
         feed_swipe_refresh.setOnRefreshListener {
             listenToImages(currentUser)

@@ -94,16 +94,16 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         val activity = activity as MainActivity
 //        imageExpendedFm = activity.supportFragmentManager
 
-        val authorName = view.findViewById<TextView>(R.id.photo_social_author_name)
-        val authorReputation = view.findViewById<TextView>(R.id.photo_social_author_reputation)
-        val authorImage = view.findViewById<CircleImageView>(R.id.photo_social_author_image)
+        val authorName = photo_social_author_name
+        val authorReputation = photo_social_author_reputation
+        val authorImage = photo_social_author_image
 
-        val currentUserImage = view.findViewById<CircleImageView>(R.id.photo_comments_current_user_image)
+        val currentUserImage = photo_comments_current_user_image
 
 //        val mainImage = image_expended_image
         val locationMap = image_expended_map
-        val imageContent = view.findViewById<TextView>(R.id.photo_social_image_details)
-        val imageTimestamp = view.findViewById<TextView>(R.id.photo_social_timestamp)
+        val imageContent = photo_social_image_details
+        val imageTimestamp = photo_social_timestamp
 
 
         val likeCount = photo_social_like_count
@@ -276,8 +276,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         shareButton.setOnClickListener {
 
-
-            val ss = ShareSheetStyle(activity, "Check this out!", "This stuff is awesome: ")
+            val ss = ShareSheetStyle(activity, "Check this place out!", "Save it to your bucket list")
                 .setCopyUrlStyle(resources.getDrawable(android.R.drawable.ic_menu_send), "Copy", "Added to clipboard")
                 .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
                 .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
@@ -292,9 +291,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                 override fun onShareLinkDialogDismissed() {}
                 override fun onLinkShareResponse(sharedLink: String, sharedChannel: String, error: BranchError) {}
                 override fun onChannelSelected(channelName: String) {}
-
             })
-
         }
 
 
@@ -456,24 +453,21 @@ class SingleComment(
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
-        val commentContent = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_content)
-        val commentTimestamp = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_timestamp)
-        val commentLikeCount = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_like_count)
-        val commentLikeButton = viewHolder.itemView.findViewById<ImageButton>(R.id.single_comment_like_button)
-        val commentAuthor = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_author)
-        val commentEditButton = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_edit)
-        val commentSaveButton = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_save)
-        val commentDeleteButton = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_delete)
-        val commentContentEditable = viewHolder.itemView.findViewById<EditText>(R.id.single_comment_content_editable)
+        val commentContent = viewHolder.itemView.single_comment_content
+        val commentTimestamp = viewHolder.itemView.single_comment_timestamp
+        val commentLikeCount = viewHolder.itemView.single_comment_like_count
+        val commentLikeButton = viewHolder.itemView.single_comment_like_button
+        val commentAuthor = viewHolder.itemView.single_comment_author
+        val commentEditButton = viewHolder.itemView.single_comment_edit
+        val commentSaveButton = viewHolder.itemView.single_comment_save
+        val commentDeleteButton = viewHolder.itemView.single_comment_delete
+        val commentContentEditable = viewHolder.itemView.single_comment_content_editable
         val commentDeleteContainer =
-            viewHolder.itemView.findViewById<ConstraintLayout>(R.id.single_comment_delete_container)
-        val commentCancelButton = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_cancel)
-        val commentRemoveButton = viewHolder.itemView.findViewById<TextView>(R.id.single_comment_remove)
+            viewHolder.itemView.single_comment_delete_container
+        val commentCancelButton = viewHolder.itemView.single_comment_cancel
+        val commentRemoveButton = viewHolder.itemView.single_comment_remove
 
-
-        val stampMills = comment.timeStamp
-        val pretty = PrettyTime()
-        val date = pretty.format(Date(stampMills))
+        val date = PrettyTime().format(Date(comment.timeStamp))
 
         commentContent.text = comment.content
         commentContentEditable.setText(comment.content)

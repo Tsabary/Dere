@@ -78,6 +78,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
     var isBucketGalleryActive = false
     var isOpenedQuestionActive = false
     var isEditAnswerActive = false
+    var isFeedNotificationsActive = false
+    var isBoardNotificationsActive = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -104,9 +106,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
         sharedViewModelBucket = ViewModelProviders.of(this).get(SharedViewModelBucket::class.java)
 
-        subFrame = findViewById(R.id.feed_subcontents_frame_container)
+        subFrame = feed_subcontents_frame_container
 
-        mainFrame = findViewById(R.id.feed_frame_container)
+        mainFrame = feed_frame_container
 
         switchVisibility(0)
 
@@ -121,49 +123,14 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
 
                 R.id.destination_feed -> {
-
-                    fm.beginTransaction().hide(active).show(feedFragment).commit()
-                    active = feedFragment
-
-                    val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
-                    menuItem.isChecked = true
-
-
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
-
-                    resetFragments()
+                    navigateToFeed()
                 }
 
                 R.id.destination_board -> {
-
-                    fm.beginTransaction().hide(active).show(boardFragment).commit()
-                    active = boardFragment
-
-                    val menuItem = mBottomNav.menu.findItem(R.id.destination_board)
-                    menuItem.isChecked = true
-
-
-                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
-                    subActive = openedQuestionFragment
-
-
-                    resetFragments()
+                    navigateToBoard()
                 }
                 R.id.destination_profile_logged_in_user -> {
-
-                    fm.beginTransaction().hide(active).show(profileLoggedInUserFragment).commit()
-                    active = profileLoggedInUserFragment
-
-                    val menuItem = mBottomNav.menu.findItem(R.id.destination_profile_logged_in_user)
-                    menuItem.isChecked = true
-
-
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
-
-
-                    resetFragments()
+                    navigateToProfile()
                 }
             }
             false
@@ -206,6 +173,14 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     } else if (isOpenedQuestionActive) {
                         subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
                         subActive = openedQuestionFragment
+                        resetImageExpended()
+                    } else if (isFeedNotificationsActive) {
+                        subFm.beginTransaction().hide(subActive).show(feedNotificationsFragment).commit()
+                        subActive = feedNotificationsFragment
+                        resetImageExpended()
+                    } else if (isBoardNotificationsActive) {
+                        subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
+                        subActive = boardNotificationsFragment
                         resetImageExpended()
                     } else {
                         switchVisibility(0)
@@ -288,18 +263,17 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     subActive = openedQuestionFragment
                 }
 
-                editAnswerFragment-> {
+                editAnswerFragment -> {
                     subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
                     subActive = openedQuestionFragment
                     isEditAnswerActive = false
                 }
 
                 addImageToAnswer -> {
-                    if(isEditAnswerActive){
+                    if (isEditAnswerActive) {
                         subFm.beginTransaction().hide(subActive).show(editAnswerFragment).commit()
                         subActive = editAnswerFragment
-                    } else
-                    {
+                    } else {
                         subFm.beginTransaction().hide(subActive).show(answerFragment).commit()
                         subActive = answerFragment
                     }
@@ -348,12 +322,15 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
     }
 
-    private fun resetFragments(){
+    private fun resetFragments() {
         openedQuestionFragment.deleteBox.visibility = View.GONE
         closeKeyboard(this)
 
-        isOpenedQuestionActive = false
         isBucketGalleryActive = false
+        isOpenedQuestionActive = false
+        isEditAnswerActive = false
+        isFeedNotificationsActive = false
+        isBoardNotificationsActive = false
 
         sharedViewModelImage.sharedImageObject.postValue(Images())
         sharedViewModelRandomUser.randomUserObject.postValue(Users())
@@ -363,7 +340,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
             switchVisibility(0)
         }
     }
-
 
 
     private fun checkIfLoggedIn() {
@@ -487,10 +463,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         subActive = imageFullSizeFragment
     }
 
-
-    override fun onStart() {
-        super.onStart()
-
+    private fun branchInitSession(){
         Branch.getInstance().initSession({ branchUniversalObject, referringParams, error ->
 
             if (error == null) {
@@ -507,6 +480,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
                         "question" -> collectQuestion(branchUniversalObject)
 
+                        "user" -> collectProfile(branchUniversalObject)
                     }
 
 
@@ -520,8 +494,78 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
 
         }, this.intent.data, this)
+    }
 
+    override fun onResume() {
+        super.onResume()
+        branchInitSession()
+    }
 
+    override fun onStart() {
+        super.onStart()
+        branchInitSession()
+    }
+
+    private fun navigateToBoard() {
+        fm.beginTransaction().hide(active).show(boardFragment).commit()
+        active = boardFragment
+        val menuItem = mBottomNav.menu.findItem(R.id.destination_board)
+        menuItem.isChecked = true
+        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+        subActive = openedQuestionFragment
+        resetFragments()
+    }
+
+    private fun navigateToFeed() {
+        fm.beginTransaction().hide(active).show(feedFragment).commit()
+        active = feedFragment
+        val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+        menuItem.isChecked = true
+        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+        subActive = imageFullSizeFragment
+        resetFragments()
+    }
+
+    private fun navigateToProfile() {
+        fm.beginTransaction().hide(active).show(profileLoggedInUserFragment).commit()
+        active = profileLoggedInUserFragment
+        val menuItem = mBottomNav.menu.findItem(R.id.destination_profile_logged_in_user)
+        menuItem.isChecked = true
+        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+        subActive = imageFullSizeFragment
+        resetFragments()
+    }
+
+    private fun collectProfile(branchUniversalObject: BranchUniversalObject) {
+        val uid = FirebaseAuth.getInstance().uid
+
+        val profileIdentifier = branchUniversalObject.canonicalIdentifier
+
+        if (uid == profileIdentifier) {
+            navigateToProfile()
+            Log.d("whosProfile", "Your profile")
+        } else {
+            Log.d("whosProfile", "Stranger profile")
+
+            val profileRef = FirebaseDatabase.getInstance().getReference("/users/$profileIdentifier/profile")
+
+            profileRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+                    val user = p0.getValue(Users::class.java)
+
+                    sharedViewModelRandomUser.randomUserObject.postValue(user)
+                    subFm.beginTransaction().hide(subActive).show(profileRandomUserFragment).commit()
+                    switchVisibility(1)
+                    subActive = profileRandomUserFragment
+
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_profile_logged_in_user)
+                    menuItem.isChecked = true
+                }
+            })
+        }
     }
 
 
@@ -552,10 +596,11 @@ class MainActivity : AppCompatActivity(), DereMethods {
                         sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
 
                         subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-
                         switchVisibility(1)
-
                         subActive = imageFullSizeFragment
+
+                        val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+                        menuItem.isChecked = true
                     }
 
                 })
@@ -581,6 +626,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
                 val question = p0.getValue(Question::class.java)
 
+                Log.d("doYouKnow", question!!.title)
+
                 sharedViewModelQuestion.questionObject.postValue(question)
 
                 val refUser = FirebaseDatabase.getInstance().getReference("/users/${question!!.author}/profile")
@@ -601,6 +648,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
                         subActive = openedQuestionFragment
                         active = boardFragment
+
+                        val menuItem = mBottomNav.menu.findItem(R.id.destination_board)
+                        menuItem.isChecked = true
                     }
 
                 })
@@ -614,6 +664,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
     public override fun onNewIntent(intent: Intent) {
         this.intent = intent
+        super.onNewIntent(intent)//this is not sure!!!!!! If there are problems this might be the source of it, instructions didn't say to add  the super but studio has
     }
 
 
