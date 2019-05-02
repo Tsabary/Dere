@@ -61,8 +61,6 @@ class FeedNotificationsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val activity = activity as MainActivity
-
         notifications_swipe_refresh.setOnRefreshListener {
             listenToNotifications()
             notifications_swipe_refresh.isRefreshing = false
@@ -75,7 +73,26 @@ class FeedNotificationsFragment : Fragment() {
         notificationsRecycler.adapter = notificationsRecyclerAdapter
         notificationsRecycler.layoutManager = notificationRecyclerLayoutManager
 
-        listenToNotifications()
+//        listenToNotifications()
+
+        refFeedNotifications.addChildEventListener(object : ChildEventListener{
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                listenToNotifications()
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot) {
+                listenToNotifications()
+            }
+        })
 
         notifications_mark_all_as_read.setOnClickListener {
             refFeedNotifications.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -89,8 +106,8 @@ class FeedNotificationsFragment : Fragment() {
                             FirebaseDatabase.getInstance()
                                 .getReference("/users/$uid/notifications/gallery/${i.key}/seen")
                         notificationsRef.setValue(1)
-                        itirations ++
-                        if (itirations == childrenCount){
+                        itirations++
+                        if (itirations == childrenCount) {
                             notificationsRecyclerAdapter.clear()
                             listenToNotifications()
                         }
@@ -106,15 +123,23 @@ class FeedNotificationsFragment : Fragment() {
         }
     }
 
-    private fun listenToNotifications() {
+    fun listenToNotifications() {
         notificationsRecyclerAdapter.clear()
         refFeedNotifications.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
+
+                var feedNotCount = 0
 
                 for (i in p0.children) {
                     val notification = i.getValue(Notification::class.java)
 
                     if (notification != null) {
+
+                        if (notification.seen == 0) {
+                            feedNotCount++
+                        }
+                        (activity as MainActivity).feedNotificationsCount.postValue(feedNotCount)
+
                         notificationsRecyclerAdapter.add(
                             SingleFeedNotification(
                                 notification,
@@ -124,6 +149,7 @@ class FeedNotificationsFragment : Fragment() {
                     }
                 }
             }
+
             override fun onCancelled(p0: DatabaseError) {
             }
         })
@@ -210,20 +236,21 @@ class SingleFeedNotification(val notification: Notification, val activity: MainA
 
                                         val notificationRef = FirebaseDatabase.getInstance()
                                             .getReference("/users/$uid/notifications/gallery/${notification.mainPostId}${notification.specificPostId}${notification.initiatorId}${notification.scenarioType}/seen")
-                                        notificationRef.setValue(1)
-
-                                        notificationBox.setBackgroundColor(
-                                            ContextCompat.getColor(
-                                                viewHolder.root.context,
-                                                R.color.white
-                                            )
-                                        )
-
-                                        activity.subFm.beginTransaction().hide(activity.subActive)
-                                            .show(activity.imageFullSizeFragment)
-                                            .commit()
-                                        activity.subActive = activity.imageFullSizeFragment
-                                    }
+                                        notificationRef.setValue(1).addOnSuccessListener {
+                                            activity.subFm.beginTransaction().hide(activity.subActive)
+                                                .show(activity.imageFullSizeFragment)
+                                                .commit()
+                                            activity.subActive = activity.imageFullSizeFragment
+                                            activity.feedNotificationsFragment.listenToNotifications()
+                                        }
+                                        }
+//
+//                                        notificationBox.setBackgroundColor(
+//                                            ContextCompat.getColor(
+//                                                viewHolder.root.context,
+//                                                R.color.white
+//                                            )
+//                                        )
                                 }
                             })
                         }

@@ -70,7 +70,26 @@ class BoardNotificationsFragment : Fragment() {
         notificationsRecycler.adapter = notificationsRecyclerAdapter
         notificationsRecycler.layoutManager = notificationRecyclerLayoutManager
 
-        listenToNotifications()
+//        listenToNotifications()
+
+        refBoardNotifications.addChildEventListener(object : ChildEventListener{
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            }
+
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                listenToNotifications()
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot) {
+                listenToNotifications()
+            }
+        })
 
         notifications_mark_all_as_read.setOnClickListener {
             refBoardNotifications.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -142,22 +161,29 @@ class BoardNotificationsFragment : Fragment() {
                         })
                     }
                 }
-
             })
-
         }
-
     }
 
-    private fun listenToNotifications() {
+    fun listenToNotifications() {
         notificationsRecyclerAdapter.clear()
+
         refBoardNotifications.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
+
+                var boardNotCount = 0
 
                 for (i in p0.children) {
                     val notification = i.getValue(Notification::class.java)
 
                     if (notification != null) {
+
+                        if (notification.seen ==0){
+                            boardNotCount++
+                        }
+
+                        (activity as MainActivity).boardNotificationsCount.postValue(boardNotCount)
+
                         notificationsRecyclerAdapter.add(
                             SingleBoardNotification(
                                 notification,
@@ -225,20 +251,24 @@ class SingleBoardNotification(val notification: Notification, val activity: Main
 
                                         val notificationRef = FirebaseDatabase.getInstance()
                                             .getReference("/users/$uid/notifications/board/${notification.mainPostId}${notification.specificPostId}${notification.initiatorId}${notification.scenarioType}/seen")
-                                        notificationRef.setValue(1)
+                                        notificationRef.setValue(1).addOnSuccessListener {
 
-                                        notificationBox.setBackgroundColor(
-                                            ContextCompat.getColor(
-                                                viewHolder.root.context,
-                                                R.color.white
-                                            )
-                                        )
+                                            activity.boardNotificationsFragment.listenToNotifications()
 
-                                        activity.subFm.beginTransaction().hide(activity.subActive)
-                                            .show(activity.openedQuestionFragment)
-                                            .commit()
-                                        activity.subActive = activity.openedQuestionFragment
+//                                        notificationBox.setBackgroundColor(
+//                                            ContextCompat.getColor(
+//                                                viewHolder.root.context,
+//                                                R.color.white
+//                                            )
+//                                        )
 
+                                            activity.subFm.beginTransaction().hide(activity.subActive)
+                                                .show(activity.openedQuestionFragment)
+                                                .commit()
+                                            activity.subActive = activity.openedQuestionFragment
+
+
+                                        }
                                     }
                                 }
                             })

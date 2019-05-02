@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
@@ -100,6 +101,14 @@ class FeedFragment : Fragment(), DereMethods {
         searchedImagesRecycler.adapter = searchedImagesRecyclerAdapter
         searchedImagesRecycler.layoutManager = searchedImagesRecyclerLayoutManager
 
+        val notificationBadge = feed_toolbar_notifications_badge
+
+        activity.feedNotificationsCount.observe(this, Observer {
+            it?.let { notCount ->
+                notificationBadge.setNumber(notCount)
+            }
+        })
+
 
         feedSearchBox.addTextChangedListener(object : TextWatcher {
 
@@ -160,13 +169,24 @@ class FeedFragment : Fragment(), DereMethods {
         tabLayout.setupWithViewPager(viewPager)
 
         val feedNotifications = feed_toolbar_notifications_icon
+        val feedNotificationsBadge = feed_toolbar_notifications_badge
+
         val feedToCamera = feed_toolbar_camera_icon
+
+        feedNotificationsBadge.setOnClickListener {
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.feedNotificationsFragment).commit()
+            activity.subActive = activity.feedNotificationsFragment
+            activity.switchVisibility(1)
+            activity.isFeedNotificationsActive = true
+            activity.feedNotificationsFragment.listenToNotifications()
+        }
 
         feedNotifications.setOnClickListener {
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.feedNotificationsFragment).commit()
             activity.subActive = activity.feedNotificationsFragment
             activity.switchVisibility(1)
             activity.isFeedNotificationsActive = true
+            activity.feedNotificationsFragment.listenToNotifications()
         }
 
         feedToCamera.setOnClickListener {

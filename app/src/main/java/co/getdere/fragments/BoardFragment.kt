@@ -5,31 +5,32 @@ import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import co.getdere.MainActivity
+import co.getdere.R
 import co.getdere.groupieAdapters.SingleQuestion
 import co.getdere.models.Question
 import co.getdere.models.Users
-
-import co.getdere.R
 import co.getdere.viewmodels.SharedViewModelInterests
 import co.getdere.viewmodels.SharedViewModelQuestion
 import co.getdere.viewmodels.SharedViewModelRandomUser
 import co.getdere.viewmodels.SharedViewModelTags
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.board_toolbar.*
 import kotlinx.android.synthetic.main.fragment_board.*
-import kotlinx.android.synthetic.main.fragment_feeds_layout.*
 
 class BoardFragment : Fragment() {
 
@@ -103,8 +104,13 @@ class BoardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val notificationBadge = board_toolbar_notifications_badge
-        notificationBadge.setNumber(3)
         val activity = activity as MainActivity
+
+        activity.boardNotificationsCount.observe(this, Observer {
+            it?.let { notCount ->
+                notificationBadge.setNumber(notCount)
+            }
+        })
 
         val boardSearchBox = board_toolbar_search_box
         val tagSuggestionRecycler = board_search_recycler
@@ -120,8 +126,19 @@ class BoardFragment : Fragment() {
             board_swipe_refresh.isRefreshing = false
         }
 
+
         val boardNotificationIcon = board_toolbar_notifications_icon
         val boardSavedQuestionIcon = board_toolbar_saved_questions_icon
+
+        notificationBadge.setOnClickListener {
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.boardNotificationsFragment)
+                .commit()
+            activity.subActive = activity.boardNotificationsFragment
+
+            activity.switchVisibility(1)
+            activity.isBoardNotificationsActive = true
+            activity.boardNotificationsFragment.listenToNotifications()
+        }
 
         boardNotificationIcon.setOnClickListener {
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.boardNotificationsFragment)
@@ -130,6 +147,7 @@ class BoardFragment : Fragment() {
 
             activity.switchVisibility(1)
             activity.isBoardNotificationsActive = true
+            activity.boardNotificationsFragment.listenToNotifications()
         }
 
         boardSavedQuestionIcon.setOnClickListener {
@@ -162,8 +180,6 @@ class BoardFragment : Fragment() {
 
         listenToQuestions()
         recyclersVisibility(0)
-
-
 
         boardSearchBox.addTextChangedListener(object : TextWatcher {
 

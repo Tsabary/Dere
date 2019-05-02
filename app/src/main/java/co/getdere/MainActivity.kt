@@ -9,6 +9,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.fragments.*
 import co.getdere.interfaces.DereMethods
@@ -74,6 +76,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var subActive: Fragment
 
     var answerObject = Answers()
+    var boardNotificationsCount = MutableLiveData<Int>()
+    var feedNotificationsCount = MutableLiveData<Int>()
 
     var isBucketGalleryActive = false
     var isOpenedQuestionActive = false

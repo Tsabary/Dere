@@ -576,39 +576,45 @@ class SingleAnswer(
         })
 
         upvote.setOnClickListener {
-            executeVote(
-                "up",
-                answer.questionId,
-                currentUser.uid,
-                currentUser.name,
-                answer.author,
-                1,
-                viewHolder.itemView.single_answer_votes,
-                viewHolder.itemView.single_answer_upvote,
-                viewHolder.itemView.single_answer_downvote,
-                answer.answerId,
-                1,
-                viewHolder.itemView.single_answer_author_reputation,
-                activity
-            )
+
+            if (answer.author != currentUser.uid){
+                executeVote(
+                    "up",
+                    answer.questionId,
+                    currentUser.uid,
+                    currentUser.name,
+                    answer.author,
+                    1,
+                    viewHolder.itemView.single_answer_votes,
+                    viewHolder.itemView.single_answer_upvote,
+                    viewHolder.itemView.single_answer_downvote,
+                    answer.answerId,
+                    1,
+                    viewHolder.itemView.single_answer_author_reputation,
+                    activity
+                )
+            }
         }
 
         downvote.setOnClickListener {
-            executeVote(
-                "down",
-                answer.questionId,
-                currentUser.uid,
-                currentUser.name,
-                answer.author,
-                1,
-                viewHolder.itemView.single_answer_votes,
-                viewHolder.itemView.single_answer_upvote,
-                viewHolder.itemView.single_answer_downvote,
-                answer.answerId,
-                1,
-                viewHolder.itemView.single_answer_author_reputation,
-                activity
-            )
+
+            if (answer.author != currentUser.uid){
+                executeVote(
+                    "down",
+                    answer.questionId,
+                    currentUser.uid,
+                    currentUser.name,
+                    answer.author,
+                    1,
+                    viewHolder.itemView.single_answer_votes,
+                    viewHolder.itemView.single_answer_upvote,
+                    viewHolder.itemView.single_answer_downvote,
+                    answer.answerId,
+                    1,
+                    viewHolder.itemView.single_answer_author_reputation,
+                    activity
+                )
+            }
         }
 
         comment.setOnClickListener {

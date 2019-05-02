@@ -28,7 +28,18 @@ interface DereMethods : FCMMethods {
 
 
     //following methods are for the forum_icon
+/*
+    post types:
 
+    0: question
+    1: answer
+    2: image
+    3: comment
+
+    events:
+    0: check
+    1 : click
+*/
 
     fun executeVote(
         vote: String,
@@ -45,12 +56,18 @@ interface DereMethods : FCMMethods {
         userReputationView: TextView,
         activity: Activity
     ) {
+        if (event == 0) {
+            setVotesCount(specificPostId, mainPostId, votesView, postType)
+        } else {
+            setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote, upvoteView, downvoteView)
+        }
+
 
         val refVotes = if (postType == 0) {
-            FirebaseDatabase.getInstance().getReference("/questions/$mainPostId/main/votes/$initiatorId")
+            FirebaseDatabase.getInstance().getReference("/questions/$mainPostId/main/votes")
         } else {
             FirebaseDatabase.getInstance()
-                .getReference("/questions/$mainPostId/answers/$specificPostId/votes/$initiatorId")
+                .getReference("/questions/$mainPostId/answers/$specificPostId/votes")
         }
 
         refVotes.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -60,53 +77,48 @@ interface DereMethods : FCMMethods {
 
             override fun onDataChange(postVotesSnapshot: DataSnapshot) {
 
-                setVotesCount(specificPostId, mainPostId, votesView, postType)
-
-
-
                 if (postVotesSnapshot.hasChild(initiatorId)) {
 
-                    val voteValue = postVotesSnapshot.child(initiatorId).getValue(Int::class.java)
-
-                    when (voteValue) {
+                    when (postVotesSnapshot.child(initiatorId).getValue(Int::class.java)) {
 
                         1 -> {
-                            if (event == 1 && initiatorId != receiverId) {
+                            if (event == 1) {
 
                                 when (vote) {
 
                                     "up" -> return
                                     "down" -> {
-                                        defaultView(upvoteView, downvoteView)
+//                                        defaultView(upvoteView, downvoteView)
 
-                                        refVotes.setValue(0).addOnSuccessListener {
-                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
-//                                            setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote)
-                                        }
-                                        if (postType == 0) {
-                                            changeReputation(
-                                                1,
-                                                specificPostId,
-                                                mainPostId,
-                                                initiatorId,
-                                                initiatorName,
-                                                receiverId,
-                                                userReputationView,
-                                                "vote",
-                                                activity
-                                            )
-                                        } else {
-                                            changeReputation(
-                                                3,
-                                                specificPostId,
-                                                mainPostId,
-                                                initiatorId,
-                                                initiatorName,
-                                                receiverId,
-                                                userReputationView,
-                                                "vote",
-                                                activity
-                                            )
+                                        refVotes.child(initiatorId).removeValue().addOnSuccessListener {
+                                            //                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
+
+
+                                            if (postType == 0) {
+                                                changeReputation(
+                                                    1,
+                                                    specificPostId,
+                                                    mainPostId,
+                                                    initiatorId,
+                                                    initiatorName,
+                                                    receiverId,
+                                                    userReputationView,
+                                                    "vote",
+                                                    activity
+                                                )
+                                            } else {
+                                                changeReputation(
+                                                    3,
+                                                    specificPostId,
+                                                    mainPostId,
+                                                    initiatorId,
+                                                    initiatorName,
+                                                    receiverId,
+                                                    userReputationView,
+                                                    "vote",
+                                                    activity
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -117,111 +129,102 @@ interface DereMethods : FCMMethods {
                         }
 
                         0 -> {
-                            if (event == 1 && initiatorId != receiverId) {
+                            if (event == 1) {
                                 when (vote) {
                                     "up" -> {
-                                        upView(upvoteView, downvoteView)
-                                        refVotes.setValue(1).addOnSuccessListener {
-                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
-//                                            setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote)
+//                                        upView(upvoteView, downvoteView)
+                                        refVotes.child(initiatorId).setValue(1).addOnSuccessListener {
+                                            //                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
 
-                                        }
-
-
-                                        if (postType == 0) {
-                                            changeReputation(
-                                                0,
-                                                specificPostId,
-                                                mainPostId,
-                                                initiatorId,
-                                                initiatorName,
-                                                receiverId,
-                                                userReputationView,
-                                                "vote",
-                                                activity
-                                            )
-                                        } else {
-                                            changeReputation(
-                                                2,
-                                                specificPostId,
-                                                mainPostId,
-                                                initiatorId,
-                                                initiatorName,
-                                                receiverId,
-                                                userReputationView,
-                                                "vote",
-                                                activity
-                                            )
+                                            if (postType == 0) {
+                                                changeReputation(
+                                                    0,
+                                                    specificPostId,
+                                                    mainPostId,
+                                                    initiatorId,
+                                                    initiatorName,
+                                                    receiverId,
+                                                    userReputationView,
+                                                    "vote",
+                                                    activity
+                                                )
+                                            } else {
+                                                changeReputation(
+                                                    2,
+                                                    specificPostId,
+                                                    mainPostId,
+                                                    initiatorId,
+                                                    initiatorName,
+                                                    receiverId,
+                                                    userReputationView,
+                                                    "vote",
+                                                    activity
+                                                )
+                                            }
                                         }
                                     }
                                     "down" -> {
-                                        downView(upvoteView, downvoteView)
-//                                        setVotesCount(specificPostId, mainPostId, votesView, postType)
-//                                        setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote)
+//                                        downView(upvoteView, downvoteView)
 
+                                        refVotes.child(initiatorId).setValue(-1).addOnSuccessListener {
+                                            //                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
 
-                                        refVotes.setValue(-1).addOnSuccessListener {
-                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
-                                        }
-                                        if (postType == 0) {
-                                            changeReputation(
-                                                4,
-                                                specificPostId,
-                                                mainPostId,
-                                                initiatorId,
-                                                initiatorName,
-                                                receiverId,
-                                                userReputationView,
-                                                "vote",
-                                                activity
-                                            )
-                                        } else {
-                                            changeReputation(
-                                                4,
-                                                specificPostId,
-                                                mainPostId,
-                                                initiatorId,
-                                                initiatorName,
-                                                receiverId,
-                                                userReputationView,
-                                                "vote",
-                                                activity
-                                            )
+                                            if (postType == 0) {
+                                                changeReputation(
+                                                    4,
+                                                    specificPostId,
+                                                    mainPostId,
+                                                    initiatorId,
+                                                    initiatorName,
+                                                    receiverId,
+                                                    userReputationView,
+                                                    "vote",
+                                                    activity
+                                                )
+                                            } else {
+                                                changeReputation(
+                                                    4,
+                                                    specificPostId,
+                                                    mainPostId,
+                                                    initiatorId,
+                                                    initiatorName,
+                                                    receiverId,
+                                                    userReputationView,
+                                                    "vote",
+                                                    activity
+                                                )
+                                            }
                                         }
                                     }
                                 }
                             } else {
                                 defaultView(upvoteView, downvoteView)
                                 setVotesCount(specificPostId, mainPostId, votesView, postType)
-
                             }
 
                         }
 
                         -1 -> {
-                            if (event == 1 && initiatorId != receiverId) {
+                            if (event == 1) {
                                 when (vote) {
                                     "up" -> {
-                                        defaultView(upvoteView, downvoteView)
+//                                        defaultView(upvoteView, downvoteView)
 
-                                        refVotes.setValue(0).addOnSuccessListener {
-                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
-//                                            setVotesCountSimplifiedAfterClickForFastResponse(votesView, vote)
+                                        refVotes.child(initiatorId).removeValue().addOnSuccessListener {
+                                            //                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
 
+                                            changeReputation(
+                                                5,
+                                                specificPostId,
+                                                mainPostId,
+                                                initiatorId,
+                                                initiatorName,
+                                                receiverId,
+                                                userReputationView,
+                                                "vote",
+                                                activity
+                                            )
                                         }
-
-                                        changeReputation(
-                                            5,
-                                            specificPostId,
-                                            mainPostId,
-                                            initiatorId,
-                                            initiatorName,
-                                            receiverId,
-                                            userReputationView,
-                                            "vote",
-                                            activity
-                                        )
-
                                     }
                                     "down" -> return
                                 }
@@ -232,87 +235,83 @@ interface DereMethods : FCMMethods {
                         }
                     }
 
-
                 } else {
 
-                    if (event == 1 && initiatorId != receiverId) {
+                    if (event == 1) {
                         when (vote) {
                             "up" -> {
                                 upView(upvoteView, downvoteView)
-                                setVotesCount(specificPostId, mainPostId, votesView, postType)
+//                                setVotesCount(specificPostId, mainPostId, votesView, postType)
 
+                                refVotes.child(initiatorId).setValue(1).addOnSuccessListener {
+                                    //                                    setVotesCount(specificPostId, mainPostId, votesView, postType)
 
-                                refVotes.setValue(1).addOnSuccessListener {
-                                    setVotesCount(specificPostId, mainPostId, votesView, postType)
-                                }
-                                if (postType == 0) {
-                                    changeReputation(
-                                        0,
-                                        specificPostId,
-                                        mainPostId,
-                                        initiatorId,
-                                        initiatorName,
-                                        receiverId,
-                                        userReputationView,
-                                        "vote",
-                                        activity
-                                    )
-                                } else {
-                                    changeReputation(
-                                        2,
-                                        specificPostId,
-                                        mainPostId,
-                                        initiatorId,
-                                        initiatorName,
-                                        receiverId,
-                                        userReputationView,
-                                        "vote",
-                                        activity
-                                    )
+                                    if (postType == 0) {
+                                        changeReputation(
+                                            0,
+                                            specificPostId,
+                                            mainPostId,
+                                            initiatorId,
+                                            initiatorName,
+                                            receiverId,
+                                            userReputationView,
+                                            "vote",
+                                            activity
+                                        )
+                                    } else {
+                                        changeReputation(
+                                            2,
+                                            specificPostId,
+                                            mainPostId,
+                                            initiatorId,
+                                            initiatorName,
+                                            receiverId,
+                                            userReputationView,
+                                            "vote",
+                                            activity
+                                        )
+                                    }
                                 }
                             }
                             "down" -> {
                                 downView(upvoteView, downvoteView)
-                                setVotesCount(specificPostId, mainPostId, votesView, postType)
+//                                setVotesCount(specificPostId, mainPostId, votesView, postType)
 
+                                refVotes.child(initiatorId).setValue(-1).addOnSuccessListener {
+                                    //                                    setVotesCount(specificPostId, mainPostId, votesView, postType)
 
-                                refVotes.setValue(-1).addOnSuccessListener {
-                                    setVotesCount(specificPostId, mainPostId, votesView, postType)
-                                }
-                                if (postType == 0) {
-                                    changeReputation(
-                                        4,
-                                        specificPostId,
-                                        mainPostId,
-                                        initiatorId,
-                                        initiatorName,
-                                        receiverId,
-                                        userReputationView,
-                                        "vote",
-                                        activity
-                                    )
-                                } else {
-                                    changeReputation(
-                                        4,
-                                        specificPostId,
-                                        mainPostId,
-                                        initiatorId,
-                                        initiatorName,
-                                        receiverId,
-                                        userReputationView,
-                                        "vote",
-                                        activity
-                                    )
+                                    if (postType == 0) {
+                                        changeReputation(
+                                            4,
+                                            specificPostId,
+                                            mainPostId,
+                                            initiatorId,
+                                            initiatorName,
+                                            receiverId,
+                                            userReputationView,
+                                            "vote",
+                                            activity
+                                        )
+                                    } else {
+                                        changeReputation(
+                                            4,
+                                            specificPostId,
+                                            mainPostId,
+                                            initiatorId,
+                                            initiatorName,
+                                            receiverId,
+                                            userReputationView,
+                                            "vote",
+                                            activity
+                                        )
+                                    }
                                 }
                             }
                         }
                     } else {
                         defaultView(upvoteView, downvoteView)
                         setVotesCount(specificPostId, mainPostId, votesView, postType)
-
-
                     }
-
                 }
             }
         })
@@ -320,66 +319,96 @@ interface DereMethods : FCMMethods {
 
     fun upView(upvoteView: ImageView, downvoteView: ImageView) {
         upvoteView.setImageResource(R.drawable.arrow_up_active)
+        upvoteView.tag = "active"
         downvoteView.setImageResource(R.drawable.arrow_down_default)
+        downvoteView.tag = "unactive"
     }
 
     fun defaultView(upvoteView: ImageView, downvoteView: ImageView) {
         upvoteView.setImageResource(R.drawable.arrow_up_default)
+        upvoteView.tag = "unactive"
         downvoteView.setImageResource(R.drawable.arrow_down_default)
+        downvoteView.tag = "unactive"
     }
 
     fun downView(upvoteView: ImageView, downvoteView: ImageView) {
         upvoteView.setImageResource(R.drawable.arrow_up_default)
+        upvoteView.tag = "unactive"
         downvoteView.setImageResource(R.drawable.arrow_down_active)
+        downvoteView.tag = "active"
     }
 
     fun setVotesCount(postId: String, questionId: String, votesView: TextView, postType: Int) {
 
-
         val refVotes = if (postType == 0) {
-            FirebaseDatabase.getInstance().getReference("/questions/$questionId/main/votes")
+            FirebaseDatabase.getInstance().getReference("/questions/$questionId/main")
         } else {
-            FirebaseDatabase.getInstance().getReference("/questions/$questionId/answers/$postId/votes")
+            FirebaseDatabase.getInstance().getReference("/questions/$questionId/answers/$postId")
         }
 
-
-        refVotes.addChildEventListener(object : ChildEventListener {
-
-            var count = 0
-
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
-                val rating = p0.value.toString().toInt()
-                count += rating
-                votesView.text = numberCalculation(count.toLong())
-            }
-
+        refVotes.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
+
             }
 
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            override fun onDataChange(p0: DataSnapshot) {
+
+                if (p0.hasChild("votes")) {
+
+                    var count = 0
+
+                    for (vote in p0.child("votes").children) {
+                        val score = vote.value.toString().toInt()
+                        count += score
+                        votesView.text = numberCalculation(count.toLong())
+                    }
+
+                } else {
+                    votesView.text = "0"
+                }
+
             }
 
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
         })
-
     }
 
-    fun setVotesCountSimplifiedAfterClickForFastResponse(votesView: TextView, action: String) {
-
-        if (action == "up") {
-            val voteCount = votesView.text.toString().toInt() + 1
-            votesView.text = voteCount.toString()
-        } else {
-            val voteCount = votesView.text.toString().toInt() - 1
-            votesView.text = voteCount.toString()
+    fun setVotesCountSimplifiedAfterClickForFastResponse(
+        votesView: TextView,
+        vote: String,
+        upvoteView: ImageView,
+        downvoteView: ImageView
+    ) {
+        val voteCount = votesView.text.toString().toInt()
+        var updatedCount = 0
+        if (voteCount < 999) {
+            if (vote == "up") {
+                if (downvoteView.tag == "active") {
+                    downvoteView.tag = "unactive"
+                    upvoteView.tag = "unactive"
+                    defaultView(upvoteView, downvoteView)
+                    updatedCount = voteCount + 1
+                    votesView.text = updatedCount.toString()
+                } else if (downvoteView.tag == "unactive" && upvoteView.tag == "unactive") {
+                    upvoteView.tag = "active"
+                    updatedCount = voteCount + 1
+                    votesView.text = updatedCount.toString()
+                    upView(upvoteView, downvoteView)
+                }
+            } else {
+                if (upvoteView.tag == "active") {
+                    upvoteView.tag = "unactive"
+                    downvoteView.tag = "unactive"
+                    defaultView(upvoteView, downvoteView)
+                    updatedCount = voteCount - 1
+                    votesView.text = updatedCount.toString()
+                } else if (downvoteView.tag == "unactive" && upvoteView.tag == "unactive") {
+                    downvoteView.tag = "active"
+                    downView(upvoteView, downvoteView)
+                    updatedCount = voteCount - 1
+                    votesView.text = updatedCount.toString()
+                }
+            }
         }
-
-
     }
 
 
@@ -387,7 +416,6 @@ interface DereMethods : FCMMethods {
 
 
     fun listenToLikeCount(likeCount: TextView, image: Images) {
-
 
         val refImage = FirebaseDatabase.getInstance().getReference("/images/${image.id}")
 
@@ -416,19 +444,53 @@ interface DereMethods : FCMMethods {
                                 likeCount.text = numberCalculation(count.toLong())
                             }
                         }
-
                     })
-
 
                 } else {
                     likeCount.text = "0"
                 }
-
             }
-
         })
+    }
 
+    fun likedView(likeButton: ImageButton, likeCount: TextView) {
+        likeButton.setImageResource(R.drawable.heart_active)
+        likeButton.tag = "liked"
 
+        val currentLikeCount = if (likeCount.text.isNotEmpty()){
+            likeCount.text.toString().toInt()
+        } else {
+            0
+        }
+
+        if (currentLikeCount < 999) {
+            val updatedLikeCount = currentLikeCount + 1
+            likeCount.text = updatedLikeCount.toString()
+        }
+    }
+
+    fun notLikedView(likeButton: ImageButton, likeCount: TextView) {
+        likeButton.setImageResource(R.drawable.heart)
+        likeButton.tag = "notLiked"
+
+        val currentLikeCount = if (likeCount.text.isNotEmpty()){
+            likeCount.text.toString().toInt()
+        } else {
+            0
+        }
+
+        if (currentLikeCount < 999) {
+            val updatedLikeCount = currentLikeCount - 1
+            likeCount.text = updatedLikeCount.toString()
+        }
+    }
+
+    fun executeLikeForFastResponse(likeButton: ImageButton, likeCount: TextView) {
+        if (likeButton.tag == "liked") {
+            notLikedView(likeButton, likeCount)
+        } else {
+            likedView(likeButton, likeCount)
+        }
     }
 
 
@@ -444,119 +506,72 @@ interface DereMethods : FCMMethods {
         activity: Activity
     ) {
 
-        if (image.id.isNotEmpty()) {
+        if (event == 1) {
+            executeLikeForFastResponse(likeButton, likeCount)
+        }
 
-            val allUserRef = FirebaseDatabase.getInstance().getReference("/users/$initiatorId")
+        val allUserRef = FirebaseDatabase.getInstance().getReference("/users/$initiatorId")
 
-            allUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(p0: DataSnapshot) {
-                    if (p0.hasChild("likes")) {
+        allUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
+                if (p0.hasChild("likes")) {
 
-                        val allUserLikesRef = FirebaseDatabase.getInstance().getReference("/users/$initiatorId/likes")
+                    if (p0.child("likes").hasChild(image.id)) {
 
-                        allUserLikesRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onDataChange(p0: DataSnapshot) {
-                                if (p0.hasChild(image.id)) {
+                        val allUserLikesRef =
+                            FirebaseDatabase.getInstance().getReference("/users/$initiatorId/likes/${image.id}")
 
-                                    if (event == 1 && initiatorId != receiverId) {
+                        if (event == 1) {
 
-                                        allUserLikesRef.child(image.id).removeValue().addOnSuccessListener {
+                            allUserLikesRef.removeValue().addOnSuccessListener {
 
-                                            val refImageLikes =
-                                                FirebaseDatabase.getInstance()
-                                                    .getReference("/images/${image.id}/likes/$initiatorId")
+                                val refImageLikes =
+                                    FirebaseDatabase.getInstance()
+                                        .getReference("/images/${image.id}/likes/$initiatorId")
 
-                                            refImageLikes.removeValue().addOnSuccessListener {
-                                                likeButton.setImageResource(R.drawable.heart)
+                                refImageLikes.removeValue().addOnSuccessListener {
+                                    //                                                likeButton.setImageResource(R.drawable.heart)
 
-                                                listenToLikeCount(likeCount, image)
+//                                    listenToLikeCount(likeCount, image)
 
-                                                changeReputation(
-                                                    15,
-                                                    image.id,
-                                                    image.id,
-                                                    initiatorId,
-                                                    initiatorName,
-                                                    receiverId,
-                                                    userReputationView,
-                                                    "like", activity
-                                                )
-
-                                            }
-                                        }
-
-                                    } else {
-                                        likeButton.setImageResource(R.drawable.heart_active)
-                                    }
-
-                                } else {
-
-                                    if (event == 1 && initiatorId != receiverId) {
-
-                                        val refUserLikes =
-                                            FirebaseDatabase.getInstance()
-                                                .getReference("/users/$initiatorId/likes/${image.id}")
-
-                                        refUserLikes.setValue(true).addOnSuccessListener {
-
-                                            val refImageLikes =
-                                                FirebaseDatabase.getInstance()
-                                                    .getReference("/images/${image.id}/likes/$initiatorId")
-
-                                            refImageLikes.setValue(true).addOnSuccessListener {
-
-                                                likeButton.setImageResource(R.drawable.heart_active)
-
-                                                listenToLikeCount(likeCount, image)
-
-                                                changeReputation(
-                                                    14,
-                                                    image.id,
-                                                    image.id,
-                                                    initiatorId,
-                                                    initiatorName,
-                                                    receiverId,
-                                                    userReputationView,
-                                                    "like", activity
-                                                )
-
-                                            }
-
-                                        }
-
-                                    } else {
-                                        likeButton.setImageResource(R.drawable.heart)
-                                    }
-
+                                    changeReputation(
+                                        15,
+                                        image.id,
+                                        image.id,
+                                        initiatorId,
+                                        initiatorName,
+                                        receiverId,
+                                        userReputationView,
+                                        "like", activity
+                                    )
 
                                 }
                             }
 
-                            override fun onCancelled(p0: DatabaseError) {
-                            }
-
-
-                        })
-
+                        } else {
+                            likeButton.setImageResource(R.drawable.heart_active)
+                            likeButton.tag = "liked"
+                        }
 
                     } else {
-                        if (event == 1 && initiatorId != receiverId) {
+
+                        if (event == 1) {
 
                             val refUserLikes =
                                 FirebaseDatabase.getInstance()
-                                    .getReference("/users/$initiatorId/likes")
+                                    .getReference("/users/$initiatorId/likes/${image.id}")
 
-                            refUserLikes.setValue(mapOf(image.id to true)).addOnSuccessListener {
+                            refUserLikes.setValue(true).addOnSuccessListener {
 
                                 val refImageLikes =
                                     FirebaseDatabase.getInstance()
-                                        .getReference("/images/${image.id}/likes")
+                                        .getReference("/images/${image.id}/likes/$initiatorId")
 
-                                refImageLikes.setValue(mapOf(initiatorId to true)).addOnSuccessListener {
+                                refImageLikes.setValue(true).addOnSuccessListener {
 
-                                    likeButton.setImageResource(R.drawable.heart_active)
+                                    //                                                likeButton.setImageResource(R.drawable.heart_active)
 
-                                    listenToLikeCount(likeCount, image)
+//                                    listenToLikeCount(likeCount, image)
 
                                     changeReputation(
                                         14,
@@ -568,25 +583,64 @@ interface DereMethods : FCMMethods {
                                         userReputationView,
                                         "like", activity
                                     )
+
                                 }
 
                             }
 
                         } else {
                             likeButton.setImageResource(R.drawable.heart)
+                            likeButton.tag = "notLiked"
                         }
                     }
+                } else {
+                    if (event == 1) {
+
+                        val refUserLikes =
+                            FirebaseDatabase.getInstance()
+                                .getReference("/users/$initiatorId/likes/${image.id}")
+
+                        refUserLikes.setValue(true).addOnSuccessListener {
+
+                            val refImageLikes =
+                                FirebaseDatabase.getInstance()
+                                    .getReference("/images/${image.id}/likes/$initiatorId")
+
+                            refImageLikes.setValue(true).addOnSuccessListener {
+
+//                                likeButton.setImageResource(R.drawable.heart_active)
+//                                likeButton.tag = "liked"
+
+//                                    likeButton.setImageResource(R.drawable.heart_active)
+
+//                                listenToLikeCount(likeCount, image)
+
+                                changeReputation(
+                                    14,
+                                    image.id,
+                                    image.id,
+                                    initiatorId,
+                                    initiatorName,
+                                    receiverId,
+                                    userReputationView,
+                                    "like", activity
+                                )
+                            }
+
+                        }
+
+                    } else {
+                        likeButton.setImageResource(R.drawable.heart)
+                        likeButton.tag = "notLiked"
+                    }
                 }
+            }
 
-                override fun onCancelled(p0: DatabaseError) {
-                }
+            override fun onCancelled(p0: DatabaseError) {
+            }
 
-            })
+        })
 
-
-        } else {
-            likeButton.setImageResource(R.drawable.heart)
-        }
 
 
     }
@@ -682,7 +736,6 @@ interface DereMethods : FCMMethods {
         Log.d("Image Bucketed", "function called")
 
 
-
         val refUserBucket = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets")
 
         refUserBucket.addChildEventListener(object : ChildEventListener {
@@ -694,12 +747,16 @@ interface DereMethods : FCMMethods {
                     bucketButton.setImageResource(R.drawable.bucket_saved)
                 }
             }
+
             override fun onChildMoved(p0: DataSnapshot, p1: String?) {
             }
+
             override fun onChildChanged(p0: DataSnapshot, p1: String?) {
             }
+
             override fun onChildRemoved(p0: DataSnapshot) {
             }
+
             override fun onCancelled(p0: DatabaseError) {
             }
 

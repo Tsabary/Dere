@@ -3,14 +3,12 @@ package co.getdere.groupieAdapters
 import android.app.Activity
 import android.view.View
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.findNavController
 import co.getdere.MainActivity
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.R
 import co.getdere.otherClasses.FCMMethods
-import co.getdere.otherClasses.FCMMethods.sendMessageTopic
 import co.getdere.viewmodels.SharedViewModelImage
 import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
@@ -20,7 +18,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.board_single_row.view.*
 import kotlinx.android.synthetic.main.linear_feed_post.view.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
@@ -36,7 +33,7 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: A
 
 
     override fun getLayout(): Int {
-        return R.layout.linear_feed_post
+        return R.layout.linear_feed_post_actions_card
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
@@ -116,6 +113,7 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: A
         checkIfBucketed(bucketButton, image, uid!!)
 
         listenToLikeCount(likeCount, image)
+
         executeLike(
             image,
             uid,
@@ -145,7 +143,7 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: A
                 if (user != null) {
 
                     Glide.with(viewHolder.root.context).load(user.image)
-                        .into(viewHolder.itemView.linear_feed__author_image)
+                        .into(viewHolder.itemView.linear_feed_author_image)
 
                     viewHolder.itemView.linear_feed_author_name.text = user.name
                     authorReputation.text = "(${numberCalculation(user.reputation)})"
@@ -166,8 +164,41 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: A
 
         likeButton.setOnClickListener {
 
-
             if (image.photographer != currentUser.uid) {
+
+//            if (likeButton.tag == "liked") {
+//                likeButton.tag = "notLiked"
+//                likeButton.setImageResource(R.drawable.heart)
+//
+//                val currentLikeCount = if (likeCount.text.isNotEmpty()){
+//                    likeCount.text.toString().toInt()
+//                } else {
+//                    0
+//                }
+//
+//                if (currentLikeCount < 999) {
+//                    val updatedLikeCount = currentLikeCount - 1
+//                    likeCount.text = updatedLikeCount.toString()
+//                }
+//
+//            } else {
+//                likeButton.tag = "liked"
+//                likeButton.setImageResource(R.drawable.heart_active)
+//
+//                val currentLikeCount = if (likeCount.text.isNotEmpty()){
+//                    likeCount.text.toString().toInt()
+//                } else {
+//                    0
+//                }
+//
+//                if (currentLikeCount < 999) {
+//                    val updatedLikeCount = currentLikeCount + 1
+//                    likeCount.text = updatedLikeCount.toString()
+//                }
+//
+//            }
+
+
                 executeLike(
                     image,
                     uid,
@@ -179,7 +210,6 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: A
                     authorReputation,
                     activity
                 )
-
             }
         }
 

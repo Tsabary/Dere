@@ -20,6 +20,7 @@ import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelQuestion
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.android.synthetic.main.fragment_answer.*
 import kotlinx.android.synthetic.main.fragment_answer_comment.*
 import kotlinx.android.synthetic.main.fragment_answer_comment.view.*
 
@@ -37,8 +38,6 @@ class AnswerCommentFragment : Fragment(), DereMethods {
 
         activity?.let {
             sharedViewModelQuestion = ViewModelProviders.of(it).get(SharedViewModelQuestion::class.java)
-//            questionObject = sharedViewModelQuestion.questionObject.value!!
-
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
         }
 
@@ -49,7 +48,7 @@ class AnswerCommentFragment : Fragment(), DereMethods {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
 
-        return inflater.inflate(R.layout.fragment_answer_comment, container, false)
+        return inflater.inflate(R.layout.fragment_answer, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -58,7 +57,11 @@ class AnswerCommentFragment : Fragment(), DereMethods {
         val content = answer_comment_content_input
         val uid = FirebaseAuth.getInstance().uid
 
-        answer_comment_post_btn.setOnClickListener {
+        val postButton = answer_btn
+
+        postButton.text = "COMMENT"
+
+        postButton.setOnClickListener {
 
             postComment(content.text.toString(), System.currentTimeMillis(), uid!!)
             content.text.clear()

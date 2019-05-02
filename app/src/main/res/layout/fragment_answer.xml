@@ -28,7 +28,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/answer_add_photos_button"/>
         <TextView
                 android:gravity="center"
-                android:text="ANSWER"
+                android:text=""
                 android:layout_width="0dp"
                 android:layout_height="60dp"
                 android:id="@+id/answer_btn"

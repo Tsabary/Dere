@@ -77,6 +77,8 @@ class AnswerFragment : Fragment(), DereMethods {
         val activity = activity as MainActivity
 
         val addImage = answer_add_photos_button
+        val answerButton = answer_btn
+        answerButton.text = "ANSWER"
 
         val imagesRecycler = answer_photos_recycler
         val imagesRecyclerLayoutManager = GridLayoutManager(this.context, 3)
@@ -105,7 +107,7 @@ class AnswerFragment : Fragment(), DereMethods {
             }
         })
 
-        view.answer_btn.setOnClickListener {
+        answerButton.setOnClickListener {
 
             if (answer_content.text.length > 15) {
                 postAnswer(content.text.toString(), System.currentTimeMillis(), activity)
