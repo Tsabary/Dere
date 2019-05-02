@@ -244,13 +244,6 @@ class SingleFeedNotification(val notification: Notification, val activity: MainA
                                             activity.feedNotificationsFragment.listenToNotifications()
                                         }
                                         }
-//
-//                                        notificationBox.setBackgroundColor(
-//                                            ContextCompat.getColor(
-//                                                viewHolder.root.context,
-//                                                R.color.white
-//                                            )
-//                                        )
                                 }
                             })
                         }

@@ -34,8 +34,11 @@ import kotlinx.android.synthetic.main.fragment_board.*
 
 class BoardFragment : Fragment() {
 
+    val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
     val searchedQuestionsRecyclerAdapter = GroupAdapter<ViewHolder>()
     val questionsRecyclerAdapter = GroupAdapter<ViewHolder>()
+    lateinit var questionRecyclerLayoutManager : androidx.recyclerview.widget.LinearLayoutManager
+
     lateinit var sharedViewModelForQuestion: SharedViewModelQuestion
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var sharedViewModelInterests: SharedViewModelInterests
@@ -45,7 +48,6 @@ class BoardFragment : Fragment() {
     private lateinit var searchedQuestionsRecycler: RecyclerView
 
     var interestsList: MutableList<String> = mutableListOf()
-    val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
 
     private lateinit var boardFilterChipGroup: ChipGroup
 
@@ -173,7 +175,7 @@ class BoardFragment : Fragment() {
 
 
         questionsRecycler = board_question_feed
-        val questionRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
+        questionRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         questionRecyclerLayoutManager.reverseLayout = true
         questionsRecycler.adapter = questionsRecyclerAdapter
         questionsRecycler.layoutManager = questionRecyclerLayoutManager
@@ -301,7 +303,7 @@ class BoardFragment : Fragment() {
 
     }
 
-    fun recyclersVisibility(case: Int) {
+    private fun recyclersVisibility(case: Int) {
 
         if (case == 0) {
             searchedQuestionsRecycler.visibility = View.GONE
@@ -395,6 +397,7 @@ class BoardFragment : Fragment() {
 
                                 if (interest == tag) {
                                     questionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
+                                    questionRecyclerLayoutManager
                                     break@singleQuestionLoop
                                 }
                             }

@@ -1,6 +1,7 @@
 package co.getdere.groupieAdapters
 
 import android.app.Activity
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.MainActivity
@@ -16,6 +17,8 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.pedromassango.doubleclick.DoubleClick
+import com.pedromassango.doubleclick.DoubleClickListener
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.linear_feed_post.view.*
@@ -23,7 +26,7 @@ import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
 
 
-class LinearFeedImage(val image: Images, val currentUser: Users, val activity: Activity) : Item<ViewHolder>(),
+class LinearFeedImage(val image: Images, val currentUser: Users, val activity: MainActivity) : Item<ViewHolder>(),
     DereMethods, FCMMethods {
 
     val uid = FirebaseAuth.getInstance().uid
@@ -33,7 +36,7 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: A
 
 
     override fun getLayout(): Int {
-        return R.layout.linear_feed_post_actions_card
+        return R.layout.linear_feed_post
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
@@ -158,46 +161,45 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: A
             return@setOnLongClickListener true
         }
 
+
+
         imageView.setOnClickListener {
+            object : DoubleClick((object : DoubleClickListener {
+                override fun onDoubleClick(view: View?) {
+
+                    Log.d("trytrytry", "double click")
+                    if (image.photographer != currentUser.uid) {
+
+                        executeLike(
+                            image,
+                            uid,
+                            likeCount,
+                            likeButton,
+                            1,
+                            currentUser.name,
+                            image.photographer,
+                            authorReputation,
+                            activity
+                        )
+                    }
+                }
+
+                override fun onSingleClick(view: View?) {
+
+                    Log.d("trytrytry", "single click")
+
+                    openImage()
+                }
+
+            })) {
+
+            }
 
         }
 
         likeButton.setOnClickListener {
 
             if (image.photographer != currentUser.uid) {
-
-//            if (likeButton.tag == "liked") {
-//                likeButton.tag = "notLiked"
-//                likeButton.setImageResource(R.drawable.heart)
-//
-//                val currentLikeCount = if (likeCount.text.isNotEmpty()){
-//                    likeCount.text.toString().toInt()
-//                } else {
-//                    0
-//                }
-//
-//                if (currentLikeCount < 999) {
-//                    val updatedLikeCount = currentLikeCount - 1
-//                    likeCount.text = updatedLikeCount.toString()
-//                }
-//
-//            } else {
-//                likeButton.tag = "liked"
-//                likeButton.setImageResource(R.drawable.heart_active)
-//
-//                val currentLikeCount = if (likeCount.text.isNotEmpty()){
-//                    likeCount.text.toString().toInt()
-//                } else {
-//                    0
-//                }
-//
-//                if (currentLikeCount < 999) {
-//                    val updatedLikeCount = currentLikeCount + 1
-//                    likeCount.text = updatedLikeCount.toString()
-//                }
-//
-//            }
-
 
                 executeLike(
                     image,
@@ -216,6 +218,40 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: A
         bucketButton.setOnClickListener {
             goToBucket()
         }
+
+        viewHolder.itemView.setOnClickListener {
+            openImage()
+        }
+    }
+
+    private fun openImage() {
+
+        sharedViewModelImage.sharedImageObject.postValue(image)
+
+
+        // meanwhile in the background it will load the random user object
+
+        val refRandomUser =
+            FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
+
+        refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+
+                val randomUserObject = p0.getValue(Users::class.java)!!
+
+                sharedViewModelRandomUser.randomUserObject.postValue(randomUserObject)
+
+                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
+
+                activity.switchVisibility(1)
+
+                activity.subActive = activity.imageFullSizeFragment
+            }
+
+        })
     }
 
     private fun goToBucket() {

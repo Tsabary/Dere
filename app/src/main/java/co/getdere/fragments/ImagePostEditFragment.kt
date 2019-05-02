@@ -414,7 +414,8 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                                     imageObject.timestampTaken,
                                     imageObject.timestampUpload,
                                     imageTagsList,
-                                    imageObject.verified
+                                    imageObject.verified,
+                                    0
                                 )
 
 

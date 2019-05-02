@@ -318,8 +318,16 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         }
 
         postButton.setOnClickListener {
+            val timestamp = System.currentTimeMillis()
+
             val comment =
-                Comments(currentUser.uid, commentInput.text.toString(), System.currentTimeMillis(), imageObject.id)
+                Comments(
+                    currentUser.uid,
+                    commentInput.text.toString(),
+                    System.currentTimeMillis(),
+                    imageObject.id,
+                    timestamp
+                )
 
             commentInput.text.clear()
 
@@ -330,25 +338,31 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
             commentBodyRef.setValue(comment).addOnSuccessListener {
 
-                sendNotification(
-                    3,
-                    16,
-                    currentUser.uid,
-                    currentUser.name,
-                    imageObject.id,
-                    ref.key!!,
-                    imageObject.photographer
-                )
+                val refImageLastInteraction = FirebaseDatabase.getInstance()
+                    .getReference("/images/${imageObject.id}/body/lastInteraction")
 
-                closeKeyboard(activity)
+                refImageLastInteraction.setValue(timestamp).addOnSuccessListener {
+                    sendNotification(
+                        3,
+                        16,
+                        currentUser.uid,
+                        currentUser.name,
+                        imageObject.id,
+                        ref.key!!,
+                        imageObject.photographer
+                    )
 
-                layoutScroll.fullScroll(View.FOCUS_DOWN)
+                    closeKeyboard(activity)
 
-                Log.d("postCommentActivity", "Saved comment to Firebase Database")
+                    layoutScroll.fullScroll(View.FOCUS_DOWN)
+
+                    Log.d("postCommentActivity", "Saved comment to Firebase Database")
+                }.addOnFailureListener {
+                    Log.d("postCommentActivity", "Failed to update image last interaction based on comment")
+                }
             }.addOnFailureListener {
                 Log.d("postCommentActivity", "Failed to save comment to database")
             }
-
         }
 
         authorName.setOnClickListener {
@@ -531,7 +545,8 @@ class SingleComment(
                     comment.authorId,
                     commentContentEditable.text.toString(),
                     comment.timeStamp,
-                    comment.ImageId
+                    comment.ImageId,
+                    comment.timestamp
                 )
                 comment = newComment
                 closeKeyboard(activity)

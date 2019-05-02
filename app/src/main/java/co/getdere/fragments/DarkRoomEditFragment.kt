@@ -438,7 +438,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                 if (tagsMatchCount == 0) {
                     if (imageChipGroup.childCount < 5) {
-                        onTagSelected(imageTagsInput.text.toString().toLowerCase())
+                        onTagSelected(imageTagsInput.text.toString().toLowerCase().replace(" ", "-"))
                         imageTagsInput.text.clear()
                     } else {
                         Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
@@ -470,7 +470,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 tagsFiltredAdapter.clear()
 
-                val userInput = s.toString().toLowerCase()
+                val userInput = s.toString().toLowerCase().replace(" ", "-")
 
                 if (userInput == "") {
                     tagSuggestionRecycler.visibility = View.GONE
@@ -488,18 +488,12 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                             val chip = imageChipGroup.getChildAt(i) as Chip
 
                             if (t.tagString == chip.text.toString()) {
-
                                 countTagMatches += 1
-
                             }
-
                         }
-
-
                         if (countTagMatches == 0) {
                             tagSuggestionRecycler.visibility = View.VISIBLE
                             tagsFiltredAdapter.add(SingleTagSuggestion(t))
-
                         }
                     }
                 }
@@ -510,7 +504,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
-
         })
 
 
@@ -597,7 +590,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         refSmallImage.putFile(
             Uri.fromFile(
                 Resizer(this.context)
-                    .setTargetLength(200)
+                    .setTargetLength(400)
                     .setQuality(100)
                     .setOutputFormat("PNG")
                     .setOutputFilename(randomName + "Small")
@@ -622,7 +615,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                 refBigImage.putFile(
                     Uri.fromFile(
                         Resizer(this.context)
-                            .setTargetLength(800)
+                            .setTargetLength(1200)
                             .setQuality(100)
                             .setOutputFormat("PNG")
                             .setOutputFilename(randomName + "Big")
@@ -689,7 +682,8 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             localImagePost.timestamp,
             System.currentTimeMillis(),
             imageTagsList,
-            verified
+            verified,
+            System.currentTimeMillis()
         )
 
 

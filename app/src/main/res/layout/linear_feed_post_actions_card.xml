@@ -59,7 +59,8 @@
                 app:layout_constraintTop_toBottomOf="@+id/linear_feed_timestamp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintDimensionRatio="w,4:5">
+                app:layout_constraintDimensionRatio="w,4:5"
+                app:cardElevation="0dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent"
                                                                android:layout_height="match_parent">
@@ -87,7 +88,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:cardElevation="2dp"
                 app:cardCornerRadius="16dp"
-                android:layout_marginTop="8dp"
                 app:layout_constraintTop_toBottomOf="@+id/linear_feed_image_card"
                 android:layout_marginEnd="8dp"
                 app:layout_constraintEnd_toEndOf="parent">

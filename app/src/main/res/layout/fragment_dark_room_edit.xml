@@ -304,7 +304,7 @@
                         android:id="@+id/dark_room_edit_tag_input"
                         app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_chip_group"
                         app:layout_constraintStart_toStartOf="parent"
-                        android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
+                        android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789- &#160;"
                         android:background="@android:color/transparent"
                         app:layout_constraintEnd_toStartOf="@+id/dark_room_edit_add_tag_button"
                         android:layout_marginTop="8dp"

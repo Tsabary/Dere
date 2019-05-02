@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
@@ -19,6 +20,9 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.tomer.fadingtextview.FadingTextView
 import kotlinx.android.synthetic.main.activity_register.*
+import me.echodev.resizer.Resizer
+import org.apache.commons.io.FileUtils
+import java.io.File
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -29,9 +33,9 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
     private lateinit var userEmail: String
     private lateinit var userPassword: String
 
-    lateinit var registerButton : TextView
-    lateinit var registerButtonBlinking : FadingTextView
-    lateinit var registerButtonBlinkingBackground : TextView
+    lateinit var registerButton: TextView
+    lateinit var registerButtonBlinking: FadingTextView
+    lateinit var registerButtonBlinkingBackground: TextView
 
     var texts = arrayOf("CREATING ACCOUNT", "CREATING ACCOUNT")
 
@@ -53,7 +57,7 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
             registerButtonBlinking.visibility = View.VISIBLE
             registerButtonBlinkingBackground.visibility = View.VISIBLE
             closeKeyboard(this)
-            performRegister()
+            performRegister(this)
         }
 
         register_circular_image_view.setOnClickListener {
@@ -83,7 +87,7 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
         startActivity(loginIntent)
     }
 
-    private fun performRegister() {
+    private fun performRegister(activity: Activity) {
 
         userName = register_name.text.toString().trimEnd()
         userEmail = register_email.text.toString().replace("\\s".toRegex(), "")
@@ -108,7 +112,7 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
                                         "RegisterActivity",
                                         "Succesflly created a user using uid: ${it.result?.user?.uid}"
                                     )
-                                    uploadImageToFirebase()
+                                    uploadImageToFirebase(it.result?.user?.uid!!, activity)
 
                                     return@addOnCompleteListener
                                 } else {
@@ -143,20 +147,40 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
     }
 
 
-    private fun registerFail(){
+    private fun registerFail() {
         registerButton.visibility = View.VISIBLE
         registerButtonBlinking.visibility = View.GONE
         registerButtonBlinkingBackground.visibility = View.GONE
     }
 
-    private fun uploadImageToFirebase() {
+    private fun uploadImageToFirebase(userUid: String, activity: Activity) {
 
         if (selectedPhotoUri == null) return
 
-        val filename = UUID.randomUUID().toString()
-        val ref = FirebaseStorage.getInstance().getReference("/images/userprofile/$filename")
+//        val filename = UUID.randomUUID().toString()
+        val path =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
+        val myInputStream = activity.contentResolver.openInputStream(Uri.parse(selectedPhotoUri.toString()))
+        val imageFile = File.createTempFile("DereProfilePictureFile", "temporary")
+        FileUtils.copyInputStreamToFile(myInputStream, imageFile)
 
-        ref.putFile(selectedPhotoUri!!)
+
+        val ref = FirebaseStorage.getInstance().getReference("/images/users-profile-image/$userUid")
+
+//        ref.putFile(selectedPhotoUri!!)
+        ref.putFile(
+            Uri.fromFile(
+
+                Resizer(this)
+                    .setTargetLength(1200)
+                    .setQuality(100)
+                    .setOutputFormat("PNG")
+                    .setOutputFilename("DereProfilePicture")
+                    .setOutputDirPath(path)
+                    .setSourceImage(imageFile)
+                    .resizedFile
+            )!!
+        )
             .addOnSuccessListener {
                 Log.d("RegisterActivity", "Successfully uploaded image ${it.metadata?.path}")
 
@@ -186,10 +210,14 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
 
         ref.setValue(newUser)
             .addOnSuccessListener {
-                Log.d("RegisterActivity", "Saved user to Firebase Database")
-                val intent = Intent(this, MainActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
+
+                val staxRef = FirebaseDatabase.getInstance().getReference("/users/$uid/stax")
+                staxRef.setValue("").addOnSuccessListener {
+                    Log.d("RegisterActivity", "Saved user to Firebase Database")
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    startActivity(intent)
+                }
             }.addOnFailureListener {
                 Log.d("RegisterActivity", "Failed to save user to database")
             }

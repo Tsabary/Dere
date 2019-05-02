@@ -349,12 +349,19 @@ class MainActivity : AppCompatActivity(), DereMethods {
     private fun checkIfLoggedIn() {
 
         val uid = FirebaseAuth.getInstance().uid
+        val user = FirebaseAuth.getInstance().currentUser
         if (uid == null) {
             val intent = Intent(this, RegisterActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
         } else {
             fetchCurrentUser()
+//            if (user!!.isEmailVerified) {
+//                fetchCurrentUser()
+//            } else {
+//                addFragmentsToFragmentManagers()
+//                switchVisibility(1)
+//            }
         }
 
     }
@@ -467,7 +474,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         subActive = imageFullSizeFragment
     }
 
-    private fun branchInitSession(){
+    private fun branchInitSession() {
         Branch.getInstance().initSession({ branchUniversalObject, referringParams, error ->
 
             if (error == null) {

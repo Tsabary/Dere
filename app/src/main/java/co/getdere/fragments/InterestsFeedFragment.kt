@@ -80,36 +80,7 @@ open class InterestsFeedFragment : Fragment() {
         }
 
         galleryAdapter.setOnItemClickListener { item, _ ->
-            val activity = activity as MainActivity
 
-            val image = item as LinearFeedImage
-
-            sharedViewModelImage.sharedImageObject.postValue(image.image)
-
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
-
-            activity.switchVisibility(1)
-
-            activity.subActive = activity.imageFullSizeFragment
-
-
-            // meanwhile in the background it will load the random user object
-
-            val refRandomUser =
-                FirebaseDatabase.getInstance().getReference("/users/${image.image.photographer}/profile")
-
-            refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-                }
-
-                override fun onDataChange(p0: DataSnapshot) {
-
-                    val randomUserObject = p0.getValue(Users::class.java)!!
-
-                    sharedViewModelForRandomUser.randomUserObject.postValue(randomUserObject)
-                }
-
-            })
 
         }
 
