@@ -382,7 +382,7 @@ class BoardFragment : Fragment() {
 
         questionsRecyclerAdapter.clear()
 
-        val ref = FirebaseDatabase.getInstance().getReference("/questions")
+        val ref = FirebaseDatabase.getInstance().getReference("/questions").orderByChild("main/body/lastInteraction")
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
 

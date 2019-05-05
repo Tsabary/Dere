@@ -22,6 +22,7 @@ import co.getdere.registerLogin.RegisterActivity
 import co.getdere.viewmodels.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import io.branch.indexing.BranchUniversalObject
@@ -47,6 +48,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var feedFragment: FeedFragment
     lateinit var boardFragment: BoardFragment
     lateinit var profileLoggedInUserFragment: ProfileLoggedInUserFragment
+    lateinit var waitingVerificationFragment: WaitingVerificationFragment
 
     lateinit var imageFullSizeFragment: ImageFullSizeFragment
     lateinit var profileRandomUserFragment: ProfileRandomUserFragment
@@ -84,6 +86,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     var isEditAnswerActive = false
     var isFeedNotificationsActive = false
     var isBoardNotificationsActive = false
+    var isFeedActive = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -155,6 +158,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     }
 
     private fun resetImageExpended() {
+//        subFm.beginTransaction().detach(imageFullSizeFragment)
         sharedViewModelImage.sharedImageObject.postValue(Images())
         imageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
         imageFullSizeFragment.optionsContainer.visibility = View.GONE
@@ -170,29 +174,41 @@ class MainActivity : AppCompatActivity(), DereMethods {
             when (subActive) {
 
                 imageFullSizeFragment -> {
-                    if (isBucketGalleryActive) {
-                        subFm.beginTransaction().hide(subActive).show(bucketGalleryFragment).commit()
-                        subActive = bucketGalleryFragment
-                        resetImageExpended()
-                    } else if (isOpenedQuestionActive) {
-                        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
-                        subActive = openedQuestionFragment
-                        resetImageExpended()
-                    } else if (isFeedNotificationsActive) {
-                        subFm.beginTransaction().hide(subActive).show(feedNotificationsFragment).commit()
-                        subActive = feedNotificationsFragment
-                        resetImageExpended()
-                    } else if (isBoardNotificationsActive) {
-                        subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
-                        subActive = boardNotificationsFragment
-                        resetImageExpended()
-                    } else {
-                        switchVisibility(0)
-                        resetImageExpended()
+                    when {
+                        isBucketGalleryActive -> {
+                            subFm.beginTransaction().hide(subActive).attach(bucketGalleryFragment).commit()
+                            subActive = bucketGalleryFragment
+                            bucketGalleryFragment.galleryViewPager.currentItem = 1
+                            resetImageExpended()
+                        }
+                        isOpenedQuestionActive -> {
+                            subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                            subActive = openedQuestionFragment
+                            resetImageExpended()
+                        }
+                        isFeedNotificationsActive -> {
+                            subFm.beginTransaction().hide(subActive).show(feedNotificationsFragment).commit()
+                            subActive = feedNotificationsFragment
+                            resetImageExpended()
+                        }
+                        isBoardNotificationsActive -> {
+                            subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
+                            subActive = boardNotificationsFragment
+                            resetImageExpended()
+                        }
+                        else -> {
+                            switchVisibility(0)
+                            resetImageExpended()
+                        }
                     }
                 }
                 bucketFragment -> {
 
+                    if (isFeedActive) {
+                        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                        subActive = imageFullSizeFragment
+                        switchVisibility(0)
+                    }
                     subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
                     fm.beginTransaction().detach(profileLoggedInUserFragment).attach(profileLoggedInUserFragment)
                         .commit()
@@ -201,12 +217,16 @@ class MainActivity : AppCompatActivity(), DereMethods {
                 }
 
                 profileRandomUserFragment -> {
+                    if (isFeedActive) {
+                        navigateToFeed()
+                        isFeedActive = false
+                    } else {
+                        imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
+                        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                        subActive = imageFullSizeFragment
 
-                    imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
-
-                    sharedViewModelRandomUser.randomUserObject.postValue(Users())
+                        sharedViewModelRandomUser.randomUserObject.postValue(Users())
+                    }
                 }
 
                 feedNotificationsFragment -> {
@@ -343,6 +363,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
         if (mainFrame.visibility == View.GONE) {
             switchVisibility(0)
         }
+
+        imageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
+
     }
 
 
@@ -355,13 +378,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
         } else {
+
             fetchCurrentUser()
-//            if (user!!.isEmailVerified) {
-//                fetchCurrentUser()
-//            } else {
-//                addFragmentsToFragmentManagers()
-//                switchVisibility(1)
-//            }
         }
 
     }
@@ -404,6 +422,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         fm.beginTransaction()
             .add(R.id.feed_frame_container, profileLoggedInUserFragment, "profileLoggedInUserFragment")
             .hide(profileLoggedInUserFragment).commit()
+
 
         active = feedFragment
 
@@ -517,6 +536,16 @@ class MainActivity : AppCompatActivity(), DereMethods {
         branchInitSession()
     }
 
+    private fun navigateToFeed() {
+        fm.beginTransaction().hide(active).show(feedFragment).commit()
+        active = feedFragment
+        val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+        menuItem.isChecked = true
+        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+        subActive = imageFullSizeFragment
+        resetFragments()
+    }
+
     private fun navigateToBoard() {
         fm.beginTransaction().hide(active).show(boardFragment).commit()
         active = boardFragment
@@ -527,15 +556,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
         resetFragments()
     }
 
-    private fun navigateToFeed() {
-        fm.beginTransaction().hide(active).show(feedFragment).commit()
-        active = feedFragment
-        val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
-        menuItem.isChecked = true
-        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-        subActive = imageFullSizeFragment
-        resetFragments()
-    }
 
     private fun navigateToProfile() {
         fm.beginTransaction().hide(active).show(profileLoggedInUserFragment).commit()

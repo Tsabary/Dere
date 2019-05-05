@@ -264,8 +264,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                 style.addImage(
                     DERE_PIN,
-                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.pin_icon))!!,
-                    true
+                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map))!!
                 )
 
 
@@ -415,7 +414,8 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                                     imageObject.timestampUpload,
                                     imageTagsList,
                                     imageObject.verified,
-                                    0
+                                    0,
+                                    imageObject.ratio
                                 )
 
 

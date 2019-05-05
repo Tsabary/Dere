@@ -29,6 +29,7 @@ import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
+import com.mapbox.mapboxsdk.style.sources.ImageSource
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import kotlinx.android.synthetic.main.fragment_image_map_view.*
 
@@ -36,7 +37,7 @@ import kotlinx.android.synthetic.main.fragment_image_map_view.*
 class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
     private val DERE_PIN = "derePin"
-    var myMapboxMap : MapboxMap? = null
+    var myMapboxMap: MapboxMap? = null
 
 
     private lateinit var sharedViewModelForImage: SharedViewModelImage
@@ -116,14 +117,10 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                 }
 
 
-
-
                 style.addImage(
                     DERE_PIN,
-                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.pin_icon))!!,
-                    true
+                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map))!!
                 )
-
 
 
                 val geoJsonOptions = GeoJsonOptions().withTolerance(0.4f)
@@ -138,7 +135,7 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                         val symbolOptions = SymbolOptions()
                             .withLatLng(LatLng(image.location[0], image.location[1]))
                             .withIconImage(DERE_PIN)
-                            .withIconSize(1.3f)
+                            .withIconSize(1f)
                             .withZIndex(10)
                             .withDraggable(false)
 
@@ -171,7 +168,6 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
     override fun onPermissionResult(granted: Boolean) {
         if (granted) {
-//            enableLocation()
         }
     }
 

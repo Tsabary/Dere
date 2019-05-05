@@ -97,8 +97,7 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
 
                 style.addImage(
                     DERE_PIN,
-                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.pin_icon))!!,
-                    true
+                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map))!!
                 )
 
                 val geoJsonOptions = GeoJsonOptions().withTolerance(0.4f)
@@ -147,7 +146,7 @@ class BucketMapViewFragment : Fragment(), PermissionsListener {
                                     val symbolOptions = SymbolOptions()
                                         .withLatLng(LatLng(imageObject!!.location[0], imageObject.location[1]))
                                         .withIconImage(DERE_PIN)
-                                        .withIconSize(1.3f)
+                                        .withIconSize(1f)
                                         .withZIndex(10)
                                         .withDraggable(false)
 

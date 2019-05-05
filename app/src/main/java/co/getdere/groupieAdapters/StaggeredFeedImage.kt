@@ -2,8 +2,13 @@ package co.getdere.groupieAdapters
 
 import android.app.Activity
 import android.util.Log
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
+import android.widget.TextView
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.MainActivity
 import co.getdere.interfaces.DereMethods
@@ -23,23 +28,25 @@ import com.pedromassango.doubleclick.DoubleClickListener
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.linear_feed_post.view.*
+import kotlinx.android.synthetic.main.staggered_feed_post.view.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
 
 
-class LinearFeedImage(val image: Images, val currentUser: Users, val activity: MainActivity) : Item<ViewHolder>(),
+class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity: MainActivity) : Item<ViewHolder>(),
     DereMethods, FCMMethods {
 
     val uid = FirebaseAuth.getInstance().uid
+    val timestmap = image.timestampUpload
 
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
 
-    lateinit var user : Users
+    lateinit var user: Users
 
 
     override fun getLayout(): Int {
-        return R.layout.linear_feed_post
+        return R.layout.staggered_feed_post
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
@@ -51,48 +58,16 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
             sharedViewModelRandomUser = ViewModelProviders.of(activity).get(SharedViewModelRandomUser::class.java)
         }
 
+        val verifiedIcon = viewHolder.itemView.staggered_feed_verified
+        val verifiedInfoText = viewHolder.itemView.staggered_feed_verified_info
+        val verifiedInfoBox = viewHolder.itemView.staggered_feed_verified_box
 
-        val bucketCount = viewHolder.itemView.linear_feed_bucket_count
-        val bucketButton = viewHolder.itemView.linear_feed_bucket
+        val imageView = viewHolder.itemView.staggered_feed_image
+        val userName = viewHolder.itemView.staggered_feed_author_name
 
-        val likeButton = viewHolder.itemView.linear_feed_like
-        val likeCount = viewHolder.itemView.linear_feed_like_count
+        val likeButton = viewHolder.itemView.staggered_feed_like_button
 
-        val commentCount = viewHolder.itemView.linear_feed_comment_count
-
-        val imageDescription = viewHolder.itemView.linear_feed_image_details
-
-        val verifiedIcon = viewHolder.itemView.linear_feed_verified
-        val verifiedInfoText = viewHolder.itemView.linear_feed_verified_info
-        val verifiedInfoBox = viewHolder.itemView.linear_feed_verified_box
-
-        val imageView = viewHolder.itemView.linear_feed_image
-        val imageTimestamp = viewHolder.itemView.linear_feed_timestamp
-        val userImage = viewHolder.itemView.linear_feed_author_image
-        val userName = viewHolder.itemView.linear_feed_author_name
-
-        val imageRatioColonIndex = image.ratio.indexOf(":", 0)
-        val imageRatioWidth = image.ratio.subSequence(0, imageRatioColonIndex)
-        val imageRationHeight = image.ratio.subSequence(imageRatioColonIndex+1, image.ratio.length)
-
-        val imageRatioFinal: Double = imageRatioWidth.toString().toDouble() / imageRationHeight.toString().toDouble()
-
-
-        if (imageRatioFinal > 1.25) {
-            (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "5:4"
-        } else if (imageRatioFinal < 0.8) {
-            (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "4:5"
-        } else {
-            (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
-        }
-
-
-        viewHolder.itemView.linear_feed_tags.text = image.tags.joinToString()
-
-//        if (image.details.isNotEmpty()){
-//            imageDescription.visibility = View.VISIBLE
-//            imageDescription.text = image.details
-//        }
+        (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
 
         if (image.verified) {
             verifiedIcon.visibility = View.VISIBLE
@@ -102,26 +77,19 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
         verifiedIcon.setOnClickListener {
             if (verifiedInfoBox.visibility == View.GONE) {
                 verifiedInfoBox.visibility = View.VISIBLE
-                verifiedInfoText.visibility = View.VISIBLE
             } else {
                 verifiedInfoBox.visibility = View.GONE
-                verifiedInfoText.visibility = View.GONE
             }
         }
 
         verifiedInfoBox.setOnClickListener {
             verifiedInfoBox.visibility = View.GONE
-            verifiedInfoText.visibility = View.GONE
         }
         verifiedInfoText.setOnClickListener {
             verifiedInfoBox.visibility = View.GONE
-            verifiedInfoText.visibility = View.GONE
         }
 
-        Glide.with(viewHolder.root.context).load(currentUser.image)
-            .into(viewHolder.itemView.linear_feed_current_user_photo)
-
-        val authorReputation = viewHolder.itemView.linear_feed_author_reputation
+        val authorReputation = viewHolder.itemView.staggered_feed_author_reputation
 
         val requestOption = RequestOptions()
             .placeholder(R.color.gray500).centerCrop()
@@ -129,19 +97,11 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
         Glide.with(viewHolder.root.context).load(image.imageBig).transition(DrawableTransitionOptions.withCrossFade())
             .apply(requestOption).into(imageView)
 
-        imageTimestamp.text = PrettyTime().format(Date(image.timestampUpload))
-
-
-        listenToBucketCount(bucketCount, image)
-
-        checkIfBucketed(bucketButton, image, uid!!)
-
-        listenToLikeCount(likeCount, image)
 
         executeLike(
             image,
-            uid,
-            likeCount,
+            uid!!,
+            TextView(viewHolder.root.context),
             likeButton,
             0,
             currentUser.name,
@@ -149,9 +109,6 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
             authorReputation,
             activity
         )
-
-        listenToCommentCount(commentCount, image)
-
 
         val refAuthor = FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
 
@@ -164,21 +121,12 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
 
                 user = p0.getValue(Users::class.java)!!
 
-                if (user != null) {
-
-                    Glide.with(viewHolder.root.context).load(user.image)
-                        .into(userImage)
-
-                    userName.text = user.name
-                    authorReputation.text = "(${numberCalculation(user.reputation)})"
-                }
+                userName.text = user.name
+                authorReputation.text = "(${numberCalculation(user.reputation)})"
             }
         })
 
         userName.setOnClickListener {
-            goToUserProfile(user)
-        }
-        userImage.setOnClickListener {
             goToUserProfile(user)
         }
 
@@ -186,50 +134,46 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
             goToUserProfile(user)
         }
 
-        imageTimestamp.setOnClickListener {
-            goToUserProfile(user)
-        }
+        val gestureDetector = GestureDetector(activity, object : GestureDetector.SimpleOnGestureListener() {
 
-        imageView.setOnLongClickListener {
-            goToBucket()
-            return@setOnLongClickListener true
-        }
-
-
-
-        imageView.setOnClickListener {
-            object : DoubleClick((object : DoubleClickListener {
-                override fun onDoubleClick(view: View?) {
-
-                    Log.d("trytrytry", "double click")
-                    if (image.photographer != currentUser.uid) {
-
-                        executeLike(
-                            image,
-                            uid,
-                            likeCount,
-                            likeButton,
-                            1,
-                            currentUser.name,
-                            image.photographer,
-                            authorReputation,
-                            activity
-                        )
-                    }
-                }
-
-                override fun onSingleClick(view: View?) {
-
-                    Log.d("trytrytry", "single click")
-
-                    openImage()
-                }
-
-            })) {
-
+            override fun onDown(e: MotionEvent?): Boolean {
+                return true
             }
 
+            override fun onDoubleTap(e: MotionEvent?): Boolean {
+                if (uid != image.photographer) {
+                    executeLike(
+                        image,
+                        uid,
+                        TextView(viewHolder.root.context),
+                        likeButton,
+                        1,
+                        currentUser.name,
+                        image.photographer,
+                        authorReputation,
+                        activity
+                    )
+                }
+
+                return super.onDoubleTap(e)
+            }
+
+            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+                openImage()
+                return super.onSingleTapConfirmed(e)
+            }
+
+            override fun onLongPress(e: MotionEvent?) {
+                activity.isFeedActive = true
+                goToBucket()
+                super.onLongPress(e)
+            }
+        })
+
+        imageView.setOnTouchListener { v, event ->
+            gestureDetector.onTouchEvent(event)
         }
+
 
         likeButton.setOnClickListener {
 
@@ -238,7 +182,7 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
                 executeLike(
                     image,
                     uid,
-                    likeCount,
+                    TextView(viewHolder.root.context),
                     likeButton,
                     1,
                     currentUser.name,
@@ -248,17 +192,9 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
                 )
             }
         }
-
-        bucketButton.setOnClickListener {
-            goToBucket()
-        }
-
-        viewHolder.itemView.setOnClickListener {
-            openImage()
-        }
     }
 
-    private fun goToUserProfile(user: Users){
+    private fun goToUserProfile(user: Users) {
 
         sharedViewModelRandomUser.randomUserObject.postValue(user)
         activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileRandomUserFragment).commit()

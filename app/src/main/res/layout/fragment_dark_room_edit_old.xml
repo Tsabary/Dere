@@ -343,7 +343,7 @@
                     android:text="DELETE"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/dark_room_edit_delete_remove_button"
+                    android:id="@+id/image_expended_delete_remove_button"
                     android:textColor="@color/red700"
                     android:fontFamily="@font/open_sans_semibold"
                     app:layout_constraintTop_toTopOf="@+id/dark_room_edit_delete_cancel_button"

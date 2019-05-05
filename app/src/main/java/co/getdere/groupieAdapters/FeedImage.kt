@@ -22,7 +22,7 @@ class FeedImage(val image: Images, val case : Int) : Item<ViewHolder>() {
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
         val requestOption = RequestOptions()
-            .placeholder(co.getdere.R.color.gray500).centerCrop()
+            .placeholder(R.color.gray500).centerCrop()
 
         Glide.with(viewHolder.root.context).load(image.imageSmall).transition(DrawableTransitionOptions.withCrossFade())
             .apply(requestOption).into(viewHolder.itemView.feed_single_photo_photo)

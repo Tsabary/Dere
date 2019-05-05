@@ -98,8 +98,7 @@ class DarkRoomMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                 style.addImage(
                     DERE_PIN,
-                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.pin_icon))!!,
-                    true
+                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map))!!
                 )
 
             }

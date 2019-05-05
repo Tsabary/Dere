@@ -13,7 +13,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.RecyclerView
 import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.adapters.ImageExpandedPagerAdapter
@@ -30,7 +29,6 @@ import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
-import de.hdodenhof.circleimageview.CircleImageView
 import io.branch.indexing.BranchUniversalObject
 import io.branch.referral.Branch
 import io.branch.referral.BranchError
@@ -38,9 +36,7 @@ import io.branch.referral.SharingHelper
 import io.branch.referral.util.ContentMetadata
 import io.branch.referral.util.LinkProperties
 import io.branch.referral.util.ShareSheetStyle
-import kotlinx.android.synthetic.main.answer_comment_layout.*
 import kotlinx.android.synthetic.main.comment_layout.view.*
-import kotlinx.android.synthetic.main.fragment_image.*
 import kotlinx.android.synthetic.main.fragment_image_expanded.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
@@ -71,6 +67,10 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
     lateinit var deleteContainer: ConstraintLayout
     lateinit var deleteEditContainer: ConstraintLayout
 
+    lateinit var showLocation : ImageButton
+
+    lateinit var bucketButton : ImageButton
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
@@ -94,48 +94,48 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         val activity = activity as MainActivity
 //        imageExpendedFm = activity.supportFragmentManager
 
-        val authorName = photo_social_author_name
-        val authorReputation = photo_social_author_reputation
-        val authorImage = photo_social_author_image
+        val authorName = image_expended_author_name
+        val authorReputation = image_expended_author_reputation
+        val authorImage = image_expended_author_image
 
-        val currentUserImage = photo_comments_current_user_image
+        val currentUserImage = image_expended_comments_current_user_image
 
 //        val mainImage = image_expended_image
-        val locationMap = image_expended_map
-        val imageContent = photo_social_image_details
-        val imageTimestamp = photo_social_timestamp
+        showLocation = image_expended_map
+        val imageContent = image_expended_image_details
+        val imageTimestamp = image_expended_timestamp
 
 
-        val likeCount = photo_social_like_count
-        val likeButton = photo_social_like_button
-        val bucketCount = photo_social_bucket_count
-        val bucketButton = photo_social_bucket_icon
-//        val commentCount = photo_social_comment_count
-        val shareButton = photo_social_share
+        val likeCount = image_expended_like_count
+        val likeButton = image_expended_like_button
+        val bucketCount = image_expended_bucket_count
+        bucketButton = image_expended_bucket_icon
+        val commentCount = image_expended_comment_count
+        val shareButton = image_expended_share
         val linkIcon = image_expended_link_icon
         val linkAddress = image_expended_link_address
         val tags = image_expended_tags
 
         val optionsButton = image_expended_options_button
         optionsContainer = image_expended_options_background
-        val editButton = image_expended_options_edit
-        val deleteButton = image_expended_options_delete
+        val editButton = image_expended_edit
+        val deleteButton = image_expended_remove
         deleteEditContainer = image_expended_options_edit_delete
         deleteContainer = image_expended_options_delete_container
-        val removeButton = image_expended_options_delete_remove
-        val cancelButton = image_expended_options_delete_cancel
+        val removeButton = image_expended_delete_remove_button
+        val cancelButton = image_expended_delete_cancel_button
 
 
-        val postButton = photo_comments_post_button
-        val commentInput = photo_comments_comment_input
+        val postButton = image_expended_comments_post_button
+        val commentInput = image_expended_comments_comment_input
 
-        imageExpendedViewPager = image_full_viewpager
+        imageExpendedViewPager = image_expended_viewpager
         val pagerAdapter = ImageExpandedPagerAdapter(childFragmentManager)
         imageExpendedViewPager.adapter = pagerAdapter
 
         actionsContainer = image_expended_actions_container
 
-        layoutScroll = photo_social_scrollView
+        layoutScroll = image_expended_scrollView
 
         val commentsRecycler = image_expended_comments_recycler
 
@@ -144,12 +144,27 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         Glide.with(this).load(currentUser.image).into(currentUserImage)
 
-
-
         sharedViewModelForImage.sharedImageObject.observe(this, Observer {
             it?.let { image ->
                 imageExpendedViewPager.currentItem = 0
                 imageObject = image
+
+                val imageRatioColonIndex = image.ratio.indexOf(":", 0)
+                val imageRatioWidth = image.ratio.subSequence(0, imageRatioColonIndex)
+                val imageRationHeight = image.ratio.subSequence(imageRatioColonIndex+1, image.ratio.length)
+
+                val imageRatioFinal: Double = imageRatioWidth.toString().toDouble() / imageRationHeight.toString().toDouble()
+
+
+                if (imageRatioFinal > 1.25) {
+                    (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "5:4"
+                } else if (imageRatioFinal < 0.8) {
+                    (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "4:5"
+                } else {
+                    (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
+                }
+
+
 
                 listenToLikeCount(likeCount, image)
                 executeLike(
@@ -163,6 +178,11 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                     authorReputation,
                     activity
                 )
+
+                listenToBucketCount(bucketCount, image)
+                checkIfBucketed(bucketButton, image, currentUser.uid)
+
+                listenToCommentCount(commentCount, image)
 
                 imageTimestamp.text = PrettyTime().format(Date(image.timestampUpload))
                 tags.text = image.tags.joinToString()
@@ -226,8 +246,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                     optionsButton.visibility = View.GONE
                 }
 
-                checkIfBucketed(bucketButton, image, currentUser.uid)
-                listenToBucketCount(bucketCount, image)
+
 
                 actionsContainer.visibility = View.VISIBLE
 
@@ -269,7 +288,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         })
 
 
-        locationMap.setOnClickListener {
+        showLocation.setOnClickListener {
             switchImageAndMap()
         }
 
@@ -297,24 +316,29 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
 
         likeButton.setOnClickListener {
-            executeLike(
-                imageObject,
-                currentUser.uid,
-                likeCount,
-                likeButton,
-                1,
-                currentUser.name,
-                imageObject.photographer,
-                authorReputation,
-                activity
-            )
+
+            if (currentUser.uid != imageObject.photographer){
+                executeLike(
+                    imageObject,
+                    currentUser.uid,
+                    likeCount,
+                    likeButton,
+                    1,
+                    currentUser.name,
+                    imageObject.photographer,
+                    authorReputation,
+                    activity
+                )
+            }
         }
 
 
 
         bucketButton.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketFragment).commit()
-            activity.subActive = activity.bucketFragment
+            if (currentUser.uid != imageObject.photographer){
+                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketFragment).commit()
+                activity.subActive = activity.bucketFragment
+            }
         }
 
         postButton.setOnClickListener {
@@ -324,10 +348,8 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                 Comments(
                     currentUser.uid,
                     commentInput.text.toString(),
-                    System.currentTimeMillis(),
-                    imageObject.id,
-                    timestamp
-                )
+                    timestamp,
+                    imageObject.id)
 
             commentInput.text.clear()
 
@@ -383,9 +405,11 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         if (viewPagerPosition == 0) {
             imageExpendedViewPager.currentItem = 1
             viewPagerPosition = 1
+            showLocation.setImageResource(R.drawable.location_active)
         } else {
             imageExpendedViewPager.currentItem = 0
             viewPagerPosition = 0
+            showLocation.setImageResource(R.drawable.location)
         }
     }
 
@@ -545,9 +569,7 @@ class SingleComment(
                     comment.authorId,
                     commentContentEditable.text.toString(),
                     comment.timeStamp,
-                    comment.ImageId,
-                    comment.timestamp
-                )
+                    comment.ImageId)
                 comment = newComment
                 closeKeyboard(activity)
             }

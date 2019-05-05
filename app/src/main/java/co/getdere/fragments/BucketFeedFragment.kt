@@ -84,7 +84,7 @@ class BucketFeedFragment : Fragment() {
                             override fun onDataChange(p0: DataSnapshot) {
                                 val imageObject = p0.getValue(Images::class.java)
 
-                                galleryAdapter.add(FeedImage(imageObject!!, 0))
+                                galleryAdapter.add(FeedImage(imageObject!!, 1))
 
                             }
                         })
@@ -115,11 +115,12 @@ class BucketFeedFragment : Fragment() {
 
                     val activity = activity as MainActivity
 
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment)
+                    activity.subFm.beginTransaction().detach(activity.subActive).show(activity.imageFullSizeFragment)
                         .commit()
                     activity.subActive = activity.imageFullSizeFragment
 
                     activity.switchVisibility(1)
+                    activity.isBucketGalleryActive = true
 
                 }
 

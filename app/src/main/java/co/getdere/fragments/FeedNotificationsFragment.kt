@@ -125,7 +125,11 @@ class FeedNotificationsFragment : Fragment() {
 
     fun listenToNotifications() {
         notificationsRecyclerAdapter.clear()
-        refFeedNotifications.addListenerForSingleValueEvent(object : ValueEventListener {
+
+        val refFeedNotificationsByTime =
+            FirebaseDatabase.getInstance().getReference("/users/$uid/notifications/gallery").orderByChild("timestamp")
+
+        refFeedNotificationsByTime.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
 
                 var feedNotCount = 0
@@ -154,36 +158,6 @@ class FeedNotificationsFragment : Fragment() {
             }
         })
     }
-
-//    private fun listenToNotifications() {
-//
-//        notificationsRecyclerAdapter.clear()
-//
-//        refFeedNotifications.addChildEventListener(object : ChildEventListener {
-//
-//            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-//
-//                val notification = p0.getValue(Notification::class.java)
-//
-//                if (notification != null) {
-//                    notificationsRecyclerAdapter.add(SingleFeedNotification(notification, activity as MainActivity))
-////                    notificationRecyclerLayoutManager.scrollToPositionWithOffset(0, 0)
-//                }
-//            }
-//
-//            override fun onCancelled(p0: DatabaseError) {
-//            }
-//
-//            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-//            }
-//
-//            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-//            }
-//
-//            override fun onChildRemoved(p0: DataSnapshot) {
-//            }
-//        })
-//    }
 }
 
 

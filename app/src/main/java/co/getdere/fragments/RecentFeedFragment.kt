@@ -56,9 +56,7 @@ class RecentFeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity!!.title = "Feed"
-
-        feedRecycler = following_feed_gallery
+        feedRecycler = feed_gallery
 
         setUpGalleryAdapter()
 

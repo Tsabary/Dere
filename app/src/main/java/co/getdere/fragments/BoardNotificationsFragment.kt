@@ -168,6 +168,8 @@ class BoardNotificationsFragment : Fragment() {
     fun listenToNotifications() {
         notificationsRecyclerAdapter.clear()
 
+        val refBoardNotificationsByTime = FirebaseDatabase.getInstance().getReference("/users/$uid/notifications/board").orderByChild("timestamp")
+
         refBoardNotifications.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
 

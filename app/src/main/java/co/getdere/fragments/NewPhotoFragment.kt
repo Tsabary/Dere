@@ -1,6 +1,7 @@
 package co.getdere.fragments
 
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,7 +17,7 @@ import kotlinx.android.synthetic.main.fragment_new_photo.*
 
 class NewPhotoFragment : Fragment() {
 
-    lateinit var pagerAdapter : CameraPagerAdapter
+    lateinit var pagerAdapter: CameraPagerAdapter
 
 
     override fun onCreateView(
@@ -29,6 +30,8 @@ class NewPhotoFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val tabLayout = new_photo_pager_tab_layout
 
 
         val viewPager = new_photo_pager_pager
@@ -45,17 +48,24 @@ class NewPhotoFragment : Fragment() {
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
 
             }
+
             override fun onPageSelected(position: Int) {
 
-                when(position){
+                when (position) {
 
                     0 -> {
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.photoEditorFragment).commit()
+
+                        tabLayout.setBackgroundColor(Color.parseColor("#4D000000"))
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.photoEditorFragment)
+                            .commit()
                         activity.subActive = activity.photoEditorFragment
                     }
 
                     1 -> {
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.darkRoomEditFragment).commit()
+                        tabLayout.setBackgroundColor(Color.parseColor("#FF616161"))
+
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.darkRoomEditFragment)
+                            .commit()
                         activity.subActive = activity.darkRoomEditFragment
                     }
 
@@ -65,10 +75,8 @@ class NewPhotoFragment : Fragment() {
 
         })
 
-        val tabLayout = new_photo_pager_tab_layout
         tabLayout.setupWithViewPager(viewPager)
     }
-
 
 
 }

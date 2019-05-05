@@ -4,6 +4,7 @@ package co.getdere.fragments
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.widget.ImageView
@@ -43,9 +44,6 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
     lateinit var followButton: TextView
     lateinit var profileGallery: RecyclerView
 
-    lateinit var activityName: String
-
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
@@ -56,7 +54,8 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
     }
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?  = inflater.inflate(R.layout.fragment_profile_random_user, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_profile_random_user, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -64,15 +63,36 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
         val activity = activity as MainActivity
 
-
         val profileTagline = profile_ru_tagline
         val profilePicture: ImageView = profile_ru_image
         val profileName: TextView = profile_ru_user_name
+        val instagramButton = profile_ru_insta_icon
         profileGallery = profile_ru_gallery
         val profileReputation = profile_ru_reputation_count
         val profilePhotos = profile_ru_photos_count
         val profileFollowers = profile_ru_followers_count
         followButton = profile_ru_follow_button
+        var instaLink = ""
+
+
+        val userRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}")
+
+        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {}
+
+            override fun onDataChange(p0: DataSnapshot) {
+                if (p0.hasChild("stax")) {
+                    instagramButton.visibility = View.VISIBLE
+                    instaLink = "https://www.instagram.com/${p0.child("stax").child("instagram").value}"
+                }
+            }
+
+        })
+
+        instagramButton.setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(instaLink)))
+        }
+
 
         sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
             it?.let { user ->
@@ -86,7 +106,7 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                 executeFollow(0, followButton, activity)
 
 
-                val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}")
+                val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
 
                 photosRef.addValueEventListener(object : ValueEventListener {
 
@@ -95,8 +115,20 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                     }
 
                     override fun onDataChange(p0: DataSnapshot) {
-                        profilePhotos.text = numberCalculation(p0.child("images").childrenCount)
-                        profileFollowers.text = numberCalculation(p0.child("followers").childrenCount)
+                        profilePhotos.text = numberCalculation(p0.childrenCount)
+                    }
+                })
+
+                val followersRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/followers")
+
+                followersRef.addValueEventListener(object : ValueEventListener {
+
+                    override fun onCancelled(p0: DatabaseError) {
+
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        profileFollowers.text = numberCalculation(p0.childrenCount)
                     }
                 })
 
@@ -106,6 +138,7 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
 
         followButton.setOnClickListener {
+
             executeFollow(1, followButton, activity)
         }
     }
@@ -137,11 +170,14 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                         followButton.setBackgroundResource(R.drawable.follow_button)
                         followButton.setTextColor(ContextCompat.getColor(context!!, R.color.white))
                         followButton.text = "Follow"
+//                        followButton.tag = "unfollowed"
 
                     } else {
                         followButton.setBackgroundResource(R.drawable.unfollow_button)
                         followButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray300))
                         followButton.text = "Unfollow"
+//                        followButton.tag = "followed"
+
                     }
 
                 } else {

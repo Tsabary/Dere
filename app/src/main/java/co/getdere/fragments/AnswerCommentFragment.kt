@@ -54,7 +54,7 @@ class AnswerCommentFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val content = answer_comment_content_input
+        val content = answer_content
         val uid = FirebaseAuth.getInstance().uid
 
         val postButton = answer_btn

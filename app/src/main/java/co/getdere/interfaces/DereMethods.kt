@@ -457,7 +457,7 @@ interface DereMethods : FCMMethods {
         likeButton.setImageResource(R.drawable.heart_active)
         likeButton.tag = "liked"
 
-        val currentLikeCount = if (likeCount.text.isNotEmpty()){
+        val currentLikeCount = if (likeCount.text.isNotEmpty()) {
             likeCount.text.toString().toInt()
         } else {
             0
@@ -473,7 +473,7 @@ interface DereMethods : FCMMethods {
         likeButton.setImageResource(R.drawable.heart)
         likeButton.tag = "notLiked"
 
-        val currentLikeCount = if (likeCount.text.isNotEmpty()){
+        val currentLikeCount = if (likeCount.text.isNotEmpty()) {
             likeCount.text.toString().toInt()
         } else {
             0
@@ -608,7 +608,7 @@ interface DereMethods : FCMMethods {
 
                             refImageLikes.setValue(true).addOnSuccessListener {
 
-//                                likeButton.setImageResource(R.drawable.heart_active)
+                                //                                likeButton.setImageResource(R.drawable.heart_active)
 //                                likeButton.tag = "liked"
 
 //                                    likeButton.setImageResource(R.drawable.heart_active)
@@ -642,7 +642,6 @@ interface DereMethods : FCMMethods {
         })
 
 
-
     }
 
 
@@ -657,33 +656,13 @@ interface DereMethods : FCMMethods {
 
             override fun onDataChange(p0: DataSnapshot) {
 
-                if (p0.hasChild("comments")) {
-
-                    val count = numberCalculation(p0.child("comments").childrenCount)
-
-                    commentCount.text = count
-
-
+                commentCount.text = if (p0.hasChild("comments")) {
+                    numberCalculation(p0.child("comments").childrenCount)
                 } else {
-                    commentCount.text = "0"
+                    "0"
                 }
-
-//                    if (p0.child("comments").childrenCount > 1) {
-//                        val count = numberCalculation(p0.child("comments").childrenCount)
-//
-//                        commentCount.text = "Read all $count comments"
-//                    } else {
-//                        commentCount.text = "Read one comment"
-//                    }
-//                } else {
-//                    commentCount.visibility = View.GONE
-//                }
-
             }
-
         })
-
-
     }
 
 
@@ -740,11 +719,12 @@ interface DereMethods : FCMMethods {
 
         refUserBucket.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-                Log.d("ImageBucketed", "child added ${p0.key}}")
-
 
                 if (p0.hasChild(image.id)) {
                     bucketButton.setImageResource(R.drawable.bucket_saved)
+                } else {
+                    bucketButton.setImageResource(R.drawable.bucket)
+
                 }
             }
 

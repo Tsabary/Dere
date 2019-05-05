@@ -38,6 +38,7 @@ class AddToBucketFragment : Fragment(), DereMethods {
 
     lateinit var imageObject: Images
     private lateinit var currentUser: Users
+    lateinit var recycler: RecyclerView
 
     val bucketsAdapter = GroupAdapter<ViewHolder>()
     lateinit var bucketsLayoutManager: LinearLayoutManager
@@ -71,7 +72,7 @@ class AddToBucketFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val recycler = add_to_bucket_recycler
+        recycler = add_to_bucket_recycler
         val newBucketInput = add_to_bucket_new_input
         val bucketAddButton = add_to_bucket_new_button
 
@@ -95,7 +96,6 @@ class AddToBucketFragment : Fragment(), DereMethods {
                         if (p0.hasChild(newBucketInput.text.toString())) {
                             Toast.makeText(context, "A bucket with the same name already exists", Toast.LENGTH_LONG)
                                 .show()
-
                         } else {
 
                             val ref = FirebaseDatabase.getInstance()
@@ -103,6 +103,8 @@ class AddToBucketFragment : Fragment(), DereMethods {
 
                             ref.setValue(System.currentTimeMillis()).addOnSuccessListener {
 
+                                sharedViewModelForImage.sharedImageObject.postValue(Images())
+                                sharedViewModelForImage.sharedImageObject.postValue(imageObject)
 
                                 val imageBucketingRef =
                                     FirebaseDatabase.getInstance()
@@ -114,6 +116,8 @@ class AddToBucketFragment : Fragment(), DereMethods {
                                         val refUserTags = FirebaseDatabase.getInstance()
                                             .getReference("users/${currentUser.uid}/interests/$t")
                                         refUserTags.setValue(true)
+
+                                        closeKeyboard(activity as MainActivity)
                                     }
 
 
@@ -160,7 +164,7 @@ class AddToBucketFragment : Fragment(), DereMethods {
 
         bucketsAdapter.clear()
 
-        val allBucketsRef = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets")
+        val allBucketsRef = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}")
 
         allBucketsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -169,11 +173,23 @@ class AddToBucketFragment : Fragment(), DereMethods {
 
             override fun onDataChange(p0: DataSnapshot) {
 
-                for (ds in p0.children) {
+                if (p0.hasChild("buckets")) {
+                    recycler.visibility = View.VISIBLE
 
-                    bucketsAdapter.add(SingleBucketSuggestion(ds.key!!, imageObject, currentUser, activity as MainActivity))
+                    for (ds in p0.child("buckets").children) {
 
+                        bucketsAdapter.add(
+                            SingleBucketSuggestion(
+                                ds.key!!,
+                                imageObject,
+                                currentUser,
+                                activity as MainActivity
+                            )
+                        )
+
+                    }
                 }
+
 
             }
 
@@ -185,7 +201,12 @@ class AddToBucketFragment : Fragment(), DereMethods {
 }
 
 
-class SingleBucketSuggestion(val bucketName: String, val image: Images, val currentUser: Users, val activity : Activity) : Item<ViewHolder>(),
+class SingleBucketSuggestion(
+    val bucketName: String,
+    val image: Images,
+    val currentUser: Users,
+    val activity: Activity
+) : Item<ViewHolder>(),
     DereMethods {
 
 
@@ -203,7 +224,7 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
 
 
 
-        executeBucket(0, bucketName, image, currentUser, actionText, viewHolder.root.context, activity)
+        executeBucket(0, bucketName, image, currentUser, actionText, viewHolder.root.context, activity as MainActivity)
 
         actionText.setOnClickListener {
 
@@ -222,7 +243,7 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
         currentUser: Users,
         actionText: TextView,
         context: Context,
-        activity : Activity
+        activity: MainActivity
     ) {
 
 
@@ -280,6 +301,9 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
                                         )
                                     )
 
+                                    activity.sharedViewModelImage.sharedImageObject.postValue(Images())
+                                    activity.sharedViewModelImage.sharedImageObject.postValue(image)
+
 
                                 } else {
                                     actionText.text = "REMOVE"
@@ -330,6 +354,9 @@ class SingleBucketSuggestion(val bucketName: String, val image: Images, val curr
                                                     "bucket",
                                                     activity
                                                 )
+
+                                                activity.sharedViewModelImage.sharedImageObject.postValue(Images())
+                                                activity.sharedViewModelImage.sharedImageObject.postValue(image)
                                             }
                                     }
 

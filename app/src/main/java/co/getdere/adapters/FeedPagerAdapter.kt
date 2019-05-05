@@ -16,7 +16,7 @@ class FeedPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAdapter(
         when (p0) {
             0 -> return InterestsFeedFragment.newInstance()
             1 -> return FollowingFeedFragment.newInstance()
-            2 -> return RecentFeedFragment.newInstance()
+//            2 -> return RecentFeedFragment.newInstance()
             else -> return InterestsFeedFragment.newInstance()
         }
     }
@@ -27,7 +27,7 @@ class FeedPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAdapter(
 
 
     override fun getCount(): Int {
-        return 3
+        return 2
     }
 
 }

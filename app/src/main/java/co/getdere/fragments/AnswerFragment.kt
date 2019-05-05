@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.Observer
@@ -40,6 +41,7 @@ class AnswerFragment : Fragment(), DereMethods {
     lateinit var currentUser: Users
     var imagesRecyclerAdapter = GroupAdapter<ViewHolder>()
     var imageListFinal = mutableListOf<String>()
+    lateinit var answerContent : EditText
 
     lateinit var sharedViewModelAnswerImages: SharedViewModelAnswerImages
 
@@ -86,7 +88,7 @@ class AnswerFragment : Fragment(), DereMethods {
         imagesRecycler.adapter = imagesRecyclerAdapter
         imagesRecycler.layoutManager = imagesRecyclerLayoutManager
 
-        val content = view.answer_content
+        answerContent = view.answer_content
 
         sharedViewModelAnswerImages.imageList.observe(this, Observer {
             it?.let { existingImageList ->
@@ -109,8 +111,9 @@ class AnswerFragment : Fragment(), DereMethods {
 
         answerButton.setOnClickListener {
 
+
             if (answer_content.text.length > 15) {
-                postAnswer(content.text.toString(), System.currentTimeMillis(), activity)
+                postAnswer(answerContent.text.toString(), System.currentTimeMillis(), activity)
             } else {
                 Toast.makeText(this.context, "Your answer is too short, please elaborate", Toast.LENGTH_SHORT).show()
             }
@@ -138,29 +141,32 @@ class AnswerFragment : Fragment(), DereMethods {
             .addOnSuccessListener {
                 Log.d("postAnswerActivity", "Saved answer to Firebase Database")
 
-                changeReputation(
-                    6,
-                    ref.key!!,
-                    question.id,
-                    currentUser.uid,
-                    currentUser.name,
-                    question.author,
-                    TextView(this.context),
-                    "answer",
-                    activity
-                )
+                if (currentUser.uid != question.author){
+                    changeReputation(
+                        6,
+                        ref.key!!,
+                        question.id,
+                        currentUser.uid,
+                        currentUser.name,
+                        question.author,
+                        TextView(this.context),
+                        "answer",
+                        activity
+                    )
+                }
+
+
 
                 val refQuestionLastInteraction =
                     FirebaseDatabase.getInstance().getReference("/questions/${question.id}/main/body/lastInteraction")
 
                 refQuestionLastInteraction.setValue(timestamp).addOnSuccessListener {
-
                     activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
                         .commit()
                     activity.subActive = activity.openedQuestionFragment
-
                     closeKeyboard(activity)
 
+                    answerContent.text.clear()
                 }
 
 

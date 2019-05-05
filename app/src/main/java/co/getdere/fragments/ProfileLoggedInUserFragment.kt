@@ -64,6 +64,8 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     lateinit var buo: BranchUniversalObject
     lateinit var lp: LinkProperties
 
+    var imageList = mutableListOf<FeedImage>()
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_profile_logged_in_user, container, false)
 
@@ -154,7 +156,6 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         profileGalleryRoll.adapter = galleryRollAdapter
         val rollGalleryLayoutManager = GridLayoutManager(this.context, 3)
-        rollGalleryLayoutManager.reverseLayout = true
         profileGalleryRoll.layoutManager = rollGalleryLayoutManager
 
         profileGalleryBuckets.adapter = galleryBucketAdapter
@@ -314,12 +315,11 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     }
 
 
-    private fun listenToImagesFromRoll() { //This needs to be fixed to not update in real time. Or should it?
+    private fun listenToImagesFromRoll() {
 
         galleryRollAdapter.clear()
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
-
         ref.addChildEventListener(object : ChildEventListener {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
@@ -337,7 +337,9 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
                     override fun onDataChange(p0: DataSnapshot) {
                         val imageObject = p0.getValue(Images::class.java)
 
-                        galleryRollAdapter.add(FeedImage(imageObject!!, 0))
+                        imageList.add(FeedImage(imageObject!!, 1))
+                        galleryRollAdapter.clear()
+                        galleryRollAdapter.addAll(imageList.reversed())
                     }
                 })
 

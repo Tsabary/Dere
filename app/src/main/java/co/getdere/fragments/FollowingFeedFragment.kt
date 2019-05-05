@@ -6,7 +6,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -44,10 +43,6 @@ open class FollowingFeedFragment : Fragment() {
 
     lateinit var galleryLayoutManager: LinearLayoutManager
 
-    lateinit var emptyFeedMessage : TextView
-
-
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
@@ -74,9 +69,7 @@ open class FollowingFeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
-        emptyFeedMessage = following_feed_empty
-        feedRecycler = following_feed_gallery
+        feedRecycler = feed_gallery
 
         setUpGalleryAdapter()
 
@@ -165,8 +158,6 @@ open class FollowingFeedFragment : Fragment() {
                         if (accountUid == singleImageFromDB.photographer) {
                             if (!singleImageFromDB.private) {
                                 galleryAdapter.add(LinearFeedImage(singleImageFromDB, currentUser, activity as MainActivity))
-                                emptyFeedMessage.visibility = View.GONE
-
                             }
                         }
 
@@ -208,21 +199,13 @@ open class FollowingFeedFragment : Fragment() {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-
-                Log.d("AccountToListP0", p0.toString())
-
                 val followedUserUid = p0.key.toString()
-
-                Log.d("AccountToList", followedUserUid)
-
                 followedUsersList.add(followedUserUid)
-
                 sharedViewModelFollowedAccounts.followedAccounts = followedUsersList
 
             }
 
             override fun onCancelled(p0: DatabaseError) {
-
             }
 
             override fun onChildMoved(p0: DataSnapshot, p1: String?) {

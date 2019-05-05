@@ -174,8 +174,7 @@ class BucketMapViewFragment2 : Fragment(), PermissionsListener, DereMethods {
 
                 style.addImage(
                     DERE_PIN,
-                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.pin_icon))!!,
-                    true
+                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map))!!
                 )
 
                 val geoJsonOptions = GeoJsonOptions().withTolerance(0.4f)
@@ -217,7 +216,7 @@ class BucketMapViewFragment2 : Fragment(), PermissionsListener, DereMethods {
                                     val symbolOptions = SymbolOptions()
                                         .withLatLng(LatLng(imageObject.location[0], imageObject.location[1]))
                                         .withIconImage(DERE_PIN)
-                                        .withIconSize(1.3f)
+                                        .withIconSize(1f)
                                         .withZIndex(10)
                                         .withDraggable(false)
 
@@ -359,8 +358,6 @@ class BucketMapViewFragment2 : Fragment(), PermissionsListener, DereMethods {
 
             viewHolder.itemView.setOnLongClickListener {
 
-
-
                 sharedViewModelImage.sharedImageObject.postValue(image)
 
                 val randomUserRef = FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
@@ -376,8 +373,10 @@ class BucketMapViewFragment2 : Fragment(), PermissionsListener, DereMethods {
 
                         val activity = activity as MainActivity
 
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
+                        activity.subFm.beginTransaction().detach(activity.subActive).show(activity.imageFullSizeFragment).commit()
                         activity.subActive = activity.imageFullSizeFragment
+                        activity.bucketGalleryFragment.galleryViewPager.currentItem = 0
+                        activity.isBucketGalleryActive = true
 
                         currentPosition = position
                         myAdapter.notifyDataSetChanged()

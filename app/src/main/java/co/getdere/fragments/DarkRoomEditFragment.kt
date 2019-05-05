@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -60,7 +61,6 @@ import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit
 import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_chip_group
 import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_delete_cancel_button
 import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_delete_message
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_delete_remove_button
 import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_image_horizontal
 import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_image_vertical
 import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_location_input
@@ -187,7 +187,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val imageVertical = dark_room_edit_image_vertical
         val imageHorizontal = dark_room_edit_image_horizontal
         val addTagButton = dark_room_edit_add_tag_button
         val imageTagsInput = dark_room_edit_tag_input
@@ -206,7 +205,8 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         val deleteButton = dark_room_edit_delete_remove_button
         val cancelButton = dark_room_edit_delete_cancel_button
 
-        val setLocation = dark_room_edit_set_location
+        val saveButton = dark_room_edit_save
+        shareButton = dark_room_edit_share
 
         val focus = dark_room_edit_map_focus
         val pinAction = dark_room_edit_map_pin
@@ -274,8 +274,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         }
 
 
-        val saveButton = dark_room_edit_save
-        shareButton = dark_room_edit_share
+
         progressBar = dark_room_edit_progress_bar
         uploadBackground = dark_room_edit_white_background
 
@@ -298,8 +297,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                 style.addImage(
                     DERE_PIN,
-                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.pin_icon))!!,
-                    true
+                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map))!!
                 )
 
 
@@ -336,11 +334,11 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                             mapContainer.visibility = View.VISIBLE
                         }
 
-
+                        symbolManager.deleteAll()
                         symbolOptions = SymbolOptions()
                             .withLatLng(LatLng(imageLat, imageLong))
                             .withIconImage(DERE_PIN)
-                            .withIconSize(1.3f)
+                            .withIconSize(1f)
                             .withZIndex(10)
                             .withDraggable(false)
 
@@ -398,7 +396,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                                     )
                                 )
                                 .withIconImage(DERE_PIN)
-                                .withIconSize(1.3f)
+                                .withIconSize(1f)
                                 .withZIndex(10)
                                 .withDraggable(false)
 
@@ -547,30 +545,22 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             )
 
             localImageViewModel.update(updatedImage).invokeOnCompletion {
-                //                Toast.makeText(this.context, "Photo details saved successfully", Toast.LENGTH_LONG).show()
+                Toast.makeText(this.context, "Photo details saved successfully", Toast.LENGTH_LONG).show()
             }
 
         }
 
     }
 
-    var imageFile: File = File.createTempFile("smallfile", "temporary")
 
     private fun uploadPhotoToStorage() {
-
-        if (localImagePost.verified) {
-            Log.d("verified yes", localImagePost.imageUri)
-        } else {
-            Log.d("verified no", localImagePost.imageUri)
-        }
-
-
+        var imageFile: File = File.createTempFile("smallfile", "temporary")
 
         progressBar.visibility = View.VISIBLE
         progressBar.progress = 0f
 
         val randomName = UUID.randomUUID().toString()
-        val storagePath = Environment.getExternalStorageDirectory().absolutePath
+//        val storagePath = Environment.getExternalStorageDirectory().absolutePath
         val path =
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
 
@@ -634,8 +624,35 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                         val bigImageUri = bigUri.toString()
 
+                        val imageBitmap = BitmapFactory.decodeFile(imageFile.path)
 
-                        addImageToFirebaseDatabase(bigImageUri, smallImageUri, localImagePost.verified)
+                        val imageHeight: Int = imageBitmap.height
+                        val imageWidth: Int = imageBitmap.width
+
+                        val imageRatio = "$imageWidth:$imageHeight"
+
+                        addImageToFirebaseDatabase(bigImageUri, smallImageUri, localImagePost.verified, imageRatio)
+
+                        val fileBig = File(bigUri.path)
+                        if (fileBig.exists()) {
+                            if (fileBig.delete()) {
+                                Log.d("deleteOperation", "deleted big file")
+                            } else {
+                                Log.d("deleteOperation", "couldn't delete big file")
+
+                            }
+                        }
+
+                        val fileSmall = File(smallUri.path)
+                        if (fileSmall.exists()) {
+                            if (fileSmall.delete()) {
+                                Log.d("deleteOperation", "deleted big file")
+                            } else {
+                                Log.d("deleteOperation", "couldn't delete big file")
+
+                            }
+                        }
+
 
                     }.addOnFailureListener {
                         uploadFail()
@@ -663,7 +680,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     }
 
 
-    private fun addImageToFirebaseDatabase(bigImage: String, smallImage: String, verified: Boolean) {
+    private fun addImageToFirebaseDatabase(bigImage: String, smallImage: String, verified: Boolean, ratio: String) {
 
         val uid = FirebaseAuth.getInstance().uid
         val ref = FirebaseDatabase.getInstance().getReference("/images/").push()
@@ -683,7 +700,8 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             System.currentTimeMillis(),
             imageTagsList,
             verified,
-            System.currentTimeMillis()
+            System.currentTimeMillis(),
+            ratio
         )
 
 

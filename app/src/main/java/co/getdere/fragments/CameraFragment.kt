@@ -73,7 +73,7 @@ class CameraFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(co.getdere.R.layout.fragment_camera, container, false)
+    ): View? = inflater.inflate(R.layout.fragment_camera, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -82,7 +82,6 @@ class CameraFragment : Fragment() {
         val mActivity = activity as CameraActivity
 
         cameraKitView = camera_view
-//        cameraKitView.aspectRatio = 0.8f
 
         val captureButton = camera_btn
 
@@ -172,28 +171,6 @@ class CameraFragment : Fragment() {
 
             })
         }
-
-
-//        currentAccuracy = view.findViewById<TextView>(co.getdere.R.id.camera_accuracy)
-//
-//
-//        mStatusChecker = object : Runnable {
-//            override fun run() {
-//                try {
-//                    updateStatus(mActivity, currentAccuracy) //this function can change value of mInterval.
-//                } finally {
-//                    // 100% guarantee that this always happens, even if
-//                    // your update method throws an exception
-//                    handler.postDelayed(this, delay)
-//                }
-//            }
-//        }
-//
-//
-//
-//        startRepeatingTask()
-
-
     }
 
 
@@ -218,33 +195,6 @@ class CameraFragment : Fragment() {
     }
 
 
-    fun updateStatus(activity: Activity, currentAccuracy: TextView) {
-
-        airLocation = AirLocation(activity, true, true, object : AirLocation.Callbacks {
-            override fun onSuccess(location: Location) {
-
-                currentAccuracy.text = location.accuracy.toString()
-                Log.d("locationAccuracy", "Success")
-            }
-
-            override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
-                Log.d("locationAccuracy", "Fail")
-
-            }
-
-        })
-
-    }
-
-
-//    fun startRepeatingTask() {
-//        mStatusChecker.run()
-//    }
-//
-//    fun stopRepeatingTask() {
-//        handler.removeCallbacks(mStatusChecker)
-//    }
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         airLocation?.onRequestPermissionsResult(
             requestCode,
@@ -255,15 +205,8 @@ class CameraFragment : Fragment() {
         cameraKitView.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-//    override fun onDetach() {
-//        super.onDetach()
-//        stopRepeatingTask()
-//    }
-
 
     companion object {
         fun newInstance(): CameraFragment = CameraFragment()
     }
-
-
 }

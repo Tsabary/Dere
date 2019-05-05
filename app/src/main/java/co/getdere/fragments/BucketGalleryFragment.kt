@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -29,6 +30,7 @@ class BucketGalleryFragment : Fragment() {
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var currentUser : Users
+    lateinit var mapButton : ImageButton
 
     var viewPagerPosition = 0
     lateinit var galleryViewPager: SwipeLockableViewPager
@@ -45,7 +47,7 @@ class BucketGalleryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val mapButton = bucket_gallery_show_map
+        mapButton = bucket_gallery_show_map
 
         galleryViewPager = bucket_gallery_viewpager
         val pagerAdapter = BucketGalleryPagerAdapter(childFragmentManager)
@@ -83,9 +85,13 @@ class BucketGalleryFragment : Fragment() {
         if (viewPagerPosition == 0) {
             galleryViewPager.currentItem = 1
             viewPagerPosition = 1
+            mapButton.setImageResource(R.drawable.world_active)
+
         } else {
             galleryViewPager.currentItem = 0
             viewPagerPosition = 0
+            mapButton.setImageResource(R.drawable.world)
+
         }
     }
 

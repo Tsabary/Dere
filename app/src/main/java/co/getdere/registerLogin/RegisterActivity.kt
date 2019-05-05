@@ -1,7 +1,10 @@
 package co.getdere.registerLogin
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -11,6 +14,8 @@ import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import co.getdere.MainActivity
 import co.getdere.models.Users
 import co.getdere.R
@@ -37,6 +42,12 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
     lateinit var registerButtonBlinking: FadingTextView
     lateinit var registerButtonBlinkingBackground: TextView
 
+    private val permissions = arrayOf(
+        Manifest.permission.CAMERA,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    )
+
     var texts = arrayOf("CREATING ACCOUNT", "CREATING ACCOUNT")
 
 
@@ -62,9 +73,13 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
 
         register_circular_image_view.setOnClickListener {
 
-            val intent = Intent(Intent.ACTION_PICK)
-            intent.type = "image/*"
-            startActivityForResult(intent, 0)
+            if (hasNoPermissions()){
+                requestPermission()
+            } else {
+                val intent = Intent(Intent.ACTION_PICK)
+                intent.type = "image/*"
+                startActivityForResult(intent, 0)
+            }
         }
     }
 
@@ -95,8 +110,6 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
 
         Log.d("Main", "email is $userEmail")
         Log.d("Main", "pass is $userPassword")
-
-//        Patterns.EMAIL_ADDRESS.matcher(userEmail).matches()
 
         if (selectedPhotoUri != null) {
 
@@ -157,12 +170,21 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
 
         if (selectedPhotoUri == null) return
 
-//        val filename = UUID.randomUUID().toString()
         val path =
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
-        val myInputStream = activity.contentResolver.openInputStream(Uri.parse(selectedPhotoUri.toString()))
+
         val imageFile = File.createTempFile("DereProfilePictureFile", "temporary")
+        val myInputStream = activity.contentResolver.openInputStream(Uri.parse(selectedPhotoUri.toString()))
         FileUtils.copyInputStreamToFile(myInputStream, imageFile)
+
+        val resizedImage = Resizer(this)
+            .setTargetLength(1200)
+            .setQuality(100)
+            .setOutputFormat("PNG")
+            .setOutputFilename("DereProfilePicture")
+            .setOutputDirPath(path)
+            .setSourceImage(imageFile)
+            .resizedFile
 
 
         val ref = FirebaseStorage.getInstance().getReference("/images/users-profile-image/$userUid")
@@ -170,43 +192,57 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
 //        ref.putFile(selectedPhotoUri!!)
         ref.putFile(
             Uri.fromFile(
-
-                Resizer(this)
-                    .setTargetLength(1200)
-                    .setQuality(100)
-                    .setOutputFormat("PNG")
-                    .setOutputFilename("DereProfilePicture")
-                    .setOutputDirPath(path)
-                    .setSourceImage(imageFile)
-                    .resizedFile
-            )!!
-        )
+                resizedImage)!!)
             .addOnSuccessListener {
                 Log.d("RegisterActivity", "Successfully uploaded image ${it.metadata?.path}")
 
-                ref.downloadUrl.addOnSuccessListener {
-                    Log.d("RegisterActivity", "File location: $it")
+                ref.downloadUrl.addOnSuccessListener { profileImageUri ->
+                    Log.d("RegisterActivity", "File location: $profileImageUri")
 
-                    addUserToFirebaseDatabase(it.toString())
+                    addUserToFirebaseDatabase(profileImageUri.toString())
+
+                    val resizedImage = File(profileImageUri.path)
+                    if (resizedImage.exists()) {
+                        if (resizedImage.delete()) {
+                            Log.d("deleteOperation", "deleted big file")
+                        } else {
+                            Log.d("deleteOperation", "couldn't delete big file")
+                        }
+                    }
 
                 }
 
             }.addOnFailureListener {
                 Log.d("RegisterActivity", "Failed to upload image to server $it")
-
             }
 
     }
 
+    override fun onStart() {
+        super.onStart()
+
+        val uid = FirebaseAuth.getInstance().uid
+        if(uid != null){
+            FirebaseAuth.getInstance().currentUser!!.reload().addOnSuccessListener {
+                val updatedUser = FirebaseAuth.getInstance().currentUser
+                if (updatedUser!!.isEmailVerified) {
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    startActivity(intent)
+                }
+            }
+        }
+    }
+
     private fun addUserToFirebaseDatabase(userImageUrl: String) {
 
-        val uid = FirebaseAuth.getInstance().uid ?: ""
+        val uid = FirebaseAuth.getInstance().uid
         val ref = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
 
         userName = register_name.text.toString()
 
         val newUser =
-            Users(uid, userName, userEmail, userImageUrl, 0, "Watch me as I get Dere", System.currentTimeMillis())
+            Users(uid!!, userName, userEmail, userImageUrl, 0, "Watch me as I get Dere", System.currentTimeMillis())
 
         ref.setValue(newUser)
             .addOnSuccessListener {
@@ -214,14 +250,43 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
                 val staxRef = FirebaseDatabase.getInstance().getReference("/users/$uid/stax")
                 staxRef.setValue("").addOnSuccessListener {
                     Log.d("RegisterActivity", "Saved user to Firebase Database")
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    startActivity(intent)
+
+                    val user = FirebaseAuth.getInstance().currentUser
+
+                    user!!.sendEmailVerification().addOnSuccessListener {
+                        Toast.makeText(this, "Please check your email", Toast.LENGTH_LONG).show()
+
+//                        FirebaseAuth.AuthStateListener {
+//
+//
+//                        }
+
+                    }
+
+
                 }
             }.addOnFailureListener {
                 Log.d("RegisterActivity", "Failed to save user to database")
             }
 
+    }
+
+
+    private fun hasNoPermissions(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        ) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) != PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestPermission() {
+        ActivityCompat.requestPermissions(this, permissions, 0)
     }
 
 }
