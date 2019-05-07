@@ -4,7 +4,10 @@ package co.getdere.fragments
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.location.Location
+import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -97,7 +100,6 @@ class CameraFragment : Fragment() {
                     cameraKitView.captureImage() { _, p1 ->
                         Log.d("photoActivity", "image captured")
 
-
                         val timeStamp = System.currentTimeMillis().toString()
                         val fileName = "Dere$timeStamp.jpg"
 
@@ -106,6 +108,8 @@ class CameraFragment : Fragment() {
                         val outputDir = File(path)
                         outputDir.mkdir()
                         val savedPhoto = File(path + File.separator + fileName)
+
+
 
                         Log.d("photoActivity", "new file created")
 
@@ -121,7 +125,6 @@ class CameraFragment : Fragment() {
                             )
 
                             Log.d("photoActivity", "Image saved to file and system rescaned the device")
-
 
                             Glide.with(mActivity).load(savedPhoto)
                                 .into(mActivity.photoEditorFragment.view!!.photo_editor_image)
@@ -141,7 +144,7 @@ class CameraFragment : Fragment() {
                                 savedPhoto.path,
                                 "",
                                 "",
-                                verified = true
+                                true
                             )
                             Log.d("photoActivity", "Took photo")
 

@@ -13,7 +13,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,7 +23,7 @@ import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.registerLogin.LoginActivity
-import co.getdere.viewmodels.SharedViewModelBucket
+import co.getdere.viewmodels.SharedViewModelCollection
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelImage
 import co.getdere.viewmodels.SharedViewModelRandomUser
@@ -52,19 +51,22 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     lateinit var userProfile: Users
     val galleryRollAdapter = GroupAdapter<ViewHolder>()
     val galleryBucketAdapter = GroupAdapter<ViewHolder>()
-    lateinit var bucketBtn: TextView
-    lateinit var rollBtn: TextView
+    private lateinit var bucketBtn: TextView
+    private lateinit var rollBtn: TextView
 
-    lateinit var sharedViewModelForCurrentUser: SharedViewModelCurrentUser
+    private lateinit var sharedViewModelForCurrentUser: SharedViewModelCurrentUser
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var sharedViewModelImage: SharedViewModelImage
-    lateinit var sharedViewModelBucket: SharedViewModelBucket
+    private lateinit var sharedViewModelCollection: SharedViewModelCollection
 
 
     lateinit var buo: BranchUniversalObject
     lateinit var lp: LinkProperties
 
     var imageList = mutableListOf<FeedImage>()
+
+    lateinit var userRef: DatabaseReference
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_profile_logged_in_user, container, false)
@@ -86,6 +88,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         val profileEditButton = profile_li_edit_profile_button
         val instagramButton = profile_li_insta_icon
         var instaLink = ""
+        val userMapButton = profile_li_map
 
         val toolbar = profile_li_toolbar
         setHasOptionsMenu(true)
@@ -98,7 +101,8 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             when (it.itemId) {
 
                 R.id.profile_edit_interests -> {
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editInterestsFragment).commit()
+                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editInterestsFragment)
+                        .commit()
                     activity.subActive = activity.editInterestsFragment
                     activity.switchVisibility(1)
                     return@setOnMenuItemClickListener true
@@ -178,8 +182,10 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             sharedViewModelForCurrentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
-            sharedViewModelBucket = ViewModelProviders.of(it).get(SharedViewModelBucket::class.java)
+            sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
+
             userProfile = sharedViewModelForCurrentUser.currentUserObject
+            userRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}")
 
             listenToImagesFromBucket()
             listenToImagesFromRoll()
@@ -225,20 +231,14 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         followersRef.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
-
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-
                 profileFollowers.text = numberCalculation(p0.childrenCount)
-
             }
-
-
         })
 
 
-        val userRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}")
 
         userRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -299,13 +299,33 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         galleryBucketAdapter.setOnItemClickListener { item, _ ->
             val bucket = item as SingleBucketBox
-            sharedViewModelBucket.sharedBucketId.postValue(bucket.bucket)
+            sharedViewModelCollection.imageCollection.postValue(bucket.bucket)
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
             activity.subActive = activity.bucketGalleryFragment
             activity.isBucketGalleryActive = true
             activity.switchVisibility(1)
         }
 
+        userMapButton.setOnClickListener {
+            activity.isRandomUserProfileActive = true
+            userRef.child("images").addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+
+                    if (p0.hasChildren()) {
+                        sharedViewModelCollection.imageCollection.postValue(p0)
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionMapView)
+                            .commit()
+                        activity.subActive = activity.collectionMapView
+                        activity.switchVisibility(1)
+                    } else {
+                        Toast.makeText(activity, "You have no photos to view on the map", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            })
+        }
     }
 
 
@@ -380,7 +400,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
-                galleryBucketAdapter.add(SingleBucketBox(p0!!, userProfile.uid, activity as MainActivity))
+                galleryBucketAdapter.add(SingleBucketBox(p0, userProfile.uid, activity as MainActivity))
 
             }
 
@@ -413,7 +433,7 @@ class SingleBucketBox(val bucket: DataSnapshot, val userUid: String, val activit
 
 
     val imagesRecyclerAdapter = GroupAdapter<ViewHolder>()
-    private val sharedViewModelBucket = ViewModelProviders.of(activity).get(SharedViewModelBucket::class.java)
+    private val sharedViewModelBucket = ViewModelProviders.of(activity).get(SharedViewModelCollection::class.java)
 
     override fun getLayout(): Int {
         return R.layout.bucket_box_recycler
@@ -487,8 +507,8 @@ class SingleBucketBox(val bucket: DataSnapshot, val userUid: String, val activit
 
     }
 
-    fun goToBucketGallery(context : Context) {
-        sharedViewModelBucket.sharedBucketId.postValue(bucket)
+    fun goToBucketGallery(context: Context) {
+        sharedViewModelBucket.imageCollection.postValue(bucket)
         activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
         activity.subActive = activity.bucketGalleryFragment
         activity.isBucketGalleryActive = true

@@ -13,20 +13,16 @@ import co.getdere.R
 import co.getdere.adapters.BucketGalleryPagerAdapter
 import co.getdere.models.Users
 import co.getdere.otherClasses.SwipeLockableViewPager
-import co.getdere.viewmodels.SharedViewModelBucket
+import co.getdere.viewmodels.SharedViewModelCollection
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelImage
 import co.getdere.viewmodels.SharedViewModelRandomUser
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.fragment_bucket_gallery.*
 
 
 class BucketGalleryFragment : Fragment() {
 
-    lateinit var sharedViewModelBucket: SharedViewModelBucket
+    lateinit var sharedViewModelBucket: SharedViewModelCollection
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var currentUser : Users
@@ -63,11 +59,11 @@ class BucketGalleryFragment : Fragment() {
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-            sharedViewModelBucket = ViewModelProviders.of(it).get(SharedViewModelBucket::class.java)
+            sharedViewModelBucket = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
 
 
 
-            sharedViewModelBucket.sharedBucketId.observe(this, Observer { dataSnapshot ->
+            sharedViewModelBucket.imageCollection.observe(this, Observer { dataSnapshot ->
                 dataSnapshot?.let { bucket ->
                     galleryViewPager.currentItem = 0
 

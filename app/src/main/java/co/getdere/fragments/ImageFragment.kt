@@ -46,6 +46,8 @@ class ImageFragment : Fragment() {
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
         }
 
+        val imagePrivacy = image_privacy_text
+        val imagePrivacyContainer = image_privacy_container
 
 
 
@@ -54,24 +56,23 @@ class ImageFragment : Fragment() {
                 Glide.with(this).load(image.imageBig).into(image_frame_image)
 
                 if (image.photographer == currentUser.uid) {
-                    image_privacy_container.visibility = View.VISIBLE
+                    imagePrivacyContainer.visibility = View.VISIBLE
 
-                    image_privacy_text.text = if (image.private) {
-                        "private"
+                    if (image.private) {
+                        imagePrivacy.text = "Private"
                     } else {
-                        "public"
+                        imagePrivacy.text = "Public"
                     }
 
-                    image_privacy_container.setOnClickListener {
+                    imagePrivacyContainer.setOnClickListener {
+                        val imagePrivacyRef = FirebaseDatabase.getInstance().getReference("/images/${image.id}/body/private")
 
-                        val imagePrivacyRef =
-                            FirebaseDatabase.getInstance().getReference("/images/${image.id}/body/private")
-
-                        if (image_privacy_text.text == "private") {
-                            image_privacy_text.text = "public"
+                        if (imagePrivacy.text == "Private"){
+                            imagePrivacy.text = "Public"
                             imagePrivacyRef.setValue(false)
+
                         } else {
-                            image_privacy_text.text = "private"
+                            imagePrivacy.text = "Private"
                             imagePrivacyRef.setValue(true)
                         }
                     }

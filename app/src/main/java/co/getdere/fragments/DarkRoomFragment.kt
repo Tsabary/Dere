@@ -34,16 +34,16 @@ import kotlinx.android.synthetic.main.fragment_dark_room.*
 class DarkRoomFragment : Fragment() {
 
     private lateinit var localImageViewModel: LocalImageViewModel
-    lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
+    private lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
+    val adapter = GroupAdapter<ViewHolder>()
 
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
         activity?.let {
-            localImageViewModel = ViewModelProviders.of(this).get(LocalImageViewModel::class.java)
+            localImageViewModel = ViewModelProviders.of(it).get(LocalImageViewModel::class.java)
             sharedViewModelLocalImagePost = ViewModelProviders.of(it).get(SharedViewModelLocalImagePost::class.java)
-
         }
     }
 
@@ -62,19 +62,16 @@ class DarkRoomFragment : Fragment() {
 
         val recyclerView = dark_room_recyclerview
         val addImageFab = dark_room_fab
-        val adapter = GroupAdapter<ViewHolder>()
 
         recyclerView.adapter = adapter
         recyclerView.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
 
         localImageViewModel.allImagePosts.observe(this, Observer { images ->
-
             adapter.clear()
-            Log.d("ClearInitiated", "and repopulating")
-
             images?.let {
                 for (i in images) {
                     adapter.add(DarkRoomGroupieAdapter(i))
+                    activity.localImagePost.postValue(i)
                 }
             }
         })
@@ -84,7 +81,8 @@ class DarkRoomFragment : Fragment() {
             val adapterImage = item as DarkRoomGroupieAdapter
 
             sharedViewModelLocalImagePost.sharedImagePostObject.postValue(adapterImage.image)
-
+            activity.subFm.beginTransaction()
+                .add(R.id.camera_subcontents_frame_container, activity.darkRoomEditFragment, "darkRoomEditFragment").commit()
             activity.switchVisibility(1)
         }
 

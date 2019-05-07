@@ -1,15 +1,13 @@
 package co.getdere
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.fragments.*
@@ -22,28 +20,30 @@ import co.getdere.registerLogin.RegisterActivity
 import co.getdere.viewmodels.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
-import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import io.branch.indexing.BranchUniversalObject
 import io.branch.referral.Branch
-import io.branch.referral.BranchError
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.subcontents_main.*
-import org.json.JSONObject
+import androidx.core.view.ViewCompat.getRotation
+import android.content.Context.WINDOW_SERVICE
+import android.view.WindowManager
+import android.view.Display
+
+
 
 
 class MainActivity : AppCompatActivity(), DereMethods {
 
-    //    lateinit var mToolbar: Toolbar
     lateinit var mBottomNav: BottomNavigationView
 
     lateinit var sharedViewModelCurrentUser: SharedViewModelCurrentUser
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var sharedViewModelQuestion: SharedViewModelQuestion
-    lateinit var sharedViewModelBucket: SharedViewModelBucket
+    lateinit var sharedViewModelCollection: SharedViewModelCollection
 
     lateinit var feedFragment: FeedFragment
     lateinit var boardFragment: BoardFragment
@@ -67,6 +67,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var editQuestionFragment: EditQuestionFragment
     lateinit var editAnswerFragment: EditAnswerFragment
     lateinit var editInterestsFragment: EditInterestsFragment
+    lateinit var collectionMapView : CollectionMapViewFragment
 
     lateinit var mainFrame: FrameLayout
     lateinit var subFrame: FrameLayout
@@ -87,6 +88,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     var isFeedNotificationsActive = false
     var isBoardNotificationsActive = false
     var isFeedActive = false
+    var isRandomUserProfileActive = false
 
     lateinit var currentUser : Users
 
@@ -103,9 +105,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
         sharedViewModelQuestion = ViewModelProviders.of(this).get(SharedViewModelQuestion::class.java)
 
         FirebaseApp.initializeApp(this)
+
         checkIfLoggedIn()
-
-
 
         sharedViewModelImage = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
         sharedViewModelImage.sharedImageObject.postValue(Images())
@@ -113,14 +114,13 @@ class MainActivity : AppCompatActivity(), DereMethods {
         sharedViewModelRandomUser = ViewModelProviders.of(this).get(SharedViewModelRandomUser::class.java)
         sharedViewModelRandomUser.randomUserObject.postValue(Users())
 
-        sharedViewModelBucket = ViewModelProviders.of(this).get(SharedViewModelBucket::class.java)
+        sharedViewModelCollection = ViewModelProviders.of(this).get(SharedViewModelCollection::class.java)
 
         subFrame = feed_subcontents_frame_container
 
         mainFrame = feed_frame_container
 
         switchVisibility(0)
-
     }
 
     private fun setupBottomNav() {
@@ -132,6 +132,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
 
                 R.id.destination_feed -> {
+                    val display = (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
+                    val screenOrientation = display.rotation
+                    Log.d("orientation", screenOrientation.toString())
                     navigateToFeed()
                 }
 
@@ -160,14 +163,12 @@ class MainActivity : AppCompatActivity(), DereMethods {
     }
 
     private fun resetImageExpended() {
-//        subFm.beginTransaction().detach(imageFullSizeFragment)
         sharedViewModelImage.sharedImageObject.postValue(Images())
         imageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
         imageFullSizeFragment.optionsContainer.visibility = View.GONE
         imageFullSizeFragment.deleteEditContainer.visibility = View.VISIBLE
         imageFullSizeFragment.deleteContainer.visibility = View.GONE
     }
-
 
     override fun onBackPressed() {
 
@@ -267,7 +268,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
                 bucketGalleryFragment -> {
                     switchVisibility(0)
                     isBucketGalleryActive = false
-//                    sharedViewModelBucket.sharedBucketId.postValue(DataSnapshot(DatabaseReference(),""))
+//                    sharedViewModelCollection.imageCollection.postValue(DataSnapshot(DatabaseReference(),""))
                 }
 
                 editProfileFragment -> {
@@ -307,6 +308,17 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
                 editInterestsFragment -> {
                     switchVisibility(0)
+                }
+
+                collectionMapView -> {
+
+                    if (isRandomUserProfileActive){
+                        subFm.beginTransaction().hide(subActive).show(editAnswerFragment).commit()
+                        subActive = editAnswerFragment
+                        isRandomUserProfileActive = false
+                    } else {
+                        switchVisibility(0)
+                    }
                 }
             }
 
@@ -374,25 +386,20 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
     }
 
-
     private fun checkIfLoggedIn() {
 
         val uid = FirebaseAuth.getInstance().uid
-        val user = FirebaseAuth.getInstance().currentUser
         if (uid == null) {
             val intent = Intent(this, RegisterActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
         } else {
-
-            fetchCurrentUser()
+            fetchCurrentUser(uid)
         }
-
     }
 
-    private fun fetchCurrentUser() {
+    private fun fetchCurrentUser(uid : String) {
 
-        val uid = FirebaseAuth.getInstance().uid
         val ref = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -400,13 +407,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
             override fun onDataChange(p0: DataSnapshot) {
 
-                currentUser = p0.getValue(Users::class.java)!!
-
-                sharedViewModelCurrentUser.currentUserObject = currentUser
-                Log.d("checkLocation", "fetchCurrentUser")
+                sharedViewModelCurrentUser.currentUserObject = p0.getValue(Users::class.java)!!
 
                 addFragmentsToFragmentManagers()
-
                 setupBottomNav()
             }
 
@@ -453,6 +456,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         editQuestionFragment = EditQuestionFragment()
         editAnswerFragment = EditAnswerFragment()
         editInterestsFragment = EditInterestsFragment()
+        collectionMapView = CollectionMapViewFragment()
 
 
         subFm.beginTransaction()
@@ -499,6 +503,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
             .hide(editAnswerFragment).commit()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editInterestsFragment, "editInterestsFragment")
             .hide(editInterestsFragment).commit()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, collectionMapView, "collectionMapView")
+            .hide(collectionMapView).commit()
 
         subActive = imageFullSizeFragment
     }

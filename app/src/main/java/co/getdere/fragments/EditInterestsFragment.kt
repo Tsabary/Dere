@@ -49,6 +49,7 @@ class EditInterestsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         activity?.let {
             sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
         }
 
         val activity = activity as MainActivity
@@ -58,7 +59,7 @@ class EditInterestsFragment : Fragment() {
         tagSuggestionRecycler.adapter = tagsFilteredAdapter
         tagSuggestionRecycler.layoutManager = LinearLayoutManager(this.context)
 
-        currentUser = activity.currentUser
+
 
         val interestsRef = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/interests")
 

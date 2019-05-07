@@ -22,7 +22,7 @@ import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.otherClasses.StartSnapHelper
-import co.getdere.viewmodels.SharedViewModelBucket
+import co.getdere.viewmodels.SharedViewModelCollection
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelImage
 import co.getdere.viewmodels.SharedViewModelRandomUser
@@ -48,16 +48,16 @@ import com.mapbox.mapboxsdk.utils.BitmapUtils
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.fragment_bucket_map_view.*
+import kotlinx.android.synthetic.main.fragment_collection_map_view.*
 import kotlinx.android.synthetic.main.rv_on_top_of_map_card.view.*
 import mumayank.com.airlocationlibrary.AirLocation
 
 
-class BucketMapViewFragment : Fragment(), PermissionsListener, DereMethods {
+class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
     private val DERE_PIN = "derePin"
 
-    private lateinit var sharedViewModelForBucket: SharedViewModelBucket
+    private lateinit var sharedViewModelCollection: SharedViewModelCollection
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var currentUser: Users
@@ -85,7 +85,7 @@ class BucketMapViewFragment : Fragment(), PermissionsListener, DereMethods {
         super.onAttach(context)
 
         activity?.let {
-            sharedViewModelForBucket = ViewModelProviders.of(it).get(SharedViewModelBucket::class.java)
+            sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
@@ -104,14 +104,14 @@ class BucketMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
         Mapbox.getInstance(activity!!.applicationContext, getString(co.getdere.R.string.mapbox_access_token))
 
-        return inflater.inflate(co.getdere.R.layout.fragment_bucket_map_view, container, false)
+        return inflater.inflate(R.layout.fragment_collection_map_view, container, false)
     }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val activiy = activity as MainActivity
+        val activity = activity as MainActivity
 
         locationImagesRecycler = bucket_map_images_recycler
         locationImagesRecycler.adapter = myAdapter
@@ -125,7 +125,7 @@ class BucketMapViewFragment : Fragment(), PermissionsListener, DereMethods {
         val currentLocationFocus = bucket_map_focus
 
         currentLocationFocus.setOnClickListener {
-            panToCurrentLocation(activiy, myMapboxMap!!)
+            panToCurrentLocation(activity, myMapboxMap!!)
         }
 
 
@@ -136,9 +136,6 @@ class BucketMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                 myMapboxMap = mapboxMap
 
                 val locationComponent = mapboxMap.locationComponent
-
-
-
 
                 if (PermissionsManager.areLocationPermissionsGranted(this.context)) {
 
@@ -185,7 +182,7 @@ class BucketMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                 symbolManager.iconAllowOverlap = true
 
-                sharedViewModelForBucket.sharedBucketId.observe(this, Observer {
+                sharedViewModelCollection.imageCollection.observe(this, Observer {
                     it?.let { bucket ->
 
                         myAdapter.clear()
@@ -225,7 +222,7 @@ class BucketMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                         }
 
-                        panToCurrentLocation(activiy, myMapboxMap!!)
+                        panToCurrentLocation(activity, myMapboxMap!!)
                     }
                 })
             }
@@ -321,7 +318,7 @@ class BucketMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
 
     companion object {
-        fun newInstance(): BucketMapViewFragment = BucketMapViewFragment()
+        fun newInstance(): CollectionMapViewFragment = CollectionMapViewFragment()
     }
 
 

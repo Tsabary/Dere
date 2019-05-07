@@ -229,7 +229,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
                 if (tagsMatchCount == 0) {
                     if (questionChipGroup.childCount < 5) {
-                        onTagSelected(questionTagsInput.text.toString().toLowerCase())
+                        onTagSelected(questionTagsInput.text.toString().toLowerCase().trimEnd().replace(" ","-"))
                         questionTagsInput.text.clear()
                     } else {
                         Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
@@ -272,13 +272,6 @@ class NewQuestionFragment : Fragment(), DereMethods {
         questionChipGroup.visibility = View.VISIBLE
 
     }
-
-//    override fun onActivityCreated(savedInstanceState: Bundle?) {
-//        super.onActivityCreated(savedInstanceState)
-//
-//        val imm = activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-//        imm.hideSoftInputFromWindow(view!!.windowToken, 0)
-//    }
 
 
     private fun postQuestion(title: String, details: String, tags: MutableList<String>, timestamp: Long) {

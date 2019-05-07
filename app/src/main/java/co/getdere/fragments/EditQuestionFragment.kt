@@ -257,8 +257,7 @@ class EditQuestionFragment : Fragment(), DereMethods {
 
         addTagButton.setOnClickListener {
             if (questionTagsInput.text.isNotEmpty()) {
-                addTag(questionTagsInput.text.toString())
-//                tagsList.add(questionTagsInput.text.toString())
+                addTag(questionTagsInput.text.toString().toLowerCase().trimEnd().replace(" ", "-"))
             }
         }
 
@@ -268,15 +267,6 @@ class EditQuestionFragment : Fragment(), DereMethods {
         tagsFilteredAdapter.setOnItemClickListener { item, _ ->
             val row = item as SingleTagSuggestion
             addTag(row.tag.tagString)
-
-//            if (questionChipGroup.childCount < 5) {
-//                onTagSelected(row.tag.tagString)
-////                tagsList.add(row.tag.tagString)
-//
-//                questionTagsInput.text.clear()
-//            } else {
-//                Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
-//            }
         }
 
     }
@@ -313,20 +303,16 @@ class EditQuestionFragment : Fragment(), DereMethods {
         chip.isClickable = false
         chip.setChipBackgroundColorResource(R.color.green700)
         chip.setTextAppearance(R.style.ChipSelectedStyle)
+        questionChipGroup.addView(chip)
+        questionChipGroup.visibility = View.VISIBLE
         chip.setOnCloseIconClickListener {
             questionChipGroup.removeView(it)
-//            tagsList.remove(selectedTag)
             val tagRef = FirebaseDatabase.getInstance().getReference("/tags/$selectedTag/${myQuestionObject.id}")
             tagRef.removeValue()
         }
-
-        questionChipGroup.addView(chip)
-        questionChipGroup.visibility = View.VISIBLE
-
     }
 
     companion object {
         fun newInstance(): EditQuestionFragment = EditQuestionFragment()
     }
-
 }

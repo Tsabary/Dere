@@ -209,8 +209,8 @@
                     tools:text="12"
                     android:textColor="@color/gray800"/>
             <ImageButton
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     app:srcCompat="@drawable/edit"
                     android:id="@+id/profile_li_edit_profile_button"
                     android:background="@android:color/transparent"
@@ -232,8 +232,8 @@
                     app:layout_constraintStart_toStartOf="parent"
             />
             <ImageButton
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     app:srcCompat="@drawable/world"
                     android:id="@+id/profile_li_map"
                     app:layout_constraintStart_toEndOf="@+id/profile_li_image"

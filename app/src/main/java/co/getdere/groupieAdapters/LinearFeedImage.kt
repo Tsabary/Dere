@@ -2,7 +2,10 @@ package co.getdere.groupieAdapters
 
 import android.app.Activity
 import android.util.Log
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.MainActivity
@@ -78,25 +81,18 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
         val imageRatioFinal: Double = imageRatioWidth.toString().toDouble() / imageRationHeight.toString().toDouble()
 
 
-        if (imageRatioFinal > 1.25) {
-            (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "5:4"
-        } else if (imageRatioFinal < 0.8) {
-            (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "4:5"
-        } else {
-            (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
+        when {
+            imageRatioFinal > 1.25 -> (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "5:4"
+            imageRatioFinal < 0.8 -> (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "4:5"
+            else -> (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
         }
 
 
         viewHolder.itemView.linear_feed_tags.text = image.tags.joinToString()
 
-//        if (image.details.isNotEmpty()){
-//            imageDescription.visibility = View.VISIBLE
-//            imageDescription.text = image.details
+//        if (!image.verified) {
+//            verifiedIcon.visibility = View.VISIBLE
 //        }
-
-        if (image.verified) {
-            verifiedIcon.visibility = View.VISIBLE
-        }
 
 
         verifiedIcon.setOnClickListener {
@@ -175,6 +171,45 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
             }
         })
 
+
+        val gestureDetector = GestureDetector(activity, object : GestureDetector.SimpleOnGestureListener() {
+
+            override fun onDown(e: MotionEvent?): Boolean {
+                return true
+            }
+
+            override fun onDoubleTap(e: MotionEvent?): Boolean {
+                if (uid != image.photographer) {
+                    executeLike(
+                        image,
+                        uid,
+                        TextView(viewHolder.root.context),
+                        likeButton,
+                        1,
+                        currentUser.name,
+                        image.photographer,
+                        authorReputation,
+                        activity
+                    )
+                }
+
+                return super.onDoubleTap(e)
+            }
+
+            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+                openImage()
+                return super.onSingleTapConfirmed(e)
+            }
+
+            override fun onLongPress(e: MotionEvent?) {
+                activity.isFeedActive = true
+                goToBucket()
+                super.onLongPress(e)
+            }
+        })
+
+
+
         userName.setOnClickListener {
             goToUserProfile(user)
         }
@@ -190,45 +225,8 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
             goToUserProfile(user)
         }
 
-        imageView.setOnLongClickListener {
-            goToBucket()
-            return@setOnLongClickListener true
-        }
-
-
-
-        imageView.setOnClickListener {
-            object : DoubleClick((object : DoubleClickListener {
-                override fun onDoubleClick(view: View?) {
-
-                    Log.d("trytrytry", "double click")
-                    if (image.photographer != currentUser.uid) {
-
-                        executeLike(
-                            image,
-                            uid,
-                            likeCount,
-                            likeButton,
-                            1,
-                            currentUser.name,
-                            image.photographer,
-                            authorReputation,
-                            activity
-                        )
-                    }
-                }
-
-                override fun onSingleClick(view: View?) {
-
-                    Log.d("trytrytry", "single click")
-
-                    openImage()
-                }
-
-            })) {
-
-            }
-
+        imageView.setOnTouchListener { v, event ->
+            gestureDetector.onTouchEvent(event)
         }
 
         likeButton.setOnClickListener {

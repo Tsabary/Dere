@@ -1,12 +1,16 @@
 package co.getdere.registerLogin
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
@@ -29,6 +33,12 @@ class LoginActivity : AppCompatActivity(), DereMethods {
 
     var texts = arrayOf("LOGGING IN", "LOGGING IN", "LOGGING IN")
 
+    private val permissions = arrayOf(
+        Manifest.permission.CAMERA,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,11 +121,13 @@ class LoginActivity : AppCompatActivity(), DereMethods {
 
                                 FirebaseMessaging.getInstance().subscribeToTopic(uid).addOnSuccessListener {
 
-                                    val intent = Intent(this, MainActivity::class.java)
-                                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    startActivity(intent)
-//                                    return@addOnCompleteListener
-
+                                    if(hasNoPermissions()){
+                                        requestPermission()
+                                    } else {
+                                        val intent = Intent(this, MainActivity::class.java)
+                                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        startActivity(intent)
+                                    }
                                 }
                             })
 
@@ -141,6 +153,27 @@ class LoginActivity : AppCompatActivity(), DereMethods {
             Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_LONG).show()
         }
 
+    }
+
+    private fun hasNoPermissions(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        ) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) != PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestPermission() {
+        ActivityCompat.requestPermissions(this, permissions, 0)
+
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
     }
 
     private fun registerFail() {

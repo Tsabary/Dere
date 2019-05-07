@@ -72,16 +72,10 @@ open class InterestsFeedFragment : Fragment() {
         super.onAttach(context)
 
         activity?.let {
-
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
-
             sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
-
             sharedViewModelInterests = ViewModelProviders.of(it).get(SharedViewModelInterests::class.java)
-
-
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-
         }
 
     }
@@ -202,18 +196,10 @@ open class InterestsFeedFragment : Fragment() {
                     val singleImageFromDB = i.child("body").getValue(Images::class.java)
 
                     if (singleImageFromDB != null) {
-
-                        Log.d("AccountPhoto", singleImageFromDB.photographer)
-
-
                         val completedInterestsList = sharedViewModelInterests.interestList
-
                         singlePhotoLoop@ for (tag in singleImageFromDB.tags) {
 
                             for (interest in completedInterestsList) {
-
-                                Log.d("AccountFromList", interest)
-
                                 if (interest == tag) {
                                     if (!singleImageFromDB.private) {
 
@@ -241,22 +227,15 @@ open class InterestsFeedFragment : Fragment() {
                                         break@singlePhotoLoop
                                     }
                                 }
-
                             }
-
                         }
-
-
                     }
-
                 }
-
             }
 
             override fun onCancelled(p0: DatabaseError) {
             }
         })
-
     }
 
 

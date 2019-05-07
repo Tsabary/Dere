@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -23,6 +24,7 @@ import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.R
 import co.getdere.registerLogin.LoginActivity
+import co.getdere.viewmodels.SharedViewModelCollection
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
@@ -36,9 +38,11 @@ import kotlinx.android.synthetic.main.fragment_profile_random_user.*
 class ProfileRandomUserFragment : Fragment(), DereMethods {
 
     private lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
+    private lateinit var sharedViewModelCollection : SharedViewModelCollection
 
-    private var userProfile = Users()
+    lateinit var userProfile : Users
     lateinit var currentUser: Users
+    lateinit var userRef : DatabaseReference
 
     val galleryRollAdapter = GroupAdapter<ViewHolder>()
     lateinit var followButton: TextView
@@ -49,6 +53,7 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
         activity?.let {
             sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
+            sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
         }
     }
@@ -73,21 +78,8 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
         val profileFollowers = profile_ru_followers_count
         followButton = profile_ru_follow_button
         var instaLink = ""
+        val userMapButton = profile_ru_map
 
-
-        val userRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}")
-
-        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {}
-
-            override fun onDataChange(p0: DataSnapshot) {
-                if (p0.hasChild("stax")) {
-                    instagramButton.visibility = View.VISIBLE
-                    instaLink = "https://www.instagram.com/${p0.child("stax").child("instagram").value}"
-                }
-            }
-
-        })
 
         instagramButton.setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(instaLink)))
@@ -97,6 +89,24 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
         sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
             it?.let { user ->
                 userProfile = user
+
+
+                userRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}")
+
+                userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {}
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        if (p0.hasChild("stax")) {
+                            instagramButton.visibility = View.VISIBLE
+                            instaLink = "https://www.instagram.com/${p0.child("stax").child("instagram").value}"
+                        }
+                    }
+
+                })
+
+
+
                 Glide.with(this).load(it.image).into(profilePicture)
                 profileName.text = it.name
                 profileReputation.text = numberCalculation(it.reputation)
@@ -138,8 +148,27 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
 
         followButton.setOnClickListener {
-
             executeFollow(1, followButton, activity)
+        }
+
+
+        userMapButton.setOnClickListener {
+
+            userRef.child("images").addListenerForSingleValueEvent(object : ValueEventListener{
+                override fun onCancelled(p0: DatabaseError) {
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+
+                    if (p0.hasChildren()){
+                        sharedViewModelCollection.imageCollection.postValue(p0)
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionMapView).commit()
+                        activity.subActive = activity.collectionMapView
+                    } else {
+                        Toast.makeText(activity, "User has no photos to view on the map", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            })
         }
     }
 

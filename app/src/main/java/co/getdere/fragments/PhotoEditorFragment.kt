@@ -36,7 +36,8 @@ class PhotoEditorFragment : Fragment() {
         val activity= activity as CameraActivity
 
         photo_editor_keep.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.darkRoomEditFragment).commit()
+            activity.subFm.beginTransaction().hide(activity.subActive)
+                .add(R.id.camera_subcontents_frame_container, activity.darkRoomEditFragment, "darkRoomEditFragment").commit()
         }
 
     }

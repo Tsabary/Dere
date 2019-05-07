@@ -205,13 +205,13 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
 
         if (selectedPhotoUri == null) return
 
-        val path =
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
-
         val imageFile = File.createTempFile("DereProfilePictureFile", "temporary")
         val myInputStream = activity.contentResolver.openInputStream(Uri.parse(selectedPhotoUri.toString()))
+
         FileUtils.copyInputStreamToFile(myInputStream, imageFile)
 
+        val path =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
         val resizedImage = Resizer(this)
             .setTargetLength(1200)
             .setQuality(100)

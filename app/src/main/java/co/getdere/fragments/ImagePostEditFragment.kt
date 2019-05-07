@@ -21,7 +21,9 @@ import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
+import co.getdere.models.Users
 import co.getdere.otherClasses.CustomMapView
+import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelImage
 import co.getdere.viewmodels.SharedViewModelTags
 import com.bumptech.glide.Glide
@@ -48,6 +50,7 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.fragment_dark_room_edit.*
 import kotlinx.android.synthetic.main.fragment_dark_room_edit_map.*
+import kotlinx.android.synthetic.main.fragment_image_expanded.*
 
 
 class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
@@ -57,9 +60,9 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
     lateinit var myImageObject: Images
 
-    val tagsFiltredAdapter = GroupAdapter<ViewHolder>()
+    val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
     lateinit var imageChipGroup: ChipGroup
-    val tagsRef = FirebaseDatabase.getInstance().getReference("/tags")
+    private val tagsRef = FirebaseDatabase.getInstance().getReference("/tags")
 
     lateinit var imageLocationInput: TextView
     lateinit var imageUrl: TextView
@@ -86,12 +89,14 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
     lateinit var tagsContainer: ConstraintLayout
     lateinit var urlContainer: ConstraintLayout
 
+    lateinit var currentUser : Users
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
         activity?.let {
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
             sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
         }
 
@@ -125,9 +130,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
             override fun onChildRemoved(p0: DataSnapshot) {
             }
-
         })
-
     }
 
 
@@ -152,13 +155,17 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
         val activity = activity as MainActivity
 
-        val imageVertical = dark_room_edit_image_vertical
-        val imageHorizontal = dark_room_edit_image_horizontal
+        val imageView = dark_room_edit_image_horizontal
         val addTagButton = dark_room_edit_add_tag_button
         val imageTagsInput = dark_room_edit_tag_input
         imageChipGroup = dark_room_edit_chip_group
         imageLocationInput = dark_room_edit_location_input
         imageUrl = dark_room_edit_url
+
+        val currentUserName= dark_room_edit_author_name
+        val currentUserPhoto = dark_room_edit_author_image
+        currentUserName.text = currentUser.name
+        Glide.with(this.context!!).load(currentUser.image).into(currentUserPhoto)
 
         mapView = dark_room_edit_mapview
         val mapContainer = dark_room_edit_map_include
@@ -167,12 +174,12 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
         dark_room_edit_actions_container.visibility = View.GONE
         dark_room_edit_after_post_actions_container.visibility = View.VISIBLE
-        dark_room_edit_privacy_container.visibility = View.VISIBLE
+
+        val options = dark_room_edit_options
+        val optionsContainer = dark_room_edit_options_background
 
         val saveButton = dark_room_edit_after_post_save
         val cancelButton = dark_room_edit_after_post_cancel
-
-//        val setLocation = dark_room_edit_set_location
 
         val focus = dark_room_edit_map_focus
         val pinHint = dark_room_edit_pin_hint
@@ -192,6 +199,14 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         tagsContainer = dark_room_edit_tags_container
         urlContainer = dark_room_edit_url_container
 
+
+        options.setOnClickListener {
+            optionsContainer.visibility = View.VISIBLE
+        }
+
+        optionsContainer.setOnClickListener {
+            optionsContainer.visibility = View.GONE
+        }
 
         infoUnactiveButton.setOnClickListener {
             makeInfoActive()
@@ -248,7 +263,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                         imageTagsList.clear()
 //                        imageChipGroup.removeAllViews()
 
-                        Glide.with(this).load(imageObject.imageBig).into(imageHorizontal)
+                        Glide.with(this).load(imageObject.imageBig).into(imageView)
 
                         imageLocationInput.text = imageObject.details
                         imageUrl.text = imageObject.link
@@ -426,7 +441,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         val tagSuggestionRecycler = dark_room_edit_tag_recycler
         val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
-        tagSuggestionRecycler.adapter = tagsFiltredAdapter
+        tagSuggestionRecycler.adapter = tagsFilteredAdapter
 
 
         addTagButton.setOnClickListener {
@@ -444,7 +459,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                 if (tagsMatchCount == 0) {
                     if (imageChipGroup.childCount < 5) {
-                        onTagSelected(imageTagsInput.text.toString().toLowerCase())
+                        onTagSelected(imageTagsInput.text.toString().toLowerCase().trimEnd().replace(" ", "-"))
                         imageTagsInput.text.clear()
                     } else {
                         Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
@@ -457,7 +472,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
 
-        tagsFiltredAdapter.setOnItemClickListener { item, _ ->
+        tagsFilteredAdapter.setOnItemClickListener { item, _ ->
             val row = item as SingleTagSuggestion
             if (imageChipGroup.childCount < 5) {
                 onTagSelected(row.tag.tagString)
@@ -471,7 +486,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         imageTagsInput.addTextChangedListener(object : TextWatcher {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                tagsFiltredAdapter.clear()
+                tagsFilteredAdapter.clear()
 
                 val userInput = s.toString().toLowerCase()
 
@@ -483,9 +498,6 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                         sharedViewModelTags.tagList.filter { it.tagString.contains(userInput) }
 
                     for (t in relevantTags) {
-
-//                        tagSuggestionRecycler.visibility = View.VISIBLE
-//                        tagsFilteredAdapter.add(SingleTagSuggestion(t))
                         var countTagMatches = 0
                         for (i in 0 until imageChipGroup.childCount) {
                             val chip = imageChipGroup.getChildAt(i) as Chip
@@ -497,7 +509,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                         if (countTagMatches == 0) {
                             tagSuggestionRecycler.visibility = View.VISIBLE
-                            tagsFiltredAdapter.add(SingleTagSuggestion(t))
+                            tagsFilteredAdapter.add(SingleTagSuggestion(t))
                         }
                     }
                 }

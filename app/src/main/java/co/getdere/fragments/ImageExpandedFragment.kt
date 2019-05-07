@@ -37,6 +37,7 @@ import io.branch.referral.util.ContentMetadata
 import io.branch.referral.util.LinkProperties
 import io.branch.referral.util.ShareSheetStyle
 import kotlinx.android.synthetic.main.comment_layout.view.*
+import kotlinx.android.synthetic.main.fragment_image.*
 import kotlinx.android.synthetic.main.fragment_image_expanded.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
@@ -45,7 +46,6 @@ import java.util.*
 class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
     lateinit var imageObject: Images
-    lateinit var privacy: String
 
     lateinit var sharedViewModelForImage: SharedViewModelImage
     lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
@@ -67,9 +67,9 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
     lateinit var deleteContainer: ConstraintLayout
     lateinit var deleteEditContainer: ConstraintLayout
 
-    lateinit var showLocation : ImageButton
+    lateinit var showLocation: ImageButton
 
-    lateinit var bucketButton : ImageButton
+    lateinit var bucketButton: ImageButton
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -150,20 +150,17 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
                 val imageRatioColonIndex = image.ratio.indexOf(":", 0)
                 val imageRatioWidth = image.ratio.subSequence(0, imageRatioColonIndex)
-                val imageRationHeight = image.ratio.subSequence(imageRatioColonIndex+1, image.ratio.length)
+                val imageRationHeight = image.ratio.subSequence(imageRatioColonIndex + 1, image.ratio.length)
 
-                val imageRatioFinal: Double = imageRatioWidth.toString().toDouble() / imageRationHeight.toString().toDouble()
+                val imageRatioFinal: Double =
+                    imageRatioWidth.toString().toDouble() / imageRationHeight.toString().toDouble()
 
 
-                if (imageRatioFinal > 1.25) {
-                    (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "5:4"
-                } else if (imageRatioFinal < 0.8) {
-                    (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "4:5"
-                } else {
-                    (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
+                when {
+                    imageRatioFinal > 1.25 -> (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "5:4"
+                    imageRatioFinal < 0.8 -> (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "4:5"
+                    else -> (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
                 }
-
-
 
                 listenToLikeCount(likeCount, image)
                 executeLike(
@@ -316,7 +313,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         likeButton.setOnClickListener {
 
-            if (currentUser.uid != imageObject.photographer){
+            if (currentUser.uid != imageObject.photographer) {
                 executeLike(
                     imageObject,
                     currentUser.uid,
@@ -334,7 +331,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
 
         bucketButton.setOnClickListener {
-            if (currentUser.uid != imageObject.photographer){
+            if (currentUser.uid != imageObject.photographer) {
                 activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketFragment).commit()
                 activity.subActive = activity.bucketFragment
             }
@@ -348,7 +345,8 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                     currentUser.uid,
                     commentInput.text.toString(),
                     timestamp,
-                    imageObject.id)
+                    imageObject.id
+                )
 
             commentInput.text.clear()
 
@@ -568,7 +566,8 @@ class SingleComment(
                     comment.authorId,
                     commentContentEditable.text.toString(),
                     comment.timeStamp,
-                    comment.ImageId)
+                    comment.ImageId
+                )
                 comment = newComment
                 closeKeyboard(activity)
             }

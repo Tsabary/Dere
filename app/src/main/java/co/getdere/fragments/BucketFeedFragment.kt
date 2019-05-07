@@ -16,7 +16,7 @@ import co.getdere.R
 import co.getdere.groupieAdapters.FeedImage
 import co.getdere.models.Images
 import co.getdere.models.Users
-import co.getdere.viewmodels.SharedViewModelBucket
+import co.getdere.viewmodels.SharedViewModelCollection
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelImage
 import co.getdere.viewmodels.SharedViewModelRandomUser
@@ -24,12 +24,11 @@ import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.fragment_bucket_feed.*
-import kotlinx.android.synthetic.main.fragment_bucket_gallery.*
 
 class BucketFeedFragment : Fragment() {
 
 
-    lateinit var sharedViewModelBucket: SharedViewModelBucket
+    lateinit var sharedViewModelBucket: SharedViewModelCollection
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var currentUser: Users
@@ -61,9 +60,9 @@ class BucketFeedFragment : Fragment() {
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-            sharedViewModelBucket = ViewModelProviders.of(it).get(SharedViewModelBucket::class.java)
+            sharedViewModelBucket = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
 
-            sharedViewModelBucket.sharedBucketId.observe(this, Observer { bucketName ->
+            sharedViewModelBucket.imageCollection.observe(this, Observer { bucketName ->
                 bucketName?.let { bucket ->
 
                     galleryAdapter.clear()

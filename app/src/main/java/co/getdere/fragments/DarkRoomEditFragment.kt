@@ -4,7 +4,10 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -27,6 +30,7 @@ import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
+import co.getdere.models.Users
 import co.getdere.otherClasses.CustomMapView
 import co.getdere.otherClasses.MyCircleProgressBar
 import co.getdere.roomclasses.LocalImagePost
@@ -37,10 +41,7 @@ import com.bumptech.glide.Glide
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -68,14 +69,14 @@ import java.util.*
 class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
     lateinit var localImagePost: LocalImagePost
-    lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
+    private lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
     lateinit var sharedViewModelTags: SharedViewModelTags
 
     private lateinit var localImageViewModel: LocalImageViewModel
 
-    val tagsFiltredAdapter = GroupAdapter<ViewHolder>()
+    val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
     lateinit var imageChipGroup: ChipGroup
-    val tagsRef = FirebaseDatabase.getInstance().getReference("/tags")
+    private val tagsRef = FirebaseDatabase.getInstance().getReference("/tags")
 
     lateinit var imageLocationInput: TextView
     lateinit var imageUrl: TextView
@@ -106,6 +107,8 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     lateinit var tagsContainer: ConstraintLayout
     lateinit var urlContainer: ConstraintLayout
 
+    lateinit var currentUser: Users
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -123,15 +126,10 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
                 val tagName = p0.key.toString()
-
                 val count = p0.childrenCount.toInt()
-
                 tags.add(SingleTagForList(tagName, count))
-
                 sharedViewModelTags.tagList = tags
-
             }
 
             override fun onCancelled(p0: DatabaseError) {
@@ -171,7 +169,9 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val imageHorizontal = dark_room_edit_image_horizontal
+        val activity = activity as CameraActivity
+
+        val imageView = dark_room_edit_image_horizontal
         val addTagButton = dark_room_edit_add_tag_button
         val imageTagsInput = dark_room_edit_tag_input
         imageChipGroup = dark_room_edit_chip_group
@@ -181,15 +181,37 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         mapView = dark_room_edit_mapview
         val mapContainer = dark_room_edit_map_include
 
+        val currentUserName = dark_room_edit_author_name
+        val currentUserPhoto = dark_room_edit_author_image
+
+        val uid = FirebaseAuth.getInstance().uid
+        val userRef = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
+        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                currentUser = p0.getValue(Users::class.java)!!
+                currentUserName.text = currentUser.name
+                Glide.with(activity).load(currentUser.image).into(currentUserPhoto)
+            }
+        })
+
+
         var symbolOptions: SymbolOptions
 
-        val removeButton = dark_room_edit_remove
 
-        val deleteMessage = dark_room_edit_delete_message
-        val deleteButton = dark_room_edit_delete_remove_button
+        val options = dark_room_edit_options
+        val optionsContainer = dark_room_edit_options_background
+
+        val editDeleteContainer = dark_room_edit_options_edit_delete
+        val deleteButton = dark_room_edit_delete
+        val saveButton = dark_room_edit_save
+
+        val deleteContainer = dark_room_edit_options_delete_container
+        val deleteRemoveButton = dark_room_edit_delete_remove_button
         val cancelButton = dark_room_edit_delete_cancel_button
 
-        val saveButton = dark_room_edit_save
         shareButton = dark_room_edit_share
 
         val focus = dark_room_edit_map_focus
@@ -207,6 +229,13 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         tagsContainer = dark_room_edit_tags_container
         urlContainer = dark_room_edit_url_container
 
+        options.setOnClickListener {
+            optionsContainer.visibility = View.VISIBLE
+        }
+
+        optionsContainer.setOnClickListener {
+            optionsContainer.visibility = View.GONE
+        }
 
         infoUnactiveButton.setOnClickListener {
             makeInfoActive()
@@ -220,43 +249,45 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             makeUrlActive()
         }
 
-
-
-
-
-
-
-
-
-
-
         focus.setOnClickListener {
             panToCurrentLocation(activity as CameraActivity, myMapboxMap!!)
         }
 
 
-        removeButton.setOnClickListener {
-
-            removeButton.visibility = View.GONE
-
-            deleteMessage.visibility = View.VISIBLE
-            deleteButton.visibility = View.VISIBLE
-            cancelButton.visibility = View.VISIBLE
+        deleteButton.setOnClickListener {
+            deleteContainer.visibility = View.VISIBLE
+            editDeleteContainer.visibility = View.GONE
         }
 
         cancelButton.setOnClickListener {
-
-            removeButton.visibility = View.VISIBLE
-
-            deleteMessage.visibility = View.GONE
-            deleteButton.visibility = View.GONE
-            cancelButton.visibility = View.GONE
+            editDeleteContainer.visibility = View.VISIBLE
+            deleteContainer.visibility = View.GONE
         }
 
-        deleteButton.setOnClickListener {
+        deleteRemoveButton.setOnClickListener {
             localImageViewModel.delete(localImagePost)
+            activity.switchVisibility(0)
         }
 
+        saveButton.setOnClickListener {
+
+            val locationInput = imageLocationInput.text.toString()
+            val url = imageUrl.text.toString()
+
+            val updatedImage = LocalImagePost(
+                localImagePost.timestamp,
+                imageLong,
+                imageLat,
+                localImagePost.imageUri,
+                locationInput,
+                url,
+                localImagePost.verified
+            )
+
+            localImageViewModel.update(updatedImage).invokeOnCompletion {
+                Toast.makeText(this.context, "Photo details saved successfully", Toast.LENGTH_LONG).show()
+            }
+        }
 
 
         progressBar = dark_room_edit_progress_bar
@@ -288,7 +319,10 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                 sharedViewModelLocalImagePost.sharedImagePostObject.observe(this, Observer {
                     it?.let { localImageObject ->
 
-                        Glide.with(this).load(localImageObject.imageUri).into(imageHorizontal)
+
+
+
+                        Glide.with(this).load(localImageObject.imageUri).into(imageView)
                         localImagePost = localImageObject
 
                         imageLocationInput.text = localImageObject.details
@@ -389,12 +423,8 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                             imageLat = mapboxMap.cameraPosition.target.latitude
                             imageLong = mapboxMap.cameraPosition.target.longitude
                         }
-
-
                     }
                 })
-
-
             }
         }
 
@@ -402,7 +432,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         val tagSuggestionRecycler = dark_room_edit_tag_recycler
         val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
-        tagSuggestionRecycler.adapter = tagsFiltredAdapter
+        tagSuggestionRecycler.adapter = tagsFilteredAdapter
 
 
         addTagButton.setOnClickListener {
@@ -420,7 +450,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                 if (tagsMatchCount == 0) {
                     if (imageChipGroup.childCount < 5) {
-                        onTagSelected(imageTagsInput.text.toString().toLowerCase().replace(" ", "-"))
+                        onTagSelected(imageTagsInput.text.toString().toLowerCase().trimEnd().replace(" ", "-"))
                         imageTagsInput.text.clear()
                     } else {
                         Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
@@ -436,7 +466,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
 
-        tagsFiltredAdapter.setOnItemClickListener { item, _ ->
+        tagsFilteredAdapter.setOnItemClickListener { item, _ ->
             val row = item as SingleTagSuggestion
             if (imageChipGroup.childCount < 5) {
                 onTagSelected(row.tag.tagString)
@@ -450,7 +480,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         imageTagsInput.addTextChangedListener(object : TextWatcher {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                tagsFiltredAdapter.clear()
+                tagsFilteredAdapter.clear()
 
                 val userInput = s.toString().toLowerCase().replace(" ", "-")
 
@@ -463,8 +493,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                     for (t in relevantTags) {
 
-//                        tagSuggestionRecycler.visibility = View.VISIBLE
-//                        tagsFilteredAdapter.add(SingleTagSuggestion(t))
                         var countTagMatches = 0
                         for (i in 0 until imageChipGroup.childCount) {
                             val chip = imageChipGroup.getChildAt(i) as Chip
@@ -475,7 +503,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                         }
                         if (countTagMatches == 0) {
                             tagSuggestionRecycler.visibility = View.VISIBLE
-                            tagsFiltredAdapter.add(SingleTagSuggestion(t))
+                            tagsFilteredAdapter.add(SingleTagSuggestion(t))
                         }
                     }
                 }
@@ -508,37 +536,10 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                 makeTagsActive()
             }
         }
-
-
-        saveButton.setOnClickListener {
-
-            val locationInput = imageLocationInput.text.toString()
-            val url = imageUrl.text.toString()
-
-            val privacy = dark_room_edit_privacy_text.text == "private"
-
-
-            val updatedImage = LocalImagePost(
-                localImagePost.timestamp,
-                imageLong,
-                imageLat,
-                localImagePost.imageUri,
-                locationInput,
-                url,
-                localImagePost.verified
-            )
-
-            localImageViewModel.update(updatedImage).invokeOnCompletion {
-                Toast.makeText(this.context, "Photo details saved successfully", Toast.LENGTH_LONG).show()
-            }
-
-        }
-
     }
 
 
     private fun uploadPhotoToStorage() {
-        var imageFile: File = File.createTempFile("smallfile", "temporary")
 
         progressBar.visibility = View.VISIBLE
         progressBar.progress = 0f
@@ -551,12 +552,14 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         val refBigImage = FirebaseStorage.getInstance().getReference("/images/feed/$randomName/big")
         val refSmallImage = FirebaseStorage.getInstance().getReference("/images/feed/$randomName/small")
 
-        val myInputStream = activity!!.contentResolver.openInputStream(Uri.parse(localImagePost.imageUri))
+        var imageFile: File = File.createTempFile("ImageFile", "temporary")
 
 
         if (localImagePost.verified) {
             imageFile = File(localImagePost.imageUri)
         } else {
+            val myInputStream =
+                (activity as CameraActivity).contentResolver.openInputStream(Uri.parse(localImagePost.imageUri))
             FileUtils.copyInputStreamToFile(myInputStream, imageFile)
         }
 
@@ -728,6 +731,15 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                 uploadFail()
                 Log.d("imageToDatabase", "image did not save to feed")
             }
+    }
+
+    private fun exifToDegrees(exifOrientation : Int) : Float {
+        return when (exifOrientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+            ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+            ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+            else -> 0f
+        }
     }
 
     private fun makeTagsActive() {

@@ -69,9 +69,9 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
 
         (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
 
-        if (image.verified) {
-            verifiedIcon.visibility = View.VISIBLE
-        }
+//        if (!image.verified) {
+//            verifiedIcon.visibility = View.VISIBLE
+//        }
 
 
         verifiedIcon.setOnClickListener {
