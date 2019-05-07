@@ -126,17 +126,16 @@ class EditProfileFragment : Fragment() {
 
 
         if (userNameInput.length() > 2) {
-            userRef.updateChildren(mapOf("name" to userNameInput.text.toString())).addOnSuccessListener {
+            userRef.child("name").setValue(userNameInput.text.toString().trimEnd()).addOnSuccessListener {
 
 
-                userRef.updateChildren(mapOf("tagline" to tagLineInput.text.toString())).addOnSuccessListener {
+                userRef.child("tagline").setValue(tagLineInput.text.toString().trimEnd()).addOnSuccessListener {
 
-                    userRef.updateChildren(mapOf("image" to imageUri)).addOnSuccessListener {
-
+                    userRef.child("image").setValue(imageUri).addOnSuccessListener {
 
                         val userStaxRef = FirebaseDatabase.getInstance().getReference("/users/${user.uid}/stax/")
 
-                        userStaxRef.setValue(mapOf("instagram" to userInstagramInput.text.toString()))
+                        userStaxRef.child("instagram").setValue(userInstagramInput.text.toString().trimEnd())
                             .addOnSuccessListener {
 
                                 userRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -153,7 +152,8 @@ class EditProfileFragment : Fragment() {
 
                                         val activity = activity as MainActivity
 
-                                        activity.fm.beginTransaction().detach(activity.profileLoggedInUserFragment).attach(activity.profileLoggedInUserFragment).commit()
+                                        activity.fm.beginTransaction().detach(activity.profileLoggedInUserFragment)
+                                            .attach(activity.profileLoggedInUserFragment).commit()
 
                                         activity.switchVisibility(0)
 

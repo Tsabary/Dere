@@ -4,11 +4,12 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -16,7 +17,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import co.getdere.MainActivity
+import co.getdere.OnBoardingActivity
 import co.getdere.models.Users
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
@@ -28,7 +29,6 @@ import kotlinx.android.synthetic.main.activity_register.*
 import me.echodev.resizer.Resizer
 import org.apache.commons.io.FileUtils
 import java.io.File
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 
@@ -37,10 +37,12 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
     private lateinit var userName: String
     private lateinit var userEmail: String
     private lateinit var userPassword: String
+    private lateinit var userConfirmPassword: String
 
-    lateinit var registerButton: TextView
-    lateinit var registerButtonBlinking: FadingTextView
-    lateinit var registerButtonBlinkingBackground: TextView
+
+    private lateinit var registerButton: TextView
+    private lateinit var registerButtonBlinking: FadingTextView
+    private lateinit var registerButtonBlinkingBackground: TextView
 
     private val permissions = arrayOf(
         Manifest.permission.CAMERA,
@@ -48,7 +50,7 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
         Manifest.permission.READ_EXTERNAL_STORAGE
     )
 
-    var texts = arrayOf("CREATING ACCOUNT", "CREATING ACCOUNT")
+    private var texts = arrayOf("CREATING ACCOUNT", "CREATING ACCOUNT")
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +64,9 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
         registerButtonBlinking.setTexts(texts)
         registerButtonBlinking.setTimeout(500, TimeUnit.MILLISECONDS)
 
+        register_to_login.setOnClickListener {
+            haveAccountClicked()
+        }
 
         registerButton.setOnClickListener {
             registerButton.visibility = View.GONE
@@ -73,7 +78,7 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
 
         register_circular_image_view.setOnClickListener {
 
-            if (hasNoPermissions()){
+            if (hasNoPermissions()) {
                 requestPermission()
             } else {
                 val intent = Intent(Intent.ACTION_PICK)
@@ -81,6 +86,27 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
                 startActivityForResult(intent, 0)
             }
         }
+
+        val userConfirmPasswordInput = register_password_confirmation
+        userConfirmPasswordInput.addTextChangedListener(object : TextWatcher{
+            override fun afterTextChanged(s: Editable?) {
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                userConfirmPassword = register_password_confirmation.text.toString().replace("\\s".toRegex(), "")
+                userPassword = register_password.text.toString().replace("\\s".toRegex(), "")
+                if (userPassword == userConfirmPassword){
+                    register_password_match.visibility = View.VISIBLE
+                } else {
+                    register_password_match.visibility = View.GONE
+                }
+
+            }
+
+        })
     }
 
     private var selectedPhotoUri: Uri? = null
@@ -97,7 +123,7 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
         }
     }
 
-    fun haveAccountClicked(view: View) {
+    private fun haveAccountClicked() {
         val loginIntent = Intent(this, LoginActivity::class.java)
         startActivity(loginIntent)
     }
@@ -106,6 +132,7 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
 
         userName = register_name.text.toString().trimEnd()
         userEmail = register_email.text.toString().replace("\\s".toRegex(), "")
+        userConfirmPassword = register_password_confirmation.text.toString().replace("\\s".toRegex(), "")
         userPassword = register_password.text.toString().replace("\\s".toRegex(), "")
 
         Log.d("Main", "email is $userEmail")
@@ -115,32 +142,40 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
 
             if (userName.length > 3) {
                 if (userEmail.contains("@") && userEmail.contains(".")) {
+                    if (userConfirmPassword == userPassword) {
+                        if (userPassword.length > 5) {
 
-                    if (userPassword.length > 5) {
+                            FirebaseAuth.getInstance().createUserWithEmailAndPassword(userEmail, userPassword)
+                                .addOnCompleteListener {
+                                    if (it.isSuccessful) {
+                                        Log.d(
+                                            "RegisterActivity",
+                                            "Succesflly created a user using uid: ${it.result?.user?.uid}"
+                                        )
+                                        uploadImageToFirebase(it.result?.user?.uid!!, activity)
 
-                        FirebaseAuth.getInstance().createUserWithEmailAndPassword(userEmail, userPassword)
-                            .addOnCompleteListener {
-                                if (it.isSuccessful) {
-                                    Log.d(
-                                        "RegisterActivity",
-                                        "Succesflly created a user using uid: ${it.result?.user?.uid}"
-                                    )
-                                    uploadImageToFirebase(it.result?.user?.uid!!, activity)
+                                        return@addOnCompleteListener
+                                    } else {
+                                        registerFail()
+                                        Log.d("RegisterActivity", "Failed creating a user using uid")
+                                    }
 
-                                    return@addOnCompleteListener
-                                } else {
+                                }.addOnFailureListener {
                                     registerFail()
-                                    Log.d("RegisterActivity", "Failed creating a user using uid")
+                                    Log.d("RegisterActivity", "Failed to create user : ${it.message}")
                                 }
-
-                            }.addOnFailureListener {
-                                registerFail()
-                                Log.d("RegisterActivity", "Failed to create user : ${it.message}")
-                            }
+                        } else {
+                            registerFail()
+                            Toast.makeText(
+                                this,
+                                "Your password needs to be at least 6 characters long",
+                                Toast.LENGTH_LONG
+                            )
+                                .show()
+                        }
                     } else {
                         registerFail()
-                        Toast.makeText(this, "Your password needs to be at least 6 characters long", Toast.LENGTH_LONG)
-                            .show()
+                        Toast.makeText(this, "Your passwords don't match", Toast.LENGTH_LONG).show()
                     }
                 } else {
                     registerFail()
@@ -192,7 +227,9 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
 //        ref.putFile(selectedPhotoUri!!)
         ref.putFile(
             Uri.fromFile(
-                resizedImage)!!)
+                resizedImage
+            )!!
+        )
             .addOnSuccessListener {
                 Log.d("RegisterActivity", "Successfully uploaded image ${it.metadata?.path}")
 
@@ -201,32 +238,31 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
 
                     addUserToFirebaseDatabase(profileImageUri.toString())
 
-                    val resizedImage = File(profileImageUri.path)
-                    if (resizedImage.exists()) {
-                        if (resizedImage.delete()) {
+                    val resizedImageFile = File(profileImageUri.path)
+                    if (resizedImageFile.exists()) {
+                        if (resizedImageFile.delete()) {
                             Log.d("deleteOperation", "deleted big file")
                         } else {
                             Log.d("deleteOperation", "couldn't delete big file")
                         }
                     }
-
                 }
 
             }.addOnFailureListener {
                 Log.d("RegisterActivity", "Failed to upload image to server $it")
             }
-
     }
 
     override fun onStart() {
         super.onStart()
 
         val uid = FirebaseAuth.getInstance().uid
-        if(uid != null){
+        if (uid != null) {
             FirebaseAuth.getInstance().currentUser!!.reload().addOnSuccessListener {
                 val updatedUser = FirebaseAuth.getInstance().currentUser
                 if (updatedUser!!.isEmailVerified) {
-                    val intent = Intent(this, MainActivity::class.java)
+
+                    val intent = Intent(this, OnBoardingActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
                     startActivity(intent)
                 }
@@ -239,7 +275,7 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
         val uid = FirebaseAuth.getInstance().uid
         val ref = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
 
-        userName = register_name.text.toString()
+        userName = register_name.text.toString().trimEnd()
 
         val newUser =
             Users(uid!!, userName, userEmail, userImageUrl, 0, "Watch me as I get Dere", System.currentTimeMillis())
@@ -254,13 +290,11 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
                     val user = FirebaseAuth.getInstance().currentUser
 
                     user!!.sendEmailVerification().addOnSuccessListener {
-                        Toast.makeText(this, "Please check your email", Toast.LENGTH_LONG).show()
-
-//                        FirebaseAuth.AuthStateListener {
-//
-//
-//                        }
-
+                        Toast.makeText(
+                            this,
+                            "Please check your email and click the link in our message",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
 
 

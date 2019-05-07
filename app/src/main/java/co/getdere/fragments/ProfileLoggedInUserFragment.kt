@@ -97,6 +97,13 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
             when (it.itemId) {
 
+                R.id.profile_edit_interests -> {
+                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editInterestsFragment).commit()
+                    activity.subActive = activity.editInterestsFragment
+                    activity.switchVisibility(1)
+                    return@setOnMenuItemClickListener true
+                }
+
                 R.id.profile_logout -> {
                     val uid = FirebaseAuth.getInstance().uid
                     FirebaseMessaging.getInstance().unsubscribeFromTopic(uid).addOnSuccessListener {

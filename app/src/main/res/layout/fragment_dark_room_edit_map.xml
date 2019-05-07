@@ -25,7 +25,7 @@
             android:elevation="2dp"/>
 
     <ImageButton
-            android:src="@drawable/ic_map"
+            android:src="@drawable/pin_button"
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:id="@+id/dark_room_edit_map_pin"

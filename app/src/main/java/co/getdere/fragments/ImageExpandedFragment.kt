@@ -92,7 +92,6 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         super.onViewCreated(view, savedInstanceState)
 
         val activity = activity as MainActivity
-//        imageExpendedFm = activity.supportFragmentManager
 
         val authorName = image_expended_author_name
         val authorReputation = image_expended_author_reputation
@@ -405,7 +404,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         if (viewPagerPosition == 0) {
             imageExpendedViewPager.currentItem = 1
             viewPagerPosition = 1
-            showLocation.setImageResource(R.drawable.location_active)
+            showLocation.setImageResource(R.drawable.location_map)
         } else {
             imageExpendedViewPager.currentItem = 0
             viewPagerPosition = 0
@@ -590,17 +589,6 @@ class SingleComment(
                 (activity as MainActivity).imageFullSizeFragment.commentsRecyclerAdapter.removeGroup(position)
                 activity.imageFullSizeFragment.commentsRecyclerAdapter.notifyDataSetChanged()
                 commentDeleteContainer.visibility = View.GONE
-
-
-//                (activity as MainActivity).imageFullSizeFragment.commentsRecyclerAdapter.remove(
-//                    SingleComment(
-//                        comment,
-//                        commentId,
-//                        image,
-//                        currentUser,
-//                        activity
-//                    )
-//                )
             }
         }
 

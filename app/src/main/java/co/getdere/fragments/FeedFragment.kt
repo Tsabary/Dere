@@ -54,7 +54,7 @@ class FeedFragment : Fragment(), DereMethods {
     val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
     val searchedImagesRecyclerAdapter = GroupAdapter<ViewHolder>()
 
-    lateinit var viewPager : ViewPager
+    private lateinit var viewPager : ViewPager
 
 
     private val permissions = arrayOf(

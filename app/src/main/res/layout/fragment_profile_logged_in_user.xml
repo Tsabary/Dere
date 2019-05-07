@@ -209,18 +209,17 @@
                     tools:text="12"
                     android:textColor="@color/gray800"/>
             <ImageButton
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
                     app:srcCompat="@drawable/edit"
                     android:id="@+id/profile_li_edit_profile_button"
                     android:background="@android:color/transparent"
                     android:scaleType="centerCrop"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintEnd_toStartOf="@+id/profile_li_image"
                     app:layout_constraintTop_toTopOf="@+id/profile_li_image"
-                    app:layout_constraintBottom_toBottomOf="@+id/profile_li_image"
-                    app:layout_constraintStart_toEndOf="@+id/profile_li_image"
-                    android:layout_marginStart="8dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginEnd="8dp"/>
+                    app:layout_constraintBottom_toBottomOf="@+id/profile_li_image"/>
             <androidx.appcompat.widget.Toolbar
                     android:layout_width="0dp"
                     android:layout_height="50dp"
@@ -232,6 +231,18 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
             />
+            <ImageButton
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    app:srcCompat="@drawable/world"
+                    android:id="@+id/profile_li_map"
+                    app:layout_constraintStart_toEndOf="@+id/profile_li_image"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/profile_li_image"
+                    app:layout_constraintBottom_toBottomOf="@+id/profile_li_image"
+                    android:scaleType="centerCrop"
+                    android:background="@android:color/transparent"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
     <!--<View-->

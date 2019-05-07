@@ -48,7 +48,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var feedFragment: FeedFragment
     lateinit var boardFragment: BoardFragment
     lateinit var profileLoggedInUserFragment: ProfileLoggedInUserFragment
-    lateinit var waitingVerificationFragment: WaitingVerificationFragment
 
     lateinit var imageFullSizeFragment: ImageFullSizeFragment
     lateinit var profileRandomUserFragment: ProfileRandomUserFragment
@@ -67,6 +66,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var webViewFragment: WebViewFragment
     lateinit var editQuestionFragment: EditQuestionFragment
     lateinit var editAnswerFragment: EditAnswerFragment
+    lateinit var editInterestsFragment: EditInterestsFragment
 
     lateinit var mainFrame: FrameLayout
     lateinit var subFrame: FrameLayout
@@ -87,6 +87,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
     var isFeedNotificationsActive = false
     var isBoardNotificationsActive = false
     var isFeedActive = false
+
+    lateinit var currentUser : Users
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -302,6 +304,10 @@ class MainActivity : AppCompatActivity(), DereMethods {
                         subActive = answerFragment
                     }
                 }
+
+                editInterestsFragment -> {
+                    switchVisibility(0)
+                }
             }
 
 
@@ -394,8 +400,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
             override fun onDataChange(p0: DataSnapshot) {
 
+                currentUser = p0.getValue(Users::class.java)!!
 
-                sharedViewModelCurrentUser.currentUserObject = p0.getValue(Users::class.java)!!
+                sharedViewModelCurrentUser.currentUserObject = currentUser
                 Log.d("checkLocation", "fetchCurrentUser")
 
                 addFragmentsToFragmentManagers()
@@ -445,6 +452,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         webViewFragment = WebViewFragment()
         editQuestionFragment = EditQuestionFragment()
         editAnswerFragment = EditAnswerFragment()
+        editInterestsFragment = EditInterestsFragment()
 
 
         subFm.beginTransaction()
@@ -489,6 +497,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
             .hide(editQuestionFragment).commit()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editAnswerFragment, "editAnswerFragment")
             .hide(editAnswerFragment).commit()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editInterestsFragment, "editInterestsFragment")
+            .hide(editInterestsFragment).commit()
 
         subActive = imageFullSizeFragment
     }

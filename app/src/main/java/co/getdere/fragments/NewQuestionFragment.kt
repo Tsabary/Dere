@@ -171,10 +171,6 @@ class NewQuestionFragment : Fragment(), DereMethods {
         tagSuggestionRecycler.adapter = tagsFilteredAdapter
 
 
-
-        activity!!.title = "New question"
-
-
         questionTagsInput.addTextChangedListener(object : TextWatcher {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -191,32 +187,21 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
                     for (t in relevantTags) {
 
-//                        tagSuggestionRecycler.visibility = View.VISIBLE
-//                        tagsFilteredAdapter.add(SingleTagSuggestion(t))
                         var countTagMatches = 0
                         for (i in 0 until questionChipGroup.childCount) {
                             val chip = questionChipGroup.getChildAt(i) as Chip
 
                             if (t.tagString == chip.text.toString()) {
-
                                 countTagMatches += 1
-
                             }
-
                         }
-
 
                         if (countTagMatches == 0) {
                             tagSuggestionRecycler.visibility = View.VISIBLE
                             tagsFilteredAdapter.add(SingleTagSuggestion(t))
-
                         }
-
-
                     }
-
                 }
-
             }
 
 

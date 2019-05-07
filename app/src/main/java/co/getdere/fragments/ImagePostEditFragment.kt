@@ -2,15 +2,10 @@ package co.getdere.fragments
 
 import android.Manifest
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.media.Image
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,25 +17,20 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import co.getdere.CameraActivity
 import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
 import co.getdere.otherClasses.CustomMapView
-import co.getdere.otherClasses.MyCircleProgressBar
-import co.getdere.roomclasses.LocalImagePost
 import co.getdere.viewmodels.SharedViewModelImage
 import co.getdere.viewmodels.SharedViewModelTags
 import com.bumptech.glide.Glide
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.storage.FirebaseStorage
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
@@ -56,25 +46,8 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_add_tag_button
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_chip_group
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_image_horizontal
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_image_vertical
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_location_input
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_map_include
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_privacy_container
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_privacy_text
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_progress_bar
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_save
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_share
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_tag_input
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.dark_room_edit_url
 import kotlinx.android.synthetic.main.fragment_dark_room_edit.*
 import kotlinx.android.synthetic.main.fragment_dark_room_edit_map.*
-import me.echodev.resizer.Resizer
-import org.apache.commons.io.FileUtils
-import java.io.File
-import java.util.*
 
 
 class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {

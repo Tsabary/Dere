@@ -1,15 +1,16 @@
 package co.getdere.registerLogin
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
+import com.google.android.gms.common.util.ArrayUtils.contains
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
@@ -17,7 +18,7 @@ import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.messaging.FirebaseMessaging
 import com.tomer.fadingtextview.FadingTextView
 import kotlinx.android.synthetic.main.activity_login.*
-import kotlinx.android.synthetic.main.fragment_dark_room_edit_old.*
+import kotlinx.android.synthetic.main.activity_register.*
 import java.util.concurrent.TimeUnit
 
 class LoginActivity : AppCompatActivity(), DereMethods {
@@ -37,6 +38,8 @@ class LoginActivity : AppCompatActivity(), DereMethods {
         loginButtonBlinking = login_button_active_text
         loginButtonBlinkingBackground = login_button_active_background
 
+        val forgotPassword = login_forgot_password
+
         loginButtonBlinking.setTexts(texts)
         loginButtonBlinking.setTimeout(500, TimeUnit.MILLISECONDS)
 
@@ -50,7 +53,20 @@ class LoginActivity : AppCompatActivity(), DereMethods {
             performLogin()
 
         }
+        val userEmail = login_email
 
+
+        forgotPassword.setOnClickListener {
+            val userEmailInput = userEmail.text.toString().trimEnd().replace("\\s".toRegex(), "")
+            if (userEmailInput.contains("@") && userEmailInput.contains(".")) {
+                FirebaseAuth.getInstance().sendPasswordResetEmail(userEmailInput)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "A reset link has been sent to your email", Toast.LENGTH_SHORT).show()
+                    }
+            } else {
+                Toast.makeText(this, "Please enter your email", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
 

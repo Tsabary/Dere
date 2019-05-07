@@ -176,5 +176,18 @@
             android:visibility="visible"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"/>
+    <ImageButton
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            app:srcCompat="@drawable/world"
+            android:id="@+id/profile_ru_map"
+            android:background="@android:color/transparent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintStart_toEndOf="@+id/profile_ru_image"
+            android:layout_marginStart="8dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintTop_toTopOf="@+id/profile_ru_image"
+            app:layout_constraintBottom_toBottomOf="@+id/profile_ru_image"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
