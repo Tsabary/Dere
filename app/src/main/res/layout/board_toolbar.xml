@@ -30,7 +30,7 @@
             android:layout_height="0dp"
             android:id="@+id/board_toolbar_notifications_icon"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="24dp"
+            android:layout_marginEnd="16dp"
             android:background="@android:color/transparent"
             android:scaleType="center"
             android:layout_marginTop="8dp"

@@ -373,6 +373,8 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                                 val privacy = dark_room_edit_privacy_text.text == "private"
 
+                                imageTagsList.clear()
+
                                 for (i in 0 until imageChipGroup.childCount) {
                                     val chip = imageChipGroup.getChildAt(i) as Chip
                                     imageTagsList.add(chip.text.toString())

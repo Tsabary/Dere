@@ -14,6 +14,8 @@ class OnBoardingPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAd
             1 -> ImageFragment.newInstance()
             2 -> ImageFragment.newInstance()
             3 -> ImageFragment.newInstance()
+            4 -> RecentFeedFragment.newInstance()
+            5 -> AddToBucketFragment.newInstance()
             else -> ImageFragment.newInstance()
         }
     }
@@ -21,7 +23,7 @@ class OnBoardingPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAd
 
 
     override fun getCount(): Int {
-        return 4
+        return 6
     }
 
 }

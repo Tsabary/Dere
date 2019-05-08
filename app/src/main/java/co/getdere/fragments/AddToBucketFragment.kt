@@ -190,6 +190,10 @@ class AddToBucketFragment : Fragment(), DereMethods {
             }
         })
     }
+
+    companion object {
+        fun newInstance(): AddToBucketFragment = AddToBucketFragment()
+    }
 }
 
 
@@ -458,55 +462,5 @@ class SingleBucketSuggestion(
 
 
     }
-
-
-//    private fun addReputationIfExistsInAnyBucket(context: Context) {
-//
-//        val refUserBuckets = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets")
-//
-//        refUserBuckets.addChildEventListener(object : ChildEventListener {
-//            override fun onCancelled(p0: DatabaseError) {
-//            }
-//
-//            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-//            }
-//
-//            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-//            }
-//
-//            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-//
-//                if (p0.hasChild(image.id)) {
-//
-//                    changeReputation(
-//                        8,
-//                        image.id,
-//                        image.id,
-//                        currentUser.uid,
-//                        currentUser.name,
-//                        image.photographer,
-//                        TextView(context),
-//                        "bucket",
-//                        activity
-//                    )
-//
-//                    val refImageBuckets =
-//                        FirebaseDatabase.getInstance().getReference("/images/${image.id}/buckets")
-//
-//                    refImageBuckets.setValue(mapOf(currentUser.uid to true))
-//
-//                }
-//
-//            }
-//
-//            override fun onChildRemoved(p0: DataSnapshot) {
-//            }
-//
-//
-//        })
-//
-//    }
-
-
 }
 

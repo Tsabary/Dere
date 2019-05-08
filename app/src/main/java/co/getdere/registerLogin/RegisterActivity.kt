@@ -17,7 +17,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import co.getdere.OnBoardingActivity
+import co.getdere.MainActivity
 import co.getdere.models.Users
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
@@ -262,7 +262,7 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
                 val updatedUser = FirebaseAuth.getInstance().currentUser
                 if (updatedUser!!.isEmailVerified) {
 
-                    val intent = Intent(this, OnBoardingActivity::class.java)
+                    val intent = Intent(this, MainActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
                     startActivity(intent)
                 }

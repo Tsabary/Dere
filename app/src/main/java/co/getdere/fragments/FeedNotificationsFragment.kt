@@ -1,15 +1,19 @@
 package co.getdere.fragments
 
 
+import android.Manifest
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProviders
+import co.getdere.CameraActivity
 import co.getdere.MainActivity
 import co.getdere.models.*
 
@@ -23,8 +27,8 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.feed_notification_single_row.view.*
-import kotlinx.android.synthetic.main.fragment_feeds_layout.*
-import kotlinx.android.synthetic.main.fragment_notifications.*
+import kotlinx.android.synthetic.main.feed_toolbar.*
+import kotlinx.android.synthetic.main.fragment_notifications_feed.*
 import lt.neworld.spanner.Spanner
 import lt.neworld.spanner.Spans.font
 import org.ocpsoft.prettytime.PrettyTime
@@ -42,6 +46,13 @@ class FeedNotificationsFragment : Fragment() {
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
 
+    private val permissions = arrayOf(
+        Manifest.permission.CAMERA,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -55,7 +66,7 @@ class FeedNotificationsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_notifications, container, false)
+    ): View? = inflater.inflate(R.layout.fragment_notifications_feed, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -73,9 +84,24 @@ class FeedNotificationsFragment : Fragment() {
         notificationsRecycler.adapter = notificationsRecyclerAdapter
         notificationsRecycler.layoutManager = notificationRecyclerLayoutManager
 
-//        listenToNotifications()
+        val notificationBadge = feed_toolbar_notifications_badge
+        val feedToCamera = feed_toolbar_camera_icon
 
-        refFeedNotifications.addChildEventListener(object : ChildEventListener{
+        notificationBadge.setOnClickListener {
+            listenToNotifications()
+        }
+
+        feedToCamera.setOnClickListener {
+            if (hasNoPermissions()) {
+                requestPermission()
+            } else {
+                val intent = Intent(activity, CameraActivity::class.java)
+                startActivity(intent)
+            }
+        }
+
+
+        refFeedNotifications.addChildEventListener(object : ChildEventListener {
             override fun onCancelled(p0: DatabaseError) {
             }
 
@@ -158,6 +184,24 @@ class FeedNotificationsFragment : Fragment() {
             }
         })
     }
+
+
+    private fun hasNoPermissions(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this.context!!,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        ) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+            this.context!!,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+            this.context!!,
+            Manifest.permission.CAMERA
+        ) != PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestPermission() {
+        ActivityCompat.requestPermissions(activity as MainActivity, permissions, 0)
+    }
 }
 
 
@@ -217,7 +261,7 @@ class SingleFeedNotification(val notification: Notification, val activity: MainA
                                             activity.subActive = activity.imageFullSizeFragment
                                             activity.feedNotificationsFragment.listenToNotifications()
                                         }
-                                        }
+                                    }
                                 }
                             })
                         }

@@ -33,7 +33,7 @@ import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
 
 
-class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity: MainActivity) : Item<ViewHolder>(),
+class StaggeredFeedImageOnBoarding(val image: Images, val currentUser: Users, val activity: MainActivity) : Item<ViewHolder>(),
     DereMethods, FCMMethods {
 
     val uid = FirebaseAuth.getInstance().uid
@@ -125,14 +125,6 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
             }
         })
 
-        userName.setOnClickListener {
-            goToUserProfile(user)
-        }
-
-        authorReputation.setOnClickListener {
-            goToUserProfile(user)
-        }
-
         val gestureDetector = GestureDetector(activity, object : GestureDetector.SimpleOnGestureListener() {
 
             override fun onDown(e: MotionEvent?): Boolean {
@@ -159,16 +151,14 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
             }
 
             override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
-                openImage()
                 return super.onSingleTapConfirmed(e)
             }
 
             override fun onLongPress(e: MotionEvent?) {
-                if (uid != image.photographer) {
-                    activity.isFeedActive = true
+
                     goToBucket()
                     super.onLongPress(e)
-                }
+
             }
         })
 
@@ -197,44 +187,6 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
         }
     }
 
-    private fun goToUserProfile(user: Users) {
-
-        sharedViewModelRandomUser.randomUserObject.postValue(user)
-        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileRandomUserFragment).commit()
-        activity.subActive = activity.profileRandomUserFragment
-        activity.switchVisibility(1)
-        activity.isFeedActive = true
-    }
-
-    private fun openImage() {
-
-        sharedViewModelImage.sharedImageObject.postValue(image)
-
-
-        // meanwhile in the background it will load the random user object
-
-        val refRandomUser =
-            FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
-
-        refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-
-                val randomUserObject = p0.getValue(Users::class.java)!!
-
-                sharedViewModelRandomUser.randomUserObject.postValue(randomUserObject)
-
-                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
-
-                activity.switchVisibility(1)
-
-                activity.subActive = activity.imageFullSizeFragment
-            }
-
-        })
-    }
 
     private fun goToBucket() {
 
@@ -250,10 +202,7 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
                 val user = p0.getValue(Users::class.java)
                 sharedViewModelRandomUser.randomUserObject.postValue(user)
 
-
-                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketFragment).commit()
-                activity.subActive = activity.bucketFragment
-                activity.switchVisibility(1)
+                activity.onBoardingFragment.viewPager.currentItem = 5
             }
 
         })

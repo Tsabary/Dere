@@ -23,8 +23,8 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.board_notification_single_row.view.*
-import kotlinx.android.synthetic.main.feed_notification_single_row.view.*
-import kotlinx.android.synthetic.main.fragment_notifications.*
+import kotlinx.android.synthetic.main.board_toolbar.*
+import kotlinx.android.synthetic.main.fragment_notifications_feed.*
 import lt.neworld.spanner.Spanner
 import lt.neworld.spanner.Spans
 import org.ocpsoft.prettytime.PrettyTime
@@ -54,11 +54,13 @@ class BoardNotificationsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_notifications, container, false)
+    ): View? = inflater.inflate(R.layout.fragment_notifications_board, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val activity = activity as MainActivity
 
         notifications_swipe_refresh.setOnRefreshListener {
             listenToNotifications()
@@ -70,7 +72,18 @@ class BoardNotificationsFragment : Fragment() {
         notificationsRecycler.adapter = notificationsRecyclerAdapter
         notificationsRecycler.layoutManager = notificationRecyclerLayoutManager
 
-//        listenToNotifications()
+        val boardNotificationIcon = board_toolbar_notifications_icon
+        val boardSavedQuestionIcon = board_toolbar_saved_questions_icon
+
+        boardNotificationIcon.setOnClickListener {
+            listenToNotifications()
+        }
+
+        boardSavedQuestionIcon.setOnClickListener {
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.savedQuestionFragment).commit()
+            activity.subActive = activity.savedQuestionFragment
+        }
+
 
         refBoardNotifications.addChildEventListener(object : ChildEventListener{
             override fun onCancelled(p0: DatabaseError) {

@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var sharedViewModelQuestion: SharedViewModelQuestion
     lateinit var sharedViewModelCollection: SharedViewModelCollection
 
+    lateinit var onBoardingFragment: OnBoardingFragment
     lateinit var feedFragment: FeedFragment
     lateinit var boardFragment: BoardFragment
     lateinit var profileLoggedInUserFragment: ProfileLoggedInUserFragment
@@ -66,7 +67,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var editQuestionFragment: EditQuestionFragment
     lateinit var editAnswerFragment: EditAnswerFragment
     lateinit var editInterestsFragment: EditInterestsFragment
-    lateinit var collectionMapView : CollectionMapViewFragment
+    lateinit var collectionMapView: CollectionMapViewFragment
 
     lateinit var mainFrame: FrameLayout
     lateinit var subFrame: FrameLayout
@@ -89,9 +90,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
     var isFeedActive = false
     var isRandomUserProfileActive = false
 
-    lateinit var currentUser : Users
+    lateinit var currentUser: Users
 
-    private lateinit var firebaseAnalytics: FirebaseAnalytics
+    lateinit var firebaseAnalytics: FirebaseAnalytics
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -127,6 +128,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
     }
 
     private fun setupBottomNav() {
+
+        mBottomNav.visibility = View.VISIBLE
+
 
         mBottomNav.isClickable = true
 
@@ -315,7 +319,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
                 collectionMapView -> {
 
-                    if (isRandomUserProfileActive){
+                    if (isRandomUserProfileActive) {
                         subFm.beginTransaction().hide(subActive).show(editAnswerFragment).commit()
                         subActive = editAnswerFragment
                         isRandomUserProfileActive = false
@@ -329,6 +333,34 @@ class MainActivity : AppCompatActivity(), DereMethods {
         } else {
 
             when (active) { // main frame is active
+
+                onBoardingFragment -> {
+                    when (onBoardingFragment.viewPager.currentItem) {
+                        0 -> {
+                        }
+
+                        1 -> {
+                            onBoardingFragment.setUpItem1()
+                        }
+
+                        2 -> {
+                            onBoardingFragment.setUpItem2()
+                        }
+
+                        3 -> {
+                            onBoardingFragment.setUpItem3()
+                        }
+
+                        4 -> {
+                            onBoardingFragment.setUpItem4()
+                        }
+
+                        5 -> {
+                            onBoardingFragment.setUpItem5()
+                        }
+                    }
+
+                }
 
                 profileLoggedInUserFragment -> {
 
@@ -401,7 +433,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         }
     }
 
-    private fun fetchCurrentUser(uid : String) {
+    private fun fetchCurrentUser(uid: String) {
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -423,13 +455,13 @@ class MainActivity : AppCompatActivity(), DereMethods {
     fun addFragmentsToFragmentManagers() {
 
         //main container
-
+        onBoardingFragment = OnBoardingFragment()
         feedFragment = FeedFragment()
         boardFragment = BoardFragment()
         profileLoggedInUserFragment = ProfileLoggedInUserFragment()
 
-        fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment").commit()
-
+        fm.beginTransaction().add(R.id.feed_frame_container, onBoardingFragment, "onBoardingFragment").commit()
+        fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment").hide(feedFragment).commit()
         fm.beginTransaction().add(R.id.feed_frame_container, boardFragment, "boardFragment").hide(boardFragment)
             .commit()
         fm.beginTransaction()
@@ -437,7 +469,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
             .hide(profileLoggedInUserFragment).commit()
 
 
-        active = feedFragment
+        active = onBoardingFragment
 
 
         //sub container

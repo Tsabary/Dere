@@ -196,8 +196,8 @@ class FeedFragment : Fragment(), DereMethods {
                 val intent = Intent(activity, CameraActivity::class.java)
                 startActivity(intent)
             }
-
         }
+
         recyclersVisibility(0)
     }
 
