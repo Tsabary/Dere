@@ -1,11 +1,8 @@
 package co.getdere.fragments
 
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Matrix
 import android.location.Location
 import android.media.ExifInterface
 import android.net.Uri
@@ -16,7 +13,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -31,7 +27,6 @@ import co.getdere.roomclasses.LocalImagePost
 import co.getdere.roomclasses.LocalImageViewModel
 import co.getdere.viewmodels.SharedViewModelLocalImagePost
 import com.bumptech.glide.Glide
-import com.camerakit.type.CameraFacing
 import kotlinx.android.synthetic.main.fragment_camera.*
 import kotlinx.android.synthetic.main.fragment_photo_editor.view.*
 
@@ -85,7 +80,21 @@ class CameraFragment : Fragment() {
         val mActivity = activity as CameraActivity
 
         cameraKitView = camera_view
-
+//                        val options = BitmapFactory.Options()
+//                        options.inMutable = true
+//                        val bmp = BitmapFactory.decodeByteArray(p1, 0, 1200, options)
+//                        val canvas = Canvas(bmp)
+//
+//                        val exif = ExifInterface(savedPhoto.path)
+//                        val rotation =
+//                            exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+//                        val rotationInDegrees = exifToDegrees(rotation)
+//                        val matrix = Matrix()
+//                        if (rotation != 0) {
+//                            matrix.preRotate(rotationInDegrees)
+//                        }
+//
+//                        val adjustedBitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, matrix, true)
         val captureButton = camera_btn
 
         captureButton.setOnClickListener {
@@ -110,7 +119,6 @@ class CameraFragment : Fragment() {
                         val savedPhoto = File(path + File.separator + fileName)
 
 
-
                         Log.d("photoActivity", "new file created")
 
                         try {
@@ -127,7 +135,7 @@ class CameraFragment : Fragment() {
                             Log.d("photoActivity", "Image saved to file and system rescaned the device")
 
                             Glide.with(mActivity).load(savedPhoto)
-                                .into(mActivity.photoEditorFragment.view!!.photo_editor_image)
+                                .into(mActivity.approvePhotoFragment.view!!.photo_editor_image)
 
                             Log.d("photoActivity", "image loaded into new fragment")
 
@@ -153,7 +161,6 @@ class CameraFragment : Fragment() {
                             sharedViewModelLocalImagePost.sharedImagePostObject.postValue(localImagePost)
 
 
-
                         } catch (e: java.io.IOException) {
                             e.printStackTrace()
                             Log.d("photoActivity", "failed to take photo")
@@ -173,6 +180,15 @@ class CameraFragment : Fragment() {
                 }
 
             })
+        }
+    }
+
+    private fun exifToDegrees(exifOrientation: Int): Float {
+        return when (exifOrientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+            ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+            ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+            else -> 0f
         }
     }
 

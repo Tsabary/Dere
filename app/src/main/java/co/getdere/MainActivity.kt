@@ -31,8 +31,7 @@ import androidx.core.view.ViewCompat.getRotation
 import android.content.Context.WINDOW_SERVICE
 import android.view.WindowManager
 import android.view.Display
-
-
+import com.google.firebase.analytics.FirebaseAnalytics
 
 
 class MainActivity : AppCompatActivity(), DereMethods {
@@ -92,21 +91,25 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
     lateinit var currentUser : Users
 
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        mBottomNav = feed_bottom_nav
+        checkIfLoggedIn()
 
+        mBottomNav = feed_bottom_nav
         mBottomNav.isClickable = false
+
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
         sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
         sharedViewModelQuestion = ViewModelProviders.of(this).get(SharedViewModelQuestion::class.java)
 
         FirebaseApp.initializeApp(this)
 
-        checkIfLoggedIn()
 
         sharedViewModelImage = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
         sharedViewModelImage.sharedImageObject.postValue(Images())
@@ -410,7 +413,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
                 sharedViewModelCurrentUser.currentUserObject = p0.getValue(Users::class.java)!!
 
                 addFragmentsToFragmentManagers()
-                setupBottomNav()
+
             }
 
         })
@@ -507,6 +510,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
             .hide(collectionMapView).commit()
 
         subActive = imageFullSizeFragment
+
+        setupBottomNav()
     }
 
     private fun branchInitSession() {

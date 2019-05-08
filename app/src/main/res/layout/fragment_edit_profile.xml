@@ -17,7 +17,7 @@
 
             <EditText
                     android:layout_width="0dp"
-                    android:layout_height="50dp"
+                    android:layout_height="wrap_content"
                     android:inputType="textPersonName"
                     android:ems="10"
                     android:id="@+id/edit_profile_instagram"
@@ -32,7 +32,7 @@
                     android:textSize="14sp"/>
             <EditText
                     android:layout_width="0dp"
-                    android:layout_height="50dp"
+                    android:layout_height="wrap_content"
                     android:inputType="textPersonName"
                     android:ems="10"
                     android:id="@+id/edit_profile_description"
@@ -58,7 +58,7 @@
                     android:id="@+id/edit_profile_image"/>
             <EditText
                     android:layout_width="0dp"
-                    android:layout_height="50dp"
+                    android:layout_height="wrap_content"
                     android:inputType="textPersonName"
                     android:ems="10"
                     android:id="@+id/edit_profile_name"

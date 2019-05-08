@@ -13,7 +13,7 @@ import android.util.TypedValue
 import co.getdere.MainActivity
 
 
-class FeedImage(val image: Images, val case : Int) : Item<ViewHolder>() {
+class FeedImage(val image: Images, private val case : Int) : Item<ViewHolder>() {
 
     override fun getLayout(): Int {
         return co.getdere.R.layout.feed_single_photo

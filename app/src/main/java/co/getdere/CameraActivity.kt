@@ -5,11 +5,10 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import co.getdere.fragments.DarkRoomEditFragment
 import co.getdere.fragments.NewPhotoFragment
-import co.getdere.fragments.PhotoEditorFragment
+import co.getdere.fragments.ApprovePhotoFragment
 import co.getdere.roomclasses.LocalImagePost
 import kotlinx.android.synthetic.main.content_camera.*
 import kotlinx.android.synthetic.main.subcontent_camera.*
@@ -29,8 +28,8 @@ class CameraActivity : AppCompatActivity() {
     lateinit var subActive: Fragment
 
     lateinit var newPhotoFragment: NewPhotoFragment
-    lateinit var photoEditorFragment: PhotoEditorFragment
-    lateinit var darkRoomEditFragment : DarkRoomEditFragment
+    lateinit var approvePhotoFragment: ApprovePhotoFragment
+    lateinit var darkRoomEditFragment: DarkRoomEditFragment
 
     var localImagePost = MutableLiveData<LocalImagePost>()
 
@@ -43,15 +42,16 @@ class CameraActivity : AppCompatActivity() {
         subFrame = camera_subcontents_frame_container
 
         newPhotoFragment = NewPhotoFragment()
-        photoEditorFragment = PhotoEditorFragment()
+        approvePhotoFragment = ApprovePhotoFragment()
         darkRoomEditFragment = DarkRoomEditFragment()
 
         fm.beginTransaction().add(R.id.camera_frame_container, newPhotoFragment, "newPhotoFragment").commit()
         active = newPhotoFragment
 
 
-        subFm.beginTransaction().add(R.id.camera_subcontents_frame_container, photoEditorFragment, "photoEditorFragment").commit()
-        subActive = photoEditorFragment
+        subFm.beginTransaction()
+            .add(R.id.camera_subcontents_frame_container, approvePhotoFragment, "approvePhotoFragment").commit()
+        subActive = approvePhotoFragment
 
     }
 
@@ -69,15 +69,20 @@ class CameraActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
 
-        if (mainFrame.visibility == View.GONE){
+        if (mainFrame.visibility == View.GONE) {
 
             when (subActive) {
-                darkRoomEditFragment -> {subFm.beginTransaction().remove(darkRoomEditFragment).commit()
-                switchVisibility(0)}
+                darkRoomEditFragment -> {
+                    subFm.beginTransaction().remove(darkRoomEditFragment).commit()
+                    switchVisibility(0)
+                }
+                approvePhotoFragment -> {
+                    switchVisibility(0)
+                }
             }
 
 
-        } else{
+        } else {
             super.onBackPressed()
         }
     }

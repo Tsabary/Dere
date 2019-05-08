@@ -503,7 +503,8 @@ interface DereMethods : FCMMethods {
         initiatorName: String,
         receiverId: String,
         userReputationView: TextView,
-        activity: Activity
+        activity: Activity,
+        source : String
     ) {
 
         if (event == 1) {
@@ -530,9 +531,6 @@ interface DereMethods : FCMMethods {
                                         .getReference("/images/${image.id}/likes/$initiatorId")
 
                                 refImageLikes.removeValue().addOnSuccessListener {
-                                    //                                                likeButton.setImageResource(R.drawable.heart)
-
-//                                    listenToLikeCount(likeCount, image)
 
                                     changeReputation(
                                         15,
@@ -569,10 +567,6 @@ interface DereMethods : FCMMethods {
 
                                 refImageLikes.setValue(true).addOnSuccessListener {
 
-                                    //                                                likeButton.setImageResource(R.drawable.heart_active)
-
-//                                    listenToLikeCount(likeCount, image)
-
                                     changeReputation(
                                         14,
                                         image.id,
@@ -589,7 +583,12 @@ interface DereMethods : FCMMethods {
                             }
 
                         } else {
-                            likeButton.setImageResource(R.drawable.heart)
+                            if (source == "staggered"){
+                                likeButton.setImageResource(R.drawable.heart_white)
+                            } else {
+                                likeButton.setImageResource(R.drawable.heart)
+                            }
+
                             likeButton.tag = "notLiked"
                         }
                     }
@@ -608,13 +607,6 @@ interface DereMethods : FCMMethods {
 
                             refImageLikes.setValue(true).addOnSuccessListener {
 
-                                //                                likeButton.setImageResource(R.drawable.heart_active)
-//                                likeButton.tag = "liked"
-
-//                                    likeButton.setImageResource(R.drawable.heart_active)
-
-//                                listenToLikeCount(likeCount, image)
-
                                 changeReputation(
                                     14,
                                     image.id,
@@ -630,7 +622,11 @@ interface DereMethods : FCMMethods {
                         }
 
                     } else {
-                        likeButton.setImageResource(R.drawable.heart)
+                        if (source == "staggered"){
+                            likeButton.setImageResource(R.drawable.heart_white)
+                        } else {
+                            likeButton.setImageResource(R.drawable.heart)
+                        }
                         likeButton.tag = "notLiked"
                     }
                 }

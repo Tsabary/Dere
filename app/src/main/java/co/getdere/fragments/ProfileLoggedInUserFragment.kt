@@ -390,30 +390,20 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     }
 
 
-    private fun listenToImagesFromBucket() { //This needs to be fixed to not update in real time. Or should it?
+    fun listenToImagesFromBucket() {
 
         galleryBucketAdapter.clear()
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/buckets")
 
-        ref.addChildEventListener(object : ChildEventListener {
-
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
-                galleryBucketAdapter.add(SingleBucketBox(p0, userProfile.uid, activity as MainActivity))
-
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
+                for ( image in p0.children){
+                    galleryBucketAdapter.add(SingleBucketBox(image, userProfile.uid, activity as MainActivity))
+                }
             }
 
             override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
             }
 
         })

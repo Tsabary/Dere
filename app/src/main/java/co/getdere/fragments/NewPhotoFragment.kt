@@ -11,7 +11,6 @@ import androidx.viewpager.widget.ViewPager
 import co.getdere.CameraActivity
 import co.getdere.adapters.CameraPagerAdapter
 import co.getdere.R
-import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.fragment_new_photo.*
 
 
@@ -56,9 +55,9 @@ class NewPhotoFragment : Fragment() {
                     0 -> {
 
                         tabLayout.setBackgroundColor(Color.parseColor("#4D000000"))
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.photoEditorFragment)
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.approvePhotoFragment)
                             .commit()
-                        activity.subActive = activity.photoEditorFragment
+                        activity.subActive = activity.approvePhotoFragment
                     }
 
                     1 -> {

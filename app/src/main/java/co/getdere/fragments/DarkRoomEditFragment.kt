@@ -68,7 +68,7 @@ import java.util.*
 
 class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
-    lateinit var localImagePost: LocalImagePost
+    private lateinit var localImagePost: LocalImagePost
     private lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
     lateinit var sharedViewModelTags: SharedViewModelTags
 
@@ -96,12 +96,12 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     var imageLat = 0.0
     var imageLong = 0.0
 
-    lateinit var infoActiveButton: ImageButton
-    lateinit var infoUnactiveButton: ImageButton
-    lateinit var tagsActiveButton: ImageButton
-    lateinit var tagsUnactiveButton: ImageButton
-    lateinit var urlActiveButton: ImageButton
-    lateinit var urlUnactiveButton: ImageButton
+    private lateinit var infoActiveButton: ImageButton
+    private lateinit var infoUnactiveButton: ImageButton
+    private lateinit var tagsActiveButton: ImageButton
+    private lateinit var tagsUnactiveButton: ImageButton
+    private lateinit var urlActiveButton: ImageButton
+    private lateinit var urlUnactiveButton: ImageButton
 
     lateinit var infoContainer: ConstraintLayout
     lateinit var tagsContainer: ConstraintLayout
@@ -626,7 +626,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                                 Log.d("deleteOperation", "deleted big file")
                             } else {
                                 Log.d("deleteOperation", "couldn't delete big file")
-
                             }
                         }
 
@@ -733,14 +732,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             }
     }
 
-    private fun exifToDegrees(exifOrientation : Int) : Float {
-        return when (exifOrientation) {
-            ExifInterface.ORIENTATION_ROTATE_90 -> 90f
-            ExifInterface.ORIENTATION_ROTATE_180 -> 180f
-            ExifInterface.ORIENTATION_ROTATE_270 -> 270f
-            else -> 0f
-        }
-    }
+
 
     private fun makeTagsActive() {
 

@@ -51,8 +51,6 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
-        activity
-
         activity.let {
             sharedViewModelImage = ViewModelProviders.of(activity).get(SharedViewModelImage::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(activity).get(SharedViewModelRandomUser::class.java)
@@ -107,7 +105,8 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
             currentUser.name,
             image.photographer,
             authorReputation,
-            activity
+            activity,
+            "staggered"
         )
 
         val refAuthor = FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
@@ -151,7 +150,8 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
                         currentUser.name,
                         image.photographer,
                         authorReputation,
-                        activity
+                        activity,
+                        "staggered"
                     )
                 }
 
@@ -164,9 +164,11 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
             }
 
             override fun onLongPress(e: MotionEvent?) {
-                activity.isFeedActive = true
-                goToBucket()
-                super.onLongPress(e)
+                if (uid != image.photographer) {
+                    activity.isFeedActive = true
+                    goToBucket()
+                    super.onLongPress(e)
+                }
             }
         })
 
@@ -188,7 +190,8 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
                     currentUser.name,
                     image.photographer,
                     authorReputation,
-                    activity
+                    activity,
+                    "staggered"
                 )
             }
         }
@@ -247,7 +250,7 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
                 val user = p0.getValue(Users::class.java)
                 sharedViewModelRandomUser.randomUserObject.postValue(user)
 
-                activity as MainActivity
+                activity
                 activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketFragment).commit()
                 activity.subActive = activity.bucketFragment
                 activity.switchVisibility(1)

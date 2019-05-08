@@ -85,14 +85,8 @@ class EditProfileFragment : Fragment() {
         }
 
 
-
-
-
-
         saveButton.setOnClickListener {
-
             uploadImageToFirebase(user.image)
-
         }
 
         cancelButton.setOnClickListener {
@@ -114,8 +108,6 @@ class EditProfileFragment : Fragment() {
             val bitmap =
                 MediaStore.Images.Media.getBitmap((activity as MainActivity).contentResolver, selectedPhotoUri)
             userImage.setImageBitmap(bitmap)
-//            register_photo_pick.alpha = 0f
-
         }
     }
 
@@ -221,7 +213,11 @@ class EditProfileFragment : Fragment() {
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                userInstagramInput.setText(p0.value.toString())
+                val instagramHandle = p0.value.toString()
+                if (instagramHandle == "null"){
+                    userInstagramInput.setText("")
+                } else
+                userInstagramInput.setText(instagramHandle)
             }
 
 

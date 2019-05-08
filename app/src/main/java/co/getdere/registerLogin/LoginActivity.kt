@@ -90,8 +90,6 @@ class LoginActivity : AppCompatActivity(), DereMethods {
         val logEmail = login_email.text.toString().trimEnd()
         val logPass = login_password.text.toString().replace("\\s".toRegex(), "")
 
-        Log.d("Main", "email is $logEmail")
-        Log.d("Main", "pass is $logPass")
 
 //        Patterns.EMAIL_ADDRESS.matcher(logEmail).matches()  <--- this methos was used before for the if statement but I've replaced it as I kept getting the invalid email error
 
@@ -99,46 +97,44 @@ class LoginActivity : AppCompatActivity(), DereMethods {
 
             if (logPass.length > 5) {
 
-                FirebaseAuth.getInstance().signInWithEmailAndPassword(logEmail, logPass).addOnCompleteListener {
-                    if (it.isSuccessful) {
+                FirebaseAuth.getInstance().signInWithEmailAndPassword(logEmail, logPass).addOnSuccessListener {
 
-                        FirebaseInstanceId.getInstance().instanceId
-                            .addOnCompleteListener(OnCompleteListener { task ->
-                                if (!task.isSuccessful) {
-                                    Log.w("FCM", "getInstanceId failed", task.exception)
-                                    return@OnCompleteListener
+                    FirebaseInstanceId.getInstance().instanceId
+                        .addOnSuccessListener {
+//                            if (!task.isSuccessful) {
+//                                Log.w("FCM", "getInstanceId failed", task.exception)
+//                                return@OnCompleteListener
+//                            }
+
+                            // Get new Instance ID token
+                            val token = it.token
+
+                            // Log and toast
+                            val uid = FirebaseAuth.getInstance().uid
+                            val userRef =
+                                FirebaseDatabase.getInstance().getReference("/users/$uid/services/firebase-token")
+                            userRef.setValue(token)
+
+                            FirebaseMessaging.getInstance().subscribeToTopic(uid).addOnSuccessListener {
+
+                                if (hasNoPermissions()) {
+                                    requestPermission()
+                                } else {
+                                    val intent = Intent(this, MainActivity::class.java)
+                                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    startActivity(intent)
                                 }
-
-                                // Get new Instance ID token
-                                val token = task.result?.token
-
-                                // Log and toast
-                                Log.d("FCM", token)
-                                val uid = FirebaseAuth.getInstance().uid
-                                val userRef =
-                                    FirebaseDatabase.getInstance().getReference("/users/$uid/services/firebase-token")
-                                userRef.setValue(token)
-
-                                FirebaseMessaging.getInstance().subscribeToTopic(uid).addOnSuccessListener {
-
-                                    if(hasNoPermissions()){
-                                        requestPermission()
-                                    } else {
-                                        val intent = Intent(this, MainActivity::class.java)
-                                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                        startActivity(intent)
-                                    }
-                                }
-                            })
-
-
-                    }
-                    //else if successful
-                    registerFail()
-                    Log.d("Login", "Failed to log in a user")
+                            }
+                        }.addOnFailureListener {
+                            registerFail()
+                            Toast.makeText(this, "Failed to log you in. ${it.localizedMessage}", Toast.LENGTH_LONG)
+                                .show()
+                        }
 
                 }.addOnFailureListener {
                     registerFail()
+                    Toast.makeText(this, "Failed to log you in. ${it.localizedMessage}", Toast.LENGTH_LONG)
+                        .show()
                     Log.d("Main", "Failed to log in user : ${it.message}")
                 }
             } else {
@@ -182,6 +178,5 @@ class LoginActivity : AppCompatActivity(), DereMethods {
         loginButtonBlinking.visibility = View.GONE
         loginButtonBlinkingBackground.visibility = View.GONE
     }
-
 
 }

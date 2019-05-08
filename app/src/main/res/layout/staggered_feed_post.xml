@@ -17,7 +17,7 @@
     <ImageButton
             android:layout_width="16dp"
             android:layout_height="16dp"
-            app:srcCompat="@drawable/heart"
+            app:srcCompat="@drawable/heart_white"
             android:id="@+id/staggered_feed_like_button"
             android:elevation="4dp"
             android:background="@android:color/transparent"

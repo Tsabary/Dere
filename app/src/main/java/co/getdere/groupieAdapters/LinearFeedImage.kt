@@ -38,7 +38,7 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
 
-    lateinit var user : Users
+    lateinit var user: Users
 
 
     override fun getLayout(): Int {
@@ -76,7 +76,7 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
 
         val imageRatioColonIndex = image.ratio.indexOf(":", 0)
         val imageRatioWidth = image.ratio.subSequence(0, imageRatioColonIndex)
-        val imageRationHeight = image.ratio.subSequence(imageRatioColonIndex+1, image.ratio.length)
+        val imageRationHeight = image.ratio.subSequence(imageRatioColonIndex + 1, image.ratio.length)
 
         val imageRatioFinal: Double = imageRatioWidth.toString().toDouble() / imageRationHeight.toString().toDouble()
 
@@ -143,7 +143,8 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
             currentUser.name,
             image.photographer,
             authorReputation,
-            activity
+            activity,
+            "linear"
         )
 
         listenToCommentCount(commentCount, image)
@@ -189,7 +190,8 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
                         currentUser.name,
                         image.photographer,
                         authorReputation,
-                        activity
+                        activity,
+                        "linear"
                     )
                 }
 
@@ -202,9 +204,11 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
             }
 
             override fun onLongPress(e: MotionEvent?) {
-                activity.isFeedActive = true
-                goToBucket()
-                super.onLongPress(e)
+                if (uid != image.photographer) {
+                    activity.isFeedActive = true
+                    goToBucket()
+                    super.onLongPress(e)
+                }
             }
         })
 
@@ -242,7 +246,8 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
                     currentUser.name,
                     image.photographer,
                     authorReputation,
-                    activity
+                    activity,
+                    "linear"
                 )
             }
         }
@@ -256,7 +261,7 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
         }
     }
 
-    private fun goToUserProfile(user: Users){
+    private fun goToUserProfile(user: Users) {
 
         sharedViewModelRandomUser.randomUserObject.postValue(user)
         activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileRandomUserFragment).commit()
