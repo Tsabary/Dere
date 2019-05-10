@@ -1,5 +1,6 @@
 package co.getdere
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -32,6 +33,7 @@ import android.content.Context.WINDOW_SERVICE
 import android.view.WindowManager
 import android.view.Display
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.yalantis.ucrop.UCrop
 
 
 class MainActivity : AppCompatActivity(), DereMethods {
@@ -99,12 +101,11 @@ class MainActivity : AppCompatActivity(), DereMethods {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        checkIfLoggedIn()
-
-        mBottomNav = feed_bottom_nav
-        mBottomNav.isClickable = false
-
         firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+
+
+
+        checkIfLoggedIn()
 
         sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
         sharedViewModelQuestion = ViewModelProviders.of(this).get(SharedViewModelQuestion::class.java)
@@ -129,27 +130,25 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
     private fun setupBottomNav() {
 
-        mBottomNav.visibility = View.VISIBLE
-
-
-        mBottomNav.isClickable = true
+        mBottomNav = feed_bottom_nav
 
         mBottomNav.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
 
-
                 R.id.destination_feed -> {
-                    val display = (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
-                    val screenOrientation = display.rotation
-                    Log.d("orientation", screenOrientation.toString())
                     navigateToFeed()
+                    Log.d("bottomNav", "feed")
                 }
 
                 R.id.destination_board -> {
                     navigateToBoard()
+                    Log.d("bottomNav", "board")
+
                 }
                 R.id.destination_profile_logged_in_user -> {
                     navigateToProfile()
+                    Log.d("bottomNav", "profile")
+
                 }
             }
             false
@@ -215,11 +214,11 @@ class MainActivity : AppCompatActivity(), DereMethods {
                 bucketFragment -> {
 
                     if (isFeedActive) {
-                        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                        subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
                         subActive = imageFullSizeFragment
                         switchVisibility(0)
                     }
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+
                     fm.beginTransaction().detach(profileLoggedInUserFragment).attach(profileLoggedInUserFragment)
                         .commit()
 
@@ -400,8 +399,10 @@ class MainActivity : AppCompatActivity(), DereMethods {
     }
 
     private fun resetFragments() {
-        openedQuestionFragment.deleteBox.visibility = View.GONE
         closeKeyboard(this)
+
+        openedQuestionFragment.deleteBox.visibility = View.GONE
+        bucketGalleryFragment.mapButton.setImageResource(R.drawable.world)
 
         isBucketGalleryActive = false
         isOpenedQuestionActive = false
@@ -419,6 +420,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
         imageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
 
+        subFm.beginTransaction().remove(bucketFragment).commit()
     }
 
     private fun checkIfLoggedIn() {
@@ -460,16 +462,35 @@ class MainActivity : AppCompatActivity(), DereMethods {
         boardFragment = BoardFragment()
         profileLoggedInUserFragment = ProfileLoggedInUserFragment()
 
-        fm.beginTransaction().add(R.id.feed_frame_container, onBoardingFragment, "onBoardingFragment").commit()
-        fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment").hide(feedFragment).commit()
+
+        val uid = FirebaseAuth.getInstance().uid
+        val interestsRef = FirebaseDatabase.getInstance().getReference("/users/$uid/interests")
+        interestsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                if (p0.hasChildren()) {
+                    fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment").commit()
+
+                    active = feedFragment
+
+                } else {
+                    fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment")
+                        .hide(feedFragment).commit()
+                    fm.beginTransaction().add(R.id.feed_frame_container, onBoardingFragment, "onBoardingFragment")
+                        .commit()
+
+                    active = onBoardingFragment
+                }
+            }
+        })
+
         fm.beginTransaction().add(R.id.feed_frame_container, boardFragment, "boardFragment").hide(boardFragment)
             .commit()
         fm.beginTransaction()
             .add(R.id.feed_frame_container, profileLoggedInUserFragment, "profileLoggedInUserFragment")
             .hide(profileLoggedInUserFragment).commit()
-
-
-        active = onBoardingFragment
 
 
         //sub container
@@ -499,8 +520,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, profileRandomUserFragment, "profileRandomUserFragment")
             .hide(profileRandomUserFragment).commit()
-        subFm.beginTransaction()
-            .add(R.id.feed_subcontents_frame_container, bucketFragment, "bucketFragment").hide(bucketFragment).commit()
+//        subFm.beginTransaction()
+//            .add(R.id.feed_subcontents_frame_container, bucketFragment, "bucketFragment").hide(bucketFragment).commit()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, openedQuestionFragment, "openedQuestionFragment")
             .hide(openedQuestionFragment).commit()

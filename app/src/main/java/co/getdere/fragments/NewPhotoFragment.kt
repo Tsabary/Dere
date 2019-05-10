@@ -11,6 +11,7 @@ import androidx.viewpager.widget.ViewPager
 import co.getdere.CameraActivity
 import co.getdere.adapters.CameraPagerAdapter
 import co.getdere.R
+import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.fragment_new_photo.*
 
 
@@ -45,30 +46,13 @@ class NewPhotoFragment : Fragment() {
             }
 
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+                viewPagerController(activity, position, tabLayout)
 
             }
 
             override fun onPageSelected(position: Int) {
 
-                when (position) {
-
-                    0 -> {
-
-                        tabLayout.setBackgroundColor(Color.parseColor("#4D000000"))
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.approvePhotoFragment)
-                            .commit()
-                        activity.subActive = activity.approvePhotoFragment
-                    }
-
-                    1 -> {
-                        tabLayout.setBackgroundColor(Color.parseColor("#FF616161"))
-
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.darkRoomEditFragment)
-                            .commit()
-                        activity.subActive = activity.darkRoomEditFragment
-                    }
-
-                }
+                viewPagerController(activity, position, tabLayout)
 
             }
 
@@ -77,5 +61,22 @@ class NewPhotoFragment : Fragment() {
         tabLayout.setupWithViewPager(viewPager)
     }
 
+    private fun viewPagerController(activity: CameraActivity, position : Int, tabLayout: TabLayout){
+        when (position) {
+
+            0 -> {
+                activity.subFm.beginTransaction().remove(activity.darkRoomEditFragment).commit()
+            }
+
+            1 -> {
+                tabLayout.setBackgroundColor(Color.parseColor("#FF616161"))
+
+                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.darkRoomEditFragment)
+                    .commit()
+                activity.subActive = activity.darkRoomEditFragment
+            }
+
+        }
+    }
 
 }

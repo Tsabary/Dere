@@ -3,6 +3,7 @@ package co.getdere.fragments
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +26,7 @@ import co.getdere.groupieAdapters.AnswerPhoto
 import co.getdere.groupieAdapters.FeedImage
 import co.getdere.viewmodels.*
 import com.bumptech.glide.Glide
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
@@ -65,6 +67,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
     lateinit var lp: LinkProperties
 
     val answersAdapter = GroupAdapter<ViewHolder>()
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -149,7 +152,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                     val questionRef = FirebaseDatabase.getInstance().getReference("/questions/${question.id}")
                     questionRef.removeValue().addOnSuccessListener {
 
-                        for (tag in question.tags){
+                        for (tag in question.tags) {
                             val refTag =
                                 FirebaseDatabase.getInstance().getReference("/tags/$tag/${question.id}")
                             refTag.removeValue()
@@ -157,6 +160,9 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
                         activity.switchVisibility(0)
                         activity.boardFragment.listenToQuestions()
+
+                        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                        firebaseAnalytics.logEvent("question_answer_removed", null)
                     }
                 }
 
@@ -220,39 +226,44 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
 
         openedQuestionUpVote.setOnClickListener {
-            executeVote(
-                "up",
-                questionObject.id,
-                currentUserObject.uid,
-                currentUserObject.name,
-                questionObject.author,
-                0,
-                openedQuestionVotes,
-                openedQuestionUpVote,
-                openedQuestionDownVote,
-                questionObject.id,
-                1,
-                openedQuestionAuthorReputation,
-                activity
-            )
+
+            if (currentUserObject.uid != questionObject.author) {
+                executeVote(
+                    "up",
+                    questionObject.id,
+                    currentUserObject.uid,
+                    currentUserObject.name,
+                    questionObject.author,
+                    0,
+                    openedQuestionVotes,
+                    openedQuestionUpVote,
+                    openedQuestionDownVote,
+                    questionObject.id,
+                    1,
+                    openedQuestionAuthorReputation,
+                    activity
+                )
+            }
         }
 
         openedQuestionDownVote.setOnClickListener {
-            executeVote(
-                "down",
-                questionObject.id,
-                currentUserObject.uid,
-                currentUserObject.name,
-                questionObject.author,
-                0,
-                openedQuestionVotes,
-                openedQuestionUpVote,
-                openedQuestionDownVote,
-                questionObject.id,
-                1,
-                openedQuestionAuthorReputation,
-                activity
-            )
+            if (currentUserObject.uid != questionObject.author) {
+                executeVote(
+                    "down",
+                    questionObject.id,
+                    currentUserObject.uid,
+                    currentUserObject.name,
+                    questionObject.author,
+                    0,
+                    openedQuestionVotes,
+                    openedQuestionUpVote,
+                    openedQuestionDownVote,
+                    questionObject.id,
+                    1,
+                    openedQuestionAuthorReputation,
+                    activity
+                )
+            }
         }
 
 
@@ -275,7 +286,10 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 override fun onShareLinkDialogLaunched() {}
                 override fun onShareLinkDialogDismissed() {}
                 override fun onLinkShareResponse(sharedLink: String, sharedChannel: String, error: BranchError) {}
-                override fun onChannelSelected(channelName: String) {}
+                override fun onChannelSelected(channelName: String) {
+                    val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
+                    firebaseAnalytics.logEvent("question_shared_$channelName", null)
+                }
 
             })
         }
@@ -290,48 +304,42 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
         answersRecycler.adapter = answersAdapter
         answersRecycler.layoutManager = answersRecyclerLayoutManager
     }
-//
-//    override fun onDetach() {
-//        super.onDetach()
-//        sharedViewModelRandomUser.randomUserObject.postValue(Users())
-//        sharedViewModelQuestion.questionObject.postValue(Question())
-//    }
 
-    private fun listenToAnswers(qId: String) {
+
+    fun listenToAnswers(qId: String) {
 
         answersAdapter.clear()
 
         val ref = FirebaseDatabase.getInstance().getReference("/questions/$qId/answers")
 
-        ref.addChildEventListener(object : ChildEventListener {
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
+                for (answer in p0.children) {
 
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                    Log.d("answer", answer.key)
 
-                val singleAnswerFromDB = p0.child("body").getValue(Answers::class.java)
+                    val singleAnswerFromDB = answer.child("body").getValue(Answers::class.java)
 
-                if (singleAnswerFromDB != null) {
+                    Log.d("answer", singleAnswerFromDB!!.content)
 
-                    answersAdapter.add(
-                        SingleAnswer(
-                            singleAnswerFromDB,
-                            currentUserObject, activity as MainActivity
+
+                    if (singleAnswerFromDB != null) {
+
+                        answersAdapter.add(
+                            SingleAnswer(
+                                singleAnswerFromDB,
+                                currentUserObject,
+                                activity as MainActivity
+                            )
                         )
-                    )
+                    }
+
                 }
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-
             }
 
             override fun onCancelled(p0: DatabaseError) {
             }
 
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
         })
     }
 
@@ -363,6 +371,9 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                                 "questionsave",
                                 activity
                             )
+
+                            val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
+                            firebaseAnalytics.logEvent("question_unsaved", null)
                         }
 
                     } else {
@@ -401,6 +412,8 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                                     activity
                                 )
 
+                                val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
+                                firebaseAnalytics.logEvent("question_saved", null)
                             }
 
                     } else {
@@ -483,7 +496,11 @@ class SingleAnswer(
                 .getReference("/questions/${answer.questionId}/answers/${answer.answerId}")
             answerRef.removeValue()
             activity.openedQuestionFragment.answersAdapter.removeGroup(position)
-            activity.openedQuestionFragment.answersAdapter.notifyDataSetChanged()
+            activity.openedQuestionFragment.listenToAnswers(answer.questionId)
+            deleteBox.visibility = View.GONE
+
+            val firebaseAnalytics = FirebaseAnalytics.getInstance(viewHolder.itemView.context)
+            firebaseAnalytics.logEvent("question_answer_removed", null)
         }
 
         val refAnswerComments = FirebaseDatabase.getInstance()
@@ -562,7 +579,7 @@ class SingleAnswer(
 
                 if (author != null) {
 
-                    val date =PrettyTime().format(Date(answer.timestamp))
+                    val date = PrettyTime().format(Date(answer.timestamp))
 
                     Glide.with(viewHolder.root.context).load(author.image)
                         .into(viewHolder.itemView.single_answer_author_image)
@@ -577,7 +594,7 @@ class SingleAnswer(
 
         upvote.setOnClickListener {
 
-            if (answer.author != currentUser.uid){
+            if (answer.author != currentUser.uid) {
                 executeVote(
                     "up",
                     answer.questionId,
@@ -598,7 +615,7 @@ class SingleAnswer(
 
         downvote.setOnClickListener {
 
-            if (answer.author != currentUser.uid){
+            if (answer.author != currentUser.uid) {
                 executeVote(
                     "down",
                     answer.questionId,
@@ -660,7 +677,7 @@ class SingleAnswerComment(val comment: AnswerComments, val activity: MainActivit
 
 
         val commentRef = FirebaseDatabase.getInstance()
-            .getReference("/questions/${comment.questionId}/answers/${comment.answerId}/comments/${comment.commentId}/body")
+            .getReference("/questions/${comment.questionId}/answers/${comment.answerId}/comments/${comment.commentId}")
 
 
         if (comment.author == uid) {
@@ -685,6 +702,9 @@ class SingleAnswerComment(val comment: AnswerComments, val activity: MainActivit
             deleteBox.visibility = View.GONE
             delete.isClickable = false
             edit.isClickable = false
+
+            val firebaseAnalytics = FirebaseAnalytics.getInstance(viewHolder.itemView.context)
+            firebaseAnalytics.logEvent("question_answer_comment_removed", null)
         }
 
         edit.setOnClickListener {
@@ -707,16 +727,7 @@ class SingleAnswerComment(val comment: AnswerComments, val activity: MainActivit
 
             commentContent.text = commentContentEditable.text.toString()
 
-//            val updatedComment = AnswerComments(
-//                comment.commentId,
-//                comment.answerId,
-//                comment.questionId,
-//                commentContentEditable.text.toString(),
-//                comment.timestamp,
-//                comment.author
-//            )
-
-            commentRef.child("content").setValue(commentContentEditable.text.toString())
+            commentRef.child("body").child("content").setValue(commentContentEditable.text.toString())
         }
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${comment.author}/profile")

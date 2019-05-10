@@ -28,6 +28,7 @@ import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelImage
 import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.messaging.FirebaseMessaging
@@ -66,6 +67,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     var imageList = mutableListOf<FeedImage>()
 
     lateinit var userRef: DatabaseReference
+
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -147,7 +149,10 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
                         ) {
                         }
 
-                        override fun onChannelSelected(channelName: String) {}
+                        override fun onChannelSelected(channelName: String) {
+                            val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
+                            firebaseAnalytics.logEvent("profile_shared_$channelName", null)
+                        }
 
 
                     })
@@ -256,6 +261,8 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         instagramButton.setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(instaLink)))
+            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+            firebaseAnalytics.logEvent("instagram_clicked_self", null)
         }
 
         profileEditButton.setOnClickListener {
@@ -320,6 +327,9 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
                             .commit()
                         activity.subActive = activity.collectionMapView
                         activity.switchVisibility(1)
+                        val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
+                        firebaseAnalytics.logEvent("map_checked_self", null)
+
                     } else {
                         Toast.makeText(activity, "You have no photos to view on the map", Toast.LENGTH_SHORT).show()
                     }

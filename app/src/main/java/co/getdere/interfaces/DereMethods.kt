@@ -14,6 +14,7 @@ import co.getdere.models.Notification
 import co.getdere.models.ReputationScore
 import co.getdere.otherClasses.FCMMethods
 import co.getdere.otherClasses.FCMMethods.sendMessageTopic
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.database.*
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.RemoteMessage
@@ -56,6 +57,9 @@ interface DereMethods : FCMMethods {
         userReputationView: TextView,
         activity: Activity
     ) {
+
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
+
         if (event == 0) {
             setVotesCount(specificPostId, mainPostId, votesView, postType)
         } else {
@@ -104,8 +108,11 @@ interface DereMethods : FCMMethods {
                                                     receiverId,
                                                     userReputationView,
                                                     "vote",
-                                                    activity
-                                                )
+                                                    activity)
+
+
+                                                firebaseAnalytics.logEvent("question_upvote_cancelled", null)
+
                                             } else {
                                                 changeReputation(
                                                     3,
@@ -116,8 +123,10 @@ interface DereMethods : FCMMethods {
                                                     receiverId,
                                                     userReputationView,
                                                     "vote",
-                                                    activity
-                                                )
+                                                    activity)
+
+                                                firebaseAnalytics.logEvent("answer_upvote_cancelled", null)
+
                                             }
                                         }
                                     }
@@ -146,8 +155,11 @@ interface DereMethods : FCMMethods {
                                                     receiverId,
                                                     userReputationView,
                                                     "vote",
-                                                    activity
-                                                )
+                                                    activity)
+
+                                                firebaseAnalytics.logEvent("question_upvote", null)
+
+
                                             } else {
                                                 changeReputation(
                                                     2,
@@ -158,8 +170,10 @@ interface DereMethods : FCMMethods {
                                                     receiverId,
                                                     userReputationView,
                                                     "vote",
-                                                    activity
-                                                )
+                                                    activity)
+
+                                                firebaseAnalytics.logEvent("answer_upvote", null)
+
                                             }
                                         }
                                     }
@@ -179,8 +193,10 @@ interface DereMethods : FCMMethods {
                                                     receiverId,
                                                     userReputationView,
                                                     "vote",
-                                                    activity
-                                                )
+                                                    activity)
+
+                                                firebaseAnalytics.logEvent("question_downvote", null)
+
                                             } else {
                                                 changeReputation(
                                                     4,
@@ -191,8 +207,10 @@ interface DereMethods : FCMMethods {
                                                     receiverId,
                                                     userReputationView,
                                                     "vote",
-                                                    activity
-                                                )
+                                                    activity)
+
+                                                firebaseAnalytics.logEvent("question_downvote", null)
+
                                             }
                                         }
                                     }
@@ -222,8 +240,13 @@ interface DereMethods : FCMMethods {
                                                 receiverId,
                                                 userReputationView,
                                                 "vote",
-                                                activity
-                                            )
+                                                activity)
+
+                                            if (postType==0){
+                                                firebaseAnalytics.logEvent("question_downvote_cancelled", null)
+                                            } else {
+                                                firebaseAnalytics.logEvent("answer_downvote_cancelled", null)
+                                            }
                                         }
                                     }
                                     "down" -> return
@@ -256,8 +279,11 @@ interface DereMethods : FCMMethods {
                                             receiverId,
                                             userReputationView,
                                             "vote",
-                                            activity
-                                        )
+                                            activity)
+
+                                        firebaseAnalytics.logEvent("question_upvote", null)
+
+
                                     } else {
                                         changeReputation(
                                             2,
@@ -268,8 +294,10 @@ interface DereMethods : FCMMethods {
                                             receiverId,
                                             userReputationView,
                                             "vote",
-                                            activity
-                                        )
+                                            activity)
+
+                                        firebaseAnalytics.logEvent("answer_upvote", null)
+
                                     }
                                 }
                             }
@@ -290,8 +318,10 @@ interface DereMethods : FCMMethods {
                                             receiverId,
                                             userReputationView,
                                             "vote",
-                                            activity
-                                        )
+                                            activity)
+
+                                        firebaseAnalytics.logEvent("question_downvote", null)
+
                                     } else {
                                         changeReputation(
                                             4,
@@ -302,8 +332,9 @@ interface DereMethods : FCMMethods {
                                             receiverId,
                                             userReputationView,
                                             "vote",
-                                            activity
-                                        )
+                                            activity)
+
+                                        firebaseAnalytics.logEvent("answer_downvote", null)
                                     }
                                 }
                             }
@@ -507,6 +538,8 @@ interface DereMethods : FCMMethods {
         source : String
     ) {
 
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
+
         if (event == 1) {
             executeLikeForFastResponse(likeButton, likeCount)
         }
@@ -540,9 +573,10 @@ interface DereMethods : FCMMethods {
                                         initiatorName,
                                         receiverId,
                                         userReputationView,
-                                        "like", activity
-                                    )
+                                        "like",
+                                        activity)
 
+                                    firebaseAnalytics.logEvent("image_unliked", null)
                                 }
                             }
 
@@ -575,9 +609,10 @@ interface DereMethods : FCMMethods {
                                         initiatorName,
                                         receiverId,
                                         userReputationView,
-                                        "like", activity
-                                    )
+                                        "like",
+                                        activity)
 
+                                    firebaseAnalytics.logEvent("image_liked", null)
                                 }
 
                             }
@@ -615,8 +650,10 @@ interface DereMethods : FCMMethods {
                                     initiatorName,
                                     receiverId,
                                     userReputationView,
-                                    "like", activity
-                                )
+                                    "like",
+                                    activity)
+
+                                firebaseAnalytics.logEvent("image_liked", null)
                             }
 
                         }

@@ -7,7 +7,7 @@
              tools:context=".fragments.DarkRoomFragment">
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:src="@drawable/arrow_right"
+            android:src="@drawable/gallery"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:clickable="true"
@@ -18,7 +18,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginBottom="68dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:backgroundTint="@color/green400"/>
+            app:backgroundTint="@color/green400"
+            android:focusable="true"/>
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/dark_room_recyclerview"

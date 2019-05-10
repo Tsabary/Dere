@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -23,12 +24,15 @@ import co.getdere.roomclasses.LocalImagePost
 import co.getdere.roomclasses.LocalImageViewModel
 import co.getdere.viewmodels.SharedViewModelLocalImagePost
 import com.bumptech.glide.Glide
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
+import com.yalantis.ucrop.UCrop
 import kotlinx.android.synthetic.main.activity_register.*
 import kotlinx.android.synthetic.main.feed_single_photo.view.*
 import kotlinx.android.synthetic.main.fragment_dark_room.*
+import java.io.File
 
 
 class DarkRoomFragment : Fragment() {
@@ -103,6 +107,26 @@ class DarkRoomFragment : Fragment() {
             Log.d("Main", "Photo was selected")
 
             val selectedPhotoUri = data.data
+//
+//            val timestamp = System.currentTimeMillis()
+//
+//            val fileName = "Dere$timestamp.jpg"
+//
+//            val path =
+//                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
+//            val outputDir = File(path)
+//            outputDir.mkdir()
+//            val savedPhoto = File(path + File.separator + fileName)
+//
+//            cropImage(selectedPhotoUri!!, Uri.fromFile(savedPhoto))
+//
+//
+//
+//
+
+
+
+
 
             if (selectedPhotoUri != null) {
                 val localImagePost = LocalImagePost(
@@ -116,10 +140,20 @@ class DarkRoomFragment : Fragment() {
                 )
 
                 localImageViewModel.insert(localImagePost)
+
+                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                firebaseAnalytics.logEvent("image_uploaded_from_device", null)
             }
         }
     }
 
+    private fun cropImage(source: Uri, destination : Uri) {
+        val myUcrop = UCrop.of(source, destination)
+        val options = UCrop.Options()
+        options.setActiveWidgetColor(resources.getColor(R.color.green700))
+        options.setActiveControlsWidgetColor(resources.getColor(R.color.white))
+        myUcrop.withOptions(options).start(this.context!!, this, 1)
+    }
 
     companion object {
         fun newInstance(): DarkRoomFragment = DarkRoomFragment()

@@ -24,6 +24,7 @@ import co.getdere.groupieAdapters.StaggeredFeedImage
 import co.getdere.models.LinearWithLocation
 import co.getdere.models.StaggeredWithLocation
 import co.getdere.viewmodels.*
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.mapbox.mapboxsdk.camera.CameraPosition
@@ -106,6 +107,10 @@ open class InterestsFeedFragment : Fragment() {
         sortByDistance.setOnClickListener {
             sortByDistance.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
             sortByDate.setTextColor(ContextCompat.getColor(context!!, R.color.gray500))
+
+            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+            firebaseAnalytics.logEvent("sort_by_distance", null)
+
             isDistanceActive = true
 
             if (isDistanceListEmpty) {
@@ -125,6 +130,10 @@ open class InterestsFeedFragment : Fragment() {
         sortByDate.setOnClickListener {
             sortByDistance.setTextColor(ContextCompat.getColor(context!!, R.color.gray500))
             sortByDate.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
+
+            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+            firebaseAnalytics.logEvent("sort_by_date", null)
+
             isDistanceActive = false
 
             if (isLinearActive) {
@@ -141,6 +150,9 @@ open class InterestsFeedFragment : Fragment() {
             linearButton.setImageResource(R.drawable.linear_layout_active)
             staggeredButton.setImageResource(R.drawable.staggered_layout)
 
+            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+            firebaseAnalytics.logEvent("linear_feed", null)
+
             val position = IntArray(2)
             staggeredGalleryLayoutManager.findFirstCompletelyVisibleItemPositions(position)
             feedRecycler.layoutManager = linearGalleryLayoutManager
@@ -156,6 +168,9 @@ open class InterestsFeedFragment : Fragment() {
         staggeredButton.setOnClickListener {
             staggeredButton.setImageResource(R.drawable.staggered_layout_active)
             linearButton.setImageResource(R.drawable.linear_layout)
+
+            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+            firebaseAnalytics.logEvent("staggered_feed", null)
 
             val position = linearGalleryLayoutManager.findFirstCompletelyVisibleItemPosition()
             feedRecycler.layoutManager = staggeredGalleryLayoutManager

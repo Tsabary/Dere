@@ -25,6 +25,7 @@ import co.getdere.viewmodels.SharedViewModelTags
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
@@ -223,6 +224,9 @@ class BoardFragment : Fragment() {
                 boardSearchBox.text.clear()
                 searchQuestions(row.tag.tagString)
                 recyclersVisibility(1)
+
+                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                firebaseAnalytics.logEvent("search_board", null)
             } else {
                 Toast.makeText(this.context, "You can only search one tag_unactive at a time", Toast.LENGTH_LONG).show()
             }

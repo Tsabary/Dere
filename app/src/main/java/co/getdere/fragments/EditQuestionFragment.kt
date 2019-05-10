@@ -302,6 +302,7 @@ class EditQuestionFragment : Fragment(), DereMethods {
         chip.isCheckable = false
         chip.isClickable = false
         chip.setChipBackgroundColorResource(R.color.green700)
+        chip.setCloseIconTintResource(R.color.green200)
         chip.setTextAppearance(R.style.ChipSelectedStyle)
         questionChipGroup.addView(chip)
         questionChipGroup.visibility = View.VISIBLE

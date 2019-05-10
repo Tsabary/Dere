@@ -19,6 +19,7 @@ import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelTags
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -52,7 +53,6 @@ class EditInterestsFragment : Fragment() {
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
         }
 
-        val activity = activity as MainActivity
         chipGroup = edit_interests_chipgroup
         val searchInput = edit_interests_search_input
         val tagSuggestionRecycler = edit_interests_recycler
@@ -122,6 +122,9 @@ class EditInterestsFragment : Fragment() {
             tagRef.setValue(true)
             searchInput.text.clear()
             tagSuggestionRecycler.visibility = View.GONE
+
+            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+            firebaseAnalytics.logEvent("interests_edited", null)
         }
 
     }
@@ -150,6 +153,8 @@ class EditInterestsFragment : Fragment() {
             chipGroup.removeView(it)
             val tagRef = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/interests/${chip.text}")
             tagRef.removeValue()
+            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+            firebaseAnalytics.logEvent("interests_edited", null)
         }
     }
 

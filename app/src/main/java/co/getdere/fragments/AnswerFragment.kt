@@ -26,7 +26,11 @@ import co.getdere.groupieAdapters.FeedImage
 import co.getdere.viewmodels.SharedViewModelAnswerImages
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelQuestion
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.answer_layout.*
@@ -41,7 +45,7 @@ class AnswerFragment : Fragment(), DereMethods {
     lateinit var currentUser: Users
     var imagesRecyclerAdapter = GroupAdapter<ViewHolder>()
     var imageListFinal = mutableListOf<String>()
-    lateinit var answerContent : EditText
+    lateinit var answerContent: EditText
 
     lateinit var sharedViewModelAnswerImages: SharedViewModelAnswerImages
 
@@ -80,7 +84,7 @@ class AnswerFragment : Fragment(), DereMethods {
 
         val addImage = answer_add_photos_button
         val answerButton = answer_btn
-        answerButton.text = "ANSWER"
+        answerButton.text = "Answer"
 
         val imagesRecycler = answer_photos_recycler
         val imagesRecyclerLayoutManager = GridLayoutManager(this.context, 3)
@@ -96,7 +100,7 @@ class AnswerFragment : Fragment(), DereMethods {
                 imagesRecyclerAdapter.clear()
                 imageListFinal.clear()
 
-                imagesRecycler.visibility = if (existingImageList.isNotEmpty()){
+                imagesRecycler.visibility = if (existingImageList.isNotEmpty()) {
                     View.VISIBLE
                 } else {
                     View.GONE
@@ -111,9 +115,41 @@ class AnswerFragment : Fragment(), DereMethods {
 
         answerButton.setOnClickListener {
 
-
             if (answer_content.text.length > 15) {
-                postAnswer(answerContent.text.toString(), System.currentTimeMillis(), activity)
+
+                val answersRef = FirebaseDatabase.getInstance().getReference("/questions/${question.id}/answers")
+
+                answersRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+
+                        var answersPerUser = 0
+
+                        for (answer in p0.children) {
+
+                            val answerObject = answer.child("body").getValue(Answers::class.java)
+
+                            if (answerObject!!.author == currentUser.uid) {
+                                answersPerUser++
+                            }
+                        }
+
+                        if (answersPerUser == 0) {
+                            postAnswer(answerContent.text.toString(), System.currentTimeMillis(), activity)
+                        } else {
+                            Toast.makeText(
+                                activity,
+                                "You've already answered this question, please edit your answer instead",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+
+                    }
+
+                })
+
             } else {
                 Toast.makeText(this.context, "Your answer is too short, please elaborate", Toast.LENGTH_SHORT).show()
             }
@@ -126,7 +162,7 @@ class AnswerFragment : Fragment(), DereMethods {
         }
     }
 
-    private fun postAnswer(content: String, timestamp: Long, activity : Activity) {
+    private fun postAnswer(content: String, timestamp: Long, activity: Activity) {
 
         activity as MainActivity
 
@@ -141,7 +177,7 @@ class AnswerFragment : Fragment(), DereMethods {
             .addOnSuccessListener {
                 Log.d("postAnswerActivity", "Saved answer to Firebase Database")
 
-                if (currentUser.uid != question.author){
+                if (currentUser.uid != question.author) {
                     changeReputation(
                         6,
                         ref.key!!,
@@ -156,17 +192,20 @@ class AnswerFragment : Fragment(), DereMethods {
                 }
 
 
-
                 val refQuestionLastInteraction =
                     FirebaseDatabase.getInstance().getReference("/questions/${question.id}/main/body/lastInteraction")
 
                 refQuestionLastInteraction.setValue(timestamp).addOnSuccessListener {
+                    activity.openedQuestionFragment.listenToAnswers(question.id)
                     activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
                         .commit()
                     activity.subActive = activity.openedQuestionFragment
                     closeKeyboard(activity)
 
                     answerContent.text.clear()
+
+                    val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                    firebaseAnalytics.logEvent("question_answer_added", null)
                 }
 
 

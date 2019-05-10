@@ -32,6 +32,7 @@ import co.getdere.viewmodels.SharedViewModelTags
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.tabs.TabLayout
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -48,13 +49,13 @@ class FeedFragment : Fragment(), DereMethods {
 
     lateinit var sharedViewModelTags: SharedViewModelTags
 
-    private lateinit var searchedImagesRecycler : RecyclerView
-    private lateinit var feedFilterChipGroup : ChipGroup
+    private lateinit var searchedImagesRecycler: RecyclerView
+    private lateinit var feedFilterChipGroup: ChipGroup
 
     val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
     val searchedImagesRecyclerAdapter = GroupAdapter<ViewHolder>()
 
-    private lateinit var viewPager : ViewPager
+    private lateinit var viewPager: ViewPager
 
 
     private val permissions = arrayOf(
@@ -66,7 +67,7 @@ class FeedFragment : Fragment(), DereMethods {
 
     private lateinit var currentUser: Users
 
-    private lateinit var pagerAdapter : FeedPagerAdapter
+    private lateinit var pagerAdapter: FeedPagerAdapter
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -122,7 +123,7 @@ class FeedFragment : Fragment(), DereMethods {
 
                 } else {
 
-                    for (tag in sharedViewModelTags.tagList){
+                    for (tag in sharedViewModelTags.tagList) {
                         println(tag.tagString)
                     }
 
@@ -153,13 +154,13 @@ class FeedFragment : Fragment(), DereMethods {
                 searchImages(row.tag.tagString)
                 recyclersVisibility(1)
                 closeKeyboard(activity)
+
+                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                firebaseAnalytics.logEvent("search_feed", null)
             } else {
                 Toast.makeText(this.context, "You can only search one tag_unactive at a time", Toast.LENGTH_LONG).show()
             }
         }
-
-
-
 
         viewPager = feed_pager_pager
         pagerAdapter = FeedPagerAdapter(childFragmentManager)
@@ -167,6 +168,32 @@ class FeedFragment : Fragment(), DereMethods {
 
         val tabLayout = feed_pager_tab_layout
         tabLayout.setupWithViewPager(viewPager)
+
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+
+        viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+            override fun onPageScrollStateChanged(state: Int) {
+
+            }
+
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+                if (position == 0) {
+                    firebaseAnalytics.logEvent("interests_feed", null)
+                } else {
+                    firebaseAnalytics.logEvent("following_feed", null)
+                }
+            }
+
+            override fun onPageSelected(position: Int) {
+                if (position == 0) {
+                    firebaseAnalytics.logEvent("interests_feed", null)
+                } else {
+                    firebaseAnalytics.logEvent("following_feed", null)
+                }
+            }
+
+        })
+
 
         val feedNotifications = feed_toolbar_notifications_icon
         val feedNotificationsBadge = feed_toolbar_notifications_badge
@@ -202,8 +229,6 @@ class FeedFragment : Fragment(), DereMethods {
     }
 
 
-
-
     private fun searchImages(searchedTag: String) { //This needs to be fixed to not update in real time. Or should it?
 
         searchedImagesRecyclerAdapter.clear()
@@ -219,11 +244,17 @@ class FeedFragment : Fragment(), DereMethods {
 
                 if (singleImageFromDB != null) {
 
-                    checkMatchWithPhoto@for (imageTag in singleImageFromDB.tags) {
+                    checkMatchWithPhoto@ for (imageTag in singleImageFromDB.tags) {
 
                         if (imageTag == searchedTag) {
                             if (!singleImageFromDB.private) {
-                                searchedImagesRecyclerAdapter.add(LinearFeedImage(singleImageFromDB, currentUser, activity as MainActivity))
+                                searchedImagesRecyclerAdapter.add(
+                                    LinearFeedImage(
+                                        singleImageFromDB,
+                                        currentUser,
+                                        activity as MainActivity
+                                    )
+                                )
                                 break@checkMatchWithPhoto
                             }
                         }
@@ -252,8 +283,6 @@ class FeedFragment : Fragment(), DereMethods {
     }
 
 
-
-
     private fun onTagSelected(selectedTag: String) {
 
         val chip = Chip(this.context)
@@ -274,9 +303,9 @@ class FeedFragment : Fragment(), DereMethods {
     }
 
 
-    private fun recyclersVisibility(case : Int){
+    private fun recyclersVisibility(case: Int) {
 
-        if (case == 0){
+        if (case == 0) {
             searchedImagesRecycler.visibility = View.GONE
             viewPager.visibility = View.VISIBLE
         } else {

@@ -30,21 +30,22 @@ class OnBoardingFragment : Fragment() {
 
 
     val title1 = "Welcome to Dere"
-    val subTitle1 = "All your future travel destinations in one place, filtered by your interests"
+    val subTitle1 = "All your future travel destinations in one place, filtered by your interests."
 
     val title2 = "Photos"
-    val subTitle2 = "Are all geo-tagged, so saving a photo adds it to your map"
+    val subTitle2 = "Are all geo-tagged, so saving a photo adds it to your map."
 
     val title3 = "Buckets"
     val subTitle3 =
-        "Are like binders for your dreams. Save different photos to different buckets according to your interests"
+        "Are like binders for your dreams. Save and arrange photos in different buckets."
 
     val title4 = "Board"
-    val subTitle4 = "Is where you talk to other explorers. Ask questions and share your knowledge"
+    val subTitle4 = "Is where you talk to other explorers. Ask questions and share your knowledge."
 
     val title5 = "Interests"
     val subTitle5 =
-        "Are saved automatically as you use the app. Long click some photos to add them to your first bucket and collect their tags to your interests"
+        "Are what filters the content you see in the app, and are saved automatically as you use Dere. Hold your finger on a photo to create your first bucket and collect its tags to your interests"
+
 
     var viewPagerPosition = 0
 
@@ -134,6 +135,7 @@ class OnBoardingFragment : Fragment() {
                         activity.fm.beginTransaction().remove(activity.active).show(activity.feedFragment)
                             .commit()
                         activity.active = activity.feedFragment
+                        activity.mBottomNav.visibility = View.VISIBLE
 
                         Toast.makeText(activity, "Start exploring!", Toast.LENGTH_SHORT).show()
 

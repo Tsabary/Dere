@@ -18,8 +18,9 @@
             android:layout_marginBottom="8dp"
             android:background="#33ffffff"
             android:scaleType="center"
-            mapbox:layout_constraintBottom_toBottomOf="@+id/bucket_map_view"
+            mapbox:layout_constraintBottom_toTopOf="@id/bucket_map_images_recycler"
             android:elevation="2dp"/>
+
     <androidx.recyclerview.widget.RecyclerView
             android:layout_width="0dp"
             android:layout_height="150dp"
@@ -30,7 +31,9 @@
             android:id="@+id/bucket_map_images_recycler"
             android:paddingEnd="250dp"
             android:paddingStart="8dp"
-            android:clipToPadding="false">
+            android:clipToPadding="false"
+            android:elevation="2dp"
+            android:layout_marginBottom="16dp">
     </androidx.recyclerview.widget.RecyclerView>
 
     <com.mapbox.mapboxsdk.maps.MapView
@@ -38,7 +41,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             mapbox:mapbox_cameraZoom="11"
-            mapbox:layout_constraintBottom_toTopOf="@+id/bucket_map_images_recycler"
+            mapbox:layout_constraintBottom_toBottomOf="parent"
             mapbox:layout_constraintTop_toTopOf="parent"
             mapbox:layout_constraintEnd_toEndOf="parent"
             mapbox:layout_constraintStart_toStartOf="parent">

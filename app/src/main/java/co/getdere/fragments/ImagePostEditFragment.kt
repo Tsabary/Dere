@@ -583,7 +583,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         chip.isCloseIconVisible = true
         chip.isCheckable = false
         chip.isClickable = false
-        chip.setCloseIconTintResource(R.color.green100)
+        chip.setCloseIconTintResource(R.color.green200)
         chip.setChipBackgroundColorResource(R.color.green700)
         chip.setTextAppearance(R.style.ChipSelectedStyle)
         chip.setOnCloseIconClickListener {

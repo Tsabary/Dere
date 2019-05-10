@@ -18,6 +18,7 @@ import co.getdere.models.Users
 import co.getdere.R
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelQuestion
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.fragment_answer.*
@@ -59,7 +60,7 @@ class AnswerCommentFragment : Fragment(), DereMethods {
 
         val postButton = answer_btn
 
-        postButton.text = "COMMENT"
+        postButton.text = "Comment"
 
         postButton.setOnClickListener {
 
@@ -116,6 +117,9 @@ class AnswerCommentFragment : Fragment(), DereMethods {
                             activity.subActive = activity.openedQuestionFragment
 
                             closeKeyboard(activity)
+
+                            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                            firebaseAnalytics.logEvent("question_answer_comment_added", null)
                         }
 
 

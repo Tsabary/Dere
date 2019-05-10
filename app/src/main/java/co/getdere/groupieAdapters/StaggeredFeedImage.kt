@@ -173,6 +173,7 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
         })
 
         imageView.setOnTouchListener { v, event ->
+            sharedViewModelImage.sharedImageObject.postValue(image)
             gestureDetector.onTouchEvent(event)
         }
 
@@ -208,9 +209,6 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
 
     private fun openImage() {
 
-        sharedViewModelImage.sharedImageObject.postValue(image)
-
-
         // meanwhile in the background it will load the random user object
 
         val refRandomUser =
@@ -238,7 +236,7 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
 
     private fun goToBucket() {
 
-        sharedViewModelImage.sharedImageObject.postValue(image)
+
 
         val randomUserRef = FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
         randomUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -250,13 +248,10 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
                 val user = p0.getValue(Users::class.java)
                 sharedViewModelRandomUser.randomUserObject.postValue(user)
 
-
-                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketFragment).commit()
+                activity.subFm.beginTransaction().hide(activity.subActive).add(R.id.feed_subcontents_frame_container, activity.bucketFragment, "bucketFragment").commit()
                 activity.subActive = activity.bucketFragment
                 activity.switchVisibility(1)
             }
-
         })
-
     }
 }

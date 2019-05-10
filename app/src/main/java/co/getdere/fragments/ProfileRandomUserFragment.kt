@@ -28,6 +28,7 @@ import co.getdere.viewmodels.SharedViewModelCollection
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
@@ -47,6 +48,7 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
     val galleryRollAdapter = GroupAdapter<ViewHolder>()
     lateinit var followButton: TextView
     lateinit var profileGallery: RecyclerView
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -83,6 +85,8 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
         instagramButton.setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(instaLink)))
+            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+            firebaseAnalytics.logEvent("instagram_clicked_other_user", null)
         }
 
 
@@ -164,6 +168,8 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                         sharedViewModelCollection.imageCollection.postValue(p0)
                         activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionMapView).commit()
                         activity.subActive = activity.collectionMapView
+                        val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
+                        firebaseAnalytics.logEvent("map_checked_user", null)
                     } else {
                         Toast.makeText(activity, "User has no photos to view on the map", Toast.LENGTH_SHORT).show()
                     }

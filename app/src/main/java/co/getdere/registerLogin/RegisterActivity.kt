@@ -47,7 +47,8 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
     private val permissions = arrayOf(
         Manifest.permission.CAMERA,
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.READ_EXTERNAL_STORAGE
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.ACCESS_FINE_LOCATION
     )
 
     private var texts = arrayOf("CREATING ACCOUNT", "CREATING ACCOUNT")

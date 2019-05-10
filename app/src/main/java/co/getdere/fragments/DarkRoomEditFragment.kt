@@ -40,6 +40,7 @@ import co.getdere.viewmodels.SharedViewModelTags
 import com.bumptech.glide.Glide
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
@@ -73,6 +74,8 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     lateinit var sharedViewModelTags: SharedViewModelTags
 
     private lateinit var localImageViewModel: LocalImageViewModel
+
+    lateinit var currentLocalImagePost: LocalImagePost
 
     val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
     lateinit var imageChipGroup: ChipGroup
@@ -287,15 +290,16 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             localImageViewModel.update(updatedImage).invokeOnCompletion {
                 Toast.makeText(this.context, "Photo details saved successfully", Toast.LENGTH_LONG).show()
             }
+
+            if (currentLocalImagePost!=updatedImage){
+                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                firebaseAnalytics.logEvent("local_image_updated", null)
+            }
         }
 
 
         progressBar = dark_room_edit_progress_bar
         uploadBackground = dark_room_edit_white_background
-
-
-
-
 
 
         mapView?.getMapAsync { mapboxMap ->
@@ -319,8 +323,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                 sharedViewModelLocalImagePost.sharedImagePostObject.observe(this, Observer {
                     it?.let { localImageObject ->
 
-
-
+                        currentLocalImagePost = localImageObject
 
                         Glide.with(this).load(localImageObject.imageUri).into(imageView)
                         localImagePost = localImageObject
@@ -716,6 +719,13 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                     localImageViewModel.delete(localImagePost)
 
+                    if(newImage.verified){
+                        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                        firebaseAnalytics.logEvent("image_added_verified", null)
+                    } else {
+                        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                        firebaseAnalytics.logEvent("image_added_unverified", null)
+                    }
 
                     val backToFeed = Intent((activity as CameraActivity), MainActivity::class.java)
                     startActivity(backToFeed)
@@ -731,7 +741,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                 Log.d("imageToDatabase", "image did not save to feed")
             }
     }
-
 
 
     private fun makeTagsActive() {
@@ -796,6 +805,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         chip.isCheckable = false
         chip.isClickable = false
         chip.setChipBackgroundColorResource(R.color.green700)
+        chip.setCloseIconTintResource(R.color.green200)
         chip.setTextAppearance(R.style.ChipSelectedStyle)
         chip.setOnCloseIconClickListener {
             imageChipGroup.removeView(it)

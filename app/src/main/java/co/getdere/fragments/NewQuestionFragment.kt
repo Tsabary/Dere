@@ -23,6 +23,7 @@ import co.getdere.viewmodels.SharedViewModelRandomUser
 import co.getdere.viewmodels.SharedViewModelTags
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
@@ -262,6 +263,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
         chip.isCloseIconVisible = true
         chip.isCheckable = false
         chip.isClickable = false
+        chip.setCloseIconTintResource(R.color.green200)
         chip.setChipBackgroundColorResource(R.color.green700)
         chip.setTextAppearance(R.style.ChipSelectedStyle)
         chip.setOnCloseIconClickListener {
@@ -316,9 +318,8 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
                 closeKeyboard(activity)
 
-                Log.d("postQuestionActivity", "Saved question to Firebase Database")
-//                val action = NewQuestionFragmentDirections.actionDestinationNewQuestionToDestinationBoard()
-//                findNavController().navigate(action)
+                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                firebaseAnalytics.logEvent("question_added", null)
 
 
             }.addOnFailureListener {

@@ -596,7 +596,7 @@
                     android:layout_marginTop="16dp">
 
                 <TextView
-                        android:text="SHARE"
+                        android:text="@string/share"
                         android:layout_width="0dp"
                         android:layout_height="60dp"
                         android:id="@+id/dark_room_edit_share"

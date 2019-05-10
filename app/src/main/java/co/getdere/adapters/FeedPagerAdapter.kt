@@ -4,6 +4,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import co.getdere.fragments.FollowingFeedFragment
+import co.getdere.fragments.FollowingFeedFragmentNew
 import co.getdere.fragments.InterestsFeedFragment
 import co.getdere.fragments.RecentFeedFragment
 
@@ -15,8 +16,7 @@ class FeedPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAdapter(
 
         when (p0) {
             0 -> return InterestsFeedFragment.newInstance()
-            1 -> return FollowingFeedFragment.newInstance()
-//            2 -> return RecentFeedFragment.newInstance()
+            1 -> return FollowingFeedFragmentNew.newInstance()
             else -> return InterestsFeedFragment.newInstance()
         }
     }

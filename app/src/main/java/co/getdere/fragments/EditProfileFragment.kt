@@ -71,8 +71,6 @@ class EditProfileFragment : Fragment() {
         userInstagramInput = edit_profile_instagram
 
         val saveButton = edit_profile_save
-        val cancelButton = edit_profile_cancel
-
 
         setUpUserDetails()
 
@@ -87,11 +85,6 @@ class EditProfileFragment : Fragment() {
 
         saveButton.setOnClickListener {
             uploadImageToFirebase(user.image)
-        }
-
-        cancelButton.setOnClickListener {
-            val activity = activity as MainActivity
-            activity.switchVisibility(0)
         }
 
     }

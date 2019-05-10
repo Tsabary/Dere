@@ -29,13 +29,9 @@ import kotlinx.android.synthetic.main.fragment_feeds_layout.*
 open class FollowingFeedFragment : Fragment() {
 
     lateinit var sharedViewModelFollowedAccounts: SharedViewModelFollowedAccounts
-
     lateinit var sharedViewModelImage: SharedViewModelImage
-
     lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
-
     lateinit var currentUser: Users
-
     lateinit var feedRecycler: RecyclerView
     val galleryAdapter = GroupAdapter<ViewHolder>()
 
@@ -48,15 +44,10 @@ open class FollowingFeedFragment : Fragment() {
 
         activity?.let {
             sharedViewModelFollowedAccounts = ViewModelProviders.of(it).get(SharedViewModelFollowedAccounts::class.java)
-
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
-
             sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
-
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-
             createFollowedAccountsList()
-
         }
 
     }
