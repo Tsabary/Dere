@@ -28,7 +28,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/rv_on_top_of_map_image"
-                    app:srcCompat="@drawable/no_dread"
                     android:scaleType="centerCrop"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"

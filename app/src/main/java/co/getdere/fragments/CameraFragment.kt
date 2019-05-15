@@ -241,7 +241,7 @@ class CameraFragment : Fragment() {
         val options = UCrop.Options()
         options.setActiveWidgetColor(resources.getColor(R.color.green700))
         options.setActiveControlsWidgetColor(resources.getColor(R.color.white))
-        myUcrop.withOptions(options).start(this.context!!, this, UCrop.REQUEST_CROP)
+        myUcrop.withOptions(options).start(this.context!!, this, 1)
     }
 
     private fun exifToDegrees(exifOrientation: Int): Float {

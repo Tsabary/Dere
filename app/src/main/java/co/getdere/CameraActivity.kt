@@ -1,5 +1,6 @@
 package co.getdere
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -18,6 +19,7 @@ import androidx.lifecycle.ViewModelProviders
 import co.getdere.roomclasses.LocalImageViewModel
 import co.getdere.viewmodels.SharedViewModelLocalImagePost
 import android.net.Uri
+import com.google.firebase.analytics.FirebaseAnalytics
 import java.io.File
 
 
@@ -50,37 +52,64 @@ class CameraActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode != RESULT_CANCELED) {
-            Log.d("ucroppp", "activityResult")
 
-            val localImagePost = LocalImagePost(
-                timeStamp,
-                locationLong,
-                locationLat,
-                UCrop.getOutput(data!!)!!.path!!,
-                "",
-                "",
-                true
-            )
-            Log.d("photoActivity", "Took photo")
+            if (requestCode == 1){
+                Log.d("ucroppp", "activityResult")
 
-            localImageViewModel.insert(localImagePost)
+                val localImagePost = LocalImagePost(
+                    timeStamp,
+                    locationLong,
+                    locationLat,
+                    UCrop.getOutput(data!!)!!.path!!,
+                    "",
+                    "",
+                    true
+                )
+                Log.d("photoActivity", "Took photo")
 
-            sharedViewModelLocalImagePost.sharedImagePostObject.postValue(localImagePost)
+                localImageViewModel.insert(localImagePost)
 
-
-
-            if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
-                val resultUri = UCrop.getOutput(data!!)
-                Log.d("ucroppp", "all good")
-                Log.d("ucroppp", resultUri.toString())
-
-            } else if (resultCode == UCrop.RESULT_ERROR) {
-                val cropError = UCrop.getError(data!!)
-                Log.d("ucroppp", "someError")
-                Log.d("ucroppp", cropError.toString())
-            } else {
-                Log.d("ucroppp", "no conditions satisfied")
+                sharedViewModelLocalImagePost.sharedImagePostObject.postValue(localImagePost)
             }
+//            else if (requestCode == 2 && resultCode == Activity.RESULT_OK && data != null){
+//                Log.d("Main", "Photo was selected")
+//
+//                val selectedPhotoUri = data.data
+//
+//                if (selectedPhotoUri != null) {
+//                    val localImagePost = LocalImagePost(
+//                        System.currentTimeMillis(),
+//                        0.0,
+//                        0.0,
+//                        selectedPhotoUri.toString(),
+//                        "",
+//                        "",
+//                        verified = false
+//                    )
+//
+//                    localImageViewModel.insert(localImagePost)
+//
+//                    val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+//                    firebaseAnalytics.logEvent("image_uploaded_from_device", null)
+//                }
+//            }
+
+
+
+
+
+//            if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
+//                val resultUri = UCrop.getOutput(data!!)
+//                Log.d("ucroppp", "all good")
+//                Log.d("ucroppp", resultUri.toString())
+//
+//            } else if (resultCode == UCrop.RESULT_ERROR) {
+//                val cropError = UCrop.getError(data!!)
+//                Log.d("ucroppp", "someError")
+//                Log.d("ucroppp", cropError.toString())
+//            } else {
+//                Log.d("ucroppp", "no conditions satisfied")
+//            }
         } else {
             val imageFile = File(lastImageTaken)
             if (imageFile.exists()) {

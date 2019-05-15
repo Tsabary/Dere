@@ -24,6 +24,7 @@ import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.board_notification_single_row.view.*
 import kotlinx.android.synthetic.main.board_toolbar.*
+import kotlinx.android.synthetic.main.feed_notification_single_row.view.*
 import kotlinx.android.synthetic.main.fragment_notifications_feed.*
 import lt.neworld.spanner.Spanner
 import lt.neworld.spanner.Spans
@@ -223,13 +224,32 @@ class SingleBoardNotification(val notification: Notification, val activity: Main
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
         val notificationBox = viewHolder.itemView.board_notification_box
-        val date = PrettyTime().format(Date(notification.timestamp))
-        viewHolder.itemView.board_notification_timestamp.text = date
+
+        viewHolder.itemView.board_notification_timestamp.text = PrettyTime().format(Date(notification.timestamp))
 
 
         activity.let {
             val sharedViewModelQuestion = ViewModelProviders.of(it).get(SharedViewModelQuestion::class.java)
             val sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
+
+
+            viewHolder.itemView.board_notification_initiator_image.setOnClickListener {
+                val randomUserRef =
+                    FirebaseDatabase.getInstance().getReference("/users/${notification.initiatorId}/profile")
+                randomUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
+                        activity.subFm.beginTransaction().hide(activity.subActive)
+                            .show(activity.profileRandomUserFragment).commit()
+                        activity.subActive = activity.profileRandomUserFragment
+                        activity.isBoardNotificationsActive = true
+                    }
+
+                })
+            }
 
 
             viewHolder.itemView.setOnClickListener {
@@ -320,14 +340,14 @@ class SingleBoardNotification(val notification: Notification, val activity: Main
                         0 -> {
                             Spanner()
                                 .append(notification.initiatorName)
-                                .append(" upvoted your question ", Spans.font("open_sans_semibold"))
+                                .append(" upvoted your question ", Spans.font("roboto_medium"))
                                 .append(question.title)
                         }
 
                         2 -> {
                             Spanner()
                                 .append(notification.initiatorName)
-                                .append(" upvoted your answer on the question ", Spans.font("open_sans_semibold"))
+                                .append(" upvoted your answer on the question ", Spans.font("roboto_medium"))
                                 .append(question.title)
                         }
 
@@ -335,12 +355,12 @@ class SingleBoardNotification(val notification: Notification, val activity: Main
                             if (notification.mainPostId == notification.specificPostId) {
                                 Spanner()
                                     .append("Someone")
-                                    .append(" downvoted your question ", Spans.font("open_sans_semibold"))
+                                    .append(" downvoted your question ", Spans.font("roboto_medium"))
                                     .append(question.title)
                             } else {
                                 Spanner()
                                     .append("Someone")
-                                    .append(" downvoted your answer to the question ", Spans.font("open_sans_semibold"))
+                                    .append(" downvoted your answer to the question ", Spans.font("roboto_medium"))
                                     .append(question.title)
                             }
                         }
@@ -349,21 +369,21 @@ class SingleBoardNotification(val notification: Notification, val activity: Main
 
                             Spanner()
                                 .append(notification.initiatorName)
-                                .append(" answered your question ", Spans.font("open_sans_semibold"))
+                                .append(" answered your question ", Spans.font("roboto_medium"))
                                 .append(question.title)
                         }
 
                         10 -> {
                             Spanner()
                                 .append(notification.initiatorName)
-                                .append(" saved your question ", Spans.font("open_sans_semibold"))
+                                .append(" saved your question ", Spans.font("roboto_medium"))
                                 .append(question.title)
                         }
 
                         18 -> {
                             Spanner()
                                 .append(notification.initiatorName)
-                                .append(" commented on your answer to the question ", Spans.font("open_sans_semibold"))
+                                .append(" commented on your answer to the question ", Spans.font("roboto_medium"))
                                 .append(question.title)
                         }
                         else -> "Notification failed to load"
@@ -400,7 +420,7 @@ class SingleBoardNotification(val notification: Notification, val activity: Main
                     val user = p0.getValue(Users::class.java)
 
                     if (user != null) {
-                        Glide.with(viewHolder.root.context).load(user.image)
+                        Glide.with(viewHolder.root.context).load(if(user.image.isNotEmpty()){user.image}else{R.drawable.user_profile})
                             .into(viewHolder.itemView.board_notification_initiator_image)
                     }
                 }

@@ -27,11 +27,12 @@
             android:id="@+id/feed_notification_content"
             android:layout_marginEnd="24dp"
             tools:text="notificatiooon"
-            android:fontFamily="@font/open_sans_bold"
+            android:fontFamily="@font/roboto_bold"
             app:layout_constraintStart_toEndOf="@+id/feed_notification_initiator_image"
             android:layout_marginStart="24dp"
             app:layout_constraintEnd_toStartOf="@+id/feed_notification_post_image"
-            app:layout_constraintTop_toTopOf="@+id/feed_notification_initiator_image"/>
+            app:layout_constraintTop_toTopOf="@+id/feed_notification_initiator_image"
+            android:textSize="15sp"/>
     <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -51,5 +52,6 @@
             tools:text="yesterday"
             app:layout_constraintStart_toStartOf="@+id/feed_notification_content"
             android:textSize="11sp"
-            android:textColor="@color/gray500"/>
+            android:textColor="@color/gray500"
+            android:fontFamily="@font/roboto_medium"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -21,9 +21,7 @@ import co.getdere.models.Comments
 import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.otherClasses.SwipeLockableViewPager
-import co.getdere.viewmodels.SharedViewModelCurrentUser
-import co.getdere.viewmodels.SharedViewModelImage
-import co.getdere.viewmodels.SharedViewModelRandomUser
+import co.getdere.viewmodels.*
 import com.bumptech.glide.Glide
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.database.*
@@ -51,6 +49,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
     lateinit var sharedViewModelForImage: SharedViewModelImage
     lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
     lateinit var currentUser: Users
+    lateinit var randomUser: Users
 
     val commentsRecyclerAdapter = GroupAdapter<ViewHolder>()
     private val commentsRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
@@ -113,7 +112,6 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         bucketButton = image_expended_bucket_icon
         val commentCount = image_expended_comment_count
         val shareButton = image_expended_share
-        val linkIcon = image_expended_link_icon
         val linkAddress = image_expended_link_address
         val tags = image_expended_tags
 
@@ -138,6 +136,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         layoutScroll = image_expended_scrollView
 
+        val divider = image_expended_divider
         val commentsRecycler = image_expended_comments_recycler
 
         commentsRecycler.adapter = commentsRecyclerAdapter
@@ -159,9 +158,12 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
 
                 when {
-                    imageRatioFinal > 1.25 -> (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "5:4"
-                    imageRatioFinal < 0.8 -> (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = "4:5"
-                    else -> (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
+                    imageRatioFinal > 1.25 -> (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio =
+                        "5:4"
+                    imageRatioFinal < 0.8 -> (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio =
+                        "4:5"
+                    else -> (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio =
+                        image.ratio
                 }
 
                 listenToLikeCount(likeCount, image)
@@ -189,6 +191,9 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                 if (image.details.isNotEmpty()) {
                     imageContent.visibility = View.VISIBLE
                     imageContent.text = image.details
+                } else {
+                    imageContent.visibility = View.GONE
+
                 }
 
                 if (image.link.isNotEmpty()) {
@@ -201,9 +206,11 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                             .commit()
                         activity.subActive = activity.webViewFragment
                     }
+                } else {
+                    linkAddress.visibility = View.GONE
                 }
 
-                if (image.photographer == currentUser.uid) {
+                if (image.photographer == currentUser.uid || currentUser.uid == "hQ3KL1zqpsZIhY38IpSRW2G0wXJ2") {
                     optionsButton.visibility = View.VISIBLE
 
                     optionsButton.setOnClickListener {
@@ -234,6 +241,12 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                     }
 
                     removeButton.setOnClickListener {
+
+                        for (tag in image.tags) {
+                            val tagRef = FirebaseDatabase.getInstance().getReference("/tags/$tag/${image.id}")
+                            tagRef.removeValue()
+                        }
+
                         val imageRef = FirebaseDatabase.getInstance().getReference("/images/${image.id}")
                         imageRef.removeValue()
                         val imageAtUserRef =
@@ -242,6 +255,18 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
                         val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
                         firebaseAnalytics.logEvent("image_removed", null)
+
+                        activity.switchVisibility(0)
+
+                        optionsContainer.visibility = View.GONE
+                        deleteEditContainer.visibility = View.VISIBLE
+                        deleteContainer.visibility = View.GONE
+
+//                        activity.fm.beginTransaction().detach(activity.profileLoggedInUserFragment)
+//                            .attach(activity.profileLoggedInUserFragment).commit()
+                        activity.profileLoggedInUserFragment.listenToImagesFromRoll()
+
+
                     }
 
                 } else {
@@ -252,7 +277,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
                 actionsContainer.visibility = View.VISIBLE
 
-                listenToComments(image)
+                listenToImageComments(image, commentsRecyclerAdapter, commentsRecycler, divider, currentUser, activity)
 
                 val contentDescription = if (image.details.isNotEmpty()) {
                     image.details
@@ -262,10 +287,19 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
                 sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
                     it?.let { user ->
-
+                        randomUser = user
                         authorName.text = user.name
                         authorReputation.text = "(${numberCalculation(user.reputation)})"
-                        Glide.with(context!!).load(user.image).into(authorImage)
+
+                        Glide.with(context!!).load(
+                            if (user.image.isNotEmpty()) {
+                                user.image
+                            } else {
+                                R.drawable.user_profile
+                            }
+                        ).into(authorImage)
+
+
 
 
                         buo = BranchUniversalObject()
@@ -340,12 +374,17 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         bucketButton.setOnClickListener {
             if (currentUser.uid != imageObject.photographer) {
-                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketFragment).commit()
+                activity.subFm.beginTransaction().hide(activity.subActive)
+                    .add(R.id.feed_subcontents_frame_container, activity.bucketFragment, "bucketFragment").commit()
                 activity.subActive = activity.bucketFragment
             }
         }
 
         postButton.setOnClickListener {
+
+            val ref =
+                FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/comments/").push()
+
             val timestamp = System.currentTimeMillis()
 
             val comment =
@@ -353,14 +392,13 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                     currentUser.uid,
                     commentInput.text.toString(),
                     timestamp,
-                    imageObject.id
+                    imageObject.id,
+                    ref.key!!
                 )
 
             commentInput.text.clear()
 
-            val ref = FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/comments/").push().child("body")
-
-            ref.setValue(comment).addOnSuccessListener {
+            ref.child("body").setValue(comment).addOnSuccessListener {
 
                 val refImageLastInteraction = FirebaseDatabase.getInstance()
                     .getReference("/images/${imageObject.id}/body/lastInteraction")
@@ -377,7 +415,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                     )
 
                     closeKeyboard(activity)
-
+                    listenToImageComments(imageObject, commentsRecyclerAdapter, commentsRecycler, divider, currentUser, activity)
                     layoutScroll.fullScroll(View.FOCUS_DOWN)
 
                     val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
@@ -419,76 +457,34 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
     }
 
     private fun goToRandomUserProfile() {
-
         val activity = activity as MainActivity
 
-        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileRandomUserFragment).commit()
-        activity.subActive = activity.profileRandomUserFragment
+        if (currentUser.uid != randomUser.uid) {
 
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileRandomUserFragment).commit()
+            activity.subActive = activity.profileRandomUserFragment
+
+            activity.isRandomUserProfileActive = true
+        } else {
+            activity.navigateToProfile()
+        }
     }
-
-
-    private fun listenToComments(image: Images) {
-
-        commentsRecyclerAdapter.clear()
-
-
-        val ref = FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/")
-
-        ref.addChildEventListener(object : ChildEventListener {
-
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
-                image_expended_comments_recycler.visibility = View.VISIBLE
-                image_expended_divider.visibility = View.VISIBLE
-
-                val singleCommentFromDB = p0.child("body").getValue(Comments::class.java)
-
-                if (singleCommentFromDB != null) {
-                    commentsRecyclerAdapter.add(
-                        SingleComment(
-                            singleCommentFromDB,
-                            p0.key!!,
-                            image,
-                            currentUser,
-                            activity as MainActivity
-                        )
-                    )
-                }
-            }
-
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
-
-        })
-
-    }
-
-
 }
 
 
 class SingleComment(
     var comment: Comments,
-    val commentId: String,
     val image: Images,
     val currentUser: Users,
-    val activity: Activity
+    val activity: MainActivity
 ) :
     Item<ViewHolder>(),
     DereMethods {
 
-//    val uid =FirebaseAuth.getInstance().uid
+    lateinit var sharedViewModelSecondRandomUser: SharedViewModelSecondRandomUser
+
+    val commentUserRef = FirebaseDatabase.getInstance().getReference("/users/${comment.authorId}/profile")
+
 
     override fun getLayout(): Int {
         return R.layout.comment_layout
@@ -496,11 +492,16 @@ class SingleComment(
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
+        activity.let {
+            sharedViewModelSecondRandomUser = ViewModelProviders.of(it).get(SharedViewModelSecondRandomUser::class.java)
+        }
+
         val commentContent = viewHolder.itemView.single_comment_content
         val commentTimestamp = viewHolder.itemView.single_comment_timestamp
         val commentLikeCount = viewHolder.itemView.single_comment_like_count
         val commentLikeButton = viewHolder.itemView.single_comment_like_button
         val commentAuthor = viewHolder.itemView.single_comment_author
+        val commentAuthorImage = viewHolder.itemView.single_comment_photo
         val commentAuthorReputation = viewHolder.itemView.single_comment_author_reputation
         val commentEditButton = viewHolder.itemView.single_comment_edit
         val commentSaveButton = viewHolder.itemView.single_comment_save
@@ -517,21 +518,64 @@ class SingleComment(
         commentContentEditable.setText(comment.content)
         commentTimestamp.text = date
 
-        listenToLikeCount(commentLikeCount)
+        listenToCommentLikeCount(commentLikeCount)
 
-        executeLike(image, currentUser.uid, commentLikeCount, commentLikeButton, 0, currentUser.name, image.photographer, commentAuthorReputation, activity, "imageComment")
+        executeCommentLike(
+            image,
+            currentUser.uid,
+            commentLikeCount,
+            commentLikeButton,
+            0,
+            currentUser.name,
+            image.photographer,
+            commentAuthorReputation,
+            activity,
+            comment
+        )
 
         commentLikeButton.setOnClickListener {
 
             if (currentUser.uid != comment.authorId) {
-                executeLike(image, currentUser.uid, commentLikeCount, commentLikeButton, 1, currentUser.name, image.photographer, commentAuthorReputation, activity, "imageComment")
+                executeCommentLike(
+                    image,
+                    currentUser.uid,
+                    commentLikeCount,
+                    commentLikeButton,
+                    1,
+                    currentUser.name,
+                    image.photographer,
+                    commentAuthorReputation,
+                    activity,
+                    comment
+                )
+            }
+        }
+
+        commentAuthorImage.setOnClickListener {
+
+            if (currentUser.uid != comment.authorId) {
+                commentUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+
+                        sharedViewModelSecondRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
+                        activity.subFm.beginTransaction().hide(activity.subActive)
+                            .show(activity.profileSecondRandomUserFragment)
+                            .commit()
+                        activity.subActive = activity.profileSecondRandomUserFragment
+                        activity.isSecondRandomUserProfileActive = true
+                    }
+                })
+            } else {
+                activity.navigateToProfile()
             }
         }
 
 
-        val refCommentUser = FirebaseDatabase.getInstance().getReference("/users/${comment.authorId}/profile")
 
-        refCommentUser.addListenerForSingleValueEvent(object : ValueEventListener {
+        commentUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
 
             }
@@ -540,13 +584,22 @@ class SingleComment(
 
                 val user = p0.getValue(Users::class.java)
 
-                commentAuthor.text = user!!.name
-                commentAuthorReputation.text = "(${user.reputation})"
+                if (user != null){
+                    commentAuthor.text = user.name
+                    commentAuthorReputation.text = "(${user.reputation})"
 
-                Glide.with(viewHolder.root.context).load(user.image).into(viewHolder.itemView.single_comment_photo)
+                    Glide.with(viewHolder.root.context).load(
+                        if (user.image.isNotEmpty()) {
+                            user.image
+                        } else {
+                            R.drawable.user_profile
+                        }
+                    ).into(commentAuthorImage)
+                } else {
+                    commentAuthor.text = "Josh"
 
+                }
             }
-
         })
 
         if (comment.authorId == currentUser.uid) {
@@ -564,7 +617,8 @@ class SingleComment(
 
             commentSaveButton.setOnClickListener {
                 val commentRef =
-                    FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/$commentId/body/content")
+                    FirebaseDatabase.getInstance()
+                        .getReference("/images/${image.id}/comments/${comment.id}/body/content")
                 commentRef.setValue(commentContentEditable.text.toString())
                 commentContent.text = commentContentEditable.text.toString()
                 commentEditButton.visibility = View.VISIBLE
@@ -576,7 +630,8 @@ class SingleComment(
                     comment.authorId,
                     commentContentEditable.text.toString(),
                     comment.timeStamp,
-                    comment.ImageId
+                    comment.ImageId,
+                    comment.id
                 )
                 comment = newComment
                 closeKeyboard(activity)
@@ -591,7 +646,8 @@ class SingleComment(
             }
 
             commentRemoveButton.setOnClickListener {
-                val commentRef = FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/$commentId")
+                val commentRef =
+                    FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/${comment.id}")
                 commentRef.removeValue()
 
                 (activity as MainActivity).imageFullSizeFragment.commentsRecyclerAdapter.removeGroup(position)
@@ -602,22 +658,20 @@ class SingleComment(
                 firebaseAnalytics.logEvent("image_comment_removed", null)
             }
         }
-
-
     }
 
 
-    private fun listenToLikeCount(commentLikeCount: TextView) {
+    private fun listenToCommentLikeCount(commentLikeCount: TextView) {
 
         val commentLikeRef =
-            FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/$commentId/likes")
+            FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/${comment.id}/likes")
 
         commentLikeRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                commentLikeCount.text = p0.childrenCount.toString()
+                commentLikeCount.text = numberCalculation(p0.childrenCount)
             }
         })
     }

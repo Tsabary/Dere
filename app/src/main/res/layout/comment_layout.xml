@@ -27,7 +27,9 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="24dp"/>
+                android:layout_marginTop="24dp"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="15sp"/>
         <TextView
                 android:text="@android:string/cancel"
                 android:layout_width="wrap_content"
@@ -41,7 +43,8 @@
                 app:layout_constraintTop_toBottomOf="@+id/single_comment_delete_message"
                 android:layout_marginBottom="24dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:textColor="@color/gray500"/>
+                android:textColor="@color/gray500"
+                android:fontFamily="@font/roboto_medium"/>
         <TextView
                 android:text="Remove"
                 android:layout_width="wrap_content"
@@ -53,7 +56,8 @@
                 app:layout_constraintStart_toEndOf="@+id/single_comment_cancel"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:textColor="@color/red700"/>
+                android:textColor="@color/red700"
+                android:fontFamily="@font/roboto_medium"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
     <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="40dp"
@@ -69,10 +73,11 @@
             android:id="@+id/single_comment_author"
             app:layout_constraintStart_toEndOf="@+id/single_comment_photo"
             android:layout_marginStart="32dp"
-            android:fontFamily="@font/open_sans_bold"
+            android:fontFamily="@font/roboto_bold"
             tools:text="name name"
             app:layout_constraintTop_toTopOf="@+id/single_comment_photo"
-            android:textColor="@color/gray800"/>
+            android:textColor="@color/gray800"
+            android:textSize="15sp"/>
     <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -82,7 +87,7 @@
             app:layout_constraintStart_toEndOf="@+id/single_comment_photo"
             tools:text="comment comment comment"
             app:layout_constraintHorizontal_bias="0.0"
-            android:fontFamily="@font/open_sans_semibold"
+            android:fontFamily="@font/roboto_medium"
             android:layout_marginEnd="16dp"
             android:layout_marginTop="8dp"
             app:layout_constraintEnd_toStartOf="@+id/single_comment_like_button"
@@ -116,10 +121,11 @@
             app:layout_constraintStart_toEndOf="@+id/single_comment_photo"
             android:layout_marginStart="32dp"
             tools:text="time time"
-            android:fontFamily="@font/open_sans_semibold"
+            android:fontFamily="@font/roboto_medium"
             android:textColor="@color/gray500"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp"
+            android:textSize="15sp"/>
     <ImageButton
             android:layout_width="16dp"
             android:layout_height="16dp"
@@ -136,12 +142,13 @@
             android:layout_height="wrap_content"
             android:id="@+id/single_comment_like_count"
             tools:text="3"
-            android:fontFamily="@font/open_sans_semibold"
+            android:fontFamily="@font/roboto_medium"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="16dp"
             app:layout_constraintBottom_toBottomOf="@+id/single_comment_like_button"
             app:layout_constraintTop_toTopOf="@+id/single_comment_like_button"
-            android:textColor="@color/gray700"/>
+            android:textColor="@color/gray700"
+            android:textSize="15sp"/>
 
     <TextView
             android:text="Edit"
@@ -154,7 +161,9 @@
             app:layout_constraintBottom_toBottomOf="parent"
             android:textColor="@color/gray500"
             android:visibility="gone"
-            android:gravity="center_horizontal"/>
+            android:gravity="center_horizontal"
+            android:textSize="15sp"
+            android:fontFamily="@font/roboto_medium"/>
 
     <TextView
             android:text="@string/Save"
@@ -167,7 +176,9 @@
             app:layout_constraintBottom_toBottomOf="parent"
             android:textColor="@color/green700"
             android:visibility="gone"
-            android:gravity="center_horizontal"/>
+            android:gravity="center_horizontal"
+            android:textSize="15sp"
+            android:fontFamily="@font/roboto_medium"/>
 
     <TextView
             android:text="Delete"
@@ -179,7 +190,9 @@
             android:layout_marginBottom="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             android:textColor="@color/gray500"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:textSize="15sp"
+            android:fontFamily="@font/roboto_medium"/>
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -190,5 +203,6 @@
             app:layout_constraintBottom_toBottomOf="@+id/single_comment_author"
             android:textColor="@color/gray500"
             android:hint="6"
-            android:fontFamily="@font/open_sans_semibold"/>
+            android:fontFamily="@font/roboto_medium"
+            android:textSize="15sp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

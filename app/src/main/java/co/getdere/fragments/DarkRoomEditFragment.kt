@@ -17,6 +17,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
@@ -82,9 +83,10 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     private val tagsRef = FirebaseDatabase.getInstance().getReference("/tags")
 
     lateinit var imageLocationInput: TextView
-    lateinit var imageUrl: TextView
+    lateinit var imageUrl: EditText
     var imageTagsList: MutableList<String> = mutableListOf()
     var imagePrivacy = false
+    lateinit var imageTagsInput: EditText
 
     lateinit var progressBar: MyCircleProgressBar
     lateinit var uploadBackground: ConstraintLayout
@@ -176,7 +178,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
         val imageView = dark_room_edit_image_horizontal
         val addTagButton = dark_room_edit_add_tag_button
-        val imageTagsInput = dark_room_edit_tag_input
+        imageTagsInput = dark_room_edit_tag_input
         imageChipGroup = dark_room_edit_chip_group
         imageLocationInput = dark_room_edit_location_input
         imageUrl = dark_room_edit_url
@@ -291,7 +293,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                 Toast.makeText(this.context, "Photo details saved successfully", Toast.LENGTH_LONG).show()
             }
 
-            if (currentLocalImagePost!=updatedImage){
+            if (currentLocalImagePost != updatedImage) {
                 val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
                 firebaseAnalytics.logEvent("local_image_updated", null)
             }
@@ -329,7 +331,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                         localImagePost = localImageObject
 
                         imageLocationInput.text = localImageObject.details
-                        imageUrl.text = localImageObject.url
+                        imageUrl.setText(localImageObject.url)
                         imageLat = localImageObject.locationLat
                         imageLong = localImageObject.locationLong
 
@@ -534,6 +536,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                 progressBar.visibility = View.VISIBLE
                 uploadBackground.visibility = View.VISIBLE
                 uploadPhotoToStorage()
+                closeKeyboard(activity)
             } else {
                 Toast.makeText(this.context, "Please add at least one tag", Toast.LENGTH_SHORT).show()
                 makeTagsActive()
@@ -650,7 +653,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                 }.addOnFailureListener {
                     uploadFail()
-                    Log.d("RegisterActivity", "Failed to upload image to server $it")
+                    Log.d("UploadActivity", "Failed to upload image to server $it")
 //                    progress.visibility = View.GONE
                 }
 
@@ -662,7 +665,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
         }.addOnFailureListener {
             uploadFail()
-            Log.d("RegisterActivity", "Failed to upload image to server $it")
+            Log.d("UploadActivity", "Failed to upload image to server $it")
 //            progress.visibility = View.GONE
 
         }
@@ -719,7 +722,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                     localImageViewModel.delete(localImagePost)
 
-                    if(newImage.verified){
+                    if (newImage.verified) {
                         val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
                         firebaseAnalytics.logEvent("image_added_verified", null)
                     } else {
@@ -744,6 +747,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
     private fun makeTagsActive() {
+        imageTagsInput.requestFocus()
 
         infoUnactiveButton.visibility = View.VISIBLE
         infoActiveButton.visibility = View.GONE
@@ -761,6 +765,8 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     }
 
     private fun makeUrlActive() {
+        imageUrl.requestFocus()
+
         infoUnactiveButton.visibility = View.VISIBLE
         infoActiveButton.visibility = View.GONE
 
@@ -776,6 +782,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     }
 
     private fun makeInfoActive() {
+        imageLocationInput.requestFocus()
         infoUnactiveButton.visibility = View.GONE
         infoActiveButton.visibility = View.VISIBLE
 

@@ -52,7 +52,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var profileLoggedInUserFragment: ProfileLoggedInUserFragment
 
     lateinit var imageFullSizeFragment: ImageFullSizeFragment
+    lateinit var secondImageFullSizeFragment: SecondImageFullSizeFragment
     lateinit var profileRandomUserFragment: ProfileRandomUserFragment
+    lateinit var profileSecondRandomUserFragment: ProfileSecondRandomUserFragment
     lateinit var bucketFragment: AddToBucketFragment
     lateinit var openedQuestionFragment: OpenedQuestionFragment
     lateinit var feedNotificationsFragment: FeedNotificationsFragment
@@ -91,6 +93,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
     var isBoardNotificationsActive = false
     var isFeedActive = false
     var isRandomUserProfileActive = false
+    var isSecondRandomUserProfileActive = false
+
+    var fragmentsHaveBeenInitialized = false
 
     lateinit var currentUser: Users
 
@@ -102,7 +107,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
         setContentView(R.layout.activity_main)
 
         firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-
 
 
         checkIfLoggedIn()
@@ -174,6 +178,19 @@ class MainActivity : AppCompatActivity(), DereMethods {
         imageFullSizeFragment.optionsContainer.visibility = View.GONE
         imageFullSizeFragment.deleteEditContainer.visibility = View.VISIBLE
         imageFullSizeFragment.deleteContainer.visibility = View.GONE
+        imageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
+        imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
+
+    }
+
+    private fun resetSecondImageExpended() {
+        sharedViewModelImage.sharedImageObject.postValue(Images())
+        secondImageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
+        secondImageFullSizeFragment.optionsContainer.visibility = View.GONE
+        secondImageFullSizeFragment.deleteEditContainer.visibility = View.VISIBLE
+        secondImageFullSizeFragment.deleteContainer.visibility = View.GONE
+        secondImageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
+        secondImageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
     }
 
     override fun onBackPressed() {
@@ -205,6 +222,12 @@ class MainActivity : AppCompatActivity(), DereMethods {
                             subActive = boardNotificationsFragment
                             resetImageExpended()
                         }
+                        isRandomUserProfileActive -> {
+                            subFm.beginTransaction().hide(subActive).show(profileRandomUserFragment).commit()
+                            subActive = profileRandomUserFragment
+                            resetImageExpended()
+                        }
+
                         else -> {
                             switchVisibility(0)
                             resetImageExpended()
@@ -217,36 +240,77 @@ class MainActivity : AppCompatActivity(), DereMethods {
                         subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
                         subActive = imageFullSizeFragment
                         switchVisibility(0)
+                        isFeedActive = false
+                    } else {
+                        subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
+                        subActive = imageFullSizeFragment
                     }
 
-                    fm.beginTransaction().detach(profileLoggedInUserFragment).attach(profileLoggedInUserFragment)
-                        .commit()
+//                    fm.beginTransaction().detach(profileLoggedInUserFragment).attach(profileLoggedInUserFragment)
+//                        .commit()
 
                     subActive = imageFullSizeFragment
                 }
 
                 profileRandomUserFragment -> {
-                    if (isFeedActive) {
-                        navigateToFeed()
-                        isFeedActive = false
-                    } else {
-                        imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
-                        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                        subActive = imageFullSizeFragment
+                    when {
+                        isFeedActive -> {
+                            navigateToFeed()
+                            isFeedActive = false
+                            isRandomUserProfileActive = false
+                        }
+                        isFeedNotificationsActive -> {
+                            subFm.beginTransaction().hide(subActive).show(feedNotificationsFragment).commit()
+                            subActive = feedNotificationsFragment
+                            isRandomUserProfileActive = false
+                        }
 
-                        sharedViewModelRandomUser.randomUserObject.postValue(Users())
+                        isBoardNotificationsActive ->{
+                            subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
+                            subActive = boardNotificationsFragment
+                            isRandomUserProfileActive = false
+                        }
+                        isOpenedQuestionActive -> {
+                            subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                            subActive = openedQuestionFragment
+                            isRandomUserProfileActive = false
+                        }
+                        else -> {
+                            imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
+                            subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                            subActive = imageFullSizeFragment
+
+//                            sharedViewModelSecondRandomUser.randomUserObject.postValue(Users())
+                            isRandomUserProfileActive = false
+                        }
                     }
+                }
+                profileSecondRandomUserFragment -> {
+                if (isOpenedQuestionActive){
+                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                    subActive = openedQuestionFragment
+                } else {
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+                }
                 }
 
                 feedNotificationsFragment -> {
                     switchVisibility(0)
+                    isFeedNotificationsActive = false
                 }
 
                 openedQuestionFragment -> {
-                    switchVisibility(0)
-                    sharedViewModelQuestion.questionObject.postValue(Question())
-                    isOpenedQuestionActive = false
-                    openedQuestionFragment.deleteBox.visibility = View.GONE
+                    if (isBoardNotificationsActive){
+                        subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
+                        subActive = boardNotificationsFragment
+                        isOpenedQuestionActive = false
+                        openedQuestionFragment.deleteBox.visibility = View.GONE
+                    } else {
+                        switchVisibility(0)
+                        isOpenedQuestionActive = false
+                        openedQuestionFragment.deleteBox.visibility = View.GONE
+                    }
                 }
 
                 boardNotificationsFragment -> {
@@ -258,7 +322,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
                 }
 
                 answerCommentFragment -> {
-                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                    subFm.beginTransaction().remove(subActive).show(openedQuestionFragment).commit()
                     subActive = openedQuestionFragment
                 }
 
@@ -274,7 +338,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
                 bucketGalleryFragment -> {
                     switchVisibility(0)
                     isBucketGalleryActive = false
-//                    sharedViewModelCollection.imageCollection.postValue(DataSnapshot(DatabaseReference(),""))
+                    bucketGalleryFragment.mapButton.setImageResource(R.drawable.world)
                 }
 
                 editProfileFragment -> {
@@ -318,18 +382,29 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
                 collectionMapView -> {
 
-                    if (isRandomUserProfileActive) {
-                        subFm.beginTransaction().hide(subActive).show(editAnswerFragment).commit()
-                        subActive = editAnswerFragment
-                        isRandomUserProfileActive = false
-                    } else {
-                        switchVisibility(0)
+                    when {
+                        isRandomUserProfileActive -> {
+                            subFm.beginTransaction().hide(subActive).show(profileRandomUserFragment).commit()
+                            subActive = profileRandomUserFragment
+                            isRandomUserProfileActive = false
+                        }
+                        isSecondRandomUserProfileActive -> {
+                            subFm.beginTransaction().hide(subActive).show(profileSecondRandomUserFragment).commit()
+                            subActive = profileSecondRandomUserFragment
+                            isSecondRandomUserProfileActive = false
+                        }
+                        else -> switchVisibility(0)
                     }
+
+                }
+
+                secondImageFullSizeFragment -> {
+                    subFm.beginTransaction().hide(secondImageFullSizeFragment).show(profileRandomUserFragment).commit()
+                    subActive = profileRandomUserFragment
+                    resetSecondImageExpended()
                 }
             }
-
-
-        } else {
+        } else if (fragmentsHaveBeenInitialized) {
 
             when (active) { // main frame is active
 
@@ -388,12 +463,13 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     menuItem.isChecked = true
 
                     switchVisibility(0)
-
                 }
 
                 feedFragment -> super.onBackPressed()
             }
 
+        } else {
+            super.onBackPressed()
         }
 
     }
@@ -427,7 +503,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
         val uid = FirebaseAuth.getInstance().uid
         if (uid == null) {
-            val intent = Intent(this, RegisterActivity::class.java)
+            val intent = Intent(this, RegisterLoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
         } else {
@@ -471,31 +547,38 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
             override fun onDataChange(p0: DataSnapshot) {
                 if (p0.hasChildren()) {
-                    fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment").commit()
+                    fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment")
+                        .commitAllowingStateLoss()
 
                     active = feedFragment
 
+                    fragmentsHaveBeenInitialized = true
+
                 } else {
                     fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment")
-                        .hide(feedFragment).commit()
+                        .hide(feedFragment).commitAllowingStateLoss()
                     fm.beginTransaction().add(R.id.feed_frame_container, onBoardingFragment, "onBoardingFragment")
-                        .commit()
+                        .commitAllowingStateLoss()
 
                     active = onBoardingFragment
+
+                    fragmentsHaveBeenInitialized = true
+
                 }
             }
         })
 
         fm.beginTransaction().add(R.id.feed_frame_container, boardFragment, "boardFragment").hide(boardFragment)
-            .commit()
+            .commitAllowingStateLoss()
         fm.beginTransaction()
             .add(R.id.feed_frame_container, profileLoggedInUserFragment, "profileLoggedInUserFragment")
-            .hide(profileLoggedInUserFragment).commit()
+            .hide(profileLoggedInUserFragment).commitAllowingStateLoss()
 
 
         //sub container
         imageFullSizeFragment = ImageFullSizeFragment()
         profileRandomUserFragment = ProfileRandomUserFragment()
+        profileSecondRandomUserFragment = ProfileSecondRandomUserFragment()
         bucketFragment = AddToBucketFragment()
         openedQuestionFragment = OpenedQuestionFragment()
         feedNotificationsFragment = FeedNotificationsFragment()
@@ -513,54 +596,62 @@ class MainActivity : AppCompatActivity(), DereMethods {
         editAnswerFragment = EditAnswerFragment()
         editInterestsFragment = EditInterestsFragment()
         collectionMapView = CollectionMapViewFragment()
+        secondImageFullSizeFragment = SecondImageFullSizeFragment()
+
 
 
         subFm.beginTransaction()
-            .add(R.id.feed_subcontents_frame_container, imageFullSizeFragment, "imageFullSizeFragment").commit()
+            .add(R.id.feed_subcontents_frame_container, imageFullSizeFragment, "imageFullSizeFragment")
+            .commitAllowingStateLoss()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, profileRandomUserFragment, "profileRandomUserFragment")
-            .hide(profileRandomUserFragment).commit()
+            .hide(profileRandomUserFragment).commitAllowingStateLoss()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, profileSecondRandomUserFragment, "profileRandomUserFragment")
+            .hide(profileSecondRandomUserFragment).commitAllowingStateLoss()
 //        subFm.beginTransaction()
 //            .add(R.id.feed_subcontents_frame_container, bucketFragment, "bucketFragment").hide(bucketFragment).commit()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, openedQuestionFragment, "openedQuestionFragment")
-            .hide(openedQuestionFragment).commit()
+            .hide(openedQuestionFragment).commitAllowingStateLoss()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, feedNotificationsFragment, "feedNotificationsFragment")
-            .hide(feedNotificationsFragment).commit()
+            .hide(feedNotificationsFragment).commitAllowingStateLoss()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, boardNotificationsFragment, "boardNotificationsFragment")
-            .hide(boardNotificationsFragment).commit()
+            .hide(boardNotificationsFragment).commitAllowingStateLoss()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, savedQuestionFragment, "savedQuestionFragment")
-            .hide(savedQuestionFragment).commit()
-        subFm.beginTransaction()
-            .add(R.id.feed_subcontents_frame_container, answerCommentFragment, "answerCommentFragment")
-            .hide(answerCommentFragment).commit()
+            .hide(savedQuestionFragment).commitAllowingStateLoss()
+//        subFm.beginTransaction()
+//            .add(R.id.feed_subcontents_frame_container, answerCommentFragment, "answerCommentFragment")
+//            .hide(answerCommentFragment).commitAllowingStateLoss()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, answerFragment, "answerFragment")
-            .hide(answerFragment).commit()
+            .hide(answerFragment).commitAllowingStateLoss()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, newQuestionFragment, "newQuestionFragment")
-            .hide(newQuestionFragment).commit()
+            .hide(newQuestionFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editProfileFragment, "editProfileFragment")
-            .hide(editProfileFragment).commit()
+            .hide(editProfileFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, bucketGalleryFragment, "bucketGalleryFragment")
-            .hide(bucketGalleryFragment).commit()
+            .hide(bucketGalleryFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, addImageToAnswer, "addImageToAnswer")
-            .hide(addImageToAnswer).commit()
+            .hide(addImageToAnswer).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, imagePostEditFragment, "imagePostEditFragment")
-            .hide(imagePostEditFragment).commit()
+            .hide(imagePostEditFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, webViewFragment, "webViewFragment")
-            .hide(webViewFragment).commit()
+            .hide(webViewFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editQuestionFragment, "editQuestionFragment")
-            .hide(editQuestionFragment).commit()
+            .hide(editQuestionFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editAnswerFragment, "editAnswerFragment")
-            .hide(editAnswerFragment).commit()
+            .hide(editAnswerFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editInterestsFragment, "editInterestsFragment")
-            .hide(editInterestsFragment).commit()
+            .hide(editInterestsFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, collectionMapView, "collectionMapView")
-            .hide(collectionMapView).commit()
+            .hide(collectionMapView).commitAllowingStateLoss()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, secondImageFullSizeFragment, "collectionMapView")
+            .hide(secondImageFullSizeFragment).commitAllowingStateLoss()
 
         subActive = imageFullSizeFragment
 
@@ -631,7 +722,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     }
 
 
-    private fun navigateToProfile() {
+    fun navigateToProfile() {
         fm.beginTransaction().hide(active).show(profileLoggedInUserFragment).commit()
         active = profileLoggedInUserFragment
         val menuItem = mBottomNav.menu.findItem(R.id.destination_profile_logged_in_user)

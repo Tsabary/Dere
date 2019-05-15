@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import co.getdere.MainActivity
 import co.getdere.R
+import co.getdere.RegisterLoginActivity
 import co.getdere.groupieAdapters.FeedImage
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
@@ -69,7 +71,6 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     lateinit var userRef: DatabaseReference
 
 
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_profile_logged_in_user, container, false)
 
@@ -114,7 +115,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
                     val uid = FirebaseAuth.getInstance().uid
                     FirebaseMessaging.getInstance().unsubscribeFromTopic(uid).addOnSuccessListener {
                         FirebaseAuth.getInstance().signOut()
-                        val intent = Intent(this.context, LoginActivity::class.java)
+                        val intent = Intent(this.context, RegisterLoginActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
                         startActivity(intent)
                     }
@@ -194,8 +195,11 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
             listenToImagesFromBucket()
             listenToImagesFromRoll()
-
-            Glide.with(this).load(userProfile.image).into(profilePicture)
+            if (userProfile.image.isNotEmpty()) {
+                Glide.with(this).load(userProfile.image).into(profilePicture)
+            } else {
+                Glide.with(this).load(R.drawable.user_profile).into(profilePicture)
+            }
             profileName.text = userProfile.name
             profileReputation.text = numberCalculation(userProfile.reputation)
             profileTagline.text = userProfile.tagline
@@ -254,6 +258,8 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
                 if (p0.hasChild("stax")) {
                     instagramButton.visibility = View.VISIBLE
                     instaLink = "https://www.instagram.com/${p0.child("stax").child("instagram").value}"
+                } else {
+                    instagramButton.visibility = View.GONE
                 }
             }
 
@@ -314,7 +320,6 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         }
 
         userMapButton.setOnClickListener {
-            activity.isRandomUserProfileActive = true
             userRef.child("images").addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
                 }
@@ -352,49 +357,44 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     }
 
 
-    private fun listenToImagesFromRoll() {
+    fun listenToImagesFromRoll() {
+
+        Log.d("populatingRoll", "called")
 
         galleryRollAdapter.clear()
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
-        ref.addChildEventListener(object : ChildEventListener {
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
 
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                for (imagePath in p0.children){
 
-                val imagePath = p0.key
 
-                val imageObjectPath =
-                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
 
-                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onCancelled(p0: DatabaseError) {
+                    val imageObjectPath =
+                        FirebaseDatabase.getInstance().getReference("/images/${imagePath.key}/body")
 
-                    }
+                    imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
 
-                    override fun onDataChange(p0: DataSnapshot) {
-                        val imageObject = p0.getValue(Images::class.java)
+                        }
 
-                        imageList.add(FeedImage(imageObject!!, 1))
-                        galleryRollAdapter.clear()
-                        galleryRollAdapter.addAll(imageList.reversed())
-                    }
-                })
+                        override fun onDataChange(p0: DataSnapshot) {
+                            val imageObject = p0.getValue(Images::class.java)
+
+                            imageList.add(FeedImage(imageObject!!, 1))
+                            galleryRollAdapter.clear()
+                            galleryRollAdapter.addAll(imageList.reversed())
+                        }
+                    })
+
+                }
 
             }
 
             override fun onCancelled(p0: DatabaseError) {
 
             }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
-
         })
 
     }
@@ -408,7 +408,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
-                for ( image in p0.children){
+                for (image in p0.children) {
                     galleryBucketAdapter.add(SingleBucketBox(image, userProfile.uid, activity as MainActivity))
                 }
             }

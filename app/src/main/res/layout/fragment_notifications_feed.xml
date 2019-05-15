@@ -26,7 +26,7 @@
             android:layout_marginStart="16dp"
             android:textColor="@color/green700"
             android:textSize="15sp"
-            android:fontFamily="@font/open_sans_semibold"/>
+            android:fontFamily="@font/roboto_medium"/>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/notifications_swipe_refresh"

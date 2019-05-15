@@ -32,11 +32,12 @@
                 android:layout_marginTop="8dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="16dp"/>
+                android:layout_marginEnd="16dp"
+                android:textSize="15sp"
+                android:fontFamily="@font/roboto_medium"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageView
-            android:src="@drawable/no_dread"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:id="@+id/image_frame_image"

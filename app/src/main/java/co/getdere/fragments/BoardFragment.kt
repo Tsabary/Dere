@@ -38,7 +38,7 @@ class BoardFragment : Fragment() {
     val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
     val searchedQuestionsRecyclerAdapter = GroupAdapter<ViewHolder>()
     val questionsRecyclerAdapter = GroupAdapter<ViewHolder>()
-    lateinit var questionRecyclerLayoutManager : androidx.recyclerview.widget.LinearLayoutManager
+    lateinit var questionRecyclerLayoutManager: androidx.recyclerview.widget.LinearLayoutManager
 
     lateinit var sharedViewModelForQuestion: SharedViewModelQuestion
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
@@ -189,7 +189,7 @@ class BoardFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 tagsFilteredAdapter.clear()
 
-                val userInput = s.toString()
+                val userInput = s.toString().toLowerCase()
 
                 if (userInput == "") {
                     tagSuggestionRecycler.visibility = View.GONE
@@ -242,12 +242,6 @@ class BoardFragment : Fragment() {
 
             sharedViewModelForQuestion.questionObject.postValue(question)
 
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment).commit()
-
-            activity.switchVisibility(1)
-
-            activity.subActive = activity.openedQuestionFragment
-
 
             // meanwhile in the background it will load the random user object
 
@@ -261,8 +255,13 @@ class BoardFragment : Fragment() {
                 override fun onDataChange(p0: DataSnapshot) {
 
                     val randomUserFromDB = p0.getValue(Users::class.java)
-
                     sharedViewModelRandomUser.randomUserObject.postValue(randomUserFromDB)
+
+                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
+                        .commit()
+                    activity.subActive = activity.openedQuestionFragment
+                    activity.isOpenedQuestionActive = true
+                    activity.switchVisibility(1)
                 }
 
             })
@@ -279,13 +278,6 @@ class BoardFragment : Fragment() {
 
             sharedViewModelForQuestion.questionObject.postValue(question)
 
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment).commit()
-
-            activity.switchVisibility(1)
-
-            activity.subActive = activity.openedQuestionFragment
-
-
             // meanwhile in the background it will load the random user object
 
             val refRandomUser = FirebaseDatabase.getInstance().getReference("/users/$author/profile")
@@ -298,13 +290,14 @@ class BoardFragment : Fragment() {
                 override fun onDataChange(p0: DataSnapshot) {
 
                     val randomUserFromDB = p0.getValue(Users::class.java)
-
                     sharedViewModelRandomUser.randomUserObject.postValue(randomUserFromDB)
+                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment).commit()
+                    activity.switchVisibility(1)
+                    activity.subActive = activity.openedQuestionFragment
+                    activity.isOpenedQuestionActive = true
                 }
-
             })
         }
-
     }
 
     private fun recyclersVisibility(case: Int) {
@@ -376,13 +369,13 @@ class BoardFragment : Fragment() {
 
             override fun onChildRemoved(p0: DataSnapshot) {
             }
-
         })
-
     }
 
 
     fun listenToQuestions() {
+
+        val uid = FirebaseAuth.getInstance().uid
 
         questionsRecyclerAdapter.clear()
 
@@ -395,27 +388,28 @@ class BoardFragment : Fragment() {
 
                     if (singleQuestionFromDB != null) {
 
-                        singleQuestionLoop@ for (interest in interestsList) {
+                        if (uid != "hQ3KL1zqpsZIhY38IpSRW2G0wXJ2") {
 
-                            for (tag in singleQuestionFromDB.tags) {
+                            singleQuestionLoop@ for (interest in interestsList) {
 
-                                if (interest == tag) {
-                                    questionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
-                                    questionRecyclerLayoutManager
-                                    break@singleQuestionLoop
+                                for (tag in singleQuestionFromDB.tags) {
+
+                                    if (interest == tag) {
+                                        questionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
+                                        break@singleQuestionLoop
+                                    }
                                 }
                             }
+                        } else {
+                            questionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
                         }
                     }
                 }
-
             }
 
             override fun onCancelled(p0: DatabaseError) {
             }
-
         })
-
     }
 
     companion object {

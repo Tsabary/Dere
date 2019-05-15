@@ -71,7 +71,6 @@ class FeedNotificationsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         notifications_swipe_refresh.setOnRefreshListener {
             listenToNotifications()
             notifications_swipe_refresh.isRefreshing = false
@@ -150,6 +149,8 @@ class FeedNotificationsFragment : Fragment() {
     }
 
     fun listenToNotifications() {
+        val mActivity = activity as MainActivity
+
         notificationsRecyclerAdapter.clear()
 
         val refFeedNotificationsByTime =
@@ -168,12 +169,12 @@ class FeedNotificationsFragment : Fragment() {
                         if (notification.seen == 0) {
                             feedNotCount++
                         }
-                        (activity as MainActivity).feedNotificationsCount.postValue(feedNotCount)
+                        mActivity.feedNotificationsCount.postValue(feedNotCount)
 
                         notificationsRecyclerAdapter.add(
                             SingleFeedNotification(
                                 notification,
-                                activity as MainActivity
+                                mActivity
                             )
                         )
                     }
@@ -214,12 +215,33 @@ class SingleFeedNotification(val notification: Notification, val activity: MainA
 
         val notificationBox = viewHolder.itemView.feed_notification_box
 
-        val date = PrettyTime().format(Date(notification.timestamp))
-        viewHolder.itemView.feed_notification_timestamp.text = date
+
+        viewHolder.itemView.feed_notification_timestamp.text = PrettyTime().format(Date(notification.timestamp))
+
+
 
         activity.let {
             val sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             val sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
+
+
+            viewHolder.itemView.feed_notification_initiator_image.setOnClickListener {
+                val randomUserRef =
+                    FirebaseDatabase.getInstance().getReference("/users/${notification.initiatorId}/profile")
+                randomUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
+                        activity.subFm.beginTransaction().hide(activity.subActive)
+                            .show(activity.profileRandomUserFragment).commit()
+                        activity.subActive = activity.profileRandomUserFragment
+                        activity.isFeedNotificationsActive = true
+                    }
+                })
+            }
+
 
             viewHolder.itemView.setOnClickListener {
 
@@ -298,31 +320,31 @@ class SingleFeedNotification(val notification: Notification, val activity: MainA
                         8 -> {
                             Spanner()
                                 .append(notification.initiatorName)
-                                .append(" bucketed your photo", font("open_sans_semibold"))
+                                .append(" bucketed your photo", font("roboto_medium"))
                         }
 
                         12 -> {
                             Spanner()
                                 .append(notification.initiatorName)
-                                .append(" liked a comment you made", font("open_sans_semibold"))
+                                .append(" liked a comment you made", font("roboto_medium"))
                         }
 
                         14 -> {
                             Spanner()
                                 .append(notification.initiatorName)
-                                .append(" liked your photo", font("open_sans_semibold"))
+                                .append(" liked your photo", font("roboto_medium"))
                         }
 
                         16 -> {
                             Spanner()
                                 .append(notification.initiatorName)
-                                .append(" commented on your photo", font("open_sans_semibold"))
+                                .append(" commented on your photo", font("roboto_medium"))
                         }
 
                         20 -> {
                             Spanner()
                                 .append(notification.initiatorName)
-                                .append(" started following you", font("open_sans_semibold"))
+                                .append(" started following you", font("roboto_medium"))
                         }
                         else -> "Notification failed to load"
                     }
@@ -359,7 +381,6 @@ post types:
 
         refInitiator.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
-
             }
 
             override fun onDataChange(p0: DataSnapshot) {
@@ -367,7 +388,7 @@ post types:
                 val user = p0.getValue(Users::class.java)
 
                 if (user != null) {
-                    Glide.with(viewHolder.root.context).load(user.image)
+                    Glide.with(viewHolder.root.context).load(if(user.image.isNotEmpty()){user.image}else{R.drawable.user_profile})
                         .into(viewHolder.itemView.feed_notification_initiator_image)
                 }
 

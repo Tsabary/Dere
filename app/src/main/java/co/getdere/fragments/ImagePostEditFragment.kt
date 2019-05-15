@@ -261,7 +261,8 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                         myImageObject = imageObject
 
                         imageTagsList.clear()
-//                        imageChipGroup.removeAllViews()
+                        imageChipGroup.removeAllViews()
+                        symbolManager.deleteAll()
 
                         Glide.with(this).load(imageObject.imageBig).into(imageView)
 
@@ -369,7 +370,14 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                             if (imageChipGroup.childCount > 0){
                                 val locationInput = imageLocationInput.text.toString()
-                                val url = imageUrl.text.toString()
+
+                                val url = if(imageUrl.text.isNotEmpty()){
+                                    imageUrl.text.toString()
+                                } else {
+                                    ""
+                                }
+
+
 
                                 val privacy = dark_room_edit_privacy_text.text == "private"
 

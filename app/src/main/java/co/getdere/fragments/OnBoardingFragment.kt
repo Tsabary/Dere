@@ -44,7 +44,7 @@ class OnBoardingFragment : Fragment() {
 
     val title5 = "Interests"
     val subTitle5 =
-        "Are what filters the content you see in the app, and are saved automatically as you use Dere. Hold your finger on a photo to create your first bucket and collect its tags to your interests"
+        "Are what filters the content you see in the app, and are saved automatically as you use Dere. Press and hold your finger on a photo to create your first bucket and collect its tags to your interests"
 
 
     var viewPagerPosition = 0
@@ -173,6 +173,8 @@ class OnBoardingFragment : Fragment() {
         subTitle.text = subTitle4
         viewPager.currentItem = 3
         viewPagerPosition = 3
+        button.text = "Next"
+
     }
 
     fun setUpItem5() {

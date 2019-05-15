@@ -186,6 +186,9 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                     it?.let { bucket ->
 
                         myAdapter.clear()
+                        myAdapter.notifyDataSetChanged()
+                        coordinates.clear()
+                        symbolManager.deleteAll()
 
                         for (image in bucket.children) {
 
@@ -248,7 +251,6 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
         })
 
     }
-
 
 
     override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
@@ -366,7 +368,8 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                         val activity = activity as MainActivity
 
-                        activity.subFm.beginTransaction().detach(activity.subActive).show(activity.imageFullSizeFragment).commit()
+                        activity.subFm.beginTransaction().detach(activity.subActive)
+                            .show(activity.imageFullSizeFragment).commit()
                         activity.subActive = activity.imageFullSizeFragment
                         activity.bucketGalleryFragment.galleryViewPager.currentItem = 0
                         activity.isBucketGalleryActive = true

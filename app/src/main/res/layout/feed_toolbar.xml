@@ -11,7 +11,7 @@
 
     <ImageButton
             android:src="@drawable/camera"
-            android:layout_width="0dp"
+            android:layout_width="36dp"
             android:layout_height="0dp"
             android:id="@+id/feed_toolbar_camera_icon"
             app:layout_constraintTop_toTopOf="parent"
@@ -66,7 +66,7 @@
             android:textSize="15sp"
             android:hint="Search by tag"
             android:textColorHint="@color/gray700"
-            android:fontFamily="@font/open_sans_semibold"
+            android:fontFamily="@font/roboto_medium"
             android:layout_marginEnd="24dp"
             app:layout_constraintEnd_toStartOf="@+id/feed_toolbar_notifications_icon"
             app:layout_constraintStart_toEndOf="@+id/feed_toolbar_chipgroup"

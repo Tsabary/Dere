@@ -56,38 +56,11 @@ class StaggeredFeedImageOnBoarding(val image: Images, val currentUser: Users, va
             sharedViewModelRandomUser = ViewModelProviders.of(activity).get(SharedViewModelRandomUser::class.java)
         }
 
-        val verifiedIcon = viewHolder.itemView.staggered_feed_verified
-        val verifiedInfoText = viewHolder.itemView.staggered_feed_verified_info
-        val verifiedInfoBox = viewHolder.itemView.staggered_feed_verified_box
 
         val imageView = viewHolder.itemView.staggered_feed_image
-        val userName = viewHolder.itemView.staggered_feed_author_name
-
         val likeButton = viewHolder.itemView.staggered_feed_like_button
 
         (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
-
-//        if (!image.verified) {
-//            verifiedIcon.visibility = View.VISIBLE
-//        }
-
-
-        verifiedIcon.setOnClickListener {
-            if (verifiedInfoBox.visibility == View.GONE) {
-                verifiedInfoBox.visibility = View.VISIBLE
-            } else {
-                verifiedInfoBox.visibility = View.GONE
-            }
-        }
-
-        verifiedInfoBox.setOnClickListener {
-            verifiedInfoBox.visibility = View.GONE
-        }
-        verifiedInfoText.setOnClickListener {
-            verifiedInfoBox.visibility = View.GONE
-        }
-
-        val authorReputation = viewHolder.itemView.staggered_feed_author_reputation
 
         val requestOption = RequestOptions()
             .placeholder(R.color.gray500).centerCrop()
@@ -104,26 +77,10 @@ class StaggeredFeedImageOnBoarding(val image: Images, val currentUser: Users, va
             0,
             currentUser.name,
             image.photographer,
-            authorReputation,
+            TextView(viewHolder.root.context),
             activity,
             "staggered"
         )
-
-        val refAuthor = FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
-
-        refAuthor.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-
-                user = p0.getValue(Users::class.java)!!
-
-                userName.text = user.name
-                authorReputation.text = "(${numberCalculation(user.reputation)})"
-            }
-        })
 
         val gestureDetector = GestureDetector(activity, object : GestureDetector.SimpleOnGestureListener() {
 
@@ -141,7 +98,7 @@ class StaggeredFeedImageOnBoarding(val image: Images, val currentUser: Users, va
                         1,
                         currentUser.name,
                         image.photographer,
-                        authorReputation,
+                        TextView(viewHolder.root.context),
                         activity,
                         "staggered"
                     )
@@ -151,6 +108,7 @@ class StaggeredFeedImageOnBoarding(val image: Images, val currentUser: Users, va
             }
 
             override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+                goToBucket()
                 return super.onSingleTapConfirmed(e)
             }
 
@@ -162,7 +120,7 @@ class StaggeredFeedImageOnBoarding(val image: Images, val currentUser: Users, va
             }
         })
 
-        imageView.setOnTouchListener { v, event ->
+        imageView.setOnTouchListener { _, event ->
             gestureDetector.onTouchEvent(event)
         }
 
@@ -179,7 +137,7 @@ class StaggeredFeedImageOnBoarding(val image: Images, val currentUser: Users, va
                     1,
                     currentUser.name,
                     image.photographer,
-                    authorReputation,
+                    TextView(viewHolder.root.context),
                     activity,
                     "staggered"
                 )

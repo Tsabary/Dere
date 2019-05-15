@@ -106,8 +106,13 @@ class AddToBucketFragment : Fragment(), DereMethods {
 
                                     refBuckets.child("$allBuckets/${imageObject.id}")
                                         .setValue(System.currentTimeMillis()).addOnSuccessListener {
-                                            sharedViewModelForImage.sharedImageObject.postValue(Images())
-                                            sharedViewModelForImage.sharedImageObject.postValue(imageObject)
+
+////                                            activity.imageFullSizeFragment.bucketButton.setImageResource(R.drawable.bucket_saved)
+//
+//                                            sharedViewModelForImage.sharedImageObject.postValue(Images())
+//                                            sharedViewModelForImage.sharedImageObject.postValue(imageObject)
+
+                                            checkIfBucketed(activity.imageFullSizeFragment.bucketButton, imageObject, currentUser.uid)
 
                                             val imageBucketingRef =
                                                 FirebaseDatabase.getInstance()
@@ -306,8 +311,11 @@ class SingleBucketSuggestion(
                                                             refUserBuckets.child("All Buckets/${image.id}")
                                                                 .removeValue().addOnSuccessListener {
                                                                     firebaseAnalytics.logEvent("image_unbucketed", null)
+                                                                    checkIfBucketed(activity.imageFullSizeFragment.bucketButton, image, currentUser.uid)
                                                                 }
                                                         }
+                                                    } else {
+                                                        checkIfBucketed(activity.imageFullSizeFragment.bucketButton, image, currentUser.uid)
                                                     }
 
                                                 }
@@ -388,6 +396,9 @@ class SingleBucketSuggestion(
 
                                                         activity.profileLoggedInUserFragment.listenToImagesFromBucket()
                                                         activity.bucketFragment.listenToBuckets()
+
+                                                        checkIfBucketed(activity.imageFullSizeFragment.bucketButton, image, currentUser.uid)
+
 
                                                         refUserBuckets.addListenerForSingleValueEvent(object :
                                                             ValueEventListener {
@@ -475,6 +486,9 @@ class SingleBucketSuggestion(
                                         "bucket",
                                         activity
                                     )
+
+                                    checkIfBucketed(activity.imageFullSizeFragment.bucketButton, image, currentUser.uid)
+
                                 }
                         }
 
@@ -488,16 +502,9 @@ class SingleBucketSuggestion(
                             )
                         )
                     }
-
                 }
-
-
             }
-
-
         })
-
-
     }
 }
 

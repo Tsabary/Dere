@@ -28,7 +28,7 @@ import kotlinx.android.synthetic.main.fragment_bucket_feed.*
 class BucketFeedFragment : Fragment() {
 
 
-    lateinit var sharedViewModelBucket: SharedViewModelCollection
+    lateinit var sharedViewModelCollection: SharedViewModelCollection
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var currentUser: Users
@@ -60,9 +60,9 @@ class BucketFeedFragment : Fragment() {
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-            sharedViewModelBucket = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
+            sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
 
-            sharedViewModelBucket.imageCollection.observe(this, Observer { bucketName ->
+            sharedViewModelCollection.imageCollection.observe(this, Observer { bucketName ->
                 bucketName?.let { bucket ->
 
                     galleryAdapter.clear()

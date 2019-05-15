@@ -17,7 +17,7 @@
             android:layout_marginStart="32dp"
             tools:text="Bucket name"
             android:textSize="24sp"
-            android:fontFamily="@font/open_sans_bold"
+            android:fontFamily="@font/roboto_black"
             android:layout_marginEnd="32dp"
             app:layout_constraintEnd_toStartOf="@+id/bucket_gallery_show_map"/>
     <TextView
@@ -29,8 +29,9 @@
             app:layout_constraintTop_toBottomOf="@+id/bucket_gallery_title"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="32dp"
-            android:fontFamily="@font/open_sans_semibold"
-            android:textColor="@color/gray500"/>
+            android:fontFamily="@font/roboto_medium"
+            android:textColor="@color/gray500"
+            android:textSize="15sp"/>
     <ImageButton
             android:src="@drawable/world"
             android:layout_width="wrap_content"

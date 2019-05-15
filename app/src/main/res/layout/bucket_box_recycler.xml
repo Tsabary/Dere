@@ -24,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="17dp"
             android:id="@+id/bucket_box_recycler_photo_count"
-            android:fontFamily="@font/open_sans_semibold"
+            android:fontFamily="@font/roboto_medium"
             android:textColor="@color/gray500"
             tools:text="23 photos"
             app:layout_constraintTop_toBottomOf="@+id/bucket_box_recycler_name"
@@ -32,13 +32,14 @@
             android:layout_marginStart="24dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp"
+            android:textSize="15sp"/>
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/bucket_box_recycler_name"
             tools:text="Bucket name"
-            android:fontFamily="@font/open_sans_bold"
+            android:fontFamily="@font/roboto_bold"
             android:textSize="15sp"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="24dp"
@@ -62,7 +63,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 tools:layout_editor_absoluteX="8dp"
-                app:layout_constraintTop_toBottomOf="@+id/bucket_box_photo_count"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:id="@+id/bucket_box_recycler_recycler"
                 android:paddingTop="-1dp"

@@ -121,7 +121,9 @@
                 app:layout_constraintHorizontal_bias="0.0"
                 android:textColor="@color/gray800"
                 android:layout_marginBottom="16dp"
-                app:layout_constraintBottom_toTopOf="@+id/answer_comment_actions"/>
+                app:layout_constraintBottom_toTopOf="@+id/answer_comment_actions"
+                android:textSize="15sp"
+                android:fontFamily="@font/roboto_medium"/>
 
         <EditText
                 android:layout_width="wrap_content"
@@ -147,10 +149,11 @@
                 android:id="@+id/answer_comment_author_name"
                 app:layout_constraintTop_toTopOf="@+id/answer_comment_author_image"
                 tools:text="User name"
-                android:fontFamily="@font/open_sans_bold"
+                android:fontFamily="@font/roboto_bold"
                 app:layout_constraintStart_toEndOf="@+id/answer_comment_author_image"
                 android:layout_marginStart="16dp"
-                android:textColor="@color/gray800"/>
+                android:textColor="@color/gray800"
+                android:textSize="15sp"/>
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -158,9 +161,10 @@
                 app:layout_constraintStart_toEndOf="@+id/answer_comment_author_name"
                 android:layout_marginStart="8dp"
                 app:layout_constraintBottom_toBottomOf="@+id/answer_comment_author_name"
-                android:fontFamily="@font/open_sans_semibold"
+                android:fontFamily="@font/roboto_medium"
                 android:textColor="@color/gray500"
-                tools:text="(0)"/>
+                tools:text="(0)"
+                android:textSize="15sp"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/answer_comment_actions"

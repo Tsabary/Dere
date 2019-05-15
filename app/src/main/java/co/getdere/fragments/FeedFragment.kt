@@ -33,10 +33,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.board_toolbar.*
@@ -116,17 +113,12 @@ class FeedFragment : Fragment(), DereMethods {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 tagsFilteredAdapter.clear()
 
-                val userInput = s.toString()
+                val userInput = s.toString().toLowerCase()
 
                 if (userInput == "") {
                     tagSuggestionRecycler.visibility = View.GONE
 
                 } else {
-
-                    for (tag in sharedViewModelTags.tagList) {
-                        println(tag.tagString)
-                    }
-
 
                     val relevantTags: List<SingleTagForList> =
                         sharedViewModelTags.tagList.filter { it.tagString.contains(userInput) }
@@ -236,46 +228,36 @@ class FeedFragment : Fragment(), DereMethods {
 
         val ref = FirebaseDatabase.getInstance().getReference("/images")
 
-        ref.addChildEventListener(object : ChildEventListener {
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
+                for (image in p0.children) {
+                    val singleImageFromDB = image.child("body").getValue(Images::class.java)
 
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                    if (singleImageFromDB != null) {
 
-                val singleImageFromDB = p0.child("body").getValue(Images::class.java)
+                        checkMatchWithPhoto@ for (imageTag in singleImageFromDB.tags) {
 
-                if (singleImageFromDB != null) {
-
-                    checkMatchWithPhoto@ for (imageTag in singleImageFromDB.tags) {
-
-                        if (imageTag == searchedTag) {
-                            if (!singleImageFromDB.private) {
-                                searchedImagesRecyclerAdapter.add(
-                                    LinearFeedImage(
-                                        singleImageFromDB,
-                                        currentUser,
-                                        activity as MainActivity
+                            if (imageTag == searchedTag) {
+                                if (!singleImageFromDB.private) {
+                                    searchedImagesRecyclerAdapter.add(
+                                        LinearFeedImage(
+                                            singleImageFromDB,
+                                            currentUser,
+                                            activity as MainActivity
+                                        )
                                     )
-                                )
-                                break@checkMatchWithPhoto
+                                    break@checkMatchWithPhoto
+                                }
                             }
                         }
-
                     }
-
                 }
 
+                searchedImagesRecycler.smoothScrollToPosition(0)
             }
 
             override fun onCancelled(p0: DatabaseError) {
 
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
             }
 
         })

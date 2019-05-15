@@ -94,7 +94,7 @@ class DarkRoomFragment : Fragment() {
         addImageFab.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             intent.type = "image/*"
-            startActivityForResult(intent, 0)
+            startActivityForResult(intent, 1)
         }
 
     }
@@ -103,11 +103,31 @@ class DarkRoomFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == 0 && resultCode == Activity.RESULT_OK && data != null) {
+        if (requestCode == 1 && resultCode == Activity.RESULT_OK && data != null) {
             Log.d("Main", "Photo was selected")
 
             val selectedPhotoUri = data.data
-//
+
+            if (selectedPhotoUri != null) {
+                val localImagePost = LocalImagePost(
+                    System.currentTimeMillis(),
+                    0.0,
+                    0.0,
+                    selectedPhotoUri.toString(),
+                    "",
+                    "",
+                    verified = false
+                )
+
+                localImageViewModel.insert(localImagePost)
+
+                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                firebaseAnalytics.logEvent("image_uploaded_from_device", null)
+            }
+        }
+
+
+        //
 //            val timestamp = System.currentTimeMillis()
 //
 //            val fileName = "Dere$timestamp.jpg"
@@ -127,24 +147,6 @@ class DarkRoomFragment : Fragment() {
 
 
 
-
-            if (selectedPhotoUri != null) {
-                val localImagePost = LocalImagePost(
-                    System.currentTimeMillis(),
-                    0.0,
-                    0.0,
-                    selectedPhotoUri.toString(),
-                    "",
-                    "",
-                    verified = false
-                )
-
-                localImageViewModel.insert(localImagePost)
-
-                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-                firebaseAnalytics.logEvent("image_uploaded_from_device", null)
-            }
-        }
     }
 
     private fun cropImage(source: Uri, destination : Uri) {

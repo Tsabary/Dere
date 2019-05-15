@@ -4,14 +4,16 @@ import android.app.Activity
 import android.content.Context
 import android.location.Location
 import android.util.Log
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import co.getdere.MainActivity
 import co.getdere.R
-import co.getdere.models.Images
-import co.getdere.models.Notification
-import co.getdere.models.ReputationScore
+import co.getdere.fragments.SingleComment
+import co.getdere.models.*
 import co.getdere.otherClasses.FCMMethods
 import co.getdere.otherClasses.FCMMethods.sendMessageTopic
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -22,6 +24,9 @@ import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
+import com.xwray.groupie.GroupAdapter
+import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.fragment_image_expanded.*
 import mumayank.com.airlocationlibrary.AirLocation
 
 
@@ -108,7 +113,8 @@ interface DereMethods : FCMMethods {
                                                     receiverId,
                                                     userReputationView,
                                                     "vote",
-                                                    activity)
+                                                    activity
+                                                )
 
 
                                                 firebaseAnalytics.logEvent("question_upvote_cancelled", null)
@@ -123,7 +129,8 @@ interface DereMethods : FCMMethods {
                                                     receiverId,
                                                     userReputationView,
                                                     "vote",
-                                                    activity)
+                                                    activity
+                                                )
 
                                                 firebaseAnalytics.logEvent("answer_upvote_cancelled", null)
 
@@ -155,7 +162,8 @@ interface DereMethods : FCMMethods {
                                                     receiverId,
                                                     userReputationView,
                                                     "vote",
-                                                    activity)
+                                                    activity
+                                                )
 
                                                 firebaseAnalytics.logEvent("question_upvote", null)
 
@@ -170,7 +178,8 @@ interface DereMethods : FCMMethods {
                                                     receiverId,
                                                     userReputationView,
                                                     "vote",
-                                                    activity)
+                                                    activity
+                                                )
 
                                                 firebaseAnalytics.logEvent("answer_upvote", null)
 
@@ -193,7 +202,8 @@ interface DereMethods : FCMMethods {
                                                     receiverId,
                                                     userReputationView,
                                                     "vote",
-                                                    activity)
+                                                    activity
+                                                )
 
                                                 firebaseAnalytics.logEvent("question_downvote", null)
 
@@ -207,7 +217,8 @@ interface DereMethods : FCMMethods {
                                                     receiverId,
                                                     userReputationView,
                                                     "vote",
-                                                    activity)
+                                                    activity
+                                                )
 
                                                 firebaseAnalytics.logEvent("question_downvote", null)
 
@@ -240,9 +251,10 @@ interface DereMethods : FCMMethods {
                                                 receiverId,
                                                 userReputationView,
                                                 "vote",
-                                                activity)
+                                                activity
+                                            )
 
-                                            if (postType==0){
+                                            if (postType == 0) {
                                                 firebaseAnalytics.logEvent("question_downvote_cancelled", null)
                                             } else {
                                                 firebaseAnalytics.logEvent("answer_downvote_cancelled", null)
@@ -279,7 +291,8 @@ interface DereMethods : FCMMethods {
                                             receiverId,
                                             userReputationView,
                                             "vote",
-                                            activity)
+                                            activity
+                                        )
 
                                         firebaseAnalytics.logEvent("question_upvote", null)
 
@@ -294,7 +307,8 @@ interface DereMethods : FCMMethods {
                                             receiverId,
                                             userReputationView,
                                             "vote",
-                                            activity)
+                                            activity
+                                        )
 
                                         firebaseAnalytics.logEvent("answer_upvote", null)
 
@@ -318,7 +332,8 @@ interface DereMethods : FCMMethods {
                                             receiverId,
                                             userReputationView,
                                             "vote",
-                                            activity)
+                                            activity
+                                        )
 
                                         firebaseAnalytics.logEvent("question_downvote", null)
 
@@ -332,7 +347,8 @@ interface DereMethods : FCMMethods {
                                             receiverId,
                                             userReputationView,
                                             "vote",
-                                            activity)
+                                            activity
+                                        )
 
                                         firebaseAnalytics.logEvent("answer_downvote", null)
                                     }
@@ -445,6 +461,59 @@ interface DereMethods : FCMMethods {
 
     //following methods are for images
 
+    fun listenToImageComments(
+        image: Images,
+        commentsRecyclerAdapter: GroupAdapter<ViewHolder>,
+        commentsRecycler: RecyclerView,
+        divider: View,
+        currentUser: Users,
+        activity: MainActivity
+    ) {
+
+        Log.d("comment", "function called")
+
+
+        commentsRecyclerAdapter.clear()
+
+
+        val ref = FirebaseDatabase.getInstance().getReference("/images/${image.id}")
+
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
+
+                if (p0.hasChild("comments")) {
+                    commentsRecycler.visibility = View.VISIBLE
+                    divider.visibility = View.VISIBLE
+
+                    for (comment in p0.child("comments").children) {
+
+                        val singleCommentFromDB = comment.child("body").getValue(Comments::class.java)
+
+                        if (singleCommentFromDB != null) {
+                            commentsRecyclerAdapter.add(
+                                SingleComment(
+                                    singleCommentFromDB,
+                                    image,
+                                    currentUser,
+                                    activity
+                                )
+                            )
+
+
+                        }
+
+                    }
+                }
+            }
+
+
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+        })
+
+    }
+
 
     fun listenToLikeCount(likeCount: TextView, image: Images) {
 
@@ -535,7 +604,7 @@ interface DereMethods : FCMMethods {
         receiverId: String,
         userReputationView: TextView,
         activity: Activity,
-        source : String
+        source: String
     ) {
 
         val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
@@ -574,7 +643,8 @@ interface DereMethods : FCMMethods {
                                         receiverId,
                                         userReputationView,
                                         "like",
-                                        activity)
+                                        activity
+                                    )
 
                                     firebaseAnalytics.logEvent("image_unliked", null)
                                 }
@@ -610,7 +680,8 @@ interface DereMethods : FCMMethods {
                                         receiverId,
                                         userReputationView,
                                         "like",
-                                        activity)
+                                        activity
+                                    )
 
                                     firebaseAnalytics.logEvent("image_liked", null)
                                 }
@@ -618,7 +689,7 @@ interface DereMethods : FCMMethods {
                             }
 
                         } else {
-                            if (source == "staggered"){
+                            if (source == "staggered") {
                                 likeButton.setImageResource(R.drawable.heart_white)
                             } else {
                                 likeButton.setImageResource(R.drawable.heart)
@@ -651,7 +722,8 @@ interface DereMethods : FCMMethods {
                                     receiverId,
                                     userReputationView,
                                     "like",
-                                    activity)
+                                    activity
+                                )
 
                                 firebaseAnalytics.logEvent("image_liked", null)
                             }
@@ -659,7 +731,7 @@ interface DereMethods : FCMMethods {
                         }
 
                     } else {
-                        if (source == "staggered"){
+                        if (source == "staggered") {
                             likeButton.setImageResource(R.drawable.heart_white)
                         } else {
                             likeButton.setImageResource(R.drawable.heart)
@@ -675,6 +747,111 @@ interface DereMethods : FCMMethods {
         })
 
 
+    }
+
+
+    fun executeCommentLike(
+        image: Images,
+        initiatorId: String,
+        likeCount: TextView,
+        likeButton: ImageButton,
+        event: Int,
+        initiatorName: String,
+        receiverId: String,
+        userReputationView: TextView,
+        activity: Activity,
+        comment: Comments
+    ) {
+
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
+
+        if (event == 1) {
+            executeLikeForFastResponse(likeButton, likeCount)
+        }
+
+        val commentRef = FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/${comment.id}")
+
+        commentRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
+                if (p0.hasChild("likes")) {
+
+                    if (p0.child("likes").hasChild(initiatorId)) {
+
+                        if (event == 1) {
+                            commentRef.child("likes/$initiatorId").removeValue().addOnSuccessListener {
+
+                                changeReputation(
+                                    13,
+                                    image.id,
+                                    image.id,
+                                    initiatorId,
+                                    initiatorName,
+                                    receiverId,
+                                    userReputationView,
+                                    "photoCommentLike",
+                                    activity
+                                )
+
+                                firebaseAnalytics.logEvent("image_comment_unliked", null)
+                            }
+
+                        } else {
+                            likeButton.setImageResource(R.drawable.heart_active)
+                            likeButton.tag = "liked"
+                        }
+
+                    } else {
+
+                        if (event == 1) {
+                            commentRef.child("likes/$initiatorId").setValue(true).addOnSuccessListener {
+
+                                changeReputation(
+                                    12,
+                                    image.id,
+                                    image.id,
+                                    initiatorId,
+                                    initiatorName,
+                                    receiverId,
+                                    userReputationView,
+                                    "photoCommentLike",
+                                    activity
+                                )
+
+                                firebaseAnalytics.logEvent("image_comment_liked", null)
+                            }
+                        } else {
+                            likeButton.setImageResource(R.drawable.heart)
+                            likeButton.tag = "notLiked"
+                        }
+                    }
+                } else {
+                    if (event == 1) {
+                        commentRef.child("likes/$initiatorId").setValue(true).addOnSuccessListener {
+
+                            changeReputation(
+                                12,
+                                image.id,
+                                image.id,
+                                initiatorId,
+                                initiatorName,
+                                receiverId,
+                                userReputationView,
+                                "photoCommentLike",
+                                activity
+                            )
+
+                            firebaseAnalytics.logEvent("image_comment_liked", null)
+                        }
+                    } else {
+                        likeButton.setImageResource(R.drawable.heart)
+                        likeButton.tag = "notLiked"
+                    }
+                }
+            }
+
+            override fun onCancelled(p0: DatabaseError) {
+            }
+        })
     }
 
 
@@ -748,26 +925,16 @@ interface DereMethods : FCMMethods {
         Log.d("Image Bucketed", "function called")
 
 
-        val refUserBucket = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets")
+        val refUserBucket = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets/All Buckets")
 
-        refUserBucket.addChildEventListener(object : ChildEventListener {
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+        refUserBucket.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
 
                 if (p0.hasChild(image.id)) {
                     bucketButton.setImageResource(R.drawable.bucket_saved)
                 } else {
                     bucketButton.setImageResource(R.drawable.bucket)
-
                 }
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
             }
 
             override fun onCancelled(p0: DatabaseError) {
@@ -1290,8 +1457,8 @@ reputation scenarios:
 9 : photo unbucketed -15 to receiver
 10 : question saved +5 to receiver +notification  // type 0
 11 : question unsaved - 5 to receiver
-12 : comment receives a like +1 to receiver +notification  // type 3
-13 : comment like removed -1 to receiver
+12 : photo comment receives a like +1 to receiver +notification  // type 3
+13 : photo comment like removed -1 to receiver
 14 : photo receives a like +2 to receiver +notification  // type 2
 15 : photo like removed -2 to receiver
 16 : photo receives a comment

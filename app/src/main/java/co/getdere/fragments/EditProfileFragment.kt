@@ -184,7 +184,6 @@ class EditProfileFragment : Fragment() {
 
         } else {
             performUpdateProfile(currentImageUri)
-
         }
 
 

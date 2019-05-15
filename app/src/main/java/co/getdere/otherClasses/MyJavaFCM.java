@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import co.getdere.MainActivity;
 import co.getdere.R;
 import co.getdere.models.Users;
@@ -75,16 +76,18 @@ public class MyJavaFCM extends FirebaseMessagingService {
 
                                 Uri notificationSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                                 NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(something, ADMIN_CHANNEL_ID)
-                                        .setSmallIcon(R.drawable.logo_fallback)
+                                        .setSmallIcon(R.drawable.dere_logo)
                                         .setLargeIcon(resource)
                                         .setContentTitle(remoteMessage.getData().get("title"))
                                         .setContentText(remoteMessage.getData().get("message"))
                                         .setAutoCancel(true)
                                         .setSound(notificationSoundUri)
+                                        .setColor(ContextCompat.getColor(something, R.color.green600))
+//                                        .setColorized(true)
                                         .setContentIntent(pendingIntent);
 
                                 //Set notification color to match your app color template
-                                notificationBuilder.setColor(getResources().getColor(R.color.colorPrimaryDark));
+//                                notificationBuilder.setColor(getResources().getColor(R.color.colorPrimaryDark));
                                 notificationManager.notify(notificationID, notificationBuilder.build());
 
                             }

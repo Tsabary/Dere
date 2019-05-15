@@ -315,7 +315,7 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
                 sharedViewModelRandomUser.randomUserObject.postValue(user)
 
                 activity as MainActivity
-                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketFragment).commit()
+                activity.subFm.beginTransaction().hide(activity.subActive).add(R.id.feed_subcontents_frame_container, activity.bucketFragment, "bucketFragment").commit()
                 activity.subActive = activity.bucketFragment
                 activity.switchVisibility(1)
             }

@@ -21,6 +21,7 @@ import co.getdere.MainActivity
 import co.getdere.models.Users
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
@@ -45,10 +46,10 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
     private lateinit var registerButtonBlinkingBackground: TextView
 
     private val permissions = arrayOf(
-        Manifest.permission.CAMERA,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.ACCESS_FINE_LOCATION
+//        Manifest.permission.CAMERA,
+//        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+//        Manifest.permission.ACCESS_FINE_LOCATION
     )
 
     private var texts = arrayOf("CREATING ACCOUNT", "CREATING ACCOUNT")
@@ -65,6 +66,7 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
         registerButtonBlinking.setTexts(texts)
         registerButtonBlinking.setTimeout(500, TimeUnit.MILLISECONDS)
 
+        Glide.with(this).load(R.drawable.user_profile).into(register_circular_image_view)
         register_to_login.setOnClickListener {
             haveAccountClicked()
         }
@@ -89,6 +91,7 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
         }
 
         val userConfirmPasswordInput = register_password_confirmation
+
         userConfirmPasswordInput.addTextChangedListener(object : TextWatcher{
             override fun afterTextChanged(s: Editable?) {
             }
@@ -139,7 +142,7 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
         Log.d("Main", "email is $userEmail")
         Log.d("Main", "pass is $userPassword")
 
-        if (selectedPhotoUri != null) {
+
 
             if (userName.length > 3) {
                 if (userEmail.contains("@") && userEmail.contains(".")) {
@@ -153,7 +156,14 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
                                             "RegisterActivity",
                                             "Succesflly created a user using uid: ${it.result?.user?.uid}"
                                         )
-                                        uploadImageToFirebase(it.result?.user?.uid!!, activity)
+
+                                        if (selectedPhotoUri != null) {
+                                            uploadImageToFirebase(it.result?.user?.uid!!, activity)
+                                        } else {
+                                            addUserToFirebaseDatabase("")
+                                        }
+
+
 
                                         return@addOnCompleteListener
                                     } else {
@@ -186,11 +196,7 @@ class RegisterActivity : AppCompatActivity(), DereMethods {
                 registerFail()
                 Toast.makeText(this, "Please enter a valid name", Toast.LENGTH_LONG).show()
             }
-        } else {
-            registerFail()
-            Toast.makeText(this, "Please choose a profile photo", Toast.LENGTH_LONG)
-                .show()
-        }
+
 
 
     }
