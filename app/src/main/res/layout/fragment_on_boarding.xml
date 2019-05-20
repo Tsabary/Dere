@@ -32,9 +32,10 @@
                 android:gravity="center"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="@color/white"/>
+                android:textColor="@color/white"
+                android:fontFamily="@font/roboto_black"/>
         <TextView
-                android:text="All your future travel destinations in one place, sorted by your interests"
+                android:text="Press and hold your finger on a photo that you like, and add it to your first bucket"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/on_boarding_subtitle"
@@ -47,10 +48,11 @@
                 android:gravity="center"
                 android:layout_marginEnd="40dp"
                 android:layout_marginStart="40dp"
-                android:textSize="15sp"
+                android:textSize="18sp"
                 android:layout_marginBottom="16dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintVertical_bias="0.0"/>
+                app:layout_constraintVertical_bias="0.0"
+                android:fontFamily="@font/roboto_medium"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
     <co.getdere.otherClasses.SwipeLockableViewPager
             android:layout_width="0dp"
@@ -68,10 +70,11 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:id="@+id/onboarding_button_box">
+            android:id="@+id/onboarding_button_box"
+            android:visibility="visible">
 
         <TextView
-                android:text="NEXT"
+                android:text="Finish"
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:id="@+id/on_boarding_button"
@@ -85,7 +88,8 @@
                 android:layout_marginStart="32dp"
                 android:gravity="center"
                 android:textColor="@color/green600"
-                android:textSize="14sp"
-                android:textStyle="bold"/>
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/roboto_medium"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

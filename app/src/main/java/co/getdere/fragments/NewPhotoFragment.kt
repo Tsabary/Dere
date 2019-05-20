@@ -65,15 +65,10 @@ class NewPhotoFragment : Fragment() {
         when (position) {
 
             0 -> {
-                activity.subFm.beginTransaction().remove(activity.darkRoomEditFragment).commit()
             }
 
             1 -> {
                 tabLayout.setBackgroundColor(Color.parseColor("#FF616161"))
-
-                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.darkRoomEditFragment)
-                    .commit()
-                activity.subActive = activity.darkRoomEditFragment
             }
 
         }

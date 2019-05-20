@@ -24,7 +24,7 @@ class OnBoardWelcomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        on_boarding_image.setImageResource(R.drawable.welcome)
+        on_boarding_image.setImageResource(R.drawable.bookmark_active)
     }
 
     companion object {

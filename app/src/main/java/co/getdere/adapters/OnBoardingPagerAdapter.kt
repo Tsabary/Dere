@@ -10,19 +10,25 @@ class OnBoardingPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAd
     override fun getItem(p0: Int): Fragment {
 
         return when (p0) {
-            0 -> OnBoardWelcomeFragment.newInstance()
-            1 -> OnBoardPhotosFragment.newInstance()
-            2 -> OnBoardBucketsFragment.newInstance()
-            3 -> OnBoardBoardFragment.newInstance()
-            4 -> RecentFeedOnBoardingFragment.newInstance()
-            5 -> AddToBucketFragment.newInstance()
+            0 -> RecentFeedOnBoardingFragment.newInstance()
+            1 -> AddToBucketFragment.newInstance()
             else -> OnBoardWelcomeFragment.newInstance()
         }
+
+//        return when (p0) {
+//            0 -> OnBoardWelcomeFragment.newInstance()
+//            1 -> OnBoardPhotosFragment.newInstance()
+//            2 -> OnBoardBucketsFragment.newInstance()
+//            3 -> OnBoardBoardFragment.newInstance()
+//            4 -> RecentFeedOnBoardingFragment.newInstance()
+//            5 -> AddToBucketFragment.newInstance()
+//            else -> OnBoardWelcomeFragment.newInstance()
+//        }
     }
 
 
     override fun getCount(): Int {
-        return 6
+        return 2
     }
 
 }

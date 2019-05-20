@@ -1,7 +1,5 @@
 package co.getdere
 
-import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -17,23 +15,20 @@ import co.getdere.models.Answers
 import co.getdere.models.Images
 import co.getdere.models.Question
 import co.getdere.models.Users
-import co.getdere.registerLogin.RegisterActivity
 import co.getdere.viewmodels.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import io.branch.indexing.BranchUniversalObject
 import io.branch.referral.Branch
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.subcontents_main.*
-import androidx.core.view.ViewCompat.getRotation
-import android.content.Context.WINDOW_SERVICE
-import android.view.WindowManager
-import android.view.Display
-import com.google.firebase.analytics.FirebaseAnalytics
-import com.yalantis.ucrop.UCrop
 
 
 class MainActivity : AppCompatActivity(), DereMethods {
@@ -55,7 +50,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var secondImageFullSizeFragment: SecondImageFullSizeFragment
     lateinit var profileRandomUserFragment: ProfileRandomUserFragment
     lateinit var profileSecondRandomUserFragment: ProfileSecondRandomUserFragment
-    lateinit var bucketFragment: AddToBucketFragment
+    lateinit var addToBucketFragment: AddToBucketFragment
     lateinit var openedQuestionFragment: OpenedQuestionFragment
     lateinit var feedNotificationsFragment: FeedNotificationsFragment
     lateinit var boardNotificationsFragment: BoardNotificationsFragment
@@ -72,12 +67,17 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var editAnswerFragment: EditAnswerFragment
     lateinit var editInterestsFragment: EditInterestsFragment
     lateinit var collectionMapView: CollectionMapViewFragment
+    lateinit var addToItineraryFragment: AddToItineraryFragment
+    lateinit var itineraryFragment: ItineraryFragment
 
     lateinit var mainFrame: FrameLayout
     lateinit var subFrame: FrameLayout
 
     val fm = supportFragmentManager
+    val fmTransaction = fm.beginTransaction()
     val subFm = supportFragmentManager
+    val subFmTransaction = subFm.beginTransaction()
+
 
     lateinit var active: Fragment
     lateinit var subActive: Fragment
@@ -86,6 +86,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     var boardNotificationsCount = MutableLiveData<Int>()
     var feedNotificationsCount = MutableLiveData<Int>()
 
+    var isCollectionMapViewActive = false
     var isBucketGalleryActive = false
     var isOpenedQuestionActive = false
     var isEditAnswerActive = false
@@ -94,6 +95,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
     var isFeedActive = false
     var isRandomUserProfileActive = false
     var isSecondRandomUserProfileActive = false
+    var isItineraryActive = false
+
 
     var fragmentsHaveBeenInitialized = false
 
@@ -201,10 +204,25 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
                 imageFullSizeFragment -> {
                     when {
-                        isBucketGalleryActive -> {
-                            subFm.beginTransaction().hide(subActive).attach(bucketGalleryFragment).commit()
+                        isCollectionMapViewActive && isBucketGalleryActive -> {
+                            subFm.beginTransaction().hide(subActive).show(bucketGalleryFragment).commit()
                             subActive = bucketGalleryFragment
                             bucketGalleryFragment.galleryViewPager.currentItem = 1
+                            resetImageExpended()
+                            isCollectionMapViewActive = false
+                        }
+
+                        isCollectionMapViewActive && !isBucketGalleryActive -> {
+                            subFm.beginTransaction().hide(subActive).show(collectionMapView).commit()
+                            subActive = collectionMapView
+                            resetImageExpended()
+                            isCollectionMapViewActive = false
+                        }
+
+                        isBucketGalleryActive && !isCollectionMapViewActive -> {
+                            subFm.beginTransaction().hide(subActive).show(bucketGalleryFragment).commit()
+                            subActive = bucketGalleryFragment
+                            bucketGalleryFragment.galleryViewPager.currentItem = 0
                             resetImageExpended()
                         }
                         isOpenedQuestionActive -> {
@@ -234,21 +252,12 @@ class MainActivity : AppCompatActivity(), DereMethods {
                         }
                     }
                 }
-                bucketFragment -> {
-
+                addToBucketFragment -> {
                     if (isFeedActive) {
-                        subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
-                        subActive = imageFullSizeFragment
                         switchVisibility(0)
                         isFeedActive = false
-                    } else {
-                        subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
-                        subActive = imageFullSizeFragment
                     }
-
-//                    fm.beginTransaction().detach(profileLoggedInUserFragment).attach(profileLoggedInUserFragment)
-//                        .commit()
-
+                    subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
                     subActive = imageFullSizeFragment
                 }
 
@@ -265,7 +274,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
                             isRandomUserProfileActive = false
                         }
 
-                        isBoardNotificationsActive ->{
+                        isBoardNotificationsActive -> {
                             subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
                             subActive = boardNotificationsFragment
                             isRandomUserProfileActive = false
@@ -286,13 +295,13 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     }
                 }
                 profileSecondRandomUserFragment -> {
-                if (isOpenedQuestionActive){
-                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
-                    subActive = openedQuestionFragment
-                } else {
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
-                }
+                    if (isOpenedQuestionActive) {
+                        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                        subActive = openedQuestionFragment
+                    } else {
+                        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                        subActive = imageFullSizeFragment
+                    }
                 }
 
                 feedNotificationsFragment -> {
@@ -301,7 +310,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
                 }
 
                 openedQuestionFragment -> {
-                    if (isBoardNotificationsActive){
+                    if (isBoardNotificationsActive) {
                         subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
                         subActive = boardNotificationsFragment
                         isOpenedQuestionActive = false
@@ -336,6 +345,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
                 }
 
                 bucketGalleryFragment -> {
+//                    subFm.beginTransaction().hide(bucketGalleryFragment).show(imageFullSizeFragment).commit()
+//                    subActive = imageFullSizeFragment
+//                    bucketGalleryFragment.pagerAdapter.notifyDataSetChanged()
                     switchVisibility(0)
                     isBucketGalleryActive = false
                     bucketGalleryFragment.mapButton.setImageResource(R.drawable.world)
@@ -403,6 +415,23 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     subActive = profileRandomUserFragment
                     resetSecondImageExpended()
                 }
+
+                addToItineraryFragment -> {
+                    if (isFeedActive) {
+                        switchVisibility(0)
+                        isFeedActive = false
+                    }
+                    subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+                }
+
+                itineraryFragment -> {
+                    switchVisibility(0)
+                    isItineraryActive = false
+                    feedNotificationsCount
+                    subFmTransaction.remove(itineraryFragment).commit()
+                }
+
             }
         } else if (fragmentsHaveBeenInitialized) {
 
@@ -480,11 +509,17 @@ class MainActivity : AppCompatActivity(), DereMethods {
         openedQuestionFragment.deleteBox.visibility = View.GONE
         bucketGalleryFragment.mapButton.setImageResource(R.drawable.world)
 
+        isCollectionMapViewActive = false
         isBucketGalleryActive = false
         isOpenedQuestionActive = false
         isEditAnswerActive = false
         isFeedNotificationsActive = false
         isBoardNotificationsActive = false
+        isRandomUserProfileActive = false
+        isSecondRandomUserProfileActive = false
+        isFeedActive = false
+        isItineraryActive = false
+
 
         sharedViewModelImage.sharedImageObject.postValue(Images())
         sharedViewModelRandomUser.randomUserObject.postValue(Users())
@@ -496,7 +531,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
         imageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
 
-        subFm.beginTransaction().remove(bucketFragment).commit()
+        subFm.beginTransaction().remove(addToBucketFragment).commit()
+        subFm.beginTransaction().remove(addToItineraryFragment).commit()
     }
 
     private fun checkIfLoggedIn() {
@@ -520,12 +556,11 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
             override fun onDataChange(p0: DataSnapshot) {
 
-                sharedViewModelCurrentUser.currentUserObject = p0.getValue(Users::class.java)!!
-
-                addFragmentsToFragmentManagers()
-
+                if (p0.getValue(Users::class.java) != null) {
+                    sharedViewModelCurrentUser.currentUserObject = p0.getValue(Users::class.java)!!
+                    addFragmentsToFragmentManagers()
+                }
             }
-
         })
     }
 
@@ -579,7 +614,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         imageFullSizeFragment = ImageFullSizeFragment()
         profileRandomUserFragment = ProfileRandomUserFragment()
         profileSecondRandomUserFragment = ProfileSecondRandomUserFragment()
-        bucketFragment = AddToBucketFragment()
+        addToBucketFragment = AddToBucketFragment()
         openedQuestionFragment = OpenedQuestionFragment()
         feedNotificationsFragment = FeedNotificationsFragment()
         boardNotificationsFragment = BoardNotificationsFragment()
@@ -597,6 +632,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
         editInterestsFragment = EditInterestsFragment()
         collectionMapView = CollectionMapViewFragment()
         secondImageFullSizeFragment = SecondImageFullSizeFragment()
+        addToItineraryFragment = AddToItineraryFragment()
+        itineraryFragment = ItineraryFragment()
 
 
 
@@ -610,7 +647,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
             .add(R.id.feed_subcontents_frame_container, profileSecondRandomUserFragment, "profileRandomUserFragment")
             .hide(profileSecondRandomUserFragment).commitAllowingStateLoss()
 //        subFm.beginTransaction()
-//            .add(R.id.feed_subcontents_frame_container, bucketFragment, "bucketFragment").hide(bucketFragment).commit()
+//            .add(R.id.feed_subcontents_frame_container, addToBucketFragment, "addToBucketFragment").hide(addToBucketFragment).commit()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, openedQuestionFragment, "openedQuestionFragment")
             .hide(openedQuestionFragment).commitAllowingStateLoss()
@@ -650,8 +687,11 @@ class MainActivity : AppCompatActivity(), DereMethods {
             .hide(editInterestsFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, collectionMapView, "collectionMapView")
             .hide(collectionMapView).commitAllowingStateLoss()
-        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, secondImageFullSizeFragment, "collectionMapView")
+        fm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, secondImageFullSizeFragment, "collectionMapView")
             .hide(secondImageFullSizeFragment).commitAllowingStateLoss()
+
+
 
         subActive = imageFullSizeFragment
 

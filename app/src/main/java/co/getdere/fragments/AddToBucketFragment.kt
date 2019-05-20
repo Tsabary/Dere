@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -30,7 +29,7 @@ import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.add_to_bucket_row.view.*
+import kotlinx.android.synthetic.main.add_to_collection_row.view.*
 import kotlinx.android.synthetic.main.fragment_add_to_bucket.*
 
 
@@ -71,15 +70,18 @@ class AddToBucketFragment : Fragment(), DereMethods {
 
         val activity = activity as MainActivity
 
-        recycler = add_to_bucket_recycler
+        add_to_collection_title.text = "Add to collection"
+
+        recycler = add_to_collection_recycler
         recycler.adapter = bucketsAdapter
         bucketsLayoutManager = LinearLayoutManager(this.context)
         recycler.layoutManager = bucketsLayoutManager
 
         listenToBuckets()
 
-        val newBucketInput = add_to_bucket_new_input
-        val bucketAddButton = add_to_bucket_new_button
+        val newBucketInput = add_to_collection_new_input
+        newBucketInput.hint = "Name your collection"
+        val bucketAddButton = add_to_collection_new_button
 
         bucketAddButton.setOnClickListener {
 
@@ -98,21 +100,16 @@ class AddToBucketFragment : Fragment(), DereMethods {
                     override fun onDataChange(p0: DataSnapshot) {
 
                         if (p0.hasChild(bucketName)) {
-                            Toast.makeText(context, "A bucket with the same name already exists", Toast.LENGTH_LONG)
+                            Toast.makeText(context, "A collection with the same name already exists", Toast.LENGTH_LONG)
                                 .show()
                         } else {
+                            recycler.visibility = View.VISIBLE
+
                             refBuckets.child("$bucketName/${imageObject.id}").setValue(System.currentTimeMillis())
                                 .addOnSuccessListener {
 
                                     refBuckets.child("$allBuckets/${imageObject.id}")
                                         .setValue(System.currentTimeMillis()).addOnSuccessListener {
-
-////                                            activity.imageFullSizeFragment.bucketButton.setImageResource(R.drawable.bucket_saved)
-//
-//                                            sharedViewModelForImage.sharedImageObject.postValue(Images())
-//                                            sharedViewModelForImage.sharedImageObject.postValue(imageObject)
-
-                                            checkIfBucketed(activity.imageFullSizeFragment.bucketButton, imageObject, currentUser.uid)
 
                                             val imageBucketingRef =
                                                 FirebaseDatabase.getInstance()
@@ -120,18 +117,33 @@ class AddToBucketFragment : Fragment(), DereMethods {
 
                                             imageBucketingRef.setValue(true).addOnSuccessListener {
 
+                                                checkIfBucketed(
+                                                    activity.imageFullSizeFragment.collectButton,
+                                                    imageObject,
+                                                    currentUser.uid
+                                                )
+
                                                 for (t in imageObject.tags) {
                                                     val refUserTags = FirebaseDatabase.getInstance()
                                                         .getReference("users/${currentUser.uid}/interests/$t")
                                                     refUserTags.setValue(true)
                                                 }
 
+                                                bucketsAdapter.add(
+                                                    SingleBucketSuggestion(
+                                                        bucketName,
+                                                        imageObject,
+                                                        currentUser,
+                                                        activity
+                                                    )
+                                                )
+
+
+
+
                                                 closeKeyboard(activity)
                                                 activity.profileLoggedInUserFragment.listenToImagesFromBucket()
                                                 newBucketInput.text.clear()
-
-                                                bucketsAdapter.clear()
-                                                listenToBuckets()
 
                                                 changeReputation(
                                                     8,
@@ -141,7 +153,7 @@ class AddToBucketFragment : Fragment(), DereMethods {
                                                     currentUser.name,
                                                     imageObject.photographer,
                                                     TextView(context),
-                                                    "bucket",
+                                                    "collection",
                                                     activity
                                                 )
 
@@ -156,13 +168,13 @@ class AddToBucketFragment : Fragment(), DereMethods {
 
 
             } else {
-                Toast.makeText(this.context, "Please give your new bucket a name", Toast.LENGTH_LONG).show()
+                Toast.makeText(this.context, "Please give your new collection a name", Toast.LENGTH_LONG).show()
             }
         }
     }
 
 
-    fun listenToBuckets() {
+    private fun listenToBuckets() {
 
         bucketsAdapter.clear()
 
@@ -215,13 +227,13 @@ class SingleBucketSuggestion(
 
 
     override fun getLayout(): Int {
-        return R.layout.add_to_bucket_row
+        return R.layout.add_to_collection_row
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
-        viewHolder.itemView.add_to_bucket_name.text = bucketName
+        viewHolder.itemView.add_to_collection_name.text = bucketName
 
-        val actionText = viewHolder.itemView.add_to_bucket_add
+        val actionText = viewHolder.itemView.add_to_collection_add
 
         executeBucket(0, bucketName, image, currentUser, actionText, viewHolder.root.context, activity as MainActivity)
 
@@ -303,7 +315,7 @@ class SingleBucketSuggestion(
                                                             currentUser.name,
                                                             image.photographer,
                                                             TextView(context),
-                                                            "bucket",
+                                                            "collection",
                                                             activity
                                                         )
 
@@ -311,12 +323,22 @@ class SingleBucketSuggestion(
                                                             refUserBuckets.child("All Buckets/${image.id}")
                                                                 .removeValue().addOnSuccessListener {
                                                                     firebaseAnalytics.logEvent("image_unbucketed", null)
-                                                                    checkIfBucketed(activity.imageFullSizeFragment.bucketButton, image, currentUser.uid)
+                                                                    checkIfBucketed(
+                                                                        activity.imageFullSizeFragment.collectButton,
+                                                                        image,
+                                                                        currentUser.uid
+                                                                    )
+                                                                    activity.profileLoggedInUserFragment.listenToImagesFromBucket()
                                                                 }
                                                         }
-                                                    } else {
-                                                        checkIfBucketed(activity.imageFullSizeFragment.bucketButton, image, currentUser.uid)
                                                     }
+//                                                    else {
+//                                                        checkIfBucketed(
+//                                                            activity.imageFullSizeFragment.collectButton,
+//                                                            image,
+//                                                            currentUser.uid
+//                                                        )
+//                                                    } //not needed because if it is not 0 then it is definitely still part of a collection
 
                                                 }
                                             })
@@ -332,11 +354,11 @@ class SingleBucketSuggestion(
                                         )
                                     )
 
-                                    activity.sharedViewModelImage.sharedImageObject.postValue(Images())
-                                    activity.sharedViewModelImage.sharedImageObject.postValue(image)
+//                                    activity.sharedViewModelImage.sharedImageObject.postValue(Images())
+//                                    activity.sharedViewModelImage.sharedImageObject.postValue(image) //not needed
 
                                     activity.profileLoggedInUserFragment.listenToImagesFromBucket()
-                                    activity.bucketFragment.listenToBuckets()
+//                                    activity.addToBucketFragment.listenToBuckets()
 
                                 } else {
                                     actionText.text = "Remove"
@@ -387,19 +409,24 @@ class SingleBucketSuggestion(
                                                             currentUser.name,
                                                             image.photographer,
                                                             TextView(context),
-                                                            "bucket",
+                                                            "collection",
                                                             activity
                                                         )
-
-                                                        activity.sharedViewModelImage.sharedImageObject.postValue(Images())
-                                                        activity.sharedViewModelImage.sharedImageObject.postValue(image)
+//
+//                                                        activity.sharedViewModelImage.sharedImageObject.postValue(Images())
+//                                                        activity.sharedViewModelImage.sharedImageObject.postValue(image) // not needed
 
                                                         activity.profileLoggedInUserFragment.listenToImagesFromBucket()
-                                                        activity.bucketFragment.listenToBuckets()
 
-                                                        checkIfBucketed(activity.imageFullSizeFragment.bucketButton, image, currentUser.uid)
+//                                                        activity.addToBucketFragment.listenToBuckets()
 
+                                                        checkIfBucketed(
+                                                            activity.imageFullSizeFragment.collectButton,
+                                                            image,
+                                                            currentUser.uid
+                                                        )
 
+//this next function is to check if it's the first time the user has bucketed the image, otherwise it won't log it to analytics
                                                         refUserBuckets.addListenerForSingleValueEvent(object :
                                                             ValueEventListener {
                                                             override fun onCancelled(p0: DatabaseError) {
@@ -420,20 +447,19 @@ class SingleBucketSuggestion(
                                                                             )
                                                                         }
                                                                     }
+                                                                }
 
-                                                                    if (existsInOtherBuckets <= 1) {
-                                                                        firebaseAnalytics.logEvent(
-                                                                            "image_bucketed",
-                                                                            null
-                                                                        )
-                                                                    }
+                                                                if (existsInOtherBuckets <= 1) {
+                                                                    firebaseAnalytics.logEvent(
+                                                                        "image_bucketed",
+                                                                        null
+                                                                    )
                                                                 }
                                                             }
                                                         })
                                                     }
                                             }
                                     }
-
 
                                 } else {
                                     actionText.text = "Add"
@@ -444,27 +470,19 @@ class SingleBucketSuggestion(
                                         )
                                     )
                                 }
-
                             }
-
                         }
-
-
                     })
 
-
                 } else {
-
                     if (case == 1) {
-
-
                         val ref =
                             FirebaseDatabase.getInstance()
                                 .getReference("/users/$uid/buckets/$bucketName")
 
-                        ref.setValue(mapOf(image.id to true)).addOnSuccessListener {
+                        ref.child(image.id).setValue(true).addOnSuccessListener {
 
-                            refImageBuckets.setValue(mapOf(currentUser.uid to true))
+                            refImageBuckets.setValue(true)
                                 .addOnSuccessListener {
 
                                     actionText.text = "Remove"
@@ -483,11 +501,15 @@ class SingleBucketSuggestion(
                                         currentUser.name,
                                         image.photographer,
                                         TextView(context),
-                                        "bucket",
+                                        "collection",
                                         activity
                                     )
 
-                                    checkIfBucketed(activity.imageFullSizeFragment.bucketButton, image, currentUser.uid)
+                                    checkIfBucketed(
+                                        activity.imageFullSizeFragment.collectButton,
+                                        image,
+                                        currentUser.uid
+                                    )
 
                                 }
                         }

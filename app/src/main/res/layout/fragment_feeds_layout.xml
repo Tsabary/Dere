@@ -92,26 +92,28 @@
                 android:fontFamily="@font/roboto_medium"/>
         <ImageButton
                 android:src="@drawable/linear_layout"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
                 android:id="@+id/feed_linear_layout"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:background="@android:color/transparent"
                 app:layout_constraintEnd_toStartOf="@+id/feed_staggered_layout"
-                android:layout_marginEnd="16dp"
-                android:scaleType="fitCenter"/>
+                android:scaleType="centerInside"
+                android:padding="16dp"
+                app:layout_constraintDimensionRatio="h,1:1"/>
         <ImageButton
                 android:src="@drawable/staggered_layout_active"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
                 android:id="@+id/feed_staggered_layout"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:background="@drawable/staggered_layout_active"
+                android:background="@android:color/transparent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="16dp"
-                android:scaleType="fitCenter"/>
+                android:scaleType="centerInside"
+                android:padding="16dp"
+                app:layout_constraintDimensionRatio="h,1:1"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

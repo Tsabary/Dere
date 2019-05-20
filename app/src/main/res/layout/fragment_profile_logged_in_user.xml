@@ -16,19 +16,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-            <androidx.recyclerview.widget.RecyclerView
-                    android:layout_width="0dp"
+            <TextView
+                    android:text="Itineraries"
+                    android:layout_width="80dp"
                     android:layout_height="wrap_content"
-                    app:layout_constraintTop_toBottomOf="@+id/profile_li_bucket_btn"
+                    android:id="@+id/profile_li_itineraries_btn"
+                    android:textStyle="bold"
+                    android:textColor="@color/gray300"
+                    android:fontFamily="@font/roboto_bold"
+                    app:layout_constraintTop_toTopOf="@+id/profile_li_bucket_btn"
+                    app:layout_constraintBottom_toBottomOf="@+id/profile_li_bucket_btn"
+                    app:layout_constraintStart_toEndOf="@+id/profile_li_bucket_btn"
+                    app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    android:id="@+id/profile_li_gallery_buckets"
-                    android:layout_marginTop="24dp"
-                    android:layout_marginBottom="8dp"
-                    android:visibility="gone"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"/>
+                    android:gravity="center"/>
+
+
             <View
                     android:id="@+id/divider5"
                     android:layout_width="0dp"
@@ -41,17 +44,18 @@
                     app:layout_constraintTop_toBottomOf="@+id/profile_li_photos_static"/>
             <TextView
                     android:text="Roll"
-                    android:layout_width="wrap_content"
+                    android:layout_width="80dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/profile_li_roll_btn"
                     android:textStyle="bold"
                     android:textColor="@color/gray700"
                     android:fontFamily="@font/roboto_bold"
                     app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/divider5"
+                    android:layout_marginTop="24dp"
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintEnd_toStartOf="@+id/profile_li_bucket_btn"
-                    app:layout_constraintTop_toBottomOf="@+id/divider5"
-                    android:layout_marginTop="24dp"/>
+                    android:gravity="center"/>
             <View
                     android:id="@+id/divider"
                     android:layout_width="0dp"
@@ -118,7 +122,7 @@
                     android:textColor="@color/gray800"/>
             <TextView
                     android:text="Buckets"
-                    android:layout_width="wrap_content"
+                    android:layout_width="80dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/profile_li_bucket_btn"
                     android:textStyle="bold"
@@ -128,7 +132,9 @@
                     app:layout_constraintBottom_toBottomOf="@+id/profile_li_roll_btn"
                     app:layout_constraintStart_toEndOf="@+id/profile_li_roll_btn"
                     app:layout_constraintHorizontal_bias="0.5"
-                    app:layout_constraintEnd_toEndOf="parent"/>
+                    app:layout_constraintEnd_toStartOf="@+id/profile_li_itineraries_btn"
+                    android:gravity="center"/>
+
             <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -139,6 +145,35 @@
                     android:id="@+id/profile_li_gallery_roll"
                     android:layout_marginTop="24dp"
                     android:layout_marginBottom="8dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@+id/profile_li_bucket_btn"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:id="@+id/profile_li_gallery_buckets"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@+id/profile_li_bucket_btn"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:id="@+id/profile_li_gallery_itineraries"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"/>
+
             <TextView
                     android:text="Reputation"
                     android:layout_width="wrap_content"

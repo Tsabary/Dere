@@ -20,6 +20,7 @@ import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.R
 import co.getdere.groupieAdapters.LinearFeedImage
+import co.getdere.groupieAdapters.LinearFeedImageLean
 import co.getdere.groupieAdapters.StaggeredFeedImage
 import co.getdere.models.LinearWithLocation
 import co.getdere.models.StaggeredWithLocation
@@ -41,7 +42,7 @@ open class FollowingFeedFragment : Fragment() {
     lateinit var sharedViewModelFollowedAccounts: SharedViewModelFollowedAccounts
     var staggeredImageList = mutableListOf<StaggeredFeedImage>()
     var staggeredWithLocationList = mutableListOf<StaggeredWithLocation>()
-    var linearImageList = mutableListOf<LinearFeedImage>()
+    var linearImageList = mutableListOf<LinearFeedImageLean>()
     var linearWithLocationList = mutableListOf<LinearWithLocation>()
 
 
@@ -150,7 +151,7 @@ open class FollowingFeedFragment : Fragment() {
             staggeredButton.setImageResource(R.drawable.staggered_layout)
 
             val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-            firebaseAnalytics.logEvent("linear_feed", null)
+            firebaseAnalytics.logEvent("feed_linear", null)
 
             val position = IntArray(2)
             staggeredGalleryLayoutManager.findFirstCompletelyVisibleItemPositions(position)
@@ -169,7 +170,7 @@ open class FollowingFeedFragment : Fragment() {
             linearButton.setImageResource(R.drawable.linear_layout)
 
             val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-            firebaseAnalytics.logEvent("staggered_feed", null)
+            firebaseAnalytics.logEvent("feed_staggered", null)
 
             val position = linearGalleryLayoutManager.findFirstCompletelyVisibleItemPosition()
             feedRecycler.layoutManager = staggeredGalleryLayoutManager
@@ -225,7 +226,7 @@ open class FollowingFeedFragment : Fragment() {
                                     )
 
                                     linearImageList.add(
-                                        LinearFeedImage(
+                                        LinearFeedImageLean(
                                             singleImageFromDB,
                                             currentUser,
                                             activity as MainActivity

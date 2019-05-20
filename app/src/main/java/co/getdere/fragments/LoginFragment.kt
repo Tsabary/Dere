@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,8 +15,8 @@ import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import co.getdere.MainActivity
-
 import co.getdere.R
 import co.getdere.RegisterLoginActivity
 import co.getdere.interfaces.DereMethods
@@ -32,7 +31,6 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.messaging.FirebaseMessaging
-import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.fragment_register_login_screens.*
 
 class LoginFragment : Fragment(), DereMethods {
@@ -200,7 +198,7 @@ class LoginFragment : Fragment(), DereMethods {
                     firebaseAuthWithGoogle(account)
                 }
             } catch (e: ApiException) {
-                Toast.makeText(this.context, "Google sign in failed:(", Toast.LENGTH_LONG).show()
+                Toast.makeText(this.context, "Google sign in failed:( $e", Toast.LENGTH_LONG).show()
             }
         }
     }

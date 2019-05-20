@@ -2,7 +2,6 @@ package co.getdere.groupieAdapters
 
 import android.view.GestureDetector
 import android.view.MotionEvent
-import android.view.View
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.ViewModelProviders
@@ -21,15 +20,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.linear_feed_post.view.*
+import kotlinx.android.synthetic.main.linear_feed_post_lean.view.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
 
 
-class LinearFeedImage(val image: Images, val currentUser: Users, val activity: MainActivity) : Item<ViewHolder>(),
+class LinearFeedImageLean(val image: Images, val currentUser: Users, val activity: MainActivity) : Item<ViewHolder>(),
     DereMethods, FCMMethods {
 
-    val uid = FirebaseAuth.getInstance().uid
 
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
@@ -38,7 +36,7 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
 
 
     override fun getLayout(): Int {
-        return R.layout.linear_feed_post
+        return R.layout.linear_feed_post_lean
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
@@ -51,24 +49,19 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
         }
 
 
-        val bucketCount = viewHolder.itemView.linear_feed_bucket_count
-        val bucketButton = viewHolder.itemView.linear_feed_bucket
+        val bucketCount = viewHolder.itemView.linear_feed_lean_bucket_count
+        val bucketButton = viewHolder.itemView.linear_feed_lean_bucket
 
-        val likeButton = viewHolder.itemView.linear_feed_like
-        val likeCount = viewHolder.itemView.linear_feed_like_count
+        val likeButton = viewHolder.itemView.linear_feed_lean_like
+        val likeCount = viewHolder.itemView.linear_feed_lean_like_count
 
-        val commentCount = viewHolder.itemView.linear_feed_comment_count
+        val commentCount = viewHolder.itemView.linear_feed_lean_comment_count
 
-//        val imageDescription = viewHolder.itemView.linear_feed_image_details
 
-        val verifiedIcon = viewHolder.itemView.linear_feed_verified
-        val verifiedInfoText = viewHolder.itemView.linear_feed_verified_info
-        val verifiedInfoBox = viewHolder.itemView.linear_feed_verified_box
-
-        val imageView = viewHolder.itemView.linear_feed_image
-        val imageTimestamp = viewHolder.itemView.linear_feed_timestamp
-        val userImage = viewHolder.itemView.linear_feed_author_image
-        val userName = viewHolder.itemView.linear_feed_author_name
+        val imageView = viewHolder.itemView.linear_feed_lean_image
+        val imageTimestamp = viewHolder.itemView.linear_feed_lean_timestamp
+        val userImage = viewHolder.itemView.linear_feed_lean_author_image
+        val userName = viewHolder.itemView.linear_feed_lean_author_name
 
         val imageRatioColonIndex = image.ratio.indexOf(":", 0)
         val imageRatioWidth = image.ratio.subSequence(0, imageRatioColonIndex)
@@ -84,36 +77,10 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
         }
 
 
-        viewHolder.itemView.linear_feed_tags.text = image.tags.joinToString()
-
-//        if (!image.verified) {
-//            verifiedIcon.visibility = View.VISIBLE
-//        }
-
-
-        verifiedIcon.setOnClickListener {
-            if (verifiedInfoBox.visibility == View.GONE) {
-                verifiedInfoBox.visibility = View.VISIBLE
-                verifiedInfoText.visibility = View.VISIBLE
-            } else {
-                verifiedInfoBox.visibility = View.GONE
-                verifiedInfoText.visibility = View.GONE
-            }
-        }
-
-        verifiedInfoBox.setOnClickListener {
-            verifiedInfoBox.visibility = View.GONE
-            verifiedInfoText.visibility = View.GONE
-        }
-        verifiedInfoText.setOnClickListener {
-            verifiedInfoBox.visibility = View.GONE
-            verifiedInfoText.visibility = View.GONE
-        }
-
         Glide.with(viewHolder.root.context).load(currentUser.image)
-            .into(viewHolder.itemView.linear_feed_current_user_photo)
+            .into(viewHolder.itemView.linear_feed_lean_current_user_photo)
 
-        val authorReputation = viewHolder.itemView.linear_feed_author_reputation
+        val authorReputation = viewHolder.itemView.linear_feed_lean_author_reputation
 
         val requestOption = RequestOptions()
             .placeholder(R.color.gray500).centerCrop()
@@ -126,13 +93,13 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
 
         listenToBucketCount(bucketCount, image)
 
-        checkIfBucketed(bucketButton, image, uid!!)
+        checkIfBucketed(bucketButton, image, currentUser.uid)
 
         listenToLikeCount(likeCount, image)
 
         executeLike(
             image,
-            uid,
+            currentUser.uid,
             likeCount,
             likeButton,
             0,
@@ -155,7 +122,7 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
 
             override fun onDataChange(p0: DataSnapshot) {
 
-                if (p0.getValue(Users::class.java) != null){
+                if (p0.getValue(Users::class.java) != null) {
                     user = p0.getValue(Users::class.java)!!
 
                     Glide.with(viewHolder.root.context).load(user.image)
@@ -176,10 +143,10 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
             }
 
             override fun onDoubleTap(e: MotionEvent?): Boolean {
-                if (uid != image.photographer) {
+                if (currentUser.uid != image.photographer) {
                     executeLike(
                         image,
-                        uid,
+                        currentUser.uid,
                         TextView(viewHolder.root.context),
                         likeButton,
                         1,
@@ -200,11 +167,15 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
             }
 
             override fun onLongPress(e: MotionEvent?) {
-                if (uid != image.photographer) {
+                if (currentUser.uid != image.photographer) {
                     activity.isFeedActive = true
                     goToBucket()
-                    super.onLongPress(e)
+                } else {
+                    goToItinerary()
                 }
+
+                super.onLongPress(e)
+
             }
         })
 
@@ -232,10 +203,9 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
         likeButton.setOnClickListener {
 
             if (image.photographer != currentUser.uid) {
-
                 executeLike(
                     image,
-                    uid,
+                    currentUser.uid,
                     likeCount,
                     likeButton,
                     1,
@@ -249,11 +219,11 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
         }
 
         bucketButton.setOnClickListener {
-            goToBucket()
-        }
-
-        viewHolder.itemView.setOnClickListener {
-            openImage()
+            if (image.photographer != currentUser.uid) {
+                goToBucket()
+            } else {
+                goToItinerary()
+            }
         }
     }
 
@@ -310,12 +280,23 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
                 val user = p0.getValue(Users::class.java)
                 sharedViewModelRandomUser.randomUserObject.postValue(user)
 
-                activity.subFm.beginTransaction().hide(activity.subActive).add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment").commit()
+                activity.subFm.beginTransaction().hide(activity.subActive)
+                    .add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment")
+                    .commit()
                 activity.subActive = activity.addToBucketFragment
                 activity.switchVisibility(1)
             }
 
         })
 
+    }
+
+    private fun goToItinerary() {
+        sharedViewModelImage.sharedImageObject.postValue(image)
+        activity.subFm.beginTransaction().hide(activity.subActive)
+            .add(R.id.feed_subcontents_frame_container, activity.addToItineraryFragment, "addToItineraryFragment")
+            .commit()
+        activity.subActive = activity.addToItineraryFragment
+        activity.switchVisibility(1)
     }
 }

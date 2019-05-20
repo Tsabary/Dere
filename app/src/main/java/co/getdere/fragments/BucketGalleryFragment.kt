@@ -27,6 +27,7 @@ class BucketGalleryFragment : Fragment() {
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var currentUser : Users
     lateinit var mapButton : ImageButton
+    lateinit var pagerAdapter : BucketGalleryPagerAdapter
 
     var viewPagerPosition = 0
     lateinit var galleryViewPager: SwipeLockableViewPager
@@ -46,7 +47,7 @@ class BucketGalleryFragment : Fragment() {
         mapButton = bucket_gallery_show_map
 
         galleryViewPager = bucket_gallery_viewpager
-        val pagerAdapter = BucketGalleryPagerAdapter(childFragmentManager)
+        pagerAdapter = BucketGalleryPagerAdapter(childFragmentManager)
         galleryViewPager.adapter = pagerAdapter
 
 

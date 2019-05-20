@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.board_single_row.view.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
 
-class SingleQuestion(
+class BoardRow(
     val question : Question
 ) : Item<ViewHolder>() {
     override fun getLayout(): Int {
@@ -34,7 +34,7 @@ class SingleQuestion(
                 val date = PrettyTime().format(Date(question.timestamp))
 
 
-                viewHolder.itemView.board_question.text = "${question.title}"
+                viewHolder.itemView.board_question.text = question.title
                 viewHolder.itemView.board_tags.text = question.tags.joinToString()
                 viewHolder.itemView.board_timestamp.text = date
                 viewHolder.itemView.board_answers.text = count.toString()

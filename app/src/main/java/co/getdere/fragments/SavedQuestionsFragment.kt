@@ -8,9 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.fragment.findNavController
 import co.getdere.MainActivity
-import co.getdere.groupieAdapters.SingleQuestion
+import co.getdere.groupieAdapters.BoardRow
 import co.getdere.models.Question
 import co.getdere.models.Users
 import co.getdere.R
@@ -64,10 +63,11 @@ class SavedQuestionsFragment : Fragment() {
         val boardSavedQuestionIcon = board_toolbar_saved_questions_icon
 
         boardNotificationIcon.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.boardNotificationsFragment).commit()
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.boardNotificationsFragment)
+                .commit()
             activity.subActive = activity.boardNotificationsFragment
         }
-
+        boardSavedQuestionIcon.setImageResource(R.drawable.bookmark_active)
         boardSavedQuestionIcon.setOnClickListener {
             listenToQuestions()
         }
@@ -78,7 +78,7 @@ class SavedQuestionsFragment : Fragment() {
 
         questionsRecyclerAdapter.setOnItemClickListener { item, _ ->
 
-            val row = item as SingleQuestion
+            val row = item as BoardRow
 
             sharedViewModelForQuestion.questionObject.postValue(row.question)
         }
@@ -113,7 +113,7 @@ class SavedQuestionsFragment : Fragment() {
                             val singleQuestionObjectFromDB = p0.getValue(Question::class.java)
 
                             if (singleQuestionObjectFromDB != null) {
-                                questionsRecyclerAdapter.add(SingleQuestion(singleQuestionObjectFromDB))
+                                questionsRecyclerAdapter.add(BoardRow(singleQuestionObjectFromDB))
 
                             }
 

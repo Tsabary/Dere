@@ -1,20 +1,15 @@
 package co.getdere.groupieAdapters
 
-import android.app.Activity
-import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
-import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.MainActivity
+import co.getdere.R
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
 import co.getdere.models.Users
-import co.getdere.R
 import co.getdere.otherClasses.FCMMethods
 import co.getdere.viewmodels.SharedViewModelImage
 import co.getdere.viewmodels.SharedViewModelRandomUser
@@ -22,15 +17,13 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
-import com.pedromassango.doubleclick.DoubleClick
-import com.pedromassango.doubleclick.DoubleClickListener
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.linear_feed_post.view.*
 import kotlinx.android.synthetic.main.staggered_feed_post.view.*
-import org.ocpsoft.prettytime.PrettyTime
-import java.util.*
 
 
 class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity: MainActivity) : Item<ViewHolder>(),
@@ -59,7 +52,6 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
         val likeButton = viewHolder.itemView.staggered_feed_like_button
 
         (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
-
 
 
         val requestOption = RequestOptions()
@@ -117,8 +109,12 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
                 if (uid != image.photographer) {
                     activity.isFeedActive = true
                     goToBucket()
-                    super.onLongPress(e)
+                } else {
+                    activity.isFeedActive = true
+                    goToItinerary()
                 }
+                super.onLongPress(e)
+
             }
         })
 
@@ -189,10 +185,22 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
                 val user = p0.getValue(Users::class.java)
                 sharedViewModelRandomUser.randomUserObject.postValue(user)
 
-                activity.subFm.beginTransaction().hide(activity.subActive).add(R.id.feed_subcontents_frame_container, activity.bucketFragment, "bucketFragment").commit()
-                activity.subActive = activity.bucketFragment
+                activity.subFm.beginTransaction().hide(activity.subActive)
+                    .add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment")
+                    .commit()
+                activity.subActive = activity.addToBucketFragment
                 activity.switchVisibility(1)
             }
         })
+    }
+
+
+    private fun goToItinerary() {
+        sharedViewModelImage.sharedImageObject.postValue(image)
+        activity.subFm.beginTransaction().hide(activity.subActive)
+            .add(R.id.feed_subcontents_frame_container, activity.addToItineraryFragment, "addToItineraryFragment")
+            .commit()
+        activity.subActive = activity.addToItineraryFragment
+        activity.switchVisibility(1)
     }
 }

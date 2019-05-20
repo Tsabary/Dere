@@ -65,31 +65,7 @@ class BucketFeedFragment : Fragment() {
             sharedViewModelCollection.imageCollection.observe(this, Observer { bucketName ->
                 bucketName?.let { bucket ->
 
-                    galleryAdapter.clear()
-
-
-                    for (image in bucket.children){
-
-                        val imagePath = image.key
-
-                        val imageObjectPath =
-                            FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
-
-                        imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onCancelled(p0: DatabaseError) {
-
-                            }
-
-                            override fun onDataChange(p0: DataSnapshot) {
-                                val imageObject = p0.getValue(Images::class.java)
-
-                                galleryAdapter.add(FeedImage(imageObject!!, 1))
-
-                            }
-                        })
-
-
-                    }
+                    listenToImagesFromBucket(bucket)
 
                 }
             })
@@ -114,16 +90,46 @@ class BucketFeedFragment : Fragment() {
 
                     val activity = activity as MainActivity
 
-                    activity.subFm.beginTransaction().detach(activity.subActive).show(activity.imageFullSizeFragment)
+                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment)
                         .commit()
                     activity.subActive = activity.imageFullSizeFragment
 
-                    activity.switchVisibility(1)
-                    activity.isBucketGalleryActive = true
+//                    activity.switchVisibility(1)
+//                    activity.isCollectionMapViewActive = true
 
                 }
 
             })
+
+        }
+
+    }
+
+    fun listenToImagesFromBucket(bucket: DataSnapshot) {
+
+        galleryAdapter.clear()
+
+
+        for (image in bucket.children) {
+
+            val imagePath = image.key
+
+            val imageObjectPath =
+                FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+
+            imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+                    val imageObject = p0.getValue(Images::class.java)
+
+                    galleryAdapter.add(FeedImage(imageObject!!, 1))
+
+                }
+            })
+
 
         }
 

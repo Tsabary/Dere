@@ -15,7 +15,8 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import co.getdere.MainActivity
 import co.getdere.R
-import co.getdere.groupieAdapters.SingleQuestion
+import co.getdere.groupieAdapters.BoardBlock
+import co.getdere.groupieAdapters.BoardRow
 import co.getdere.models.Question
 import co.getdere.models.Users
 import co.getdere.viewmodels.SharedViewModelInterests
@@ -37,8 +38,10 @@ class BoardFragment : Fragment() {
 
     val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
     val searchedQuestionsRecyclerAdapter = GroupAdapter<ViewHolder>()
-    val questionsRecyclerAdapter = GroupAdapter<ViewHolder>()
-    lateinit var questionRecyclerLayoutManager: androidx.recyclerview.widget.LinearLayoutManager
+    val questionsRowLayoutAdapter = GroupAdapter<ViewHolder>()
+    val questionsBlockLayoutAdapter = GroupAdapter<ViewHolder>()
+
+    private lateinit var questionRecyclerLayoutManager: androidx.recyclerview.widget.LinearLayoutManager
 
     lateinit var sharedViewModelForQuestion: SharedViewModelQuestion
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
@@ -115,6 +118,9 @@ class BoardFragment : Fragment() {
             }
         })
 
+        val rowLayoutIcon = board_row_layout
+        val blockLayout = board_bloack_layout
+
         val boardSearchBox = board_toolbar_search_box
         val tagSuggestionRecycler = board_search_recycler
         boardFilterChipGroup = board_toolbar_filter_chipgroup
@@ -127,6 +133,27 @@ class BoardFragment : Fragment() {
         board_swipe_refresh.setOnRefreshListener {
             listenToQuestions()
             board_swipe_refresh.isRefreshing = false
+        }
+
+        blockLayout.setOnClickListener {
+            blockLayout.setImageResource(R.drawable.linear_layout_active)
+            rowLayoutIcon.setImageResource(R.drawable.staggered_layout)
+            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+            firebaseAnalytics.logEvent("board_block_layout", null)
+
+            val position = questionRecyclerLayoutManager.findFirstCompletelyVisibleItemPosition()
+            questionsRecycler.adapter = questionsBlockLayoutAdapter
+        }
+
+        rowLayoutIcon.setOnClickListener {
+            rowLayoutIcon.setImageResource(R.drawable.staggered_layout_active)
+            blockLayout.setImageResource(R.drawable.linear_layout)
+
+            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+            firebaseAnalytics.logEvent("board_row_layout", null)
+
+            val position = questionRecyclerLayoutManager.findFirstCompletelyVisibleItemPosition()
+            questionsRecycler.adapter = questionsRowLayoutAdapter
         }
 
 
@@ -178,7 +205,7 @@ class BoardFragment : Fragment() {
         questionsRecycler = board_question_feed
         questionRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         questionRecyclerLayoutManager.reverseLayout = true
-        questionsRecycler.adapter = questionsRecyclerAdapter
+        questionsRecycler.adapter = questionsRowLayoutAdapter
         questionsRecycler.layoutManager = questionRecyclerLayoutManager
 
         listenToQuestions()
@@ -189,7 +216,7 @@ class BoardFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 tagsFilteredAdapter.clear()
 
-                val userInput = s.toString().toLowerCase()
+                val userInput = s.toString().toLowerCase().replace(" ", "-")
 
                 if (userInput == "") {
                     tagSuggestionRecycler.visibility = View.GONE
@@ -232,72 +259,61 @@ class BoardFragment : Fragment() {
             }
         }
 
-
-        questionsRecyclerAdapter.setOnItemClickListener { item, _ ->
-
-            val row = item as SingleQuestion
+        questionsBlockLayoutAdapter.setOnItemClickListener { item, view ->
+            val row = item as BoardBlock
             val author = row.question.author
             val question = row.question
 
+            sharedViewModelForQuestion.questionObject.postValue(question)
+
+            openQuestion(author)
+        }
+
+
+        questionsRowLayoutAdapter.setOnItemClickListener { item, _ ->
+            val row = item as BoardRow
+            val author = row.question.author
+            val question = row.question
 
             sharedViewModelForQuestion.questionObject.postValue(question)
 
-
-            // meanwhile in the background it will load the random user object
-
-            val refRandomUser = FirebaseDatabase.getInstance().getReference("/users/$author/profile")
-
-            refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-
-                }
-
-                override fun onDataChange(p0: DataSnapshot) {
-
-                    val randomUserFromDB = p0.getValue(Users::class.java)
-                    sharedViewModelRandomUser.randomUserObject.postValue(randomUserFromDB)
-
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
-                        .commit()
-                    activity.subActive = activity.openedQuestionFragment
-                    activity.isOpenedQuestionActive = true
-                    activity.switchVisibility(1)
-                }
-
-            })
+            openQuestion(author)
         }
 
 
 
         searchedQuestionsRecyclerAdapter.setOnItemClickListener { item, _ ->
-
-            val row = item as SingleQuestion
+            val row = item as BoardRow
             val author = row.question.author
             val question = row.question
 
-
             sharedViewModelForQuestion.questionObject.postValue(question)
 
-            // meanwhile in the background it will load the random user object
-
-            val refRandomUser = FirebaseDatabase.getInstance().getReference("/users/$author/profile")
-
-            refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-
-                }
-
-                override fun onDataChange(p0: DataSnapshot) {
-
-                    val randomUserFromDB = p0.getValue(Users::class.java)
-                    sharedViewModelRandomUser.randomUserObject.postValue(randomUserFromDB)
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment).commit()
-                    activity.switchVisibility(1)
-                    activity.subActive = activity.openedQuestionFragment
-                    activity.isOpenedQuestionActive = true
-                }
-            })
+            openQuestion(author)
         }
+    }
+
+    private fun openQuestion(author : String){
+        val activity = activity as MainActivity
+        val refRandomUser = FirebaseDatabase.getInstance().getReference("/users/$author/profile")
+
+        refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+
+                val randomUserFromDB = p0.getValue(Users::class.java)
+                sharedViewModelRandomUser.randomUserObject.postValue(randomUserFromDB)
+
+                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
+                    .commit()
+                activity.subActive = activity.openedQuestionFragment
+                activity.isOpenedQuestionActive = true
+                activity.switchVisibility(1)
+            }
+        })
     }
 
     private fun recyclersVisibility(case: Int) {
@@ -350,7 +366,7 @@ class BoardFragment : Fragment() {
                     runThroughTags@ for (tag in singleQuestionFromDB.tags) {
 
                         if (searchTag == tag) {
-                            searchedQuestionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
+                            searchedQuestionsRecyclerAdapter.add(BoardRow(singleQuestionFromDB))
                             break@runThroughTags
                         }
                     }
@@ -377,7 +393,8 @@ class BoardFragment : Fragment() {
 
         val uid = FirebaseAuth.getInstance().uid
 
-        questionsRecyclerAdapter.clear()
+        questionsRowLayoutAdapter.clear()
+        questionsBlockLayoutAdapter.clear()
 
         val ref = FirebaseDatabase.getInstance().getReference("/questions").orderByChild("main/body/lastInteraction")
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -395,13 +412,17 @@ class BoardFragment : Fragment() {
                                 for (tag in singleQuestionFromDB.tags) {
 
                                     if (interest == tag) {
-                                        questionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
+                                        questionsRowLayoutAdapter.add(BoardRow(singleQuestionFromDB))
+                                        questionsBlockLayoutAdapter.add((BoardBlock(singleQuestionFromDB, activity as MainActivity)))
+
                                         break@singleQuestionLoop
                                     }
                                 }
                             }
                         } else {
-                            questionsRecyclerAdapter.add(SingleQuestion(singleQuestionFromDB))
+                            questionsRowLayoutAdapter.add(BoardRow(singleQuestionFromDB))
+                            questionsBlockLayoutAdapter.add((BoardBlock(singleQuestionFromDB, activity as MainActivity)))
+
                         }
                     }
                 }

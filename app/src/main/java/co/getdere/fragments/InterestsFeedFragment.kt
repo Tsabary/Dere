@@ -16,13 +16,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import co.getdere.MainActivity
-import co.getdere.models.Images
-import co.getdere.models.Users
 import co.getdere.R
 import co.getdere.groupieAdapters.LinearFeedImage
+import co.getdere.groupieAdapters.LinearFeedImageLean
 import co.getdere.groupieAdapters.StaggeredFeedImage
-import co.getdere.models.LinearWithLocation
-import co.getdere.models.StaggeredWithLocation
+import co.getdere.models.*
 import co.getdere.viewmodels.*
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
@@ -45,8 +43,8 @@ open class InterestsFeedFragment : Fragment() {
     lateinit var sharedViewModelInterests: SharedViewModelInterests
     var staggeredImageList = mutableListOf<StaggeredFeedImage>()
     var staggeredWithLocationList = mutableListOf<StaggeredWithLocation>()
-    var linearImageList = mutableListOf<LinearFeedImage>()
-    var linearWithLocationList = mutableListOf<LinearWithLocation>()
+    var linearImageList = mutableListOf<LinearFeedImageLean>()
+    var linearWithLocationList = mutableListOf<LinearWithLocationLean>()
 
 
     lateinit var currentUser: Users
@@ -151,7 +149,7 @@ open class InterestsFeedFragment : Fragment() {
             staggeredButton.setImageResource(R.drawable.staggered_layout)
 
             val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-            firebaseAnalytics.logEvent("linear_feed", null)
+            firebaseAnalytics.logEvent("feed_linear", null)
 
             val position = IntArray(2)
             staggeredGalleryLayoutManager.findFirstCompletelyVisibleItemPositions(position)
@@ -170,7 +168,7 @@ open class InterestsFeedFragment : Fragment() {
             linearButton.setImageResource(R.drawable.linear_layout)
 
             val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-            firebaseAnalytics.logEvent("staggered_feed", null)
+            firebaseAnalytics.logEvent("feed_staggered", null)
 
             val position = linearGalleryLayoutManager.findFirstCompletelyVisibleItemPosition()
             feedRecycler.layoutManager = staggeredGalleryLayoutManager
@@ -227,7 +225,7 @@ open class InterestsFeedFragment : Fragment() {
                                         )
 
                                         linearImageList.add(
-                                            LinearFeedImage(
+                                            LinearFeedImageLean(
                                                 singleImageFromDB,
                                                 currentUser,
                                                 activity as MainActivity
@@ -315,8 +313,8 @@ open class InterestsFeedFragment : Fragment() {
                                                 )
 
                                                 linearWithLocationList.add(
-                                                    LinearWithLocation(
-                                                        LinearFeedImage(
+                                                    LinearWithLocationLean(
+                                                        LinearFeedImageLean(
                                                             singleImageFromDB,
                                                             currentUser,
                                                             activity as MainActivity

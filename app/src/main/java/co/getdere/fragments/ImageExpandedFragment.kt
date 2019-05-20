@@ -1,14 +1,14 @@
 package co.getdere.fragments
 
 
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ImageButton
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Observer
@@ -21,10 +21,16 @@ import co.getdere.models.Comments
 import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.otherClasses.SwipeLockableViewPager
-import co.getdere.viewmodels.*
+import co.getdere.viewmodels.SharedViewModelCurrentUser
+import co.getdere.viewmodels.SharedViewModelImage
+import co.getdere.viewmodels.SharedViewModelRandomUser
+import co.getdere.viewmodels.SharedViewModelSecondRandomUser
 import com.bumptech.glide.Glide
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.database.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
@@ -36,7 +42,6 @@ import io.branch.referral.util.ContentMetadata
 import io.branch.referral.util.LinkProperties
 import io.branch.referral.util.ShareSheetStyle
 import kotlinx.android.synthetic.main.comment_layout.view.*
-import kotlinx.android.synthetic.main.fragment_image.*
 import kotlinx.android.synthetic.main.fragment_image_expanded.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
@@ -69,7 +74,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
     lateinit var showLocation: ImageButton
 
-    lateinit var bucketButton: ImageButton
+    lateinit var collectButton: ImageButton
 
 
     override fun onAttach(context: Context) {
@@ -100,7 +105,6 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         val currentUserImage = image_expended_comments_current_user_image
 
-//        val mainImage = image_expended_image
         showLocation = image_expended_map
         val imageContent = image_expended_image_details
         val imageTimestamp = image_expended_timestamp
@@ -109,7 +113,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         val likeCount = image_expended_like_count
         val likeButton = image_expended_like_button
         val bucketCount = image_expended_bucket_count
-        bucketButton = image_expended_bucket_icon
+        collectButton = image_expended_bucket_icon
         val commentCount = image_expended_comment_count
         val shareButton = image_expended_share
         val linkAddress = image_expended_link_address
@@ -181,7 +185,12 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                 )
 
                 listenToBucketCount(bucketCount, image)
-                checkIfBucketed(bucketButton, image, currentUser.uid)
+                if (image.photographer == currentUser.uid){
+                    checkIfInItinerary(collectButton,image,currentUser.uid)
+                    bucketCount.visibility = View.GONE
+                } else {
+                    checkIfBucketed(collectButton, image, currentUser.uid)
+                }
 
                 listenToCommentCount(commentCount, image)
 
@@ -329,7 +338,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         shareButton.setOnClickListener {
 
-            val ss = ShareSheetStyle(activity, "Check this place out!", "Save it to your bucket list")
+            val ss = ShareSheetStyle(activity, "Check this place out!", "Save it to your collection list")
                 .setCopyUrlStyle(resources.getDrawable(android.R.drawable.ic_menu_send), "Copy", "Added to clipboard")
                 .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
                 .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
@@ -372,11 +381,15 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
 
 
-        bucketButton.setOnClickListener {
+        collectButton.setOnClickListener {
             if (currentUser.uid != imageObject.photographer) {
                 activity.subFm.beginTransaction().hide(activity.subActive)
-                    .add(R.id.feed_subcontents_frame_container, activity.bucketFragment, "bucketFragment").commit()
-                activity.subActive = activity.bucketFragment
+                    .add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment").commit()
+                activity.subActive = activity.addToBucketFragment
+            } else {
+                activity.subFm.beginTransaction().hide(activity.subActive)
+                    .add(R.id.feed_subcontents_frame_container, activity.addToItineraryFragment, "addToItineraryFragment").commit()
+                activity.subActive = activity.addToItineraryFragment
             }
         }
 

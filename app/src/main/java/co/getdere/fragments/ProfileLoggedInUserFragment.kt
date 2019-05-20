@@ -23,13 +23,12 @@ import co.getdere.RegisterLoginActivity
 import co.getdere.groupieAdapters.FeedImage
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
+import co.getdere.models.Itineraries
 import co.getdere.models.Users
-import co.getdere.registerLogin.LoginActivity
-import co.getdere.viewmodels.SharedViewModelCollection
-import co.getdere.viewmodels.SharedViewModelCurrentUser
-import co.getdere.viewmodels.SharedViewModelImage
-import co.getdere.viewmodels.SharedViewModelRandomUser
+import co.getdere.viewmodels.*
 import com.bumptech.glide.Glide
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -44,8 +43,8 @@ import io.branch.referral.SharingHelper
 import io.branch.referral.util.ContentMetadata
 import io.branch.referral.util.LinkProperties
 import io.branch.referral.util.ShareSheetStyle
-import kotlinx.android.synthetic.main.bucket_box_recycler.view.*
-import kotlinx.android.synthetic.main.bucket_box_single_photo.view.*
+import kotlinx.android.synthetic.main.collection_box_recycler.view.*
+import kotlinx.android.synthetic.main.collection_box_single_photo.view.*
 import kotlinx.android.synthetic.main.fragment_profile_logged_in_user.*
 
 
@@ -54,13 +53,16 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     lateinit var userProfile: Users
     val galleryRollAdapter = GroupAdapter<ViewHolder>()
     val galleryBucketAdapter = GroupAdapter<ViewHolder>()
+    val galleryItineraryAdapter = GroupAdapter<ViewHolder>()
     private lateinit var bucketBtn: TextView
     private lateinit var rollBtn: TextView
+    private lateinit var itineraryBtn: TextView
 
     private lateinit var sharedViewModelForCurrentUser: SharedViewModelCurrentUser
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var sharedViewModelImage: SharedViewModelImage
     private lateinit var sharedViewModelCollection: SharedViewModelCollection
+    private lateinit var sharedViewModelItinerary: SharedViewModelItinerary
 
 
     lateinit var buo: BranchUniversalObject
@@ -80,15 +82,16 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         val activity = activity as MainActivity
 
-        val profilePicture: ImageView = profile_li_image
-        val profileName: TextView = profile_li_user_name
-        val profileGalleryRoll = profile_li_gallery_roll
-        val profileGalleryBuckets = profile_li_gallery_buckets
-        val profileReputation = profile_li_reputation_count
-        val profileFollowers = profile_li_followers_count
-        val profilePhotos = profile_li_photos_count
-        val profileTagline = profile_li_tagline
-        val profileEditButton = profile_li_edit_profile_button
+        val picture: ImageView = profile_li_image
+        val name: TextView = profile_li_user_name
+        val galleryRollRecycler = profile_li_gallery_roll
+        val galleryBucketsRecycler = profile_li_gallery_buckets
+        val galleryItinerariesRecycler = profile_li_gallery_itineraries
+        val reputation = profile_li_reputation_count
+        val followers = profile_li_followers_count
+        val photos = profile_li_photos_count
+        val tagline = profile_li_tagline
+        val editButton = profile_li_edit_profile_button
         val instagramButton = profile_li_insta_icon
         var instaLink = ""
         val userMapButton = profile_li_map
@@ -112,12 +115,20 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
                 }
 
                 R.id.profile_logout -> {
+
+                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(getString(R.string.default_web_client_id))
+                        .requestEmail()
+                        .build();
+
                     val uid = FirebaseAuth.getInstance().uid
                     FirebaseMessaging.getInstance().unsubscribeFromTopic(uid).addOnSuccessListener {
                         FirebaseAuth.getInstance().signOut()
-                        val intent = Intent(this.context, RegisterLoginActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        startActivity(intent)
+                        GoogleSignIn.getClient(activity, gso).signOut().addOnSuccessListener {
+                            val intent = Intent(this.context, RegisterLoginActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
+                        }
                     }
 
                     return@setOnMenuItemClickListener true
@@ -171,38 +182,43 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         }
 
 
-        profileGalleryRoll.adapter = galleryRollAdapter
+        galleryRollRecycler.adapter = galleryRollAdapter
         val rollGalleryLayoutManager = GridLayoutManager(this.context, 3)
-        profileGalleryRoll.layoutManager = rollGalleryLayoutManager
+        galleryRollRecycler.layoutManager = rollGalleryLayoutManager
 
-        profileGalleryBuckets.adapter = galleryBucketAdapter
+        galleryBucketsRecycler.adapter = galleryBucketAdapter
         val bucketsGalleryLayoutManager = GridLayoutManager(this.context, 2)
-        profileGalleryBuckets.layoutManager = bucketsGalleryLayoutManager
+        galleryBucketsRecycler.layoutManager = bucketsGalleryLayoutManager
 
-
+        galleryItinerariesRecycler.adapter = galleryItineraryAdapter
+        val itinerariesGalleryLayoutManager = GridLayoutManager(this.context, 2)
+        galleryItinerariesRecycler.layoutManager = itinerariesGalleryLayoutManager
 
         bucketBtn = profile_li_bucket_btn
         rollBtn = profile_li_roll_btn
+        itineraryBtn = profile_li_itineraries_btn
 
         activity.let {
             sharedViewModelForCurrentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
+            sharedViewModelItinerary = ViewModelProviders.of(it).get(SharedViewModelItinerary::class.java)
 
             userProfile = sharedViewModelForCurrentUser.currentUserObject
             userRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}")
 
             listenToImagesFromBucket()
             listenToImagesFromRoll()
+            listenToItineraries()
             if (userProfile.image.isNotEmpty()) {
-                Glide.with(this).load(userProfile.image).into(profilePicture)
+                Glide.with(this).load(userProfile.image).into(picture)
             } else {
-                Glide.with(this).load(R.drawable.user_profile).into(profilePicture)
+                Glide.with(this).load(R.drawable.user_profile).into(picture)
             }
-            profileName.text = userProfile.name
-            profileReputation.text = numberCalculation(userProfile.reputation)
-            profileTagline.text = userProfile.tagline
+            name.text = userProfile.name
+            reputation.text = numberCalculation(userProfile.reputation)
+            tagline.text = userProfile.tagline
 
 
             buo = BranchUniversalObject()
@@ -233,7 +249,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
             override fun onDataChange(p0: DataSnapshot) {
 
-                profilePhotos.text = numberCalculation(p0.childrenCount)
+                photos.text = numberCalculation(p0.childrenCount)
             }
 
         })
@@ -243,7 +259,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                profileFollowers.text = numberCalculation(p0.childrenCount)
+                followers.text = numberCalculation(p0.childrenCount)
             }
         })
 
@@ -271,7 +287,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             firebaseAnalytics.logEvent("instagram_clicked_self", null)
         }
 
-        profileEditButton.setOnClickListener {
+        editButton.setOnClickListener {
 
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editProfileFragment).commit()
             activity.subActive = activity.editProfileFragment
@@ -282,25 +298,36 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
 
         bucketBtn.setOnClickListener {
-            profileGalleryRoll.visibility = View.GONE
-            profileGalleryBuckets.visibility = View.VISIBLE
-            changeGalleryFeed("bucket")
+            galleryItinerariesRecycler.visibility = View.GONE
+            galleryRollRecycler.visibility = View.GONE
+            galleryBucketsRecycler.visibility = View.VISIBLE
+            changeGalleryFeed("collection")
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
             activity.subActive = activity.bucketGalleryFragment
         }
 
         rollBtn.setOnClickListener {
-            profileGalleryRoll.visibility = View.VISIBLE
-            profileGalleryBuckets.visibility = View.GONE
+            galleryItinerariesRecycler.visibility = View.GONE
+            galleryRollRecycler.visibility = View.VISIBLE
+            galleryBucketsRecycler.visibility = View.GONE
             changeGalleryFeed("roll")
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
             activity.subActive = activity.imageFullSizeFragment
         }
 
+        itineraryBtn.setOnClickListener {
+            galleryItinerariesRecycler.visibility = View.VISIBLE
+            galleryRollRecycler.visibility = View.GONE
+            galleryBucketsRecycler.visibility = View.GONE
+            changeGalleryFeed("itinerary")
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
+            activity.subActive = activity.bucketGalleryFragment
+        }
+
 
         galleryRollAdapter.setOnItemClickListener { item, _ ->
-            //            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
-//            activity.subActive = activity.imageFullSizeFragment
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
+            activity.subActive = activity.imageFullSizeFragment
 
             val image = item as FeedImage
             sharedViewModelImage.sharedImageObject.postValue(image.image)
@@ -311,8 +338,8 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
 
         galleryBucketAdapter.setOnItemClickListener { item, _ ->
-            val bucket = item as SingleBucketBox
-            sharedViewModelCollection.imageCollection.postValue(bucket.bucket)
+            val bucket = item as SingleCollectionBox
+            sharedViewModelCollection.imageCollection.postValue(bucket.collection)
             activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
             activity.subActive = activity.bucketGalleryFragment
             activity.isBucketGalleryActive = true
@@ -346,12 +373,22 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
     private fun changeGalleryFeed(source: String) {
 
-        if (source == "bucket") {
-            rollBtn.setTextColor(resources.getColor(R.color.gray300))
-            bucketBtn.setTextColor(resources.getColor(R.color.gray700))
-        } else {
-            rollBtn.setTextColor(resources.getColor(R.color.gray700))
-            bucketBtn.setTextColor(resources.getColor(R.color.gray300))
+        when (source) {
+            "collection" -> {
+                rollBtn.setTextColor(resources.getColor(R.color.gray300))
+                bucketBtn.setTextColor(resources.getColor(R.color.gray700))
+                itineraryBtn.setTextColor(resources.getColor(R.color.gray300))
+            }
+            "roll" -> {
+                rollBtn.setTextColor(resources.getColor(R.color.gray700))
+                bucketBtn.setTextColor(resources.getColor(R.color.gray300))
+                itineraryBtn.setTextColor(resources.getColor(R.color.gray300))
+            }
+            else -> {
+                rollBtn.setTextColor(resources.getColor(R.color.gray300))
+                bucketBtn.setTextColor(resources.getColor(R.color.gray300))
+                itineraryBtn.setTextColor(resources.getColor(R.color.gray700))
+            }
         }
 
     }
@@ -367,8 +404,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
 
-                for (imagePath in p0.children){
-
+                for (imagePath in p0.children) {
 
 
                     val imageObjectPath =
@@ -408,8 +444,55 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
-                for (image in p0.children) {
-                    galleryBucketAdapter.add(SingleBucketBox(image, userProfile.uid, activity as MainActivity))
+                for (bucket in p0.children) {
+                    galleryBucketAdapter.add(
+                        SingleCollectionBox(
+                            bucket,
+                            userProfile.uid,
+                            activity as MainActivity,
+                            "bucket"
+                        )
+                    )
+                }
+            }
+
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+        })
+
+    }
+
+    fun listenToItineraries() {
+
+        galleryItineraryAdapter.clear()
+
+        val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/itineraries")
+        val itineraryRef = FirebaseDatabase.getInstance().getReference("/itineraries")
+
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
+                for (path in p0.children) {
+                    if (path != null) {
+                        itineraryRef.child(path.key!!).addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onCancelled(p0: DatabaseError) {
+                            }
+
+                            override fun onDataChange(p0: DataSnapshot) {
+
+                                galleryItineraryAdapter.add(
+                                    SingleCollectionBox(
+                                        p0,
+                                        userProfile.uid,
+                                        activity as MainActivity,
+                                        "itinerary"
+                                    )
+                                )
+
+                            }
+
+                        })
+                    }
                 }
             }
 
@@ -429,20 +512,27 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 }
 
 
-class SingleBucketBox(val bucket: DataSnapshot, val userUid: String, val activity: MainActivity) : Item<ViewHolder>() {
+class SingleCollectionBox(
+    val collection: DataSnapshot,
+    val userUid: String,
+    val activity: MainActivity,
+    val type: String
+) :
+    Item<ViewHolder>() {
 
 
     val imagesRecyclerAdapter = GroupAdapter<ViewHolder>()
     private val sharedViewModelBucket = ViewModelProviders.of(activity).get(SharedViewModelCollection::class.java)
+    private val sharedViewModelItinerary = ViewModelProviders.of(activity).get(SharedViewModelItinerary::class.java)
 
     override fun getLayout(): Int {
-        return R.layout.bucket_box_recycler
+        return R.layout.collection_box_recycler
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
 
-        val imagesRecycler = viewHolder.itemView.bucket_box_recycler_recycler
+        val imagesRecycler = viewHolder.itemView.collection_box_recycler_recycler
 
         val imagesRecyclerLayoutManager =
             GridLayoutManager(viewHolder.root.context, 2, RecyclerView.VERTICAL, false)
@@ -450,70 +540,137 @@ class SingleBucketBox(val bucket: DataSnapshot, val userUid: String, val activit
         imagesRecycler.layoutManager = imagesRecyclerLayoutManager
         imagesRecycler.adapter = imagesRecyclerAdapter
 
-        val bucketName = viewHolder.itemView.bucket_box_recycler_name
-        bucketName.text = bucket.key
-        viewHolder.itemView.bucket_box_recycler_photo_count.text = "${bucket.childrenCount} photos"
-
+        val bucketName = viewHolder.itemView.collection_box_recycler_name
+        bucketName.text = if (type == "bucket") {
+            collection.key
+        } else {
+            collection.child("body/title").getValue(String::class.java)
+        }
+        viewHolder.itemView.collection_box_recycler_photo_count.text = if (type == "bucket") {
+            "${collection.childrenCount} photos"
+        } else {
+            "${collection.child("body/images").childrenCount} photos"
+        }
 
         var count = 0
 
-        for (i in bucket.children) {
-
-            if (count < 4) {
+        if (type == "bucket") {
 
 
-                val imagePath = i.key
+            for (imageSnapshot in collection.children) {
 
-                val imageObjectPath =
-                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+                if (count < 4) {
 
-                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onCancelled(p0: DatabaseError) {
 
-                    }
+                    val imagePath = imageSnapshot.key
 
-                    override fun onDataChange(p0: DataSnapshot) {
-                        val imageObject = p0.getValue(Images::class.java)
+                    val imageObjectPath =
+                        FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
 
-                        imagesRecyclerAdapter.add(SingleImageToBucketRoll(imageObject!!))
+                    imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
 
-                    }
-                })
+                        }
 
-                count += 1
+                        override fun onDataChange(p0: DataSnapshot) {
+                            val imageObject = p0.getValue(Images::class.java)
+
+                            imagesRecyclerAdapter.add(SingleImageToBucketRoll(imageObject!!))
+
+                        }
+                    })
+
+                    count += 1
+                }
+
             }
+        } else {
 
+            for (imageSnapshot in collection.child("body/images").children) {
+
+                if (count < 4) {
+
+                    val imagePath = imageSnapshot.getValue(String::class.java)
+
+                    val imageObjectPath =
+                        FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+
+                    imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
+
+                        }
+
+                        override fun onDataChange(p0: DataSnapshot) {
+                            val imageObject = p0.getValue(Images::class.java)
+
+                            imagesRecyclerAdapter.add(SingleImageToBucketRoll(imageObject!!))
+
+                        }
+                    })
+
+                    count += 1
+                }
+
+            }
         }
 
 
 
         imagesRecyclerAdapter.setOnItemClickListener { _, _ ->
-
-            goToBucketGallery(viewHolder.root.context)
+            if (type == "bucket") {
+                goToBucketGallery()
+            } else {
+                goToItinerary()
+            }
         }
 
-        val card = viewHolder.itemView.cardView
-
-        card.setOnClickListener {
-            goToBucketGallery(viewHolder.root.context)
+        viewHolder.itemView.cardView.setOnClickListener {
+            if (type == "bucket") {
+                goToBucketGallery()
+            } else {
+                goToItinerary()
+            }
         }
 
-        val cardBackground = viewHolder.itemView.cardViewBackground
-
-        cardBackground.setOnClickListener {
-            goToBucketGallery(viewHolder.root.context)
+        viewHolder.itemView.cardViewBackground.setOnClickListener {
+            if (type == "bucket") {
+                goToBucketGallery()
+            } else {
+                goToItinerary()
+            }
         }
 
 
     }
 
-    fun goToBucketGallery(context: Context) {
-        sharedViewModelBucket.imageCollection.postValue(bucket)
+    private fun goToItinerary() {
+        val itineraryRef = FirebaseDatabase.getInstance().getReference("/itineraries/${collection.key}/body")
+
+        itineraryRef.addListenerForSingleValueEvent(object : ValueEventListener{
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+
+                sharedViewModelItinerary.itinerary.postValue(p0.getValue(Itineraries::class.java))
+
+                activity.subFm.beginTransaction().hide(activity.subActive).add(R.id.feed_subcontents_frame_container, activity.itineraryFragment, "itineraryFragment").commit()
+                activity.subActive = activity.itineraryFragment
+                activity.isItineraryActive = true
+                activity.switchVisibility(1)
+            }
+
+        })
+
+
+    }
+
+    private fun goToBucketGallery() {
+        sharedViewModelBucket.imageCollection.postValue(collection)
         activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
         activity.subActive = activity.bucketGalleryFragment
         activity.isBucketGalleryActive = true
         activity.switchVisibility(1)
-
     }
 
 
@@ -522,7 +679,7 @@ class SingleBucketBox(val bucket: DataSnapshot, val userUid: String, val activit
 
 class SingleImageToBucketRoll(val image: Images) : Item<ViewHolder>() {
     override fun getLayout(): Int {
-        return R.layout.bucket_box_single_photo
+        return R.layout.collection_box_single_photo
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {

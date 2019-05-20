@@ -17,6 +17,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.MainActivity
+import co.getdere.R
 import co.getdere.models.Users
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import com.bumptech.glide.Glide
@@ -38,6 +39,7 @@ class EditProfileFragment : Fragment() {
     lateinit var tagLineInput: EditText
     lateinit var userNameInput: EditText
     lateinit var userInstagramInput: EditText
+    lateinit var saveButton: TextView
 
     lateinit var sharedViewModelForCurrentUser: SharedViewModelCurrentUser
 
@@ -70,7 +72,7 @@ class EditProfileFragment : Fragment() {
         userNameInput = edit_profile_name
         userInstagramInput = edit_profile_instagram
 
-        val saveButton = edit_profile_save
+        saveButton = edit_profile_save
 
         setUpUserDetails()
 
@@ -84,6 +86,8 @@ class EditProfileFragment : Fragment() {
 
 
         saveButton.setOnClickListener {
+            saveButton.isClickable = false
+            edit_profile_loading.visibility = View.VISIBLE
             uploadImageToFirebase(user.image)
         }
 
@@ -142,15 +146,28 @@ class EditProfileFragment : Fragment() {
 
                                         activity.switchVisibility(0)
 
+                                        saveButton.isClickable = true
+                                        edit_profile_loading.visibility = View.GONE
                                     }
 
                                 })
+                            }.addOnFailureListener {
+                                saveButton.isClickable = true
+                                edit_profile_loading.visibility = View.GONE
                             }
 
-
+                    }.addOnFailureListener {
+                        saveButton.isClickable = true
+                        edit_profile_loading.visibility = View.GONE
                     }
 
+                }.addOnFailureListener {
+                    saveButton.isClickable = true
+                    edit_profile_loading.visibility = View.GONE
                 }
+            }.addOnFailureListener {
+                saveButton.isClickable = true
+                edit_profile_loading.visibility = View.GONE
             }
         } else {
             Toast.makeText(this.context, "Name can't be less than 2 letters", Toast.LENGTH_LONG).show()
@@ -195,7 +212,8 @@ class EditProfileFragment : Fragment() {
         val userInstagramRef = FirebaseDatabase.getInstance().getReference("/users/${user.uid}/stax/instagram")
 
 
-        Glide.with(this).load(user.image).into(userImage)
+        Glide.with(this).load(if(user.image.isNotEmpty()){user.image}else{
+            R.drawable.user_profile}).into(userImage)
         tagLineInput.setText(user.tagline)
         userNameInput.setText(user.name)
 
@@ -206,10 +224,10 @@ class EditProfileFragment : Fragment() {
 
             override fun onDataChange(p0: DataSnapshot) {
                 val instagramHandle = p0.value.toString()
-                if (instagramHandle == "null"){
+                if (instagramHandle == "null") {
                     userInstagramInput.setText("")
                 } else
-                userInstagramInput.setText(instagramHandle)
+                    userInstagramInput.setText(instagramHandle)
             }
 
 

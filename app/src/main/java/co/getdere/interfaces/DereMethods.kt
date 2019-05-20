@@ -18,15 +18,12 @@ import co.getdere.otherClasses.FCMMethods
 import co.getdere.otherClasses.FCMMethods.sendMessageTopic
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.database.*
-import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.messaging.RemoteMessage
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.fragment_image_expanded.*
 import mumayank.com.airlocationlibrary.AirLocation
 
 
@@ -944,6 +941,33 @@ interface DereMethods : FCMMethods {
 
     }
 
+    fun checkIfInItinerary (collectButton: ImageView, image: Images, uid: String) {
+
+        val refUserItinerary = FirebaseDatabase.getInstance().getReference("/users/$uid/itineraries")
+
+        refUserItinerary.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
+
+                var existsInItineraries = 0
+
+                for (itinerary in p0.children){
+                    if (itinerary.hasChild(image.id)) {
+                        existsInItineraries++
+                    }
+                }
+
+                if (existsInItineraries > 0) {
+                    collectButton.setImageResource(R.drawable.itinerary_saved)
+                } else {
+                    collectButton.setImageResource(R.drawable.itinerary)
+                }
+            }
+
+            override fun onCancelled(p0: DatabaseError) {
+            }
+        })
+    }
+
 
 //following methods are general for the reputation and notifications
 
@@ -964,18 +988,34 @@ interface DereMethods : FCMMethods {
             val refUserBoardNotifications =
                 FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId$initiatorId$scenarioType")
-            refUserBoardNotifications.setValue(
-                Notification(
-                    postType,
-                    scenarioType,
-                    initiatorId,
-                    initiatorName,
-                    mainPostId,
-                    specificPostId,
-                    System.currentTimeMillis(),
-                    0
-                )
-            )
+
+            val userRef = FirebaseDatabase.getInstance().getReference("/users/$initiatorId/profile/image")
+            userRef.addListenerForSingleValueEvent(object : ValueEventListener{
+                override fun onCancelled(p0: DatabaseError) {
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+
+                    val userImage = p0.getValue(String::class.java)
+
+                    refUserBoardNotifications.setValue(
+                        NotificationBoard(
+                            postType,
+                            scenarioType,
+                            initiatorId,
+                            initiatorName,
+                            userImage!!,
+                            mainPostId,
+                            specificPostId,
+                            System.currentTimeMillis(),
+                            0
+                        )
+                    )
+                }
+            })
+
+
+
 
         } else if (initiatorId != receiverId) {
 
@@ -983,22 +1023,42 @@ interface DereMethods : FCMMethods {
                 FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/gallery/$mainPostId$specificPostId$initiatorId$scenarioType")
 
-            refUserGalleryNotifications.setValue(
-                Notification(
-                    postType,
-                    scenarioType,
-                    initiatorId,
-                    initiatorName,
-                    mainPostId,
-                    specificPostId,
-                    System.currentTimeMillis(),
-                    0
-                )
-            )
+            val imageRef = FirebaseDatabase.getInstance().getReference("/images/$mainPostId/body/imageSmall")
+            imageRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                }
 
+                override fun onDataChange(p0: DataSnapshot) {
+                    val mainImage = p0.getValue(String::class.java)
+
+                    val userRef = FirebaseDatabase.getInstance().getReference("/users/$initiatorId/profile/image")
+                    userRef.addListenerForSingleValueEvent(object : ValueEventListener{
+                        override fun onCancelled(p0: DatabaseError) {
+                        }
+
+                        override fun onDataChange(p0: DataSnapshot) {
+
+                            val userImage = p0.getValue(String::class.java)
+
+                            refUserGalleryNotifications.setValue(
+                                NotificationFeed(
+                                    postType,
+                                    scenarioType,
+                                    initiatorId,
+                                    initiatorName,
+                                    userImage!!,
+                                    mainPostId,
+                                    mainImage!!,
+                                    specificPostId,
+                                    System.currentTimeMillis(),
+                                    0
+                                )
+                            )
+                        }
+                    })
+                }
+            })
         }
-
-
     }
 
 
@@ -1357,40 +1417,40 @@ interface DereMethods : FCMMethods {
 //    }
 
 
-    fun sendCloudMessage(userId: String) {
-
-        val receiverRef = FirebaseDatabase.getInstance().getReference("/users/$userId/services/firebase-token")
-
-        receiverRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-
-                val registrationToken = p0.getValue(String::class.java)
-
-                val senderId = "15705730627"
-                val msgID = registrationToken + System.currentTimeMillis()
-
-                val fm = FirebaseMessaging.getInstance()
-
-                fm.send(
-                    RemoteMessage.Builder("$senderId@gcm.googleapis.com")
-                        .setMessageId(msgID)
-                        .addData("my_message", "Hello World")
-                        .addData("my_action", "SAY_HELLO")
-                        .build()
-                )
-
-                Log.d("tokencomplete", p0.toString())
-                Log.d("tokenonly", registrationToken)
-
-            }
-
-        })
-
-    }
+//    fun sendCloudMessage(userId: String) {
+//
+//        val receiverRef = FirebaseDatabase.getInstance().getReference("/users/$userId/services/firebase-token")
+//
+//        receiverRef.addListenerForSingleValueEvent(object : ValueEventListener {
+//            override fun onCancelled(p0: DatabaseError) {
+//
+//            }
+//
+//            override fun onDataChange(p0: DataSnapshot) {
+//
+//                val registrationToken = p0.getValue(String::class.java)
+//
+//                val senderId = "15705730627"
+//                val msgID = registrationToken + System.currentTimeMillis()
+//
+//                val fm = FirebaseMessaging.getInstance()
+//
+//                fm.send(
+//                    RemoteMessage.Builder("$senderId@gcm.googleapis.com")
+//                        .setMessageId(msgID)
+//                        .addData("my_message", "Hello World")
+//                        .addData("my_action", "SAY_HELLO")
+//                        .build()
+//                )
+//
+//                Log.d("tokencomplete", p0.toString())
+//                Log.d("tokenonly", registrationToken)
+//
+//            }
+//
+//        })
+//
+//    }
 
 
 // See documentation on defining a message payload.

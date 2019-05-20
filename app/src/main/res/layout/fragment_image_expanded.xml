@@ -251,7 +251,8 @@
                         mapbox:layout_constraintHorizontal_bias="0.5"
                         mapbox:layout_constraintEnd_toStartOf="@+id/image_expended_like_button"
                         mapbox:layout_constraintTop_toTopOf="parent"
-                        android:layout_marginTop="32dp"/>
+                        android:layout_marginTop="8dp"
+                        android:padding="24dp"/>
                 <ImageButton
                         android:src="@drawable/heart"
                         android:layout_width="wrap_content"
@@ -263,10 +264,11 @@
                         mapbox:layout_constraintBottom_toBottomOf="@+id/image_expended_map"
                         mapbox:layout_constraintStart_toEndOf="@+id/image_expended_map"
                         mapbox:layout_constraintHorizontal_bias="0.5"
-                        mapbox:layout_constraintEnd_toStartOf="@+id/image_expended_bucket_icon"/>
+                        mapbox:layout_constraintEnd_toStartOf="@+id/image_expended_bucket_icon"
+                        android:padding="24dp"/>
                 <ImageButton
                         android:src="@drawable/bucket"
-                        android:layout_width="25dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/image_expended_bucket_icon"
                         android:background="@android:color/transparent"
@@ -275,7 +277,8 @@
                         mapbox:layout_constraintBottom_toBottomOf="@+id/image_expended_like_button"
                         mapbox:layout_constraintStart_toEndOf="@+id/image_expended_like_button"
                         mapbox:layout_constraintHorizontal_bias="0.5"
-                        mapbox:layout_constraintEnd_toStartOf="@+id/image_expended_share"/>
+                        mapbox:layout_constraintEnd_toStartOf="@+id/image_expended_share"
+                        android:padding="24dp"/>
 
                 <TextView
                         android:layout_width="0dp"
@@ -302,7 +305,8 @@
                         mapbox:layout_constraintBottom_toBottomOf="@+id/image_expended_bucket_icon"
                         mapbox:layout_constraintStart_toEndOf="@+id/image_expended_bucket_icon"
                         mapbox:layout_constraintHorizontal_bias="0.5"
-                        mapbox:layout_constraintEnd_toEndOf="parent"/>
+                        mapbox:layout_constraintEnd_toEndOf="parent"
+                        android:padding="24dp"/>
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

@@ -64,6 +64,7 @@ class DarkRoomMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                 myMapboxMap = mapboxMap
 
+
                 val locationComponent = mapboxMap.locationComponent
 
                 if (PermissionsManager.areLocationPermissionsGranted(this.context)) {

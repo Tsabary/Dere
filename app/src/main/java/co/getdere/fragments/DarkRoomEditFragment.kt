@@ -51,6 +51,7 @@ import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.location.LocationComponent
 import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
@@ -114,6 +115,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
     lateinit var currentUser: Users
 
+    lateinit var locationComponent: LocationComponent
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -255,7 +257,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         }
 
         focus.setOnClickListener {
-            panToCurrentLocation(activity as CameraActivity, myMapboxMap!!)
+            panToCurrentLocation(activity, myMapboxMap!!)
         }
 
 
@@ -271,6 +273,8 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
         deleteRemoveButton.setOnClickListener {
             localImageViewModel.delete(localImagePost)
+            activity.subFm.beginTransaction()
+                .remove(activity.darkRoomEditFragment).commit()
             activity.switchVisibility(0)
         }
 
@@ -336,15 +340,15 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                         imageLong = localImageObject.locationLong
 
 
-                        dark_room_edit_privacy_text.text = "public"
+                        dark_room_edit_privacy_text.text = getString(R.string.public_text)
 
                         dark_room_edit_privacy_container.setOnClickListener {
 
                             if (dark_room_edit_privacy_text.text == "private") {
-                                dark_room_edit_privacy_text.text = "public"
+                                dark_room_edit_privacy_text.text = getString(R.string.public_text)
                                 imagePrivacy = false
                             } else {
-                                dark_room_edit_privacy_text.text = "private"
+                                dark_room_edit_privacy_text.text = getString(R.string.private_text)
                                 imagePrivacy = true
                             }
                         }
@@ -368,17 +372,11 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                         symbolManager.create(symbolOptions)
 
-
-                        val position = CameraPosition.Builder()
-                            .target(LatLng(localImageObject.locationLat, localImageObject.locationLong))
-                            .zoom(10.0)
-                            .build()
-
-                        mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position))
-
-                        val locationComponent = mapboxMap.locationComponent
+                        locationComponent = mapboxMap.locationComponent
 
                         if (PermissionsManager.areLocationPermissionsGranted(this.context)) {
+
+                            panToCurrentLocation(activity, myMapboxMap!!)
 
 
                             // Activate with options
@@ -392,9 +390,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                             // Enable to make component visible
                             locationComponent.isLocationComponentEnabled = true
-
-                            // Set the component's camera mode
-//                    locationComponent.cameraMode = CameraMode.TRACKING
 
                             // Set the component's render mode
                             locationComponent.renderMode = RenderMode.COMPASS
@@ -524,7 +519,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
 
-
         shareButton.setOnClickListener {
 
             if (imageChipGroup.childCount > 0) {
@@ -551,7 +545,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         progressBar.progress = 0f
 
         val randomName = UUID.randomUUID().toString()
-//        val storagePath = Environment.getExternalStorageDirectory().absolutePath
         val path =
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
 
@@ -654,7 +647,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                 }.addOnFailureListener {
                     uploadFail()
                     Log.d("UploadActivity", "Failed to upload image to server $it")
-//                    progress.visibility = View.GONE
                 }
 
 
@@ -666,8 +658,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         }.addOnFailureListener {
             uploadFail()
             Log.d("UploadActivity", "Failed to upload image to server $it")
-//            progress.visibility = View.GONE
-
         }
     }
 
@@ -719,19 +709,22 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                     }
 
 
+                    localImageViewModel.delete(localImagePost).invokeOnCompletion {
 
-                    localImageViewModel.delete(localImagePost)
 
-                    if (newImage.verified) {
                         val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-                        firebaseAnalytics.logEvent("image_added_verified", null)
-                    } else {
-                        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-                        firebaseAnalytics.logEvent("image_added_unverified", null)
+                        firebaseAnalytics.logEvent(if (newImage.verified) {"image_added_verified"} else {"image_added_unverified"}, null)
+
+                        val backToFeed = Intent((activity as CameraActivity), MainActivity::class.java)
+                        startActivity(backToFeed)
+
+                        val activity = activity as CameraActivity
+                        activity.subFm.beginTransaction()
+                            .remove(activity.darkRoomEditFragment).commit()
                     }
 
-                    val backToFeed = Intent((activity as CameraActivity), MainActivity::class.java)
-                    startActivity(backToFeed)
+
+
                 }
 
                     .addOnFailureListener {

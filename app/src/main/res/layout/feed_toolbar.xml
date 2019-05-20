@@ -2,7 +2,6 @@
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="50dp"
@@ -22,7 +21,8 @@
             app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintVertical_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="24dp"/>
+            android:layout_marginStart="24dp"
+            android:contentDescription="@string/camera_icon"/>
 
 
     <ImageButton
@@ -38,7 +38,8 @@
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintDimensionRatio="1:1"/>
+            app:layout_constraintDimensionRatio="1:1"
+            android:contentDescription="@string/notifications_icon"/>
 
     <com.nex3z.notificationbadge.NotificationBadge
             android:id="@+id/feed_toolbar_notifications_badge"
@@ -50,7 +51,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginTop="4dp"
-            android:elevation="1dp"/>
+            android:elevation="2dp"/>
 
     <EditText
             android:layout_width="0dp"
@@ -64,7 +65,7 @@
             android:layout_marginBottom="8dp"
             android:background="@android:color/transparent"
             android:textSize="15sp"
-            android:hint="Search by tag"
+            android:hint="@string/search_by_tag"
             android:textColorHint="@color/gray700"
             android:fontFamily="@font/roboto_medium"
             android:layout_marginEnd="24dp"

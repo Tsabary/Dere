@@ -60,6 +60,8 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
     lateinit var buo: BranchUniversalObject
     lateinit var lp: LinkProperties
 
+    val uid = FirebaseAuth.getInstance().uid
+
     val answersAdapter = GroupAdapter<ViewHolder>()
 
 
@@ -144,17 +146,20 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                     val questionRef = FirebaseDatabase.getInstance().getReference("/questions/${question.id}")
                     questionRef.removeValue().addOnSuccessListener {
 
-                        for (tag in question.tags) {
-                            val refTag =
-                                FirebaseDatabase.getInstance().getReference("/tags/$tag/${question.id}")
-                            refTag.removeValue()
+                        val refUserQuestion = FirebaseDatabase.getInstance().getReference("/users/$uid/questions/${question.id}")
+                        refUserQuestion.removeValue().addOnSuccessListener {
+                            for (tag in question.tags) {
+                                val refTag =
+                                    FirebaseDatabase.getInstance().getReference("/tags/$tag/${question.id}")
+                                refTag.removeValue()
+                            }
+
+                            activity.switchVisibility(0)
+                            activity.boardFragment.listenToQuestions()
+
+                            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                            firebaseAnalytics.logEvent("question_answer_removed", null)
                         }
-
-                        activity.switchVisibility(0)
-                        activity.boardFragment.listenToQuestions()
-
-                        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-                        firebaseAnalytics.logEvent("question_answer_removed", null)
                     }
                 }
 
@@ -217,10 +222,14 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 openedQuestionAuthorReputation.text = "(${numberCalculation(user.reputation)})"
 
                 openedQuestionAuthorImage.setOnClickListener {
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileRandomUserFragment)
-                        .commit()
-                    activity.subActive = activity.profileRandomUserFragment
-//                    activity.isOpenedQuestionActive = true
+                    if (user.uid != uid){
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileRandomUserFragment)
+                            .commit()
+                        activity.subActive = activity.profileRandomUserFragment
+                    } else {
+                        activity.navigateToProfile()
+                    }
+
                 }
 
                 openedQuestionAuthorName.setOnClickListener {

@@ -284,6 +284,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
         val ref = FirebaseDatabase.getInstance().getReference("/questions").push()
         val refQuestionMain = FirebaseDatabase.getInstance().getReference("/questions/${ref.key}/main/body")
+        val refUserQuestion = FirebaseDatabase.getInstance().getReference("/users/$uid/questions/${ref.key}")
 
         val newQuestion = Question(ref.key!!, title, details, tags, timestamp, uid, timestamp)
 
@@ -293,35 +294,35 @@ class NewQuestionFragment : Fragment(), DereMethods {
         refQuestionMain.setValue(newQuestion)
             .addOnSuccessListener {
 
-                for (t in tags) {
-                    val refTag = FirebaseDatabase.getInstance().getReference("/tags/$t/${ref.key}")
-                    val refUserTags = FirebaseDatabase.getInstance().getReference("users/$uid/interests/$t")
+                refUserQuestion.setValue(true).addOnSuccessListener {
+                    for (t in tags) {
+                        val refTag = FirebaseDatabase.getInstance().getReference("/tags/$t/${ref.key}")
+                        val refUserTags = FirebaseDatabase.getInstance().getReference("users/$uid/interests/$t")
 
-                    refTag.setValue("question")
-                    refUserTags.setValue(true)
+                        refTag.setValue("question")
+                        refUserTags.setValue(true)
+                    }
+
+
+
+                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
+                        .commit()
+                    activity.subActive = activity.openedQuestionFragment
+
+                    activity.fm.beginTransaction().detach(activity.boardFragment).commit()
+                    activity.fm.beginTransaction().attach(activity.boardFragment).commit()
+                    activity.fm.beginTransaction().show(activity.boardFragment).commit()
+
+                    questionTitle.text!!.clear()
+                    questionDetails.text.clear()
+                    questionChipGroup.removeAllViews()
+                    tagsList.clear()
+
+                    closeKeyboard(activity)
+
+                    val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                    firebaseAnalytics.logEvent("question_added", null)
                 }
-
-
-
-                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
-                    .commit()
-                activity.subActive = activity.openedQuestionFragment
-
-                activity.fm.beginTransaction().detach(activity.boardFragment).commit()
-                activity.fm.beginTransaction().attach(activity.boardFragment).commit()
-                activity.fm.beginTransaction().show(activity.boardFragment).commit()
-
-                questionTitle.text!!.clear()
-                questionDetails.text.clear()
-                questionChipGroup.removeAllViews()
-                tagsList.clear()
-
-                closeKeyboard(activity)
-
-                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-                firebaseAnalytics.logEvent("question_added", null)
-
-
             }.addOnFailureListener {
                 Log.d("postQuestionActivity", "Failed to save question to database")
             }

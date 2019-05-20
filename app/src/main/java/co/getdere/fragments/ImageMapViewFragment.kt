@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProviders
 import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
+import co.getdere.models.Images
 import co.getdere.viewmodels.SharedViewModelImage
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -38,7 +39,7 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
     private val DERE_PIN = "derePin"
     var myMapboxMap: MapboxMap? = null
-
+    lateinit var imageObject: Images
 
     private lateinit var sharedViewModelForImage: SharedViewModelImage
 
@@ -76,9 +77,19 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
         mapView = image_map_view
 
         val currentLocationFocus = image_map_focus
+        val imageLocationFocus = image_map_pin
 
         currentLocationFocus.setOnClickListener {
             panToCurrentLocation(activity as MainActivity, myMapboxMap!!)
+        }
+
+        imageLocationFocus.setOnClickListener {
+            val position = CameraPosition.Builder()
+                .target(LatLng(imageObject.location[0], imageObject.location[1]))
+                .zoom(10.0)
+                .build()
+
+            myMapboxMap!!.animateCamera(CameraUpdateFactory.newCameraPosition(position), 3000)
         }
 
 
@@ -130,6 +141,8 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                 sharedViewModelForImage.sharedImageObject.observe(this, Observer {
                     it?.let { image ->
 
+                        imageObject = image
+
                         symbolManager.deleteAll()
 
                         val symbolOptions = SymbolOptions()
@@ -146,7 +159,7 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                         val position = CameraPosition.Builder()
                             .target(LatLng(image.location[0], image.location[1]))
-                            .zoom(10.0)
+                            .zoom(5.0)
                             .build()
 
                         mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position))

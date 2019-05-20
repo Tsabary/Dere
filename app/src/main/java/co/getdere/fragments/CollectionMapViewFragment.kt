@@ -368,11 +368,11 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                         val activity = activity as MainActivity
 
-                        activity.subFm.beginTransaction().detach(activity.subActive)
+                        activity.subFm.beginTransaction().hide(activity.subActive)
                             .show(activity.imageFullSizeFragment).commit()
                         activity.subActive = activity.imageFullSizeFragment
-                        activity.bucketGalleryFragment.galleryViewPager.currentItem = 0
-                        activity.isBucketGalleryActive = true
+//                        activity.bucketGalleryFragment.galleryViewPager.currentItem = 0
+                        activity.isCollectionMapViewActive = true
 
                         currentPosition = position
                         myAdapter.notifyDataSetChanged()

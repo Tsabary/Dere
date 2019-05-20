@@ -28,8 +28,10 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import kotlinx.android.synthetic.main.activity_register.*
+import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.fragment_register_login_screens.*
 
 class RegisterFragment : Fragment() {
@@ -92,7 +94,11 @@ class RegisterFragment : Fragment() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
 
-                if (userPassword.text.toString().replace("\\s".toRegex(), "") == userConfirmPassword.text.toString().replace("\\s".toRegex(), "")){
+                if (userPassword.text.toString().replace(
+                        "\\s".toRegex(),
+                        ""
+                    ) == userConfirmPassword.text.toString().replace("\\s".toRegex(), "")
+                ) {
                     register_fragment_password_check.visibility = View.VISIBLE
                 } else {
                     register_fragment_password_check.visibility = View.GONE
@@ -110,8 +116,27 @@ class RegisterFragment : Fragment() {
             if (it.isSuccessful) {
 
                 val user = firebaseAuth.currentUser
-                if (user != null){
-                    addUserToFirebaseDatabase(user.displayName!!, user.email!!, 1)
+                if (user != null) {
+
+                    val userRef = FirebaseDatabase.getInstance().getReference("/users/${user.uid}")
+
+                    userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
+                        }
+
+                        override fun onDataChange(p0: DataSnapshot) {
+                            if (p0.hasChild("interests") || p0.hasChild("images") || p0.hasChild("buckets") || p0.hasChild(
+                                    "likes"
+                                ) || p0.hasChild("questions")
+                            ){
+                                val intent = Intent(activity as RegisterLoginActivity, MainActivity::class.java)
+                                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                startActivity(intent)
+                            }else {
+                                addUserToFirebaseDatabase(user.displayName!!, user.email!!, 1)
+                            }
+                        }
+                    })
                 }
             } else {
                 Toast.makeText(this.context, "Google sign in failed:(", Toast.LENGTH_LONG).show()
@@ -136,7 +161,7 @@ class RegisterFragment : Fragment() {
             val task: Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
                 val account = task.getResult(ApiException::class.java)
-                if(account !=null){
+                if (account != null) {
                     firebaseAuthWithGoogle(account)
                 }
             } catch (e: ApiException) {
@@ -144,8 +169,6 @@ class RegisterFragment : Fragment() {
             }
         }
     }
-
-
 
 
     private fun performRegister() {
@@ -213,13 +236,21 @@ class RegisterFragment : Fragment() {
     }
 
 
-    private fun addUserToFirebaseDatabase(userNameForDatabase:String, userEmailForDatabase : String, case : Int) {
+    private fun addUserToFirebaseDatabase(userNameForDatabase: String, userEmailForDatabase: String, case: Int) {
         val uid = FirebaseAuth.getInstance().uid
         val ref = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
 
 
         val newUser =
-            Users(uid!!, userNameForDatabase, userEmailForDatabase, "", 0, "Watch me as I get Dere", System.currentTimeMillis())
+            Users(
+                uid!!,
+                userNameForDatabase,
+                userEmailForDatabase,
+                "",
+                0,
+                "Watch me as I get Dere",
+                System.currentTimeMillis()
+            )
 
         ref.setValue(newUser)
             .addOnSuccessListener {
@@ -228,7 +259,7 @@ class RegisterFragment : Fragment() {
                 staxRef.setValue("").addOnSuccessListener {
                     Log.d("RegisterActivity", "Saved user to Firebase Database")
 
-                    if (case == 0){
+                    if (case == 0) {
                         val user = FirebaseAuth.getInstance().currentUser
 
                         user!!.sendEmailVerification().addOnSuccessListener {

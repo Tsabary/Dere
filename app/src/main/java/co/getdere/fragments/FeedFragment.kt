@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -22,23 +21,18 @@ import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.adapters.FeedPagerAdapter
 import co.getdere.groupieAdapters.LinearFeedImage
-import co.getdere.groupieAdapters.SingleQuestion
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
-import co.getdere.models.Question
 import co.getdere.models.Users
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelTags
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import com.google.android.material.tabs.TabLayout
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.board_toolbar.*
 import kotlinx.android.synthetic.main.feed_toolbar.*
-import kotlinx.android.synthetic.main.fragment_board.*
 import kotlinx.android.synthetic.main.fragment_feed.*
 
 
@@ -113,7 +107,7 @@ class FeedFragment : Fragment(), DereMethods {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 tagsFilteredAdapter.clear()
 
-                val userInput = s.toString().toLowerCase()
+                val userInput = s.toString().toLowerCase().replace(" ", "-")
 
                 if (userInput == "") {
                     tagSuggestionRecycler.visibility = View.GONE

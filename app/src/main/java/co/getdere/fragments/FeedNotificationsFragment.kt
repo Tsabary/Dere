@@ -71,10 +71,21 @@ class FeedNotificationsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val activity = activity as MainActivity
+        val notificationBadge = feed_toolbar_notifications_badge
+
         notifications_swipe_refresh.setOnRefreshListener {
             listenToNotifications()
             notifications_swipe_refresh.isRefreshing = false
         }
+
+        activity.feedNotificationsCount.observe(this, androidx.lifecycle.Observer {
+            it?.let { notCount ->
+                notificationBadge.setNumber(notCount)
+            }
+        })
+
 
         val notificationsRecycler = notifications_recycler
         notificationRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
@@ -83,8 +94,16 @@ class FeedNotificationsFragment : Fragment() {
         notificationsRecycler.adapter = notificationsRecyclerAdapter
         notificationsRecycler.layoutManager = notificationRecyclerLayoutManager
 
-        val notificationBadge = feed_toolbar_notifications_badge
+        val notificationIcon = feed_toolbar_notifications_icon
         val feedToCamera = feed_toolbar_camera_icon
+
+        notificationIcon.setImageResource(R.drawable.notification_bell_active)
+
+        listenToNotifications()
+
+        notificationIcon.setOnClickListener {
+            listenToNotifications()
+        }
 
         notificationBadge.setOnClickListener {
             listenToNotifications()
@@ -98,26 +117,6 @@ class FeedNotificationsFragment : Fragment() {
                 startActivity(intent)
             }
         }
-
-
-        refFeedNotifications.addChildEventListener(object : ChildEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-                listenToNotifications()
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-                listenToNotifications()
-            }
-        })
 
         notifications_mark_all_as_read.setOnClickListener {
             refFeedNotifications.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -162,7 +161,7 @@ class FeedNotificationsFragment : Fragment() {
                 var feedNotCount = 0
 
                 for (i in p0.children) {
-                    val notification = i.getValue(Notification::class.java)
+                    val notification = i.getValue(NotificationFeed::class.java)
 
                     if (notification != null) {
 
@@ -206,7 +205,7 @@ class FeedNotificationsFragment : Fragment() {
 }
 
 
-class SingleFeedNotification(val notification: Notification, val activity: MainActivity) : Item<ViewHolder>() {
+class SingleFeedNotification(val notification: NotificationFeed, val activity: MainActivity) : Item<ViewHolder>() {
     override fun getLayout(): Int {
         return R.layout.feed_notification_single_row
     }
@@ -301,56 +300,57 @@ class SingleFeedNotification(val notification: Notification, val activity: MainA
         }
 
 
-        val refImage = FirebaseDatabase.getInstance().getReference("/images/${notification.mainPostId}/body")
+        Glide.with(viewHolder.root.context).load(
+            if (notification.initiatorImage.isNotEmpty()) {
+                notification.initiatorImage
+            } else {
+                R.drawable.user_profile
+            }
+        )
+            .into(viewHolder.itemView.feed_notification_initiator_image)
 
-        refImage.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
+        Glide.with(viewHolder.root.context).load(notification.mainPostImage)
+            .into(viewHolder.itemView.feed_notification_post_image)
+
+
+        viewHolder.itemView.feed_notification_content.text = when (notification.scenarioType) {
+
+            8 -> {
+                Spanner()
+                    .append(notification.initiatorName)
+                    .append(" bucketed your photo", font("roboto_medium"))
             }
 
-            override fun onDataChange(p0: DataSnapshot) {
+            12 -> {
+                Spanner()
+                    .append(notification.initiatorName)
+                    .append(" liked a comment you made", font("roboto_medium"))
+            }
 
-                val image = p0.getValue(Images::class.java)
+            14 -> {
+                Spanner()
+                    .append(notification.initiatorName)
+                    .append(" liked your photo", font("roboto_medium"))
+            }
 
-                if (image != null) {
+            16 -> {
+                Spanner()
+                    .append(notification.initiatorName)
+                    .append(" commented on your photo", font("roboto_medium"))
+            }
 
-                    inflateImages(viewHolder, image)
-
-                    viewHolder.itemView.feed_notification_content.text = when (notification.scenarioType) {
-
-                        8 -> {
-                            Spanner()
-                                .append(notification.initiatorName)
-                                .append(" bucketed your photo", font("roboto_medium"))
-                        }
-
-                        12 -> {
-                            Spanner()
-                                .append(notification.initiatorName)
-                                .append(" liked a comment you made", font("roboto_medium"))
-                        }
-
-                        14 -> {
-                            Spanner()
-                                .append(notification.initiatorName)
-                                .append(" liked your photo", font("roboto_medium"))
-                        }
-
-                        16 -> {
-                            Spanner()
-                                .append(notification.initiatorName)
-                                .append(" commented on your photo", font("roboto_medium"))
-                        }
-
-                        20 -> {
-                            Spanner()
-                                .append(notification.initiatorName)
-                                .append(" started following you", font("roboto_medium"))
-                        }
-                        else -> "Notification failed to load"
-                    }
+            20 -> {
+                Spanner()
+                    .append(notification.initiatorName)
+                    .append(" started following you", font("roboto_medium"))
+            }
+            else -> "NotificationBoard failed to load"
+        }
+    }
+}
 
 
-                    /*
+/*
 
 8 : photo bucketed +15 to receiver +notification  // type 2            ***not implemented yet***
 12 : comment receives a like +1 to receiver +notification  // type 3            ***not implemented yet***
@@ -365,37 +365,4 @@ post types:
 1: answer
 2: image
 3: comment
-
-                     */
-                }
-            }
-        })
-    }
-
-    private fun inflateImages(viewHolder: ViewHolder, images: Images) {
-
-        Glide.with(viewHolder.root.context).load(images.imageSmall)
-            .into(viewHolder.itemView.feed_notification_post_image)
-
-        val refInitiator = FirebaseDatabase.getInstance().getReference("/users/${notification.initiatorId}/profile")
-
-        refInitiator.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-
-                val user = p0.getValue(Users::class.java)
-
-                if (user != null) {
-                    Glide.with(viewHolder.root.context).load(if(user.image.isNotEmpty()){user.image}else{R.drawable.user_profile})
-                        .into(viewHolder.itemView.feed_notification_initiator_image)
-                }
-
-            }
-
-        })
-
-
-    }
-}
+*/

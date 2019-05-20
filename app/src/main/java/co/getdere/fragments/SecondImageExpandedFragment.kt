@@ -21,7 +21,6 @@ import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.otherClasses.SwipeLockableViewPager
 import co.getdere.viewmodels.SharedViewModelCurrentUser
-import co.getdere.viewmodels.SharedViewModelRandomUser
 import co.getdere.viewmodels.SharedViewModelSecondImage
 import co.getdere.viewmodels.SharedViewModelSecondRandomUser
 import com.bumptech.glide.Glide
@@ -332,7 +331,7 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
 
         shareButton.setOnClickListener {
 
-            val ss = ShareSheetStyle(activity, "Check this place out!", "Save it to your bucket list")
+            val ss = ShareSheetStyle(activity, "Check this place out!", "Save it to your collection list")
                 .setCopyUrlStyle(resources.getDrawable(android.R.drawable.ic_menu_send), "Copy", "Added to clipboard")
                 .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
                 .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
@@ -378,8 +377,8 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
         bucketButton.setOnClickListener {
             if (currentUser.uid != imageObject.photographer) {
                 activity.subFm.beginTransaction().hide(activity.subActive)
-                    .add(R.id.feed_subcontents_frame_container, activity.bucketFragment, "bucketFragment").commit()
-                activity.subActive = activity.bucketFragment
+                    .add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment").commit()
+                activity.subActive = activity.addToBucketFragment
             }
         }
 

@@ -8,6 +8,19 @@
         tools:context=".fragments.ImageMapViewFragment"
         tools:showIn="@layout/fragment_image_expanded">
 
+    <ImageButton
+            android:src="@drawable/pin_button"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:id="@+id/image_map_pin"
+            mapbox:layout_constraintEnd_toEndOf="@+id/image_map_view"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="#CCffffff"
+            android:scaleType="center"
+            mapbox:layout_constraintBottom_toTopOf="@+id/image_map_focus"
+            android:elevation="2dp"
+            android:visibility="visible"/>
 
     <ImageButton
             android:src="@drawable/focus"
@@ -26,7 +39,7 @@
             android:id="@+id/image_map_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            mapbox:mapbox_cameraZoom="11"/>
+            mapbox:mapbox_cameraZoom="4"/>
 
 
 

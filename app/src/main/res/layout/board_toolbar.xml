@@ -2,7 +2,6 @@
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="50dp"
@@ -22,7 +21,8 @@
             android:layout_marginBottom="12dp"
             android:layout_marginTop="12dp"
             app:layout_constraintDimensionRatio="1:1"
-            android:scaleType="fitCenter"/>
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/saved_questions_icon"/>
 
 
     <ImageButton
@@ -38,19 +38,20 @@
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintDimensionRatio="1:1"/>
+            app:layout_constraintDimensionRatio="1:1"
+            android:contentDescription="@string/notifications_icon"/>
 
     <com.nex3z.notificationbadge.NotificationBadge
-        android:id="@+id/board_toolbar_notifications_badge"
-        app:nbBackground="@drawable/badge_background"
-        android:textColor="@color/white"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:layout_marginEnd="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="4dp"
-        android:elevation="1dp"/>
+            android:id="@+id/board_toolbar_notifications_badge"
+            app:nbBackground="@drawable/badge_background"
+            android:textColor="@color/white"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="4dp"
+            android:elevation="2dp"/>
 
     <EditText
             android:layout_width="0dp"
@@ -63,7 +64,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:background="@android:color/transparent"
-            android:hint="Search by tag"
+            android:hint="@string/search_by_tag"
             android:fontFamily="@font/roboto_medium"
             android:textSize="15sp"
             app:layout_constraintStart_toEndOf="@+id/board_toolbar_filter_chipgroup"

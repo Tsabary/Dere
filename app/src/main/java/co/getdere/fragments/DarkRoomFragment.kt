@@ -29,7 +29,6 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import com.yalantis.ucrop.UCrop
-import kotlinx.android.synthetic.main.activity_register.*
 import kotlinx.android.synthetic.main.feed_single_photo.view.*
 import kotlinx.android.synthetic.main.fragment_dark_room.*
 import java.io.File
@@ -86,7 +85,7 @@ class DarkRoomFragment : Fragment() {
 
             sharedViewModelLocalImagePost.sharedImagePostObject.postValue(adapterImage.image)
             activity.subFm.beginTransaction()
-                .add(R.id.camera_subcontents_frame_container, activity.darkRoomEditFragment, "darkRoomEditFragment").commit()
+                .add(activity.subFrame.id, activity.darkRoomEditFragment, "darkRoomEditFragment").commit()
             activity.switchVisibility(1)
         }
 
@@ -125,41 +124,11 @@ class DarkRoomFragment : Fragment() {
                 firebaseAnalytics.logEvent("image_uploaded_from_device", null)
             }
         }
-
-
-        //
-//            val timestamp = System.currentTimeMillis()
-//
-//            val fileName = "Dere$timestamp.jpg"
-//
-//            val path =
-//                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
-//            val outputDir = File(path)
-//            outputDir.mkdir()
-//            val savedPhoto = File(path + File.separator + fileName)
-//
-//            cropImage(selectedPhotoUri!!, Uri.fromFile(savedPhoto))
-//
-//
-//
-//
-
-
-
-
     }
 
-    private fun cropImage(source: Uri, destination : Uri) {
-        val myUcrop = UCrop.of(source, destination)
-        val options = UCrop.Options()
-        options.setActiveWidgetColor(resources.getColor(R.color.green700))
-        options.setActiveControlsWidgetColor(resources.getColor(R.color.white))
-        myUcrop.withOptions(options).start(this.context!!, this, 1)
-    }
 
     companion object {
         fun newInstance(): DarkRoomFragment = DarkRoomFragment()
-        const val newWordActivityRequestCode = 1
     }
 }
 
@@ -174,6 +143,4 @@ class DarkRoomGroupieAdapter(val image: LocalImagePost) : Item<ViewHolder>() {
         val photoHolder = viewHolder.itemView.feed_single_photo_photo
         Glide.with(viewHolder.root.context).load(image.imageUri).into(photoHolder)
     }
-
-
 }
