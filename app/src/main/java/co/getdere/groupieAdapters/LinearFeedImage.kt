@@ -43,8 +43,6 @@ class LinearFeedImage(val image: Images, val currentUser: Users, val activity: M
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
-        activity
-
         activity.let {
             sharedViewModelImage = ViewModelProviders.of(activity).get(SharedViewModelImage::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(activity).get(SharedViewModelRandomUser::class.java)

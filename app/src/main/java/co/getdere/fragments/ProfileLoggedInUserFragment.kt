@@ -1,7 +1,6 @@
 package co.getdere.fragments
 
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.PorterDuff
 import android.net.Uri
@@ -302,8 +301,8 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             galleryRollRecycler.visibility = View.GONE
             galleryBucketsRecycler.visibility = View.VISIBLE
             changeGalleryFeed("collection")
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
-            activity.subActive = activity.bucketGalleryFragment
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionGalleryFragment).commit()
+            activity.subActive = activity.collectionGalleryFragment
         }
 
         rollBtn.setOnClickListener {
@@ -320,8 +319,8 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             galleryRollRecycler.visibility = View.GONE
             galleryBucketsRecycler.visibility = View.GONE
             changeGalleryFeed("itinerary")
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
-            activity.subActive = activity.bucketGalleryFragment
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionGalleryFragment).commit()
+            activity.subActive = activity.collectionGalleryFragment
         }
 
 
@@ -340,8 +339,8 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         galleryBucketAdapter.setOnItemClickListener { item, _ ->
             val bucket = item as SingleCollectionBox
             sharedViewModelCollection.imageCollection.postValue(bucket.collection)
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
-            activity.subActive = activity.bucketGalleryFragment
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionGalleryFragment).commit()
+            activity.subActive = activity.collectionGalleryFragment
             activity.isBucketGalleryActive = true
             activity.switchVisibility(1)
         }
@@ -590,8 +589,7 @@ class SingleCollectionBox(
 
                 if (count < 4) {
 
-                    val imagePath = imageSnapshot.getValue(String::class.java)
-
+                    val imagePath = imageSnapshot.key
                     val imageObjectPath =
                         FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
 
@@ -620,7 +618,7 @@ class SingleCollectionBox(
             if (type == "bucket") {
                 goToBucketGallery()
             } else {
-                goToItinerary()
+                goToItineraryGallery()
             }
         }
 
@@ -628,7 +626,7 @@ class SingleCollectionBox(
             if (type == "bucket") {
                 goToBucketGallery()
             } else {
-                goToItinerary()
+                goToItineraryGallery()
             }
         }
 
@@ -636,7 +634,7 @@ class SingleCollectionBox(
             if (type == "bucket") {
                 goToBucketGallery()
             } else {
-                goToItinerary()
+                goToItineraryGallery()
             }
         }
 
@@ -665,10 +663,19 @@ class SingleCollectionBox(
 
     }
 
+
+    private fun goToItineraryGallery() {
+        sharedViewModelBucket.imageCollection.postValue(collection)
+        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionGalleryFragment).commit()
+        activity.subActive = activity.collectionGalleryFragment
+        activity.isBucketGalleryActive = true
+        activity.switchVisibility(1)
+    }
+
     private fun goToBucketGallery() {
         sharedViewModelBucket.imageCollection.postValue(collection)
-        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.bucketGalleryFragment).commit()
-        activity.subActive = activity.bucketGalleryFragment
+        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionGalleryFragment).commit()
+        activity.subActive = activity.collectionGalleryFragment
         activity.isBucketGalleryActive = true
         activity.switchVisibility(1)
     }

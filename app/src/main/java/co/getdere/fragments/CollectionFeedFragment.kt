@@ -23,9 +23,9 @@ import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.fragment_bucket_feed.*
+import kotlinx.android.synthetic.main.fragment_collection_feed.*
 
-class BucketFeedFragment : Fragment() {
+class CollectionFeedFragment : Fragment() {
 
 
     lateinit var sharedViewModelCollection: SharedViewModelCollection
@@ -40,7 +40,7 @@ class BucketFeedFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_bucket_feed, container, false)
+        return inflater.inflate(R.layout.fragment_collection_feed, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -65,7 +65,7 @@ class BucketFeedFragment : Fragment() {
             sharedViewModelCollection.imageCollection.observe(this, Observer { bucketName ->
                 bucketName?.let { bucket ->
 
-                    listenToImagesFromBucket(bucket)
+                    listenToImagesFromCollection(bucket)
 
                 }
             })
@@ -105,39 +105,66 @@ class BucketFeedFragment : Fragment() {
 
     }
 
-    fun listenToImagesFromBucket(bucket: DataSnapshot) {
+    private fun listenToImagesFromCollection(collectionSnapshot: DataSnapshot) {
 
         galleryAdapter.clear()
 
+        if(collectionSnapshot.hasChild("body")){
+            for (image in collectionSnapshot.child("/body/images").children) {
 
-        for (image in bucket.children) {
+                val imagePath = image.key
 
-            val imagePath = image.key
+                val imageObjectPath =
+                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
 
-            val imageObjectPath =
-                FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
 
-            imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
+                    }
 
-                }
+                    override fun onDataChange(p0: DataSnapshot) {
+                        val imageObject = p0.getValue(Images::class.java)
 
-                override fun onDataChange(p0: DataSnapshot) {
-                    val imageObject = p0.getValue(Images::class.java)
+                        galleryAdapter.add(FeedImage(imageObject!!, 1))
 
-                    galleryAdapter.add(FeedImage(imageObject!!, 1))
+                    }
+                })
 
-                }
-            })
 
+            }
+
+        }else{
+            for (image in collectionSnapshot.children) {
+
+                val imagePath = image.key
+
+                val imageObjectPath =
+                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+
+                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        val imageObject = p0.getValue(Images::class.java)
+
+                        galleryAdapter.add(FeedImage(imageObject!!, 1))
+
+                    }
+                })
+
+
+            }
 
         }
+
 
     }
 
 
     companion object {
-        fun newInstance(): BucketFeedFragment = BucketFeedFragment()
+        fun newInstance(): CollectionFeedFragment = CollectionFeedFragment()
     }
 
 

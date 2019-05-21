@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                                   xmlns:app="http://schemas.android.com/apk/res-auto"
-                                                   xmlns:tools="http://schemas.android.com/tools"
-                                                   android:orientation="vertical"
-                                                   android:layout_width="match_parent"
-                                                   android:layout_height="wrap_content">
-    <TextView
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <EditText
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:id="@+id/add_to_collection_name"
@@ -15,10 +17,9 @@
             android:layout_marginBottom="24dp"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="32dp"
-            tools:text="bucket name"
             android:fontFamily="@font/roboto_bold"
             android:textSize="15sp"
-            android:inputType="textMultiLine|text"
+            android:inputType="textCapSentences"
             android:layout_marginEnd="24dp"
             app:layout_constraintEnd_toStartOf="@+id/add_to_collection_add"
             app:layout_constraintHorizontal_bias="0.0"/>

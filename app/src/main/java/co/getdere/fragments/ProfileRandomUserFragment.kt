@@ -103,7 +103,7 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                     override fun onCancelled(p0: DatabaseError) {}
 
                     override fun onDataChange(p0: DataSnapshot) {
-                        if (p0.hasChild("stax")) {
+                        if (p0.child("stax/instagram").exists()) {
                             instagramButton.visibility = View.VISIBLE
                             instaLink = "https://www.instagram.com/${p0.child("stax").child("instagram").value}"
                         } else {
@@ -123,6 +123,8 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                 profileName.text = it.name
                 profileReputation.text = numberCalculation(it.reputation)
                 profileTagline.text = it.tagline
+
+                galleryRollAdapter.clear()
                 listenToImagesFromRoll()
 
                 executeFollow(0, followButton, activity)

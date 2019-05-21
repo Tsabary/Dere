@@ -10,7 +10,7 @@ class BucketGalleryPagerAdapter(fragmentManager: FragmentManager) : FragmentPage
     override fun getItem(p0: Int): Fragment {
 
         return when (p0) {
-            0 -> BucketFeedFragment.newInstance()
+            0 -> CollectionFeedFragment.newInstance()
             1 -> CollectionMapViewFragment.newInstance()
             else -> BoardFragment.newInstance()
         }

@@ -183,45 +183,84 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                 symbolManager.iconAllowOverlap = true
 
                 sharedViewModelCollection.imageCollection.observe(this, Observer {
-                    it?.let { bucket ->
+                    it?.let { collectionSnapshot ->
 
                         myAdapter.clear()
                         myAdapter.notifyDataSetChanged()
                         coordinates.clear()
                         symbolManager.deleteAll()
 
-                        for (image in bucket.children) {
+                        if(collectionSnapshot.hasChild("body")){
+                            for (image in collectionSnapshot.child("/body/images").children) {
 
-                            val imagePath = image.key
+                                val imagePath = image.key
 
-                            val imageObjectPath =
-                                FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+                                val imageObjectPath =
+                                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
 
-                            imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                                override fun onCancelled(p0: DatabaseError) {
+                                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onCancelled(p0: DatabaseError) {
 
-                                }
+                                    }
 
-                                override fun onDataChange(p0: DataSnapshot) {
-                                    val imageObject = p0.getValue(Images::class.java)
+                                    override fun onDataChange(p0: DataSnapshot) {
+                                        val imageObject = p0.getValue(Images::class.java)
 
-                                    coordinates.add(LatLng(imageObject!!.location[0], imageObject.location[1]))
+                                        coordinates.add(LatLng(imageObject!!.location[0], imageObject.location[1]))
 
-                                    myAdapter.add(ImageOnMap(imageObject, positionAssignmentForAdapter))
+                                        myAdapter.add(ImageOnMap(imageObject, positionAssignmentForAdapter))
 
-                                    val symbolOptions = SymbolOptions()
-                                        .withLatLng(LatLng(imageObject.location[0], imageObject.location[1]))
-                                        .withIconImage(DERE_PIN)
-                                        .withIconSize(1f)
-                                        .withZIndex(10)
-                                        .withDraggable(false)
+                                        val symbolOptions = SymbolOptions()
+                                            .withLatLng(LatLng(imageObject.location[0], imageObject.location[1]))
+                                            .withIconImage(DERE_PIN)
+                                            .withIconSize(1f)
+                                            .withZIndex(10)
+                                            .withDraggable(false)
 
-                                    symbolManager.create(symbolOptions)
+                                        symbolManager.create(symbolOptions)
 
-                                    positionAssignmentForAdapter += 1
-                                }
-                            })
+                                        positionAssignmentForAdapter += 1
+                                    }
+                                })
 
+
+                            }
+
+                        } else {
+                            for (image in collectionSnapshot.children) {
+
+                                val imagePath = image.key
+
+                                val imageObjectPath =
+                                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+
+                                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onCancelled(p0: DatabaseError) {
+
+                                    }
+
+                                    override fun onDataChange(p0: DataSnapshot) {
+                                        val imageObject = p0.getValue(Images::class.java)
+
+                                        coordinates.add(LatLng(imageObject!!.location[0], imageObject.location[1]))
+
+                                        myAdapter.add(ImageOnMap(imageObject, positionAssignmentForAdapter))
+
+                                        val symbolOptions = SymbolOptions()
+                                            .withLatLng(LatLng(imageObject.location[0], imageObject.location[1]))
+                                            .withIconImage(DERE_PIN)
+                                            .withIconSize(1f)
+                                            .withZIndex(10)
+                                            .withDraggable(false)
+
+                                        symbolManager.create(symbolOptions)
+
+                                        positionAssignmentForAdapter += 1
+                                    }
+                                })
+
+
+                            }
 
                         }
 
@@ -371,7 +410,7 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                         activity.subFm.beginTransaction().hide(activity.subActive)
                             .show(activity.imageFullSizeFragment).commit()
                         activity.subActive = activity.imageFullSizeFragment
-//                        activity.bucketGalleryFragment.galleryViewPager.currentItem = 0
+//                        activity.collectionGalleryFragment.galleryViewPager.currentItem = 0
                         activity.isCollectionMapViewActive = true
 
                         currentPosition = position

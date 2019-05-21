@@ -228,12 +228,15 @@ class LinearFeedImageLean(val image: Images, val currentUser: Users, val activit
     }
 
     private fun goToUserProfile(user: Users) {
-
-        sharedViewModelRandomUser.randomUserObject.postValue(user)
-        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileRandomUserFragment).commit()
-        activity.subActive = activity.profileRandomUserFragment
-        activity.switchVisibility(1)
-        activity.isFeedActive = true
+        if (user.uid != currentUser.uid){
+            sharedViewModelRandomUser.randomUserObject.postValue(user)
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileRandomUserFragment).commit()
+            activity.subActive = activity.profileRandomUserFragment
+            activity.switchVisibility(1)
+            activity.isFeedActive = true
+        } else {
+            activity.navigateToProfile()
+        }
     }
 
     private fun openImage() {

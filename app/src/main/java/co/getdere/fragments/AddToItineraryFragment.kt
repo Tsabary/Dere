@@ -85,10 +85,11 @@ class AddToItineraryFragment : Fragment(), DereMethods {
         val addNewButton = add_to_collection_new_button
 
         addNewButton.setOnClickListener {
-            val itineraryImages: MutableList<String> = mutableListOf()
+
+            val itineraryImages: MutableMap<String, Boolean> = mutableMapOf()
             if (newItineraryInput.text.isNotEmpty()) {
                 val itineraryName = newItineraryInput.text.toString().trimEnd()
-                itineraryImages.add(imageObject.id)
+                itineraryImages[imageObject.id] = true
 
                 val refItineraries = FirebaseDatabase.getInstance().getReference("/itineraries").push()
                 val refUserItineraries =
@@ -101,10 +102,15 @@ class AddToItineraryFragment : Fragment(), DereMethods {
                     false,
                     currentUser.uid,
                     itineraryName,
+                    "",
+                    "",
+                    0.00,
+                    "",
+                    "",
                     itineraryImages,
-                    "",
-                    "",
-                    ""
+                    mapOf(),
+                    System.currentTimeMillis(),
+                    System.currentTimeMillis()
                 )
 
                 recycler.visibility = View.VISIBLE
@@ -216,7 +222,7 @@ class SingleItinerarySuggestion(
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
-        viewHolder.itemView.add_to_collection_name.text = itinerary.title
+        viewHolder.itemView.add_to_collection_name.setText(itinerary.title)
         Log.d("itinerary", itinerary.title)
 
         val actionText = viewHolder.itemView.add_to_collection_add
@@ -263,6 +269,7 @@ class SingleItinerarySuggestion(
             }
 
             override fun onDataChange(p0: DataSnapshot) {
+
                 if (p0.hasChild(image.id)) {
                     if (case == 1) {
 
@@ -271,15 +278,7 @@ class SingleItinerarySuggestion(
 
                                 refImageItineraries.removeValue().addOnSuccessListener {
 
-                                    val updatedImages = mutableListOf<String>()
-
-                                    for (imagePath in p0.children) {
-                                        updatedImages.add(imagePath.getValue(String::class.java)!!)
-                                    }
-
-                                    updatedImages.remove(image.id)
-
-                                    refItinerary.setValue(updatedImages).addOnSuccessListener {
+                                    refItinerary.child(image.id).removeValue().addOnSuccessListener {
 
                                         firebaseAnalytics.logEvent("image_removed_from_itinerary", null)
 
@@ -302,7 +301,7 @@ class SingleItinerarySuggestion(
 //                                        activity.sharedViewModelImage.sharedImageObject.postValue(Images())
 //                                        activity.sharedViewModelImage.sharedImageObject.postValue(image) //not needed?
 
-//                                        activity.profileLoggedInUserFragment.listenToImagesFromBucket() change to listen to itineraries
+//                                        activity.profileLoggedInUserFragment.listenToImagesFromCollection() change to listen to itineraries
 
 //                                    activity.addToBucketFragment.listenToBuckets()
 
@@ -310,8 +309,6 @@ class SingleItinerarySuggestion(
                                     }
                                 }
                             }
-
-
                     } else {
                         actionText.text = "Remove"
                         actionText.setTextColor(
@@ -323,22 +320,11 @@ class SingleItinerarySuggestion(
                     }
 
                 } else {
-
                     if (case == 1) {
-
-
                         refUserItineraries.setValue(true).addOnSuccessListener {
                             refImageItineraries.setValue(true).addOnSuccessListener {
 
-                                val updatedImages = mutableListOf<String>()
-
-                                for (imagePath in p0.children) {
-                                    updatedImages.add(imagePath.getValue(String::class.java)!!)
-                                }
-
-                                updatedImages.add(image.id)
-
-                                refItinerary.setValue(updatedImages).addOnSuccessListener {
+                                refItinerary.child(image.id).setValue(true).addOnSuccessListener {
 
                                     actionText.text = "Remove"
                                     actionText.setTextColor(

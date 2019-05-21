@@ -70,7 +70,7 @@ class AddToBucketFragment : Fragment(), DereMethods {
 
         val activity = activity as MainActivity
 
-        add_to_collection_title.text = "Add to collection"
+        add_to_collection_title.text = "Add to bucket"
 
         recycler = add_to_collection_recycler
         recycler.adapter = bucketsAdapter
@@ -80,7 +80,7 @@ class AddToBucketFragment : Fragment(), DereMethods {
         listenToBuckets()
 
         val newBucketInput = add_to_collection_new_input
-        newBucketInput.hint = "Name your collection"
+        newBucketInput.hint = "Name your bucket"
         val bucketAddButton = add_to_collection_new_button
 
         bucketAddButton.setOnClickListener {
@@ -98,6 +98,17 @@ class AddToBucketFragment : Fragment(), DereMethods {
                     }
 
                     override fun onDataChange(p0: DataSnapshot) {
+
+                        var bucketNameExists = 0
+                        for (bucket in p0.children){
+
+                            if (bucket.child("body/title").value == bucketName){
+                                bucketNameExists++
+                            }
+                        }
+
+
+
 
                         if (p0.hasChild(bucketName)) {
                             Toast.makeText(context, "A collection with the same name already exists", Toast.LENGTH_LONG)
@@ -231,7 +242,7 @@ class SingleBucketSuggestion(
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
-        viewHolder.itemView.add_to_collection_name.text = bucketName
+        viewHolder.itemView.add_to_collection_name.setText(bucketName)
 
         val actionText = viewHolder.itemView.add_to_collection_add
 

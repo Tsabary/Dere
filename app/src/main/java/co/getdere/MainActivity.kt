@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var answerFragment: AnswerFragment
     lateinit var newQuestionFragment: NewQuestionFragment
     lateinit var editProfileFragment: EditProfileFragment
-    lateinit var bucketGalleryFragment: BucketGalleryFragment
+    lateinit var collectionGalleryFragment: CollectionGalleryFragment
     lateinit var addImageToAnswer: AddImageToAnswerFragment
     lateinit var imagePostEditFragment: ImagePostEditFragment
     lateinit var webViewFragment: WebViewFragment
@@ -205,9 +205,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
                 imageFullSizeFragment -> {
                     when {
                         isCollectionMapViewActive && isBucketGalleryActive -> {
-                            subFm.beginTransaction().hide(subActive).show(bucketGalleryFragment).commit()
-                            subActive = bucketGalleryFragment
-                            bucketGalleryFragment.galleryViewPager.currentItem = 1
+                            subFm.beginTransaction().hide(subActive).show(collectionGalleryFragment).commit()
+                            subActive = collectionGalleryFragment
+                            collectionGalleryFragment.galleryViewPager.currentItem = 1
                             resetImageExpended()
                             isCollectionMapViewActive = false
                         }
@@ -220,9 +220,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
                         }
 
                         isBucketGalleryActive && !isCollectionMapViewActive -> {
-                            subFm.beginTransaction().hide(subActive).show(bucketGalleryFragment).commit()
-                            subActive = bucketGalleryFragment
-                            bucketGalleryFragment.galleryViewPager.currentItem = 0
+                            subFm.beginTransaction().hide(subActive).show(collectionGalleryFragment).commit()
+                            subActive = collectionGalleryFragment
+                            collectionGalleryFragment.galleryViewPager.currentItem = 0
                             resetImageExpended()
                         }
                         isOpenedQuestionActive -> {
@@ -284,6 +284,11 @@ class MainActivity : AppCompatActivity(), DereMethods {
                             subActive = openedQuestionFragment
                             isRandomUserProfileActive = false
                         }
+
+                        isItineraryActive -> {
+                            subFm.beginTransaction().hide(subActive).show(itineraryFragment).commit()
+                            subActive = itineraryFragment
+                        }
                         else -> {
                             imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
                             subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
@@ -344,13 +349,13 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     switchVisibility(0)
                 }
 
-                bucketGalleryFragment -> {
-//                    subFm.beginTransaction().hide(bucketGalleryFragment).show(imageFullSizeFragment).commit()
+                collectionGalleryFragment -> {
+//                    subFm.beginTransaction().hide(collectionGalleryFragment).show(imageFullSizeFragment).commit()
 //                    subActive = imageFullSizeFragment
-//                    bucketGalleryFragment.pagerAdapter.notifyDataSetChanged()
+//                    collectionGalleryFragment.pagerAdapter.notifyDataSetChanged()
                     switchVisibility(0)
                     isBucketGalleryActive = false
-                    bucketGalleryFragment.mapButton.setImageResource(R.drawable.world)
+                    collectionGalleryFragment.mapButton.setImageResource(R.drawable.world)
                 }
 
                 editProfileFragment -> {
@@ -429,7 +434,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     switchVisibility(0)
                     isItineraryActive = false
                     feedNotificationsCount
-                    subFmTransaction.remove(itineraryFragment).commit()
+                    subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
                 }
 
             }
@@ -507,7 +513,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         closeKeyboard(this)
 
         openedQuestionFragment.deleteBox.visibility = View.GONE
-        bucketGalleryFragment.mapButton.setImageResource(R.drawable.world)
+        collectionGalleryFragment.mapButton.setImageResource(R.drawable.world)
 
         isCollectionMapViewActive = false
         isBucketGalleryActive = false
@@ -533,6 +539,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
         subFm.beginTransaction().remove(addToBucketFragment).commit()
         subFm.beginTransaction().remove(addToItineraryFragment).commit()
+        subFm.beginTransaction().remove(itineraryFragment).commit()
     }
 
     private fun checkIfLoggedIn() {
@@ -623,7 +630,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         answerFragment = AnswerFragment()
         newQuestionFragment = NewQuestionFragment()
         editProfileFragment = EditProfileFragment()
-        bucketGalleryFragment = BucketGalleryFragment()
+        collectionGalleryFragment = CollectionGalleryFragment()
         addImageToAnswer = AddImageToAnswerFragment()
         imagePostEditFragment = ImagePostEditFragment()
         webViewFragment = WebViewFragment()
@@ -671,8 +678,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
             .hide(newQuestionFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editProfileFragment, "editProfileFragment")
             .hide(editProfileFragment).commitAllowingStateLoss()
-        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, bucketGalleryFragment, "bucketGalleryFragment")
-            .hide(bucketGalleryFragment).commitAllowingStateLoss()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, collectionGalleryFragment, "collectionGalleryFragment")
+            .hide(collectionGalleryFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, addImageToAnswer, "addImageToAnswer")
             .hide(addImageToAnswer).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, imagePostEditFragment, "imagePostEditFragment")
@@ -759,6 +766,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
         subActive = openedQuestionFragment
         resetFragments()
+        isFeedActive = false
     }
 
 
@@ -770,6 +778,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
         subActive = imageFullSizeFragment
         resetFragments()
+        isFeedActive = false
     }
 
     private fun collectProfile(branchUniversalObject: BranchUniversalObject) {

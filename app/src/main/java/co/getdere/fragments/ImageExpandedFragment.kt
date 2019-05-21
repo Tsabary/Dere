@@ -185,8 +185,8 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                 )
 
                 listenToBucketCount(bucketCount, image)
-                if (image.photographer == currentUser.uid){
-                    checkIfInItinerary(collectButton,image,currentUser.uid)
+                if (image.photographer == currentUser.uid) {
+                    checkIfInItinerary(collectButton, image, currentUser.uid)
                     bucketCount.visibility = View.GONE
                 } else {
                     checkIfBucketed(collectButton, image, currentUser.uid)
@@ -384,63 +384,77 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         collectButton.setOnClickListener {
             if (currentUser.uid != imageObject.photographer) {
                 activity.subFm.beginTransaction().hide(activity.subActive)
-                    .add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment").commit()
+                    .add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment")
+                    .commit()
                 activity.subActive = activity.addToBucketFragment
             } else {
                 activity.subFm.beginTransaction().hide(activity.subActive)
-                    .add(R.id.feed_subcontents_frame_container, activity.addToItineraryFragment, "addToItineraryFragment").commit()
+                    .add(
+                        R.id.feed_subcontents_frame_container,
+                        activity.addToItineraryFragment,
+                        "addToItineraryFragment"
+                    ).commit()
                 activity.subActive = activity.addToItineraryFragment
             }
         }
 
         postButton.setOnClickListener {
+            if (commentInput.text.isNotEmpty()) {
+                val ref =
+                    FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/comments/").push()
 
-            val ref =
-                FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/comments/").push()
+                val timestamp = System.currentTimeMillis()
 
-            val timestamp = System.currentTimeMillis()
-
-            val comment =
-                Comments(
-                    currentUser.uid,
-                    commentInput.text.toString(),
-                    timestamp,
-                    imageObject.id,
-                    ref.key!!
-                )
-
-            commentInput.text.clear()
-
-            ref.child("body").setValue(comment).addOnSuccessListener {
-
-                val refImageLastInteraction = FirebaseDatabase.getInstance()
-                    .getReference("/images/${imageObject.id}/body/lastInteraction")
-
-                refImageLastInteraction.setValue(timestamp).addOnSuccessListener {
-                    sendNotification(
-                        3,
-                        16,
+                val comment =
+                    Comments(
                         currentUser.uid,
-                        currentUser.name,
+                        commentInput.text.toString(),
+                        timestamp,
                         imageObject.id,
-                        ref.key!!,
-                        imageObject.photographer
+                        ref.key!!
                     )
 
-                    closeKeyboard(activity)
-                    listenToImageComments(imageObject, commentsRecyclerAdapter, commentsRecycler, divider, currentUser, activity)
-                    layoutScroll.fullScroll(View.FOCUS_DOWN)
+                commentInput.text.clear()
 
-                    val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-                    firebaseAnalytics.logEvent("image_comment_added", null)
+                ref.child("body").setValue(comment).addOnSuccessListener {
 
-                    Log.d("postCommentActivity", "Saved comment to Firebase Database")
+                    val refImageLastInteraction = FirebaseDatabase.getInstance()
+                        .getReference("/images/${imageObject.id}/body/lastInteraction")
+
+                    refImageLastInteraction.setValue(timestamp).addOnSuccessListener {
+                        sendNotification(
+                            3,
+                            16,
+                            currentUser.uid,
+                            currentUser.name,
+                            imageObject.id,
+                            ref.key!!,
+                            imageObject.photographer
+                        )
+
+                        closeKeyboard(activity)
+                        listenToImageComments(
+                            imageObject,
+                            commentsRecyclerAdapter,
+                            commentsRecycler,
+                            divider,
+                            currentUser,
+                            activity
+                        )
+                        layoutScroll.fullScroll(View.FOCUS_DOWN)
+
+                        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                        firebaseAnalytics.logEvent("image_comment_added", null)
+
+                        Log.d("postCommentActivity", "Saved comment to Firebase Database")
+                    }.addOnFailureListener {
+                        Log.d("postCommentActivity", "Failed to update image last interaction based on comment")
+                    }
                 }.addOnFailureListener {
-                    Log.d("postCommentActivity", "Failed to update image last interaction based on comment")
+                    Log.d("postCommentActivity", "Failed to save comment to database")
                 }
-            }.addOnFailureListener {
-                Log.d("postCommentActivity", "Failed to save comment to database")
             }
+
         }
 
         authorName.setOnClickListener {
@@ -597,7 +611,7 @@ class SingleComment(
 
                 val user = p0.getValue(Users::class.java)
 
-                if (user != null){
+                if (user != null) {
                     commentAuthor.text = user.name
                     commentAuthorReputation.text = "(${user.reputation})"
 
