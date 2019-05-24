@@ -36,7 +36,8 @@
                     app:layout_constraintEnd_toEndOf="@+id/answer_photo_photo"
                     android:layout_marginTop="8dp"
                     app:layout_constraintTop_toTopOf="@+id/answer_photo_photo"
-                    android:background="@android:color/transparent"/>
+                    android:background="@android:color/transparent"
+                    android:scaleType="centerInside"/>
             <ImageView
                     android:id="@+id/answer_photo_photo"
                     android:layout_width="match_parent"

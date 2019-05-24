@@ -1464,7 +1464,16 @@ interface DereMethods : FCMMethods {
         val view = activity.currentFocus
         if (view != null) {
             val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
-            imm!!.hideSoftInputFromWindow(view.getWindowToken(), 0)
+            imm!!.hideSoftInputFromWindow(view.windowToken, InputMethodManager.HIDE_IMPLICIT_ONLY)
+        }
+    }
+
+    fun showKeyboard(activity: Activity) {
+
+        val view = activity.currentFocus
+        if (view != null) {
+            val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
+            imm!!.showSoftInput (view, InputMethodManager.SHOW_IMPLICIT)
         }
     }
 

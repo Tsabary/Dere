@@ -168,8 +168,8 @@ class CameraFragment : Fragment() {
 //
 //                            val localImagePost = LocalImagePost(
 //                                timeStamp.toLong(),
-//                                location.longitude,
-//                                location.latitude,
+//                                locationId.longitude,
+//                                locationId.latitude,
 //                                savedPhoto.path,
 //                                "",
 //                                "",

@@ -22,7 +22,6 @@ import co.getdere.RegisterLoginActivity
 import co.getdere.groupieAdapters.FeedImage
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
-import co.getdere.models.Itineraries
 import co.getdere.models.Users
 import co.getdere.viewmodels.*
 import com.bumptech.glide.Glide
@@ -395,8 +394,6 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
     fun listenToImagesFromRoll() {
 
-        Log.d("populatingRoll", "called")
-
         galleryRollAdapter.clear()
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
@@ -521,7 +518,7 @@ class SingleCollectionBox(
 
 
     val imagesRecyclerAdapter = GroupAdapter<ViewHolder>()
-    private val sharedViewModelBucket = ViewModelProviders.of(activity).get(SharedViewModelCollection::class.java)
+    private val sharedViewModelCollection = ViewModelProviders.of(activity).get(SharedViewModelCollection::class.java)
     private val sharedViewModelItinerary = ViewModelProviders.of(activity).get(SharedViewModelItinerary::class.java)
 
     override fun getLayout(): Int {
@@ -540,78 +537,41 @@ class SingleCollectionBox(
         imagesRecycler.adapter = imagesRecyclerAdapter
 
         val bucketName = viewHolder.itemView.collection_box_recycler_name
-        bucketName.text = if (type == "bucket") {
-            collection.key
-        } else {
+        bucketName.text =
             collection.child("body/title").getValue(String::class.java)
-        }
-        viewHolder.itemView.collection_box_recycler_photo_count.text = if (type == "bucket") {
-            "${collection.childrenCount} photos"
-        } else {
+
+        viewHolder.itemView.collection_box_recycler_photo_count.text =
             "${collection.child("body/images").childrenCount} photos"
-        }
 
         var count = 0
 
-        if (type == "bucket") {
 
 
-            for (imageSnapshot in collection.children) {
+        for (imageSnapshot in collection.child("body/images").children) {
 
-                if (count < 4) {
+            if (count < 4) {
 
+                val imagePath = imageSnapshot.key
+                val imageObjectPath =
+                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
 
-                    val imagePath = imageSnapshot.key
+                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
 
-                    val imageObjectPath =
-                        FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+                    }
 
-                    imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
+                    override fun onDataChange(p0: DataSnapshot) {
+                        val imageObject = p0.getValue(Images::class.java)
 
-                        }
+                        imagesRecyclerAdapter.add(SingleImageToBucketRoll(imageObject!!))
 
-                        override fun onDataChange(p0: DataSnapshot) {
-                            val imageObject = p0.getValue(Images::class.java)
+                    }
+                })
 
-                            imagesRecyclerAdapter.add(SingleImageToBucketRoll(imageObject!!))
-
-                        }
-                    })
-
-                    count += 1
-                }
-
+                count += 1
             }
-        } else {
 
-            for (imageSnapshot in collection.child("body/images").children) {
-
-                if (count < 4) {
-
-                    val imagePath = imageSnapshot.key
-                    val imageObjectPath =
-                        FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
-
-                    imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-
-                        }
-
-                        override fun onDataChange(p0: DataSnapshot) {
-                            val imageObject = p0.getValue(Images::class.java)
-
-                            imagesRecyclerAdapter.add(SingleImageToBucketRoll(imageObject!!))
-
-                        }
-                    })
-
-                    count += 1
-                }
-
-            }
         }
-
 
 
         imagesRecyclerAdapter.setOnItemClickListener { _, _ ->
@@ -641,31 +601,33 @@ class SingleCollectionBox(
 
     }
 
-    private fun goToItinerary() {
-        val itineraryRef = FirebaseDatabase.getInstance().getReference("/itineraries/${collection.key}/body")
-
-        itineraryRef.addListenerForSingleValueEvent(object : ValueEventListener{
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-
-                sharedViewModelItinerary.itinerary.postValue(p0.getValue(Itineraries::class.java))
-
-                activity.subFm.beginTransaction().hide(activity.subActive).add(R.id.feed_subcontents_frame_container, activity.itineraryFragment, "itineraryFragment").commit()
-                activity.subActive = activity.itineraryFragment
-                activity.isItineraryActive = true
-                activity.switchVisibility(1)
-            }
-
-        })
-
-
-    }
+//    private fun goToItinerary() {
+//        val itineraryRef = FirebaseDatabase.getInstance().getReference("/itineraries/${collection.key}/body")
+//
+//        itineraryRef.addListenerForSingleValueEvent(object : ValueEventListener {
+//            override fun onCancelled(p0: DatabaseError) {
+//            }
+//
+//            override fun onDataChange(p0: DataSnapshot) {
+//
+////                sharedViewModelItinerary.itinerary.postValue(p0.getValue(ItineraryBody::class.java))
+//
+//                activity.subFm.beginTransaction().hide(activity.subActive)
+//                    .add(R.id.feed_subcontents_frame_container, activity.itineraryFragment, "itineraryFragment")
+//                    .commit()
+//                activity.subActive = activity.itineraryFragment
+//                activity.isItineraryActive = true
+//                activity.switchVisibility(1)
+//            }
+//
+//        })
+//
+//
+//    }
 
 
     private fun goToItineraryGallery() {
-        sharedViewModelBucket.imageCollection.postValue(collection)
+        sharedViewModelCollection.imageCollection.postValue(collection)
         activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionGalleryFragment).commit()
         activity.subActive = activity.collectionGalleryFragment
         activity.isBucketGalleryActive = true
@@ -673,7 +635,7 @@ class SingleCollectionBox(
     }
 
     private fun goToBucketGallery() {
-        sharedViewModelBucket.imageCollection.postValue(collection)
+        sharedViewModelCollection.imageCollection.postValue(collection)
         activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionGalleryFragment).commit()
         activity.subActive = activity.collectionGalleryFragment
         activity.isBucketGalleryActive = true

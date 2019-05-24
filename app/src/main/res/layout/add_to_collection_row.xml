@@ -7,7 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-    <EditText
+    <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:id="@+id/add_to_collection_name"
@@ -19,7 +19,6 @@
             android:layout_marginStart="32dp"
             android:fontFamily="@font/roboto_bold"
             android:textSize="15sp"
-            android:inputType="textCapSentences"
             android:layout_marginEnd="24dp"
             app:layout_constraintEnd_toStartOf="@+id/add_to_collection_add"
             app:layout_constraintHorizontal_bias="0.0"/>

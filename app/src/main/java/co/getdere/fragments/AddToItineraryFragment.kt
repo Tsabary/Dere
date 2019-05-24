@@ -21,7 +21,7 @@ import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.R
-import co.getdere.models.Itineraries
+import co.getdere.models.ItineraryBody
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelImage
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -31,7 +31,7 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.add_to_collection_row.view.*
-import kotlinx.android.synthetic.main.fragment_add_to_bucket.*
+import kotlinx.android.synthetic.main.fragment_add_to_collection.*
 
 
 class AddToItineraryFragment : Fragment(), DereMethods {
@@ -64,7 +64,7 @@ class AddToItineraryFragment : Fragment(), DereMethods {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_add_to_bucket, container, false)
+    ): View? = inflater.inflate(R.layout.fragment_add_to_collection, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -87,6 +87,8 @@ class AddToItineraryFragment : Fragment(), DereMethods {
         addNewButton.setOnClickListener {
 
             val itineraryImages: MutableMap<String, Boolean> = mutableMapOf()
+
+
             if (newItineraryInput.text.isNotEmpty()) {
                 val itineraryName = newItineraryInput.text.toString().trimEnd()
                 itineraryImages[imageObject.id] = true
@@ -97,20 +99,15 @@ class AddToItineraryFragment : Fragment(), DereMethods {
                 val refImageItineraries =
                     FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/itineraries")
 
-                val newItinerary = Itineraries(
+                val newItinerary = ItineraryBody(
                     refItineraries.key!!,
                     false,
                     currentUser.uid,
                     itineraryName,
                     "",
-                    "",
-                    0.00,
-                    "",
-                    "",
                     itineraryImages,
-                    mapOf(),
-                    System.currentTimeMillis(),
-                    System.currentTimeMillis()
+                    "",
+                    ""
                 )
 
                 recycler.visibility = View.VISIBLE
@@ -122,8 +119,8 @@ class AddToItineraryFragment : Fragment(), DereMethods {
                             refImageItineraries.child(refItineraries.key!!).setValue(true)
 
                             itinerariesAdapter.add(
-                                SingleBucketSuggestion(
-                                    itineraryName,
+                                SingleItinerarySuggestion(
+                                    newItinerary,
                                     imageObject,
                                     currentUser,
                                     activity
@@ -178,7 +175,7 @@ class AddToItineraryFragment : Fragment(), DereMethods {
 
                                     override fun onDataChange(p0: DataSnapshot) {
 
-                                        val itineraryObject = p0.getValue(Itineraries::class.java)
+                                        val itineraryObject = p0.getValue(ItineraryBody::class.java)
                                         if (itineraryObject != null) {
                                             itinerariesAdapter.add(
                                                 SingleItinerarySuggestion(
@@ -207,7 +204,7 @@ class AddToItineraryFragment : Fragment(), DereMethods {
 
 
 class SingleItinerarySuggestion(
-    val itinerary: Itineraries,
+    val itinerary: ItineraryBody,
     val image: Images,
     val currentUser: Users,
     val activity: Activity
@@ -247,7 +244,7 @@ class SingleItinerarySuggestion(
 
     private fun executeItinerary(
         case: Int,
-        itinerary: Itineraries,
+        itinerary: ItineraryBody,
         image: Images,
         currentUser: Users,
         actionText: TextView,

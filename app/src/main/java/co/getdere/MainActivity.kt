@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var onBoardingFragment: OnBoardingFragment
     lateinit var feedFragment: FeedFragment
     lateinit var boardFragment: BoardFragment
+    lateinit var marketplaceFragment: MarketplaceFragment
     lateinit var profileLoggedInUserFragment: ProfileLoggedInUserFragment
 
     lateinit var imageFullSizeFragment: ImageFullSizeFragment
@@ -69,6 +70,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var collectionMapView: CollectionMapViewFragment
     lateinit var addToItineraryFragment: AddToItineraryFragment
     lateinit var itineraryFragment: ItineraryFragment
+    lateinit var itineraryEditFragment: ItineraryEditFragment
+    lateinit var addImagesToItineraryFragment: AddImagesToItineraryFragment
+    lateinit var marketplacePurchasedFragment: MarketplacePurchasedFragment
 
     lateinit var mainFrame: FrameLayout
     lateinit var subFrame: FrameLayout
@@ -96,6 +100,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     var isRandomUserProfileActive = false
     var isSecondRandomUserProfileActive = false
     var isItineraryActive = false
+    var isSavedItinerariesActive = false
 
 
     var fragmentsHaveBeenInitialized = false
@@ -144,18 +149,16 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
                 R.id.destination_feed -> {
                     navigateToFeed()
-                    Log.d("bottomNav", "feed")
                 }
 
                 R.id.destination_board -> {
                     navigateToBoard()
-                    Log.d("bottomNav", "board")
-
+                }
+                R.id.destination_marketplace -> {
+                    navigateToMarketplace()
                 }
                 R.id.destination_profile_logged_in_user -> {
                     navigateToProfile()
-                    Log.d("bottomNav", "profile")
-
                 }
             }
             false
@@ -353,9 +356,14 @@ class MainActivity : AppCompatActivity(), DereMethods {
 //                    subFm.beginTransaction().hide(collectionGalleryFragment).show(imageFullSizeFragment).commit()
 //                    subActive = imageFullSizeFragment
 //                    collectionGalleryFragment.pagerAdapter.notifyDataSetChanged()
-                    switchVisibility(0)
-                    isBucketGalleryActive = false
-                    collectionGalleryFragment.mapButton.setImageResource(R.drawable.world)
+                    if (isSavedItinerariesActive){
+                        subFm.beginTransaction().hide(subActive).show(marketplacePurchasedFragment).commit()
+                        subActive = marketplacePurchasedFragment
+                    } else {
+                        switchVisibility(0)
+                        isBucketGalleryActive = false
+                        collectionGalleryFragment.mapButton.setImageResource(R.drawable.world)
+                    }
                 }
 
                 editProfileFragment -> {
@@ -433,9 +441,28 @@ class MainActivity : AppCompatActivity(), DereMethods {
                 itineraryFragment -> {
                     switchVisibility(0)
                     isItineraryActive = false
-                    feedNotificationsCount
                     subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
                     subActive = imageFullSizeFragment
+                }
+
+                itineraryEditFragment -> {
+                    subFm.beginTransaction().remove(subActive).remove(addImagesToItineraryFragment)
+                        .show(collectionGalleryFragment).commit()
+                    subActive = collectionGalleryFragment
+
+                    //need to save the data to the itinerary
+                }
+
+                addImagesToItineraryFragment -> {
+                    subFm.beginTransaction().hide(subActive).show(itineraryEditFragment).commit()
+                    subActive = itineraryEditFragment
+                }
+
+                marketplacePurchasedFragment -> {
+                    subFm.beginTransaction().remove(marketplacePurchasedFragment).commit()
+                    subActive = imageFullSizeFragment
+                    switchVisibility(0)
+                    isSavedItinerariesActive = false
                 }
 
             }
@@ -525,6 +552,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         isSecondRandomUserProfileActive = false
         isFeedActive = false
         isItineraryActive = false
+        isSavedItinerariesActive = false
 
 
         sharedViewModelImage.sharedImageObject.postValue(Images())
@@ -540,6 +568,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         subFm.beginTransaction().remove(addToBucketFragment).commit()
         subFm.beginTransaction().remove(addToItineraryFragment).commit()
         subFm.beginTransaction().remove(itineraryFragment).commit()
+        subFm.beginTransaction().remove(marketplacePurchasedFragment).commit()
     }
 
     private fun checkIfLoggedIn() {
@@ -578,6 +607,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         onBoardingFragment = OnBoardingFragment()
         feedFragment = FeedFragment()
         boardFragment = BoardFragment()
+        marketplaceFragment = MarketplaceFragment()
         profileLoggedInUserFragment = ProfileLoggedInUserFragment()
 
 
@@ -612,6 +642,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
         fm.beginTransaction().add(R.id.feed_frame_container, boardFragment, "boardFragment").hide(boardFragment)
             .commitAllowingStateLoss()
+        fm.beginTransaction().add(R.id.feed_frame_container, marketplaceFragment, "marketplaceFragment")
+            .hide(marketplaceFragment)
+            .commitAllowingStateLoss()
         fm.beginTransaction()
             .add(R.id.feed_frame_container, profileLoggedInUserFragment, "profileLoggedInUserFragment")
             .hide(profileLoggedInUserFragment).commitAllowingStateLoss()
@@ -641,6 +674,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
         secondImageFullSizeFragment = SecondImageFullSizeFragment()
         addToItineraryFragment = AddToItineraryFragment()
         itineraryFragment = ItineraryFragment()
+        itineraryEditFragment = ItineraryEditFragment()
+        addImagesToItineraryFragment = AddImagesToItineraryFragment()
+        marketplacePurchasedFragment = MarketplacePurchasedFragment()
 
 
 
@@ -678,7 +714,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
             .hide(newQuestionFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editProfileFragment, "editProfileFragment")
             .hide(editProfileFragment).commitAllowingStateLoss()
-        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, collectionGalleryFragment, "collectionGalleryFragment")
+        fm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, collectionGalleryFragment, "collectionGalleryFragment")
             .hide(collectionGalleryFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, addImageToAnswer, "addImageToAnswer")
             .hide(addImageToAnswer).commitAllowingStateLoss()
@@ -767,6 +804,22 @@ class MainActivity : AppCompatActivity(), DereMethods {
         subActive = openedQuestionFragment
         resetFragments()
         isFeedActive = false
+    }
+
+    private fun navigateToMarketplace() {
+        fm.beginTransaction().hide(active).show(marketplaceFragment).commit()
+        active = marketplaceFragment
+        val menuItem = mBottomNav.menu.findItem(R.id.destination_marketplace)
+        menuItem.isChecked = true
+//            subFm.beginTransaction().hide(subActive).show(itineraryFragment).commit()
+//            subActive = openedQuestionFragment
+        resetFragments()
+        isFeedActive = false
+        isItineraryActive = false
+
+
+        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+        subActive = imageFullSizeFragment
     }
 
 

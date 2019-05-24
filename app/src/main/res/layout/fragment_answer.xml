@@ -42,7 +42,7 @@
                 android:textAlignment="center"
                 android:textSize="15sp"
                 android:fontFamily="@font/roboto_medium"
-                android:textColor="@color/white"
+                android:textColor="@color/gray500"
                 android:background="@drawable/buttons_shape"
                 app:layout_constraintHorizontal_bias="1.0"
                 android:layout_marginBottom="32dp"

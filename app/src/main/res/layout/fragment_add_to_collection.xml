@@ -60,7 +60,7 @@
             <EditText
                     android:layout_width="0dp"
                     android:layout_height="60dp"
-                    android:inputType="textPersonName"
+                    android:inputType="textCapSentences"
                     android:ems="10"
                     android:id="@+id/add_to_collection_new_input"
                     android:layout_marginTop="32dp"

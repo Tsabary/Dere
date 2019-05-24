@@ -1,22 +1,25 @@
 package co.getdere.fragments
 
 
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
-import co.getdere.models.Images
-import co.getdere.models.Itineraries
-import co.getdere.models.ItineraryReview
-import co.getdere.models.Users
+import co.getdere.models.*
+import co.getdere.otherClasses.*
 import co.getdere.viewmodels.SharedViewModelItinerary
 import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
@@ -25,13 +28,17 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.peekandpop.shalskar.peekandpop.PeekAndPop
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerFullScreenListener
+
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.feed_single_photo.view.*
 import kotlinx.android.synthetic.main.fragment_itinerary.*
+import kotlinx.android.synthetic.main.image_peek.view.*
 import kotlinx.android.synthetic.main.review_layout.view.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
@@ -45,12 +52,18 @@ class ItineraryFragment : Fragment(), DereMethods {
     val lastReviewsAdapter = GroupAdapter<ViewHolder>()
     val allReviewsAdapter = GroupAdapter<ViewHolder>()
 
+    lateinit var peekAndPop: PeekAndPop
+    lateinit var peekView: View
+    val fullScreenHelper = FullScreenHelper
+
     val reviewsList = mutableListOf<SingleItineraryReview>()
 
-    lateinit var itineraryObject: Itineraries
+    lateinit var itineraryObject: ItineraryBody
 
     val uid = FirebaseAuth.getInstance().uid
 
+    var sumAllReviews = 0f
+    var numAllReviews = 0f
     var oneStarReviews = 0f
     var twoStarReviews = 0f
     var threeStarReviews = 0f
@@ -77,9 +90,18 @@ class ItineraryFragment : Fragment(), DereMethods {
 
         val activity = activity as MainActivity
 
+//        peekAndPop = PeekAndPop.Builder(activity)
+//            .peekLayout(R.layout.image_peek)
+//            .longClickViews(view)
+//            .build();
+//
+//        peekView = peekAndPop.peekView
+
+
         val dummyDescription = getString(R.string.dummy_itinerary_description)
         val dummyYoutubeVideo = getString(R.string.dummy_youtube_video)
 
+        val purchaseBtn = itinerary_buy_button
 
         val coverImage = itinerary_cover_image
         val title = itinerary_title
@@ -91,11 +113,18 @@ class ItineraryFragment : Fragment(), DereMethods {
         val imageCount = itinerary_photo_count
 
         val includesFood = itinerary_includes_food_text
-        val includesDrinks = itinerary_includes_drinks_text
+        val includesNightlife = itinerary_includes_nightlife_text
         val includesActivities = itinerary_includes_activities_text
         val includesNature = itinerary_includes_nature_text
         val includesAccommodation = itinerary_includes_accommodation_text
         val includesTransportation = itinerary_includes_transportation_text
+
+        val foodContainer = itinerary_includes_food_container
+        val nightlifeContainer = itinerary_includes_nightlife_container
+        val natureContainer = itinerary_includes_nature_container
+        val activitiesContainer = itinerary_includes_activities_container
+        val accommodationContainer = itinerary_includes_accommodation_container
+        val transportationContainer = itinerary_includes_transportation_container
 
         val leaveReview = itinerary_leave_review
         val reviewContainer = itinerary_review_container
@@ -117,6 +146,10 @@ class ItineraryFragment : Fragment(), DereMethods {
         starBar3Fg = itinerary_3_star_filling_bar
         starBar4Fg = itinerary_4_star_filling_bar
         starBar5Fg = itinerary_5_star_filling_bar
+
+        sampleImagesRecycler.adapter = sampleImagesAdapter
+        val sampleImageLayoutManager = GridLayoutManager(this.context, 4)
+        sampleImagesRecycler.layoutManager = sampleImageLayoutManager
 
         latestReviewsRecycler.adapter = lastReviewsAdapter
         val lastReviewLayoutManager = LinearLayoutManager(this.context)
@@ -142,6 +175,15 @@ class ItineraryFragment : Fragment(), DereMethods {
             reviewContainer.visibility = View.GONE
         }
 
+        purchaseBtn.setOnClickListener {
+            if (itineraryObject.creator != uid) {
+                FirebaseDatabase.getInstance().getReference("/users/$uid/purchasedItineraries/${itineraryObject.id}")
+                    .setValue(true)
+            } else {
+                Toast.makeText(this.context, "Can't buy your own itinerary", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         reviewSubmit.setOnClickListener {
             if (reviewInput.text.isNotEmpty() && reviewStars.rating.toInt() != 0) {
                 val reviewRef =
@@ -155,9 +197,16 @@ class ItineraryFragment : Fragment(), DereMethods {
                 )
 
                 reviewRef.child("body").setValue(newReview).addOnSuccessListener {
-                    reviewInput.text.clear()
-                    reviewStars.rating = 0f
-                    reviewContainer.visibility = View.GONE
+
+                    numAllReviews++
+                    sumAllReviews += reviewStars.rating.toInt()
+                    val newRating = sumAllReviews / numAllReviews
+                    FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryObject.id}/listing/rating")
+                        .setValue(newRating).addOnSuccessListener {
+                            reviewInput.text.clear()
+                            reviewStars.rating = 0f
+                            reviewContainer.visibility = View.GONE
+                        }
                 }
 
                 closeKeyboard(activity)
@@ -167,6 +216,25 @@ class ItineraryFragment : Fragment(), DereMethods {
 
         lifecycle.addObserver(youtubePlayer)
 
+        youtubePlayer.getPlayerUiController().setFullScreenButtonClickListener(View.OnClickListener {
+            if (youtubePlayer.isFullScreen()) {
+                youtubePlayer.exitFullScreen()
+            } else {
+                youtubePlayer.enterFullScreen()
+            }
+        })
+
+        youtubePlayer.addFullScreenListener(object :YouTubePlayerFullScreenListener{
+            override fun onYouTubePlayerEnterFullScreen() {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+                fullScreenHelper.enterFullScreen()
+            }
+
+            override fun onYouTubePlayerExitFullScreen() {
+
+            }
+
+        })
 
         activity.let {
             sharedViewModelItinerary = ViewModelProviders.of(it).get(SharedViewModelItinerary::class.java)
@@ -176,73 +244,136 @@ class ItineraryFragment : Fragment(), DereMethods {
                 override fun onReady(youTubePlayer: YouTubePlayer) {
 
                     sharedViewModelItinerary.itinerary.observe(activity, Observer { itineraries ->
-                        itineraries?.let { itinerary ->
-                            itineraryObject = itinerary
-                            listenToLastReviews()
+                        itineraries?.let { itinerarySnapshot ->
+                            val itineraryBody = itinerarySnapshot.child("body").getValue(ItineraryBody::class.java)
+                            val itineraryDetails =
+                                itinerarySnapshot.child("listing").getValue(ItineraryTechnical::class.java)
+                            val itineraryContent =
+                                itinerarySnapshot.child("content").getValue(ItineraryInformational::class.java)
 
-                            Glide.with(activity).load(
-                                if (itinerary.coverImage.isNotEmpty()) {
-                                    itinerary.coverImage
-                                } else {
-                                    R.drawable.dummy_photo
-                                }
-                            ).into(coverImage)
+                            if (itineraryDetails != null) {
 
-                            title.text = itinerary.title
+                                firstImage@ for (image in itineraryDetails.sampleImages) {
 
-                            description.text = if (itinerary.description.isNotEmpty()) {
-                                itinerary.description
-                            } else {
-                                dummyDescription
-                            }
-
-                            location.text = if (itinerary.location.isNotEmpty()) {
-                                itinerary.location
-                            } else {
-                                "Dark Side, Moon"
-                            }
-
-                            imageCount.text = "${itinerary.images.size} locations"
-
-                            price.text = "$${itinerary.price}"
-
-                            youTubePlayer.cueVideo(
-                                if (itinerary.video.isNotEmpty()) {
-                                    itinerary.video
-                                } else {
-                                    dummyYoutubeVideo
-                                }, 0f
-                            )
-
-                            if (itinerary.sampleImages.isNotEmpty()) {
-                                sampleImagesRecycler.visibility = View.VISIBLE
-
-                                val imagesRef = FirebaseDatabase.getInstance().getReference("/images")
-
-                                imagesRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                                    override fun onCancelled(p0: DatabaseError) {
-                                    }
-
-                                    override fun onDataChange(p0: DataSnapshot) {
-
-
-                                        for (imagePath in itinerary.sampleImages) {
-
-                                            val image = p0.child("$imagePath/body").getValue(Images::class.java)
-                                            sampleImagesAdapter.add(SampleImages(image!!))
+                                    val imageRef =
+                                        FirebaseDatabase.getInstance().getReference("/images/${image.key}/body")
+                                    imageRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                                        override fun onCancelled(p0: DatabaseError) {
                                         }
+
+                                        override fun onDataChange(p0: DataSnapshot) {
+
+                                            val imageObject = p0.getValue(Images::class.java)!!
+
+                                            Glide.with(activity).load(imageObject.imageBig).into(coverImage)
+                                        }
+
+                                    })
+                                    break@firstImage
+                                }
+
+
+                                youTubePlayer.cueVideo(
+                                    if (itineraryDetails.video.isNotEmpty()) {
+                                        itineraryDetails.video
+                                    } else {
+                                        dummyYoutubeVideo
+                                    }, 0f
+                                )
+
+                                price.text = "($${itineraryDetails.price})"
+
+                                if (itineraryDetails.sampleImages.isNotEmpty()) {
+                                    sampleImagesRecycler.visibility = View.VISIBLE
+                                    for (imagePath in itineraryDetails.sampleImages) {
+                                        val imagesRef =
+                                            FirebaseDatabase.getInstance().getReference("/images/${imagePath.key}/body")
+
+                                        imagesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                                            override fun onCancelled(p0: DatabaseError) {
+                                            }
+
+                                            override fun onDataChange(p0: DataSnapshot) {
+
+                                                val image =
+                                                    p0.getValue(Images::class.java)
+                                                sampleImagesAdapter.add(SampleImages(image!!, activity))
+
+                                            }
+                                        })
                                     }
-                                })
-                            } else {
-                                sampleImagesRecycler.visibility = View.GONE
+                                } else {
+                                    sampleImagesRecycler.visibility = View.GONE
+                                }
+
                             }
 
-                            includesFood.text = "Best street food you can find in anatalia it so good and cheap"
-                            includesDrinks.text = "Best street food you can find in anatalia it so good and cheap"
-                            includesActivities.text = "Best street food you can find in anatalia it so good and cheap"
-                            includesNature.text = "Best street food you can find in anatalia it so good and cheap"
-                            includesAccommodation.text = "Best street food you can find in anatalia it so good and cheap"
-                            includesTransportation.text = "Best street food you can find in anatalia it so good and cheap"
+                            if (itineraryBody != null) {
+                                itineraryObject = itineraryBody
+                                listenToLastReviews()
+
+                                title.text = itineraryBody.title
+
+                                description.text = if (itineraryBody.description.isNotEmpty()) {
+                                    itineraryBody.description
+                                } else {
+                                    dummyDescription
+                                }
+
+                                location.text = if (itineraryBody.locationName.isNotEmpty()) {
+                                    itineraryBody.locationName
+                                } else {
+                                    "Dark Side, Moon"
+                                }
+
+                                imageCount.text = "${itineraryBody.images.size} locations"
+                            }
+
+                            if (itineraryContent != null) {
+                                if (itineraryContent.aboutFood.isNotEmpty()) {
+                                    foodContainer.visibility = View.VISIBLE
+                                    includesFood.text = itineraryContent.aboutFood
+                                } else {
+                                    foodContainer.visibility = View.GONE
+                                }
+
+                                if (itineraryContent.aboutNightlife.isNotEmpty()) {
+                                    nightlifeContainer.visibility = View.VISIBLE
+                                    includesNightlife.text = itineraryContent.aboutNightlife
+                                } else {
+                                    nightlifeContainer.visibility = View.GONE
+                                }
+
+                                if (itineraryContent.aboutActivities.isNotEmpty()) {
+                                    activitiesContainer.visibility = View.VISIBLE
+                                    includesActivities.text = itineraryContent.aboutActivities
+                                } else {
+                                    activitiesContainer.visibility = View.GONE
+                                }
+
+                                if (itineraryContent.aboutNature.isNotEmpty()) {
+                                    natureContainer.visibility = View.VISIBLE
+                                    includesNature.text = itineraryContent.aboutNature
+                                } else {
+                                    natureContainer.visibility = View.GONE
+                                }
+
+                                if (itineraryContent.aboutAccommodation.isNotEmpty()) {
+                                    accommodationContainer.visibility = View.VISIBLE
+                                    includesAccommodation.text = itineraryContent.aboutAccommodation
+                                } else {
+                                    accommodationContainer.visibility = View.GONE
+                                }
+
+                                if (itineraryContent.aboutTransportation.isNotEmpty()) {
+                                    transportationContainer.visibility = View.VISIBLE
+                                    includesTransportation.text = itineraryContent.aboutTransportation
+                                } else {
+                                    transportationContainer.visibility = View.GONE
+                                }
+
+
+                            }
                         }
                     })
                 }
@@ -276,16 +407,31 @@ class ItineraryFragment : Fragment(), DereMethods {
                             reviewsList.add(SingleItineraryReview(reviewObject, activity as MainActivity))
 
                             when (reviewObject.rating) {
-                                1 -> oneStarReviews++
-                                2 -> twoStarReviews++
-                                3 -> threeStarReviews++
-                                4 -> fourStarReviews++
-                                5 -> fiveStarReviews++
+                                1 -> {
+                                    oneStarReviews++
+                                    sumAllReviews += 1
+                                }
+                                2 -> {
+                                    twoStarReviews++
+                                    sumAllReviews += 2
+                                }
+                                3 -> {
+                                    threeStarReviews++
+                                    sumAllReviews += 3
+                                }
+                                4 -> {
+                                    fourStarReviews++
+                                    sumAllReviews += 4
+                                }
+                                5 -> {
+                                    fiveStarReviews++
+                                    sumAllReviews += 5
+                                }
                             }
                         }
                     }
 
-                    val numAllReviews =
+                    numAllReviews =
                         oneStarReviews + twoStarReviews + threeStarReviews + fourStarReviews + fiveStarReviews
 
                     if (numAllReviews > 0) {
@@ -356,12 +502,48 @@ class ItineraryFragment : Fragment(), DereMethods {
     }
 }
 
-class SampleImages(val image: Images) : Item<ViewHolder>() {
+class SampleImages(val image: Images, val activity: Activity) : Item<ViewHolder>() {
+
+    lateinit var peekAndPop: PeekAndPop
+    lateinit var peekView: View
+
+
     override fun getLayout(): Int {
         return R.layout.feed_single_photo
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
+
+        val dip = 8f
+        val r = viewHolder.root.resources
+        val px = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            dip,
+            r.displayMetrics
+        )
+
+        viewHolder.itemView.feed_single_photo_card.radius = px
+
+        peekAndPop = PeekAndPop.Builder(activity)
+            .peekLayout(R.layout.image_peek)
+            .longClickViews(viewHolder.itemView)
+            .build();
+
+        peekView = peekAndPop.peekView
+        val imageView = peekView.image_peek_image
+        peekAndPop.setOnGeneralActionListener(object : PeekAndPop.OnGeneralActionListener {
+            override fun onPop(p0: View?, p1: Int) {
+
+            }
+
+            override fun onPeek(p0: View?, p1: Int) {
+                (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
+                Glide.with(viewHolder.root.context).load(image.imageBig).into(imageView)
+            }
+
+        })
+
+
         Glide.with(viewHolder.root.context).load(image.imageSmall).into(viewHolder.itemView.feed_single_photo_photo)
     }
 }

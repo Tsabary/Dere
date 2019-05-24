@@ -12,14 +12,15 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:id="@+id/collection_gallery_title"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/collection_gallery_title_editable"
             android:layout_marginTop="32dp"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="32dp"
             tools:text="Bucket name"
             android:textSize="24sp"
             android:fontFamily="@font/roboto_black"
-    />
+            android:layout_marginEnd="32dp"
+            app:layout_constraintEnd_toStartOf="@+id/collection_gallery_edit"/>
 
     <EditText
             android:layout_width="0dp"
@@ -29,11 +30,13 @@
             android:layout_marginTop="32dp"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="32dp"
-            tools:text="Bucket name"
+            tools:text="Bucket name name n"
             android:textSize="24sp"
             android:fontFamily="@font/roboto_black"
             android:visibility="gone"
-            android:background="@android:color/transparent"/>
+            android:background="@android:color/transparent"
+            android:layout_marginEnd="32dp"
+            app:layout_constraintEnd_toStartOf="@+id/collection_gallery_edit"/>
 
 
     <TextView
@@ -51,14 +54,14 @@
     <ImageButton
             android:src="@drawable/world"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:id="@+id/collection_gallery_show_map"
             android:background="@android:color/transparent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="16dp"
-            app:layout_constraintTop_toTopOf="@id/collection_gallery_edit"
-            app:layout_constraintBottom_toBottomOf="@id/collection_gallery_edit"
-            android:padding="16dp"/>
+            app:layout_constraintTop_toTopOf="parent"
+            android:padding="8dp"
+            android:layout_marginTop="32dp"/>
 
     <ImageButton
             android:layout_width="wrap_content"
@@ -67,10 +70,10 @@
             android:id="@+id/collection_gallery_edit"
             app:layout_constraintEnd_toStartOf="@+id/collection_gallery_show_map"
             android:layout_marginEnd="8dp"
-            android:padding="16dp"
-            app:layout_constraintTop_toTopOf="@+id/collection_gallery_title"
-            app:layout_constraintBottom_toBottomOf="@+id/collection_gallery_title"
-            android:background="@android:color/transparent"/>
+            android:padding="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="@android:color/transparent"
+            android:layout_marginTop="32dp"/>
 
     <co.getdere.otherClasses.SwipeLockableViewPager
             android:layout_width="0dp"

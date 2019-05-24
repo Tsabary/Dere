@@ -195,7 +195,8 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    android:id="@+id/itinerary_details_box">
+                    android:id="@+id/itinerary_details_box"
+            >
 
                 <ImageView
                         android:layout_width="0dp"
@@ -208,7 +209,6 @@
                         android:foreground="#4D000000"
                         android:scaleType="centerCrop"
                         android:contentDescription="@string/cover_image"
-                        android:layout_marginBottom="8dp"
                         app:layout_constraintBottom_toBottomOf="@id/itinerary_dummy_view"
                         app:layout_constraintHorizontal_bias="0.0"
                         app:layout_constraintVertical_bias="0.0"/>
@@ -239,107 +239,151 @@
                         app:layout_constraintTop_toBottomOf="@+id/itinerary_title"
                         app:layout_constraintEnd_toEndOf="@+id/itinerary_title"
                 />
-                <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        app:enableAutomaticInitialization="true"
-                        app:autoPlay="false"
-                        app:showFullScreenButton="false"
-                        android:layout_marginEnd="72dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        android:layout_marginStart="72dp"
-                        app:layout_constraintHorizontal_bias="0.0"
-                        android:id="@+id/itinerary_youtube_player"
-                        app:layout_constraintDimensionRatio="16:9"
-                        android:layout_marginTop="32dp"
-                        app:layout_constraintTop_toBottomOf="@+id/itinerary_description"/>
-                <TextView
-                        tools:text="$6.99"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_price"
-                        app:layout_constraintTop_toBottomOf="@id/itinerary_sample_photos_recycler"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintHorizontal_bias="0.5"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        android:layout_marginTop="24dp"
-                        android:fontFamily="@font/roboto_black"
-                        android:textSize="24sp"/>
-                <TextView
-                        tools:text="Barcelona, Spain"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_location"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintHorizontal_bias="0.5"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/itinerary_youtube_player"
-                        android:layout_marginTop="16dp"
-                        android:fontFamily="@font/roboto_medium"
-                        android:textColor="@color/gray500"/>
-
-                <TextView
-                        tools:text="47 locations"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_photo_count"
-                        app:layout_constraintTop_toBottomOf="@+id/itinerary_location"
-                        android:layout_marginTop="8dp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        android:fontFamily="@font/roboto_medium"
-                        android:textColor="@color/gray500"
-                        app:layout_constraintEnd_toEndOf="parent"
-                />
                 <TextView
                         tools:text="TextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_dummy_view"
-                        app:layout_constraintBottom_toBottomOf="@+id/itinerary_youtube_player"
-                        app:layout_constraintTop_toTopOf="@+id/itinerary_youtube_player"
+                        app:layout_constraintBottom_toBottomOf="@id/itinerary_youtube_player_card"
+                        app:layout_constraintTop_toTopOf="@id/itinerary_youtube_player_card"
                         app:layout_constraintStart_toStartOf="parent"
                         android:visibility="gone"/>
+                <androidx.cardview.widget.CardView
+                        android:id="@+id/itinerary_youtube_player_card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="72dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="72dp"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        android:layout_marginTop="32dp"
+                        app:layout_constraintTop_toBottomOf="@id/itinerary_photo_count"
+                        app:cardCornerRadius="16dp"
+                        android:elevation="4dp">
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                        <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                app:enableAutomaticInitialization="true"
+                                app:autoPlay="false"
+                                app:showYouTubeButton="false"
+                                app:showSeekBar="false"
+                                app:showVideoCurrentTime="false"
+                                app:showVideoDuration="false"
+                                app:showFullScreenButton="true"
+                                android:id="@+id/itinerary_youtube_player"
+
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintDimensionRatio="1.77"
+                        android:elevation="8dp"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+                <TextView
+                        tools:text="Barcelona, Spain"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/itinerary_location"
+                        app:layout_constraintStart_toStartOf="@+id/itinerary_description"
+                        app:layout_constraintEnd_toEndOf="@+id/itinerary_description"
+                        android:fontFamily="@font/roboto_black"
+                        android:textColor="@color/white"
+                        android:layout_marginTop="8dp"
+                        app:layout_constraintTop_toBottomOf="@+id/itinerary_description"
+                        android:textSize="18sp"/>
+
+                <TextView
+                        tools:text="47 locations"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/itinerary_photo_count"
+                        app:layout_constraintTop_toBottomOf="@+id/itinerary_location"
+                        android:layout_marginTop="8dp"
+                        app:layout_constraintStart_toStartOf="@+id/itinerary_location"
+                        android:fontFamily="@font/roboto_black"
+                        android:textColor="@color/white"
+                        app:layout_constraintEnd_toEndOf="@+id/itinerary_location"
+                        android:textSize="18sp"/>
                 <androidx.recyclerview.widget.RecyclerView
                         android:layout_width="0dp"
-                        android:layout_height="0dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        app:layout_constraintTop_toBottomOf="@+id/itinerary_photo_count"
+                        app:layout_constraintTop_toBottomOf="@id/itinerary_youtube_player_card"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         android:id="@+id/itinerary_sample_photos_recycler"
                         android:layout_marginStart="32dp"
                         android:layout_marginEnd="32dp"
-                        app:layout_constraintDimensionRatio="6:1"
                         android:visibility="gone"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-
-            <TextView
-                    android:text="@string/buy_itinerary"
+            <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:id="@+id/itinerary_buy_button"
                     android:padding="16dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginEnd="32dp"
                     app:layout_constraintStart_toStartOf="parent"
                     android:layout_marginStart="32dp"
-                    android:gravity="center"
+                    app:layout_constraintTop_toBottomOf="@id/itinerary_details_box"
                     android:background="@drawable/buttons_shape"
-                    android:fontFamily="@font/roboto_medium"
-                    android:textSize="15sp"
-                    android:textColor="@color/white"
-                    android:layout_marginTop="32dp"
-                    app:layout_constraintTop_toBottomOf="@+id/itinerary_details_box"/>
+                    android:id="@+id/itinerary_buy_cta_container"
+                    android:layout_marginTop="32dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                >
+
+                    <TextView
+                            android:id="@+id/itinerary_buy_button"
+
+                            android:text="@string/buy_itinerary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:gravity="center"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textSize="15sp"
+                            android:textColor="@color/gray500"
+                            app:layout_constraintEnd_toStartOf="@+id/itinerary_price"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            android:layout_marginEnd="8dp"/>
+                    <TextView
+                            tools:text="($6.99)"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_price"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textSize="15sp"
+                            android:visibility="visible"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            android:textColor="@color/gray500"/>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="32dp"
-                    app:layout_constraintTop_toBottomOf="@+id/itinerary_buy_button"
+                    app:layout_constraintTop_toBottomOf="@id/itinerary_buy_cta_container"
                     android:layout_marginEnd="32dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -404,7 +448,7 @@
                             app:layout_constraintTop_toBottomOf="@id/itinerary_includes_food_container"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            android:id="@+id/itinerary_includes_drinks_container"
+                            android:id="@+id/itinerary_includes_nightlife_container"
                             android:layout_marginTop="16dp"
                     >
 
@@ -412,15 +456,15 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 app:srcCompat="@drawable/drinks"
-                                android:id="@+id/itinerary_includes_drinks_icon"
+                                android:id="@+id/itinerary_includes_nightlife_icon"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toTopOf="parent"/>
                         <TextView
                                 tools:text="Best street food you can find in anatalia it so good and cheap"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:id="@+id/itinerary_includes_drinks_text"
-                                app:layout_constraintStart_toEndOf="@+id/itinerary_includes_drinks_icon"
+                                android:id="@+id/itinerary_includes_nightlife_text"
+                                app:layout_constraintStart_toEndOf="@+id/itinerary_includes_nightlife_icon"
                                 android:layout_marginStart="16dp"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintHorizontal_bias="0.0"
@@ -433,7 +477,7 @@
                     <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            app:layout_constraintTop_toBottomOf="@id/itinerary_includes_drinks_container"
+                            app:layout_constraintTop_toBottomOf="@id/itinerary_includes_nightlife_container"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             android:id="@+id/itinerary_includes_activities_container"
@@ -591,7 +635,7 @@
 
 
                 <TextView
-                        tools:text="37%"
+                        android:text="@string/_0"
                         android:layout_width="32dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_5_star_percentage"
@@ -698,7 +742,7 @@
 
 
                 <TextView
-                        tools:text="37%"
+                        android:text="@string/_0"
                         android:layout_width="32dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_4_star_percentage"
@@ -806,7 +850,7 @@
 
 
                 <TextView
-                        tools:text="37%"
+                        android:text="@string/_0"
                         android:layout_width="32dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_3_star_percentage"
@@ -913,7 +957,7 @@
 
 
                 <TextView
-                        tools:text="37%"
+                        android:text="@string/_0"
                         android:layout_width="32dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_2_star_percentage"
@@ -1021,7 +1065,7 @@
 
 
                 <TextView
-                        tools:text="37%"
+                        android:text="@string/_0"
                         android:layout_width="32dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_1_star_percentage"

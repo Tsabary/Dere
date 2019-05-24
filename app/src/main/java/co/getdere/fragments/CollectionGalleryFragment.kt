@@ -8,40 +8,41 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.adapters.BucketGalleryPagerAdapter
+import co.getdere.interfaces.DereMethods
 import co.getdere.models.Users
 import co.getdere.otherClasses.SwipeLockableViewPager
-import co.getdere.viewmodels.SharedViewModelCollection
-import co.getdere.viewmodels.SharedViewModelCurrentUser
-import co.getdere.viewmodels.SharedViewModelImage
-import co.getdere.viewmodels.SharedViewModelRandomUser
+import co.getdere.viewmodels.*
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.fragment_collection_gallery.*
 
 
-class CollectionGalleryFragment : Fragment() {
+class CollectionGalleryFragment : Fragment(), DereMethods {
 
     lateinit var sharedViewModelCollection: SharedViewModelCollection
+    lateinit var sharedViewModelItinerary: SharedViewModelItinerary
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var currentUser: Users
 
-    lateinit var publish : TextView
+    lateinit var publish: TextView
     lateinit var mapButton: ImageButton
     lateinit var editButton: ImageButton
-    lateinit var editableTitle : EditText
-    lateinit var fixedTitle : TextView
+    lateinit var editableTitle: EditText
+    lateinit var fixedTitle: TextView
     lateinit var galleryViewPager: SwipeLockableViewPager
     lateinit var pagerAdapter: BucketGalleryPagerAdapter
 
     var viewPagerPosition = 0
 
-    lateinit var collection : DataSnapshot
+    lateinit var collection: DataSnapshot
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,6 +54,8 @@ class CollectionGalleryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val activity = activity as MainActivity
 
         publish = collection_gallery_publish
         editButton = collection_gallery_edit
@@ -69,16 +72,18 @@ class CollectionGalleryFragment : Fragment() {
             switchImageAndMap()
         }
 
+
         editButton.setOnClickListener {
             switchEditableTitle()
         }
 
-        activity?.let {
+        activity.let {
 
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
             sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
+            sharedViewModelItinerary = ViewModelProviders.of(it).get(SharedViewModelItinerary::class.java)
 
 
 
@@ -87,25 +92,47 @@ class CollectionGalleryFragment : Fragment() {
 
                     collection = collectionSnapshot
 
+                    if (collection.child("body/creator").value != currentUser.uid || collection.key == "AllBuckets"){
+                        editButton.visibility = View.GONE
+                    } else {
+                        editButton.visibility = View.VISIBLE
+                    }
+
+
+
                     galleryViewPager.currentItem = 0
 
-                    if (collectionSnapshot.hasChild("body")) {
-                        collection_gallery_title.text = collectionSnapshot.child("/body/title").value.toString()
-                        collection_gallery_photos_count.text =
-                            collectionSnapshot.child("/body/images").childrenCount.toString() + " photos"
+                    fixedTitle.text = collectionSnapshot.child("/body/title").value.toString()
+                    editableTitle.setText(collectionSnapshot.child("/body/title").value.toString())
+                    collection_gallery_photos_count.text =
+                        collectionSnapshot.child("/body/images").childrenCount.toString() + " photos"
+
+                    if (collectionSnapshot.hasChild("body/locationId") && collectionSnapshot.child("body/creator").value == currentUser.uid) {
                         publish.visibility = View.VISIBLE
                     } else {
-                        collection_gallery_title.text = collectionSnapshot.key
-                        collection_gallery_photos_count.text = collectionSnapshot.childrenCount.toString() + " photos"
                         publish.visibility = View.GONE
+                    }
+
+                    publish.setOnClickListener {
+
+                        sharedViewModelItinerary.itinerary.postValue(collectionSnapshot)
+
+                        activity.subFm.beginTransaction().hide(activity.subActive).add(
+                            R.id.feed_subcontents_frame_container,
+                            activity.addImagesToItineraryFragment,
+                            "addImagesToItineraryFragment"
+                        )
+                            .hide(activity.addImagesToItineraryFragment)
+                            .add(R.id.feed_subcontents_frame_container, activity.itineraryEditFragment, "itineraryEditFragment")
+                            .commit()
+
+                        activity.subActive = activity.itineraryEditFragment
                     }
                 }
             })
         }
 
-        publish.setOnClickListener {
 
-        }
     }
 
     private fun switchImageAndMap() {
@@ -123,22 +150,41 @@ class CollectionGalleryFragment : Fragment() {
         }
     }
 
-    private fun switchEditableTitle(){
-        if (fixedTitle.visibility == View.VISIBLE){
-            fixedTitle.visibility == View.GONE
-            editableTitle.visibility == View.VISIBLE
+    private fun switchEditableTitle() {
+        val activity= activity as MainActivity
+        if (fixedTitle.visibility == View.VISIBLE) {
+            fixedTitle.visibility = View.GONE
+            editableTitle.visibility = View.VISIBLE
+            editableTitle.requestFocus()
+            editableTitle.setSelection(editableTitle.text.length)
             editButton.setImageResource(R.drawable.edit_active)
+            showKeyboard(activity)
 
         } else {
-            fixedTitle.visibility == View.VISIBLE
-            editableTitle.visibility == View.GONE
+            val newTitle = editableTitle.text.toString()
+            fixedTitle.visibility = View.VISIBLE
+            editableTitle.visibility = View.GONE
             editButton.setImageResource(R.drawable.edit)
 
-            if (publish.visibility == View.VISIBLE){
-                FirebaseDatabase.getInstance().getReference("/itineraries/${collection.key}/body/title").setValue(editableTitle.text.toString())
+            if (editableTitle.text.isNotEmpty()){
+                if (publish.visibility == View.VISIBLE) {
+                    FirebaseDatabase.getInstance().getReference("/itineraries/${collection.key}/body/title")
+                        .setValue(newTitle)
+                    fixedTitle.text = newTitle
+                    closeKeyboard(activity)
+                } else {
+                    FirebaseDatabase.getInstance()
+                        .getReference("/users/${currentUser.uid}/buckets/${collection.key}/body/title")
+                        .setValue(editableTitle.text.toString())
+                    fixedTitle.text = newTitle
+                    closeKeyboard(activity)
+
+                }
             } else {
-             FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/buckets/${collection.key}/body/title").setValue(editableTitle.text.toString())
+                Toast.makeText(this.context, "Can't save an empty name", Toast.LENGTH_SHORT).show()
+
             }
+
 
         }
     }

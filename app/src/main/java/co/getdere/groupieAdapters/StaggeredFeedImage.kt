@@ -2,6 +2,7 @@ package co.getdere.groupieAdapters
 
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.view.View
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.ViewModelProviders
@@ -21,8 +22,10 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.peekandpop.shalskar.peekandpop.PeekAndPop
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.image_peek.view.*
 import kotlinx.android.synthetic.main.staggered_feed_post.view.*
 
 
@@ -35,6 +38,8 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
 
     lateinit var user: Users
+    lateinit var peekView: View
+    lateinit var peekAndPop: PeekAndPop
 
 
     override fun getLayout(): Int {
@@ -42,6 +47,8 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
+
+        var pnpPosition = 0
 
         activity.let {
             sharedViewModelImage = ViewModelProviders.of(activity).get(SharedViewModelImage::class.java)
@@ -53,6 +60,34 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
 
         (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
 
+        peekAndPop = PeekAndPop.Builder(activity)
+            .peekLayout(R.layout.image_peek)
+            .longClickViews(imageView).animateFling(true)
+            .build()
+
+        peekView = peekAndPop.peekView
+
+        val peekImageView = peekView.image_peek_image
+        peekAndPop.setOnGeneralActionListener(object : PeekAndPop.OnGeneralActionListener {
+            override fun onPop(p0: View?, p1: Int) {
+
+            }
+
+            override fun onPeek(p0: View?, p1: Int) {
+                (peekImageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = image.ratio
+
+                Glide.with(viewHolder.root.context).load(image.imageBig).thumbnail(
+                    Glide.with(viewHolder.root.context)
+                        .load(image.imageSmall)
+                )
+                    .into(peekImageView)
+            }
+
+        })
+
+        imageView.setOnClickListener {
+            openImage()
+        }
 
         val requestOption = RequestOptions()
             .placeholder(R.color.gray500).centerCrop()
@@ -75,52 +110,56 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
         )
 
 
-        val gestureDetector = GestureDetector(activity, object : GestureDetector.SimpleOnGestureListener() {
+//        val gestureDetector = GestureDetector(activity, object : GestureDetector.SimpleOnGestureListener() {
+//
+//            override fun onDown(e: MotionEvent?): Boolean {
+//                return true
+//            }
+//
+//            override fun onDoubleTap(e: MotionEvent?): Boolean {
+//                if (uid != image.photographer) {
+//                    executeLike(
+//                        image,
+//                        uid,
+//                        TextView(viewHolder.root.context),
+//                        likeButton,
+//                        1,
+//                        currentUser.name,
+//                        image.photographer,
+//                        TextView(viewHolder.root.context),
+//                        activity,
+//                        "staggered"
+//                    )
+//                }
+//
+//                return super.onDoubleTap(e)
+//            }
+//
+//            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+//                openImage()
+//                return super.onSingleTapConfirmed(e)
+//            }
+//
+//            override fun onLongPress(e: MotionEvent?) {
+//                peekAndPop.triggerOnHoldEvent(imageView,pnpPosition)
+////                if (uid != image.photographer) {
+////                    activity.isFeedActive = true
+////                    goToBucket()
+////                } else {
+////                    activity.isFeedActive = true
+////                    goToItinerary()
+////                }
+//
+//
+//
+//
+//                super.onLongPress(e)
+//            }
+//        })
 
-            override fun onDown(e: MotionEvent?): Boolean {
-                return true
-            }
-
-            override fun onDoubleTap(e: MotionEvent?): Boolean {
-                if (uid != image.photographer) {
-                    executeLike(
-                        image,
-                        uid,
-                        TextView(viewHolder.root.context),
-                        likeButton,
-                        1,
-                        currentUser.name,
-                        image.photographer,
-                        TextView(viewHolder.root.context),
-                        activity,
-                        "staggered"
-                    )
-                }
-
-                return super.onDoubleTap(e)
-            }
-
-            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
-                openImage()
-                return super.onSingleTapConfirmed(e)
-            }
-
-            override fun onLongPress(e: MotionEvent?) {
-                if (uid != image.photographer) {
-                    activity.isFeedActive = true
-                    goToBucket()
-                } else {
-                    activity.isFeedActive = true
-                    goToItinerary()
-                }
-                super.onLongPress(e)
-
-            }
-        })
-
-        imageView.setOnTouchListener { _, event ->
-            gestureDetector.onTouchEvent(event)
-        }
+//        imageView.setOnTouchListener { _, event ->
+//            gestureDetector.onTouchEvent(event)
+//        }
 
 
         likeButton.setOnClickListener {

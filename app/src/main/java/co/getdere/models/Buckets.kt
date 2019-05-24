@@ -6,7 +6,7 @@ class Buckets(
     val creator: String,
     val title: String,
     val description: String,
-    val images: Map<String, Boolean>,
+    val images: Map<String, Long>,
     val timestampCreated: Long) {
 
     constructor() : this("", false, "", "", "", mapOf(), 0)

@@ -11,33 +11,6 @@
     <!--tools:showIn="@layout/fragment_dark_room_edit_old">-->
 
 
-    <ImageButton
-            android:src="@drawable/focus"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:id="@+id/dark_room_edit_map_focus"
-            mapbox:layout_constraintEnd_toEndOf="@+id/dark_room_edit_mapview"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:background="#CCffffff"
-            android:scaleType="center"
-            mapbox:layout_constraintBottom_toBottomOf="@+id/dark_room_edit_mapview"
-            android:elevation="2dp"/>
-
-    <ImageButton
-            android:src="@drawable/pin_button"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:id="@+id/dark_room_edit_map_pin"
-            mapbox:layout_constraintEnd_toEndOf="@+id/dark_room_edit_mapview"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:background="#CCffffff"
-            android:scaleType="center"
-            mapbox:layout_constraintBottom_toTopOf="@+id/dark_room_edit_map_focus"
-            android:elevation="2dp"
-            android:visibility="visible"/>
-
     <ImageView
             android:src="@drawable/location_outline"
             android:layout_width="wrap_content"
@@ -52,6 +25,44 @@
             android:elevation="1dp"
             android:visibility="visible"
             android:background="@android:color/transparent"/>
+    <ImageButton
+            android:src="@drawable/pin_button"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:id="@+id/dark_room_edit_map_pin"
+            mapbox:layout_constraintEnd_toEndOf="@+id/dark_room_edit_mapview"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
+            android:background="#CCffffff"
+            android:scaleType="center"
+            mapbox:layout_constraintBottom_toTopOf="@+id/dark_room_edit_map_focus"
+            android:elevation="2dp"
+            android:visibility="visible"/>
+    <ImageButton
+            android:src="@drawable/focus"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:id="@+id/dark_room_edit_map_focus"
+            mapbox:layout_constraintEnd_toEndOf="@+id/dark_room_edit_mapview"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
+            android:background="#CCffffff"
+            android:scaleType="center"
+            android:elevation="2dp"
+            mapbox:layout_constraintBottom_toTopOf="@+id/dark_room_edit_map_search"/>
+
+    <ImageView
+            android:src="@android:drawable/ic_menu_search"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:clickable="true"
+            android:id="@+id/dark_room_edit_map_search"
+            android:layout_marginBottom="16dp"
+            mapbox:layout_constraintBottom_toBottomOf="@+id/dark_room_edit_mapview"
+            android:layout_marginEnd="8dp"
+            mapbox:layout_constraintEnd_toEndOf="parent"
+            android:elevation="2dp"/>
+
     <co.getdere.otherClasses.CustomMapView
             android:id="@+id/dark_room_edit_mapview"
             android:layout_width="0dp"
@@ -62,8 +73,7 @@
             mapbox:layout_constraintEnd_toEndOf="parent"
             mapbox:layout_constraintTop_toTopOf="parent"
             mapbox:layout_constraintStart_toStartOf="parent"
-            mapbox:layout_constraintDimensionRatio="5:4">
-    </co.getdere.otherClasses.CustomMapView>
+            mapbox:layout_constraintDimensionRatio="5:4"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

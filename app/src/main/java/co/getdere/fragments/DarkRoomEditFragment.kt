@@ -1,11 +1,13 @@
 package co.getdere.fragments
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Matrix
 import android.media.ExifInterface
 import android.net.Uri
@@ -21,6 +23,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.NonNull
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -47,6 +50,9 @@ import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
@@ -57,7 +63,12 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
+import com.mapbox.mapboxsdk.plugins.places.autocomplete.PlaceAutocomplete
+import com.mapbox.mapboxsdk.plugins.places.autocomplete.model.PlaceOptions
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
@@ -70,6 +81,11 @@ import java.util.*
 
 
 class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
+
+
+    var REQUEST_CODE_AUTOCOMPLETE = 9
+//    val geojsonSourceLayerId: String = "geojsonSourceLayerId"
+//    val symbolIconId = "symbolIconId"
 
     private lateinit var localImagePost: LocalImagePost
     private lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
@@ -324,10 +340,22 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                     DERE_PIN,
                     BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map))!!
                 )
+//
+//                style.addImage(
+//                    symbolIconId, BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.facebook_logo))!!
+//                    )
+
+
+                initSearchFab()
+
+//                setUpSource(style)
+
+//                setupLayer(style)
 
 
                 sharedViewModelLocalImagePost.sharedImagePostObject.observe(this, Observer {
                     it?.let { localImageObject ->
+
 
                         currentLocalImagePost = localImageObject
 
@@ -539,6 +567,76 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     }
 
 
+    private fun initSearchFab() {
+        dark_room_edit_map_search.setOnClickListener {
+            val intent = PlaceAutocomplete.IntentBuilder()
+                .accessToken(Mapbox.getAccessToken()!!)
+                .placeOptions(
+                    PlaceOptions.builder()
+                        .backgroundColor(Color.parseColor("#EEEEEE"))
+                        .limit(10)
+                        .build(PlaceOptions.MODE_CARDS)
+                )
+                .build(activity)
+            startActivityForResult(intent, REQUEST_CODE_AUTOCOMPLETE)
+        }
+    }
+
+//    private fun setUpSource(@NonNull loadedMapStyle: Style) {
+//        loadedMapStyle.addSource(GeoJsonSource(geojsonSourceLayerId))
+//    }
+
+//    private fun setupLayer(loadedMapStyle: Style) {
+//        loadedMapStyle.addLayer(
+//            SymbolLayer("SYMBOL_LAYER_ID", geojsonSourceLayerId).withProperties(
+//                PropertyFactory.iconImage(symbolIconId),
+//                PropertyFactory.iconOffset(arrayOf(0f, -8f))
+//            )
+//        )
+//    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        closeKeyboard(activity as CameraActivity)
+
+        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_AUTOCOMPLETE) {
+            // Retrieve selected location's CarmenFeature
+            val selectedCarmenFeature = PlaceAutocomplete.getPlace(data!!)
+
+            // Create a new FeatureCollection and add a new Feature to it using selectedCarmenFeature above.
+            // Then retrieve and update the source designated for showing a selected location's symbol layer icon
+
+            if (myMapboxMap != null) {
+                val style = myMapboxMap!!.style
+                if (style != null) {
+//                    val source: GeoJsonSource = style.getSourceAs(geojsonSourceLayerId)!!
+//                    source.setGeoJson(
+//                        FeatureCollection.fromFeatures(
+//                            arrayOf<Feature>(Feature.fromJson(selectedCarmenFeature.toJson()))
+//                        )
+//                    )
+
+                    // Move map camera to the selected location
+                    myMapboxMap!!.animateCamera(
+                        CameraUpdateFactory.newCameraPosition(
+                            CameraPosition.Builder()
+                                .target(
+                                    LatLng(
+                                        (selectedCarmenFeature.geometry() as Point).latitude(),
+                                        (selectedCarmenFeature.geometry() as Point).longitude()
+                                    )
+                                )
+                                .zoom(14.0)
+                                .build()
+                        ), 4000
+                    )
+                }
+            }
+        }
+    }
+
+
     private fun uploadPhotoToStorage() {
 
         progressBar.visibility = View.VISIBLE
@@ -713,7 +811,13 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
                         val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-                        firebaseAnalytics.logEvent(if (newImage.verified) {"image_added_verified"} else {"image_added_unverified"}, null)
+                        firebaseAnalytics.logEvent(
+                            if (newImage.verified) {
+                                "image_added_verified"
+                            } else {
+                                "image_added_unverified"
+                            }, null
+                        )
 
                         val backToFeed = Intent((activity as CameraActivity), MainActivity::class.java)
                         startActivity(backToFeed)
@@ -722,7 +826,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                         activity.subFm.beginTransaction()
                             .remove(activity.darkRoomEditFragment).commit()
                     }
-
 
 
                 }

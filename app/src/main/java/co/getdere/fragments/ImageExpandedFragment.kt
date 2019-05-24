@@ -187,7 +187,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                 listenToBucketCount(bucketCount, image)
                 if (image.photographer == currentUser.uid) {
                     checkIfInItinerary(collectButton, image, currentUser.uid)
-                    bucketCount.visibility = View.GONE
+//                    bucketCount.visibility = View.GONE
                 } else {
                     checkIfBucketed(collectButton, image, currentUser.uid)
                 }

@@ -2,7 +2,6 @@ package co.getdere.fragments
 
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -21,7 +20,7 @@ import co.getdere.viewmodels.*
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.fragment_add_image_to_bucket.*
+import kotlinx.android.synthetic.main.fragment_add_image_to_collection.*
 
 class AddImageToAnswerFragment : Fragment() {
 
@@ -37,7 +36,7 @@ class AddImageToAnswerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_image_to_bucket, container, false)
+        return inflater.inflate(R.layout.fragment_add_image_to_collection, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -87,18 +86,6 @@ class AddImageToAnswerFragment : Fragment() {
 
                             val imageObject = p0.getValue(Images::class.java)
                             galleryAdapter.add(ImageSelector(imageObject!!, activity))
-
-//                            if (existingImageList.isEmpty()) {
-//                                galleryAdapter.add(ImageSelector(imageObject!!, 0))
-//                            } else {
-//                                if (existingImageList.contains(imageObject)) {
-//                                    galleryAdapter.add(ImageSelector(imageObject!!, 1))
-//                                } else {
-//                                    galleryAdapter.add(ImageSelector(imageObject!!, 0))
-//                                }
-//                            }
-
-
                         }
                     })
                 }
@@ -123,14 +110,8 @@ class AddImageToAnswerFragment : Fragment() {
         }
     }
 
-//    private fun listenToImages(currentList: MutableList<Images>) {
-//
-//    }
-
 
     companion object {
         fun newInstance(): AddImageToAnswerFragment = AddImageToAnswerFragment()
     }
-
-
 }
