@@ -781,7 +781,8 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             imageTagsList,
             verified,
             System.currentTimeMillis(),
-            ratio
+            ratio,
+            0
         )
 
 

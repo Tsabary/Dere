@@ -5,7 +5,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.You
 
 import java.util.HashSet
 
-internal class FullScreenHelper(private val targetView: View) {
+class MyFullScreenHelper(private val targetView: View) {
 
     var isFullScreen: Boolean = false
         private set

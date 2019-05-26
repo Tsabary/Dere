@@ -260,7 +260,7 @@
                         android:layout_marginTop="32dp"
                         app:layout_constraintTop_toBottomOf="@id/itinerary_photo_count"
                         app:cardCornerRadius="16dp"
-                        android:elevation="4dp">
+                        app:cardElevation="0dp">
                     <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent">
@@ -270,11 +270,11 @@
                                 android:layout_height="0dp"
                                 app:enableAutomaticInitialization="true"
                                 app:autoPlay="false"
-                                app:showYouTubeButton="false"
+                                app:showYouTubeButton="true"
                                 app:showSeekBar="false"
                                 app:showVideoCurrentTime="false"
                                 app:showVideoDuration="false"
-                                app:showFullScreenButton="true"
+                                app:showFullScreenButton="false"
                                 android:id="@+id/itinerary_youtube_player"
 
                                 app:layout_constraintTop_toTopOf="parent"
@@ -282,7 +282,7 @@
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintDimensionRatio="1.77"
-                        android:elevation="8dp"/>
+                        />
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </androidx.cardview.widget.CardView>
                 <TextView
@@ -616,11 +616,11 @@
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintEnd_toEndOf="parent"
                     android:fontFamily="@font/roboto_medium"
-                    android:textColor="@color/white"
+                    android:textColor="@color/gray500"
                     android:layout_marginEnd="32dp"
                     android:layout_marginStart="32dp"
                     android:padding="16dp"
-                    android:background="@drawable/buttons_shape_review"
+                    android:background="@drawable/button_with_gray_stroke"
                     android:gravity="center"/>
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="0dp"

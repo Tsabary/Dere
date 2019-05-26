@@ -11,14 +11,15 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:clickable="true"
-            app:tint="@color/white"
+            app:tint="@color/gray500"
             android:elevation="1dp"
             android:id="@+id/dark_room_fab"
             android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginBottom="68dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:backgroundTint="@color/green400"
+            app:backgroundTint="@color/white"
+            android:background="@drawable/button_with_gray_stroke"
             android:focusable="true"/>
 
     <androidx.recyclerview.widget.RecyclerView

@@ -24,6 +24,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.stripe.android.Stripe
 import io.branch.indexing.BranchUniversalObject
 import io.branch.referral.Branch
 import kotlinx.android.synthetic.main.activity_main.*
@@ -73,6 +74,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var itineraryEditFragment: ItineraryEditFragment
     lateinit var addImagesToItineraryFragment: AddImagesToItineraryFragment
     lateinit var marketplacePurchasedFragment: MarketplacePurchasedFragment
+    lateinit var buyItineraryFragment: BuyItineraryFragment
 
     lateinit var mainFrame: FrameLayout
     lateinit var subFrame: FrameLayout
@@ -441,7 +443,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
                 itineraryFragment -> {
                     switchVisibility(0)
                     isItineraryActive = false
-                    subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
                     subActive = imageFullSizeFragment
                 }
 
@@ -463,6 +465,10 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     subActive = imageFullSizeFragment
                     switchVisibility(0)
                     isSavedItinerariesActive = false
+                }
+                buyItineraryFragment -> {
+                    subFm.beginTransaction().remove(buyItineraryFragment).show(itineraryFragment).commit()
+                    subActive = itineraryFragment
                 }
 
             }
@@ -567,7 +573,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
         subFm.beginTransaction().remove(addToBucketFragment).commit()
         subFm.beginTransaction().remove(addToItineraryFragment).commit()
-        subFm.beginTransaction().remove(itineraryFragment).commit()
+//        subFm.beginTransaction().remove(itineraryFragment).commit()
         subFm.beginTransaction().remove(marketplacePurchasedFragment).commit()
     }
 
@@ -677,6 +683,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
         itineraryEditFragment = ItineraryEditFragment()
         addImagesToItineraryFragment = AddImagesToItineraryFragment()
         marketplacePurchasedFragment = MarketplacePurchasedFragment()
+        buyItineraryFragment = BuyItineraryFragment()
 
 
 
@@ -734,6 +741,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
         fm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, secondImageFullSizeFragment, "collectionMapView")
             .hide(secondImageFullSizeFragment).commitAllowingStateLoss()
+        fm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, itineraryFragment, "itineraryFragment")
+            .hide(itineraryFragment).commitAllowingStateLoss()
 
 
 
@@ -811,12 +821,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
         active = marketplaceFragment
         val menuItem = mBottomNav.menu.findItem(R.id.destination_marketplace)
         menuItem.isChecked = true
-//            subFm.beginTransaction().hide(subActive).show(itineraryFragment).commit()
-//            subActive = openedQuestionFragment
         resetFragments()
         isFeedActive = false
         isItineraryActive = false
-
 
         subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
         subActive = imageFullSizeFragment
@@ -841,9 +848,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
         if (uid == profileIdentifier) {
             navigateToProfile()
-            Log.d("whosProfile", "Your profile")
         } else {
-            Log.d("whosProfile", "Stranger profile")
 
             val profileRef = FirebaseDatabase.getInstance().getReference("/users/$profileIdentifier/profile")
 
@@ -903,10 +908,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
                 })
             }
-
-
         })
-
     }
 
 
@@ -923,8 +925,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
             override fun onDataChange(p0: DataSnapshot) {
 
                 val question = p0.getValue(Question::class.java)
-
-                Log.d("doYouKnow", question!!.title)
 
                 sharedViewModelQuestion.questionObject.postValue(question)
 

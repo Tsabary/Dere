@@ -77,9 +77,10 @@ class MarketplaceFragment : Fragment() {
 
                 override fun onDataChange(p0: DataSnapshot) {
                     sharedViewModelItinerary.itinerary.postValue(p0)
-                    activity.subFm.beginTransaction().hide(activity.subActive).add(R.id.feed_subcontents_frame_container, activity.itineraryFragment, "itineraryFragment")
+                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.itineraryFragment)
                         .commit()
                     activity.subActive = activity.itineraryFragment
+
                     activity.switchVisibility(1)
                 }
             })

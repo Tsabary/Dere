@@ -54,7 +54,6 @@ class ItineraryFragment : Fragment(), DereMethods {
 
     lateinit var peekAndPop: PeekAndPop
     lateinit var peekView: View
-    val fullScreenHelper = FullScreenHelper
 
     val reviewsList = mutableListOf<SingleItineraryReview>()
 
@@ -89,14 +88,6 @@ class ItineraryFragment : Fragment(), DereMethods {
         super.onViewCreated(view, savedInstanceState)
 
         val activity = activity as MainActivity
-
-//        peekAndPop = PeekAndPop.Builder(activity)
-//            .peekLayout(R.layout.image_peek)
-//            .longClickViews(view)
-//            .build();
-//
-//        peekView = peekAndPop.peekView
-
 
         val dummyDescription = getString(R.string.dummy_itinerary_description)
         val dummyYoutubeVideo = getString(R.string.dummy_youtube_video)
@@ -176,12 +167,16 @@ class ItineraryFragment : Fragment(), DereMethods {
         }
 
         purchaseBtn.setOnClickListener {
-            if (itineraryObject.creator != uid) {
-                FirebaseDatabase.getInstance().getReference("/users/$uid/purchasedItineraries/${itineraryObject.id}")
-                    .setValue(true)
-            } else {
-                Toast.makeText(this.context, "Can't buy your own itinerary", Toast.LENGTH_SHORT).show()
-            }
+
+            activity.subFm.beginTransaction().hide(activity.subActive).add(R.id.feed_subcontents_frame_container, activity.buyItineraryFragment, "buyItineraryFragment").commit()
+            activity.subActive = activity.buyItineraryFragment
+
+//            if (itineraryObject.creator != uid) {
+//                FirebaseDatabase.getInstance().getReference("/users/$uid/purchasedItineraries/${itineraryObject.id}")
+//                    .setValue(true)
+//            } else {
+//                Toast.makeText(this.context, "Can't buy your own itinerary", Toast.LENGTH_SHORT).show()
+//            }
         }
 
         reviewSubmit.setOnClickListener {
@@ -216,25 +211,25 @@ class ItineraryFragment : Fragment(), DereMethods {
 
         lifecycle.addObserver(youtubePlayer)
 
-        youtubePlayer.getPlayerUiController().setFullScreenButtonClickListener(View.OnClickListener {
-            if (youtubePlayer.isFullScreen()) {
-                youtubePlayer.exitFullScreen()
-            } else {
-                youtubePlayer.enterFullScreen()
-            }
-        })
+//        youtubePlayer.getPlayerUiController().setFullScreenButtonClickListener(View.OnClickListener {
+//            if (youtubePlayer.isFullScreen()) {
+//                youtubePlayer.exitFullScreen()
+//            } else {
+//                youtubePlayer.enterFullScreen()
+//            }
+//        })
 
-        youtubePlayer.addFullScreenListener(object :YouTubePlayerFullScreenListener{
-            override fun onYouTubePlayerEnterFullScreen() {
-                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
-                fullScreenHelper.enterFullScreen()
-            }
-
-            override fun onYouTubePlayerExitFullScreen() {
-
-            }
-
-        })
+//        youtubePlayer.addFullScreenListener(object :YouTubePlayerFullScreenListener{
+//            override fun onYouTubePlayerEnterFullScreen() {
+//                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+//                fullScreenHelper.enterFullScreen()
+//            }
+//
+//            override fun onYouTubePlayerExitFullScreen() {
+//
+//            }
+//
+//        })
 
         activity.let {
             sharedViewModelItinerary = ViewModelProviders.of(it).get(SharedViewModelItinerary::class.java)

@@ -55,7 +55,13 @@ import mumayank.com.airlocationlibrary.AirLocation
 
 class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
-    private val DERE_PIN = "derePin"
+    private val derePin = "derePin"
+    private val foodPin = "foodPin"
+    private val nightlifePin = "nightlifePin"
+    private val activitiesPin = "activitiesPin"
+    private val naturePin = "naturePin"
+    private val accommodationPin = "accomodationPin"
+    private val transportationPin = "transportationPin"
 
     private lateinit var sharedViewModelCollection: SharedViewModelCollection
     lateinit var sharedViewModelImage: SharedViewModelImage
@@ -164,11 +170,7 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                     permissionsManager.requestLocationPermissions(activity)
                 }
 
-
-                style.addImage(
-                    DERE_PIN,
-                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map))!!
-                )
+                addPins(style)
 
                 val geoJsonOptions = GeoJsonOptions().withTolerance(0.4f)
                 val symbolManager = SymbolManager(mapView!!, mapboxMap, style, null, geoJsonOptions)
@@ -212,7 +214,17 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                                         val symbolOptions = SymbolOptions()
                                             .withLatLng(LatLng(imageObject.location[0], imageObject.location[1]))
-                                            .withIconImage(DERE_PIN)
+                                            .withIconImage(when(imageObject.type){
+                                                0 -> derePin
+                                                1 -> foodPin
+                                                2-> nightlifePin
+                                                3 -> activitiesPin
+                                                4 -> naturePin
+                                                5 -> accommodationPin
+                                                6 -> transportationPin
+                                                else -> derePin
+
+                                            })
                                             .withIconSize(1f)
                                             .withZIndex(10)
                                             .withDraggable(false)
@@ -248,7 +260,19 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                                         val symbolOptions = SymbolOptions()
                                             .withLatLng(LatLng(imageObject.location[0], imageObject.location[1]))
-                                            .withIconImage(DERE_PIN)
+                                            .withIconImage(when(imageObject.type){
+                                                0 -> derePin
+                                                1 -> foodPin
+                                                2-> nightlifePin
+                                                3 -> activitiesPin
+                                                4 -> naturePin
+                                                5 -> accommodationPin
+                                                6 -> transportationPin
+                                                else -> derePin
+
+                                            }
+
+                                            )
                                             .withIconSize(1f)
                                             .withZIndex(10)
                                             .withDraggable(false)
@@ -357,6 +381,42 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    fun addPins(style: Style){
+        style.addImage(
+            derePin,
+            BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map))!!
+        )
+
+        style.addImage(
+            foodPin,
+            BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map_food))!!
+        )
+
+        style.addImage(
+            nightlifePin,
+            BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map_nightlife))!!
+        )
+
+        style.addImage(
+            activitiesPin,
+            BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map_activities))!!
+        )
+
+        style.addImage(
+            naturePin,
+            BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map_nature))!!
+        )
+
+        style.addImage(
+            accommodationPin,
+            BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map_accommodation))!!
+        )
+
+        style.addImage(
+            transportationPin,
+            BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map_transportation))!!
+        )
+    }
 
     companion object {
         fun newInstance(): CollectionMapViewFragment = CollectionMapViewFragment()

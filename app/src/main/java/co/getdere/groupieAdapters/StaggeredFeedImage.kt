@@ -27,6 +27,8 @@ import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.image_peek.view.*
 import kotlinx.android.synthetic.main.staggered_feed_post.view.*
+import org.ocpsoft.prettytime.PrettyTime
+import java.util.*
 
 
 class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity: MainActivity) : Item<ViewHolder>(),
@@ -37,7 +39,7 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
 
-    lateinit var user: Users
+//    lateinit var user: Users
     lateinit var peekView: View
     lateinit var peekAndPop: PeekAndPop
 
@@ -81,8 +83,23 @@ class StaggeredFeedImage(val image: Images, val currentUser: Users, val activity
                         .load(image.imageSmall)
                 )
                     .into(peekImageView)
-            }
 
+                FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile").addListenerForSingleValueEvent(object : ValueEventListener{
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+
+                        val user = p0.getValue(Users::class.java)
+                        if (user != null){
+                            Glide.with(viewHolder.root.context).load(if(user.image.isNotEmpty()){user.image}else{R.drawable.user_profile}).into(peekView.image_peek_author_image)
+                            peekView.image_peek_author_name.text = user.name
+                            peekView.image_peek_author_reputation.text = "(${numberCalculation(user.reputation)})"
+                            peekView.image_peek_timestamp.text = PrettyTime().format(Date(image.timestampUpload))
+                        }
+                    }
+                })
+            }
         })
 
         imageView.setOnClickListener {

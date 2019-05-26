@@ -18,7 +18,8 @@ class Images(
     val tags : MutableList<String>,
     val verified : Boolean,
     val lastInteraction : Long,
-    val ratio : String
+    val ratio : String,
+    val type : Int
 ) : Parcelable {
-    constructor() : this("", "", "", false, "",  "", "", mutableListOf(32.018374, 34.829601), 0, 0,  mutableListOf(), true, 0, "1:1")
+    constructor() : this("", "", "", false, "",  "", "", mutableListOf(32.018374, 34.829601), 0, 0,  mutableListOf(), true, 0, "1:1", 0)
 }

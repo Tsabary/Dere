@@ -80,10 +80,12 @@ class EditInterestsFragment : Fragment() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 tagsFilteredAdapter.clear()
-                val userInput = s.toString()
+                val userInput = s.toString().toLowerCase().replace(" ","-")
                 if (userInput == "") {
                     tagSuggestionRecycler.visibility = View.GONE
                 } else {
+                    tagSuggestionRecycler.visibility = View.VISIBLE
+
                     val relevantTags: List<SingleTagForList> =
                         sharedViewModelTags.tagList.filter { it.tagString.contains(userInput) }
 
@@ -99,7 +101,6 @@ class EditInterestsFragment : Fragment() {
                         }
 
                         if (countTagMatches == 0) {
-                            tagSuggestionRecycler.visibility = View.VISIBLE
                             tagsFilteredAdapter.add(SingleTagSuggestion(t))
                         }
                     }
@@ -144,7 +145,10 @@ class EditInterestsFragment : Fragment() {
         chip.isCloseIconVisible = true
         chip.isCheckable = false
         chip.isClickable = false
-        chip.setChipBackgroundColorResource(R.color.green700)
+        chip.setChipBackgroundColorResource(R.color.white)
+        chip.chipStrokeWidth = 1f
+        chip.setChipStrokeColorResource(R.color.gray500)
+        chip.setCloseIconTintResource(R.color.gray500)
         chip.setTextAppearance(R.style.ChipSelectedStyle)
         chipGroup.addView(chip)
         chipGroup.visibility = View.VISIBLE

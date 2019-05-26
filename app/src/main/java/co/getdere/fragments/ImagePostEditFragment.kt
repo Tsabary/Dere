@@ -413,7 +413,8 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                                     imageTagsList,
                                     imageObject.verified,
                                     0,
-                                    imageObject.ratio
+                                    imageObject.ratio,
+                                    0
                                 )
 
 
