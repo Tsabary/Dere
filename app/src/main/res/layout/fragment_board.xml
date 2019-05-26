@@ -3,6 +3,8 @@
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:context=".fragments.BoardFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/white">
@@ -25,52 +27,101 @@
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
             android:id="@+id/board_search_recycler"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:elevation="2dp"
+            android:background="@color/white"/>
 
-
-    <ScrollView
-            android:layout_width="match_parent"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/board_swipe_refresh"
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:id="@+id/board_scroll_view"
-            app:layout_constraintTop_toBottomOf="@+id/board_search_recycler"
+            app:layout_constraintTop_toBottomOf="@+id/constraintLayout3"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
-        <LinearLayout android:layout_width="match_parent"
-                      android:layout_height="match_parent"
-                      android:orientation="vertical">
-            <androidx.recyclerview.widget.RecyclerView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:id="@+id/board_question_feed"
-                    app:stackFromEnd="true"
-                    app:reverseLayout="true"
-                    android:paddingBottom="88dp"/>
+            app:layout_constraintBottom_toBottomOf="parent"
+    >
 
-            <androidx.recyclerview.widget.RecyclerView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:id="@+id/board_question_feed_search"
-                    app:stackFromEnd="true"
-                    app:reverseLayout="true"
-                    android:paddingBottom="88dp"
-                    android:visibility="gone"/>
-        </LinearLayout>
-    </ScrollView>
+        <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:id="@+id/board_scroll_view"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="vertical">
+
+                <androidx.recyclerview.widget.RecyclerView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/board_question_feed"
+                        app:stackFromEnd="true"
+                        app:reverseLayout="true"
+                        android:paddingBottom="88dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/board_question_feed_search"
+                        app:stackFromEnd="true"
+                        app:reverseLayout="true"
+                        android:paddingBottom="88dp"
+                        android:visibility="gone"/>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:src="@drawable/plus"
+            android:src="@drawable/finger_up"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:clickable="true"
-            app:tint="@color/white"
-            android:elevation="1dp"
+            app:tint="@color/gray500"
+            android:elevation="2dp"
             android:id="@+id/board_fab"
             android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginBottom="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:backgroundTint="@color/green400"/>
+            app:backgroundTint="@color/white"
+            android:background="@drawable/button_with_gray_stroke"/>
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/includeBoardToolbar"
+            android:id="@+id/constraintLayout3">
+
+        <ImageButton
+                android:src="@drawable/linear_layout"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:id="@+id/board_bloack_layout"
+                app:layout_constraintEnd_toStartOf="@+id/board_row_layout"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                android:scaleType="centerInside"
+                android:background="@android:color/transparent"
+                android:padding="16dp"/>
+        <ImageButton
+                android:src="@drawable/staggered_layout_active"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:id="@+id/board_row_layout"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                android:scaleType="centerInside"
+                android:background="@android:color/transparent"
+                android:padding="16dp"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <!--<fragment-->
     <!--android:name="androidx.navigation.fragment.NavHostFragment"-->
     <!--android:layout_width="match_parent"-->

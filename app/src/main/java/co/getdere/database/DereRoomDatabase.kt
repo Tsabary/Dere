@@ -47,20 +47,8 @@ public abstract class DereRoomDatabase : RoomDatabase()  {
             super.onOpen(db)
             INSTANCE?.let { database ->
                 scope.launch(Dispatchers.IO) {
-//                    populateDatabase(database.imageDao())
                 }
             }
         }
-
-//        fun populateDatabase(imageDao: ImageDao) {
-//            imageDao.deleteAll()
-//
-////            var word = LocalImagePost(2342, "this is a uri")
-////            imageDao.insert(word)
-////            word = LocalImagePost(343,"World!")
-////            imageDao.insert(word)
-//        }
-
-
     }
 }

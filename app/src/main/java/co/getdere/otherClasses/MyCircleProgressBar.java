@@ -38,11 +38,9 @@ public class MyCircleProgressBar extends View {
     private int backgroundColor;
     private float myStrokeWidth;
     private float backgroundWidth;
-    private boolean roundedCorners;
     private float maxValue;
 
     private int progressTextColor = Color.BLACK;
-    private float textSize = 18;
     private String text = "";
     private String suffix = "";
     private String prefix = "";
@@ -68,10 +66,10 @@ public class MyCircleProgressBar extends View {
         backgroundColor = ta.getColor(R.styleable.MyCircleProgressBar_backgroundColor, Color.GRAY);
         myStrokeWidth = ta.getFloat(R.styleable.MyCircleProgressBar_myStrokeWidth, 10);
         backgroundWidth = ta.getFloat(R.styleable.MyCircleProgressBar_backgroundWidth, 10);
-        roundedCorners = ta.getBoolean(R.styleable.MyCircleProgressBar_roundedCorners, false);
+        boolean roundedCorners = ta.getBoolean(R.styleable.MyCircleProgressBar_roundedCorners, false);
         maxValue = ta.getFloat(R.styleable.MyCircleProgressBar_maxValue, 100);
         progressTextColor = ta.getColor(R.styleable.MyCircleProgressBar_progressTextColor, Color.BLACK);
-        textSize = ta.getDimension(R.styleable.MyCircleProgressBar_textSize, 18);
+        float textSize = ta.getDimension(R.styleable.MyCircleProgressBar_textSize, 18);
         suffix = ta.getString(R.styleable.MyCircleProgressBar_suffix);
         prefix = ta.getString(R.styleable.MyCircleProgressBar_prefix);
         text = ta.getString(R.styleable.MyCircleProgressBar_progressText);

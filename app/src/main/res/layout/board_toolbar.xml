@@ -2,30 +2,31 @@
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@color/white">
+        android:background="@color/gray900">
 
 
     <ImageButton
-            android:src="@drawable/star"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:src="@drawable/bookmark"
+            android:layout_width="36dp"
+            android:layout_height="20dp"
             android:id="@+id/board_toolbar_saved_questions_icon"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="24dp"
             app:layout_constraintTop_toTopOf="parent"
             android:background="@android:color/transparent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="8dp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintDimensionRatio="1:1"/>
+            android:layout_marginBottom="12dp"
+            android:layout_marginTop="12dp"
+            app:layout_constraintDimensionRatio="1:1"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/saved_questions_icon"/>
 
 
     <ImageButton
-            android:src="@drawable/lightning"
+            android:src="@drawable/notification_bell"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:id="@+id/board_toolbar_notifications_icon"
@@ -37,7 +38,21 @@
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintDimensionRatio="1:1"/>
+            app:layout_constraintDimensionRatio="1:1"
+            android:contentDescription="@string/notifications_icon"/>
+
+    <com.nex3z.notificationbadge.NotificationBadge
+            android:id="@+id/board_toolbar_notifications_badge"
+            app:nbBackground="@drawable/badge_background"
+            android:textColor="@color/white"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="4dp"
+            android:elevation="2dp"/>
+
     <EditText
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -48,12 +63,14 @@
             app:layout_constraintEnd_toStartOf="@+id/board_toolbar_notifications_icon"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:background="@color/white"
-            android:hint="Search by tag"
-            android:fontFamily="@font/open_sans_semibold"
+            android:background="@android:color/transparent"
+            android:hint="@string/search_by_tag"
+            android:fontFamily="@font/roboto_medium"
             android:textSize="15sp"
             app:layout_constraintStart_toEndOf="@+id/board_toolbar_filter_chipgroup"
-            android:layout_marginStart="8dp"/>
+            android:layout_marginStart="8dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/gray700"/>
     <com.google.android.material.chip.ChipGroup
             android:layout_width="wrap_content"
             android:layout_height="0dp"

@@ -17,6 +17,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.MainActivity
+import co.getdere.R
 import co.getdere.models.Users
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import com.bumptech.glide.Glide
@@ -26,6 +27,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.android.synthetic.main.fragment_edit_profile.*
 import java.util.*
 
 
@@ -37,6 +39,7 @@ class EditProfileFragment : Fragment() {
     lateinit var tagLineInput: EditText
     lateinit var userNameInput: EditText
     lateinit var userInstagramInput: EditText
+    lateinit var saveButton: TextView
 
     lateinit var sharedViewModelForCurrentUser: SharedViewModelCurrentUser
 
@@ -64,14 +67,12 @@ class EditProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        userImage = view.findViewById<CircleImageView>(co.getdere.R.id.edit_profile_image)
-        tagLineInput = view.findViewById<EditText>(co.getdere.R.id.edit_profile_description)
-        userNameInput = view.findViewById<EditText>(co.getdere.R.id.edit_profile_name)
-        userInstagramInput = view.findViewById<EditText>(co.getdere.R.id.edit_profile_instagram)
+        userImage = edit_profile_image
+        tagLineInput = edit_profile_description
+        userNameInput = edit_profile_name
+        userInstagramInput = edit_profile_instagram
 
-        val saveButton = view.findViewById<TextView>(co.getdere.R.id.edit_profile_save)
-        val cancelButton = view.findViewById<TextView>(co.getdere.R.id.edit_profile_cancel)
-
+        saveButton = edit_profile_save
 
         setUpUserDetails()
 
@@ -84,19 +85,10 @@ class EditProfileFragment : Fragment() {
         }
 
 
-
-
-
-
         saveButton.setOnClickListener {
-
+            saveButton.isClickable = false
+            edit_profile_loading.visibility = View.VISIBLE
             uploadImageToFirebase(user.image)
-
-        }
-
-        cancelButton.setOnClickListener {
-            val activity = activity as MainActivity
-            activity.switchVisibility(0)
         }
 
     }
@@ -113,8 +105,6 @@ class EditProfileFragment : Fragment() {
             val bitmap =
                 MediaStore.Images.Media.getBitmap((activity as MainActivity).contentResolver, selectedPhotoUri)
             userImage.setImageBitmap(bitmap)
-//            register_photo_pick.alpha = 0f
-
         }
     }
 
@@ -125,17 +115,16 @@ class EditProfileFragment : Fragment() {
 
 
         if (userNameInput.length() > 2) {
-            userRef.updateChildren(mapOf("name" to userNameInput.text.toString())).addOnSuccessListener {
+            userRef.child("name").setValue(userNameInput.text.toString().trimEnd()).addOnSuccessListener {
 
 
-                userRef.updateChildren(mapOf("tagline" to tagLineInput.text.toString())).addOnSuccessListener {
+                userRef.child("tagline").setValue(tagLineInput.text.toString().trimEnd()).addOnSuccessListener {
 
-                    userRef.updateChildren(mapOf("image" to imageUri)).addOnSuccessListener {
-
+                    userRef.child("image").setValue(imageUri).addOnSuccessListener {
 
                         val userStaxRef = FirebaseDatabase.getInstance().getReference("/users/${user.uid}/stax/")
 
-                        userStaxRef.setValue(mapOf("instagram" to userInstagramInput.text.toString()))
+                        userStaxRef.child("instagram").setValue(userInstagramInput.text.toString().trimEnd())
                             .addOnSuccessListener {
 
                                 userRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -152,19 +141,33 @@ class EditProfileFragment : Fragment() {
 
                                         val activity = activity as MainActivity
 
-                                        activity.fm.beginTransaction().detach(activity.profileLoggedInUserFragment).attach(activity.profileLoggedInUserFragment).commit()
+                                        activity.fm.beginTransaction().detach(activity.profileLoggedInUserFragment)
+                                            .attach(activity.profileLoggedInUserFragment).commit()
 
                                         activity.switchVisibility(0)
 
+                                        saveButton.isClickable = true
+                                        edit_profile_loading.visibility = View.GONE
                                     }
 
                                 })
+                            }.addOnFailureListener {
+                                saveButton.isClickable = true
+                                edit_profile_loading.visibility = View.GONE
                             }
 
-
+                    }.addOnFailureListener {
+                        saveButton.isClickable = true
+                        edit_profile_loading.visibility = View.GONE
                     }
 
+                }.addOnFailureListener {
+                    saveButton.isClickable = true
+                    edit_profile_loading.visibility = View.GONE
                 }
+            }.addOnFailureListener {
+                saveButton.isClickable = true
+                edit_profile_loading.visibility = View.GONE
             }
         } else {
             Toast.makeText(this.context, "Name can't be less than 2 letters", Toast.LENGTH_LONG).show()
@@ -198,7 +201,6 @@ class EditProfileFragment : Fragment() {
 
         } else {
             performUpdateProfile(currentImageUri)
-
         }
 
 
@@ -210,7 +212,8 @@ class EditProfileFragment : Fragment() {
         val userInstagramRef = FirebaseDatabase.getInstance().getReference("/users/${user.uid}/stax/instagram")
 
 
-        Glide.with(this).load(user.image).into(userImage)
+        Glide.with(this).load(if(user.image.isNotEmpty()){user.image}else{
+            R.drawable.user_profile}).into(userImage)
         tagLineInput.setText(user.tagline)
         userNameInput.setText(user.name)
 
@@ -220,7 +223,11 @@ class EditProfileFragment : Fragment() {
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                userInstagramInput.setText(p0.value.toString())
+                val instagramHandle = p0.value.toString()
+                if (instagramHandle == "null") {
+                    userInstagramInput.setText("")
+                } else
+                    userInstagramInput.setText(instagramHandle)
             }
 
 

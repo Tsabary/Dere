@@ -6,11 +6,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.RecyclerView
 import co.getdere.MainActivity
-import co.getdere.models.Notification
+import co.getdere.models.NotificationBoard
 import co.getdere.models.Question
 import co.getdere.models.Users
 import co.getdere.R
@@ -23,12 +23,20 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.board_notification_single_row.view.*
+import kotlinx.android.synthetic.main.board_toolbar.*
+import kotlinx.android.synthetic.main.fragment_notifications_feed.*
+import lt.neworld.spanner.Spanner
+import lt.neworld.spanner.Spans
+import org.ocpsoft.prettytime.PrettyTime
+import java.util.*
 
 class BoardNotificationsFragment : Fragment() {
 
     val notificationsRecyclerAdapter = GroupAdapter<ViewHolder>()
 
     val uid = FirebaseAuth.getInstance().uid
+    val refBoardNotifications =
+        FirebaseDatabase.getInstance().getReference("/users/$uid/notifications/board")
 
     lateinit var sharedViewModelQuestion: SharedViewModelQuestion
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
@@ -46,55 +54,106 @@ class BoardNotificationsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_board_notifications, container, false)
+    ): View? = inflater.inflate(R.layout.fragment_notifications_board, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity!!.title = "Notifications"
+        val boardNotificationBadge = board_toolbar_notifications_badge
+        val activity = activity as MainActivity
 
-        notificationsRecyclerAdapter.clear()
+        activity.boardNotificationsCount.observe(this, androidx.lifecycle.Observer {
+            it?.let { notCount ->
+                boardNotificationBadge.setNumber(notCount)
+            }
+        })
 
-        val notificationsRecycler = view.findViewById<RecyclerView>(R.id.board_notifications_recycler)
+        notifications_swipe_refresh.setOnRefreshListener {
+            listenToNotifications()
+            notifications_swipe_refresh.isRefreshing = false
+        }
+
+        val notificationsRecycler = notifications_recycler
         val notificationRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         notificationsRecycler.adapter = notificationsRecyclerAdapter
         notificationsRecycler.layoutManager = notificationRecyclerLayoutManager
 
+        val boardNotificationIcon = board_toolbar_notifications_icon
+        val boardSavedQuestionIcon = board_toolbar_saved_questions_icon
 
-        val refBoardNotifications =
-            FirebaseDatabase.getInstance().getReference("/users/$uid/notifications/board")
+        listenToNotifications()
 
-        refBoardNotifications.addChildEventListener(object : ChildEventListener {
+        boardNotificationIcon.setImageResource(
+            R.drawable.notification_bell_active
+        )
 
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+        boardNotificationIcon.setOnClickListener {
+            listenToNotifications()
+        }
 
-                val notification = p0.getValue(Notification::class.java)
+        boardNotificationBadge.setOnClickListener {
+            listenToNotifications()
+        }
 
-                if (notification != null) {
-                    notificationsRecyclerAdapter.add(SingleBoardNotification(notification))
+        boardSavedQuestionIcon.setOnClickListener {
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.savedQuestionFragment).commit()
+            activity.subActive = activity.savedQuestionFragment
+        }
+
+
+//        refBoardNotifications.addChildEventListener(object : ChildEventListener{
+//            override fun onCancelled(p0: DatabaseError) {
+//            }
+//
+//            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+//            }
+//
+//            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+//            }
+//
+//            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+//                listenToNotifications()
+//            }
+//
+//            override fun onChildRemoved(p0: DataSnapshot) {
+//                listenToNotifications()
+//            }
+//        })
+
+        notifications_mark_all_as_read.setOnClickListener {
+            refBoardNotifications.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
+
+                    var iterations = 0
+                    val childrenCount = p0.childrenCount.toInt()
+
+                    for (i in p0.children) {
+                        val notificationsRef =
+                            FirebaseDatabase.getInstance()
+                                .getReference("/users/$uid/notifications/board/${i.key}/seen")
+                        notificationsRef.setValue(1)
+                        iterations++
+                        if (iterations == childrenCount) {
+                            notificationsRecyclerAdapter.clear()
+                            listenToNotifications()
+                        }
+                    }
                 }
-            }
 
-            override fun onCancelled(p0: DatabaseError) {
-            }
+                override fun onCancelled(p0: DatabaseError) {}
 
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
+            })
+        }
 
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
-        })
 
 
         notificationsRecyclerAdapter.setOnItemClickListener { item, _ ->
 
             val row = item as SingleBoardNotification
 
-            val refQuestionId = FirebaseDatabase.getInstance().getReference("/questions/${row.notification.mainPostId}/main/body")
+            val refQuestionId =
+                FirebaseDatabase.getInstance().getReference("/questions/${row.notification.mainPostId}/main/body")
 
             refQuestionId.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
@@ -110,7 +169,8 @@ class BoardNotificationsFragment : Fragment() {
 
                         val activity = activity as MainActivity
 
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment).commit()
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
+                            .commit()
                         activity.subActive = activity.openedQuestionFragment
 
                         val refRandomUser =
@@ -123,33 +183,174 @@ class BoardNotificationsFragment : Fragment() {
                             override fun onDataChange(p0: DataSnapshot) {
                                 val randomUser = p0.getValue(Users::class.java)
 
-                                if (randomUser != null){
+                                if (randomUser != null) {
                                     sharedViewModelRandomUser.randomUserObject.postValue(randomUser)
-//
-//                                    val action =
-//                                        BoardNotificationsFragmentDirections.actionDestinationBoardNotificationsToDestinationQuestionOpened()
-//                                    findNavController().navigate(action)
 
                                 }
                             }
                         })
                     }
                 }
-
             })
-
         }
+    }
 
+    fun listenToNotifications() {
+        notificationsRecyclerAdapter.clear()
+
+        val refBoardNotificationsByTime =
+            FirebaseDatabase.getInstance().getReference("/users/$uid/notifications/board").orderByChild("timestamp")
+
+        refBoardNotificationsByTime.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
+
+                var boardNotCount = 0
+
+                for (i in p0.children) {
+                    val notification = i.getValue(NotificationBoard::class.java)
+
+                    if (notification != null) {
+
+                        if (notification.seen == 0) {
+                            boardNotCount++
+                        }
+
+                        (activity as MainActivity).boardNotificationsCount.postValue(boardNotCount)
+
+                        notificationsRecyclerAdapter.add(
+                            SingleBoardNotification(
+                                notification,
+                                activity as MainActivity
+                            )
+                        )
+                    }
+                }
+            }
+
+            override fun onCancelled(p0: DatabaseError) {
+            }
+        })
     }
 }
 
 
-class SingleBoardNotification(val notification: Notification) : Item<ViewHolder>() {
+class SingleBoardNotification(val notification: NotificationBoard, val activity: MainActivity) : Item<ViewHolder>() {
     override fun getLayout(): Int {
         return R.layout.board_notification_single_row
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
+
+        val notificationBox = viewHolder.itemView.board_notification_box
+
+        viewHolder.itemView.board_notification_timestamp.text = PrettyTime().format(Date(notification.timestamp))
+
+
+        activity.let {
+            val sharedViewModelQuestion = ViewModelProviders.of(it).get(SharedViewModelQuestion::class.java)
+            val sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
+
+
+            viewHolder.itemView.board_notification_initiator_image.setOnClickListener {
+                val randomUserRef =
+                    FirebaseDatabase.getInstance().getReference("/users/${notification.initiatorId}/profile")
+                randomUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
+                        activity.subFm.beginTransaction().hide(activity.subActive)
+                            .show(activity.profileRandomUserFragment).commit()
+                        activity.subActive = activity.profileRandomUserFragment
+                        activity.isBoardNotificationsActive = true
+                    }
+
+                })
+            }
+
+
+            viewHolder.itemView.setOnClickListener {
+
+                val uid = FirebaseAuth.getInstance().uid
+
+                val refQuestionId =
+                    FirebaseDatabase.getInstance().getReference("/questions/${notification.mainPostId}/main/body")
+
+                refQuestionId.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
+
+                    override fun onDataChange(p0: DataSnapshot) {
+
+                        val question = p0.getValue(Question::class.java)
+
+                        if (question != null) {
+
+                            sharedViewModelQuestion.questionObject.postValue(question)
+
+                            val refRandomUser =
+                                FirebaseDatabase.getInstance().getReference("/users/${question.author}/profile")
+
+                            refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onCancelled(p0: DatabaseError) {
+                                }
+
+                                override fun onDataChange(p0: DataSnapshot) {
+                                    val randomUser = p0.getValue(Users::class.java)
+
+                                    if (randomUser != null) {
+                                        sharedViewModelRandomUser.randomUserObject.postValue(randomUser)
+
+                                        val notificationRef = FirebaseDatabase.getInstance()
+                                            .getReference("/users/$uid/notifications/board/${notification.mainPostId}${notification.specificPostId}${notification.initiatorId}${notification.scenarioType}/seen")
+                                        notificationRef.setValue(1).addOnSuccessListener {
+
+                                            activity.boardNotificationsFragment.listenToNotifications()
+
+//                                        notificationBox.setBackgroundColor(
+//                                            ContextCompat.getColor(
+//                                                viewHolder.root.context,
+//                                                R.color.white
+//                                            )
+//                                        )
+
+                                            activity.subFm.beginTransaction().hide(activity.subActive)
+                                                .show(activity.openedQuestionFragment)
+                                                .commit()
+                                            activity.subActive = activity.openedQuestionFragment
+
+
+                                        }
+                                    }
+                                }
+                            })
+                        }
+                    }
+                })
+            }
+
+        }
+
+        if (notification.seen == 0) {
+            notificationBox.setBackgroundColor(ContextCompat.getColor(viewHolder.root.context, R.color.green50))
+        } else {
+            notificationBox.setBackgroundColor(ContextCompat.getColor(viewHolder.root.context, R.color.white))
+        }
+
+        if (notification.scenarioType == 4) {
+            Glide.with(viewHolder.root.context).load(R.drawable.user_profile)
+                .into(viewHolder.itemView.board_notification_initiator_image)
+        } else {
+            Glide.with(viewHolder.root.context).load(
+                if (notification.initiatorImage.isNotEmpty()) {
+                    notification.initiatorImage
+                } else {
+                    R.drawable.user_profile
+                }
+            )
+                .into(viewHolder.itemView.board_notification_initiator_image)
+        }
 
         val refQuestion = FirebaseDatabase.getInstance().getReference("/questions/${notification.mainPostId}/main/body")
 
@@ -163,156 +364,105 @@ class SingleBoardNotification(val notification: Notification) : Item<ViewHolder>
 
                 if (question != null) {
 
+//                    inflateInitiatorImage(viewHolder, notification.scenarioType)
 
-                    when (notification.scenarioType){
+
+                    viewHolder.itemView.board_notification_content.text = when (notification.scenarioType) {
 
                         0 -> {
-                            val notificationText =
-                                "${notification.initiatorName} upvoted your question ${question.title}"
-
-                            viewHolder.itemView.board_notification_content.text = notificationText
-
-                            inflateInitiatorImage(viewHolder, 1)
+                            Spanner()
+                                .append(notification.initiatorName)
+                                .append(" upvoted your question ", Spans.font("roboto_medium"))
+                                .append(question.title)
                         }
 
                         2 -> {
-                            val text =
-                                "${notification.initiatorName} upvoted your answer on the question ${question.title}"
-
-                            viewHolder.itemView.board_notification_content.text = text
-
-                            inflateInitiatorImage(viewHolder, 1)
+                            Spanner()
+                                .append(notification.initiatorName)
+                                .append(" upvoted your answer on the question ", Spans.font("roboto_medium"))
+                                .append(question.title)
                         }
 
                         4 -> {
-                            if (notification.mainPostId == notification.specificPostId){
-                                val text =
-                                    "Someone downvoted your question ${question.title}"
-
-                                viewHolder.itemView.board_notification_content.text = text
-                                inflateInitiatorImage(viewHolder, 0)
-
+                            if (notification.mainPostId == notification.specificPostId) {
+                                Spanner()
+                                    .append("Someone")
+                                    .append(" downvoted your question ", Spans.font("roboto_medium"))
+                                    .append(question.title)
                             } else {
-                                val text =
-                                    "Someone downvoted your answer to the question ${question.title}"
-
-                                viewHolder.itemView.board_notification_content.text = text
-                                inflateInitiatorImage(viewHolder, 0)
+                                Spanner()
+                                    .append("Someone")
+                                    .append(" downvoted your answer to the question ", Spans.font("roboto_medium"))
+                                    .append(question.title)
                             }
                         }
 
                         6 -> {
-                            val text =
-                                "${notification.initiatorName} answered your question ${question.title}"
 
-                            viewHolder.itemView.board_notification_content.text = text
-                            inflateInitiatorImage(viewHolder, 1)
+                            Spanner()
+                                .append(notification.initiatorName)
+                                .append(" answered your question ", Spans.font("roboto_medium"))
+                                .append(question.title)
                         }
 
                         10 -> {
-                            val notificationText =
-                                "${notification.initiatorName} saved your question ${question.title}"
-
-                            viewHolder.itemView.board_notification_content.text = notificationText
-
-                            inflateInitiatorImage(viewHolder, 1)
-
+                            Spanner()
+                                .append(notification.initiatorName)
+                                .append(" saved your question ", Spans.font("roboto_medium"))
+                                .append(question.title)
                         }
 
                         18 -> {
-                            val notificationText =
-                                "${notification.initiatorName} commented on your answer to the question ${question.title}"
-
-                            viewHolder.itemView.board_notification_content.text = notificationText
-
-                            inflateInitiatorImage(viewHolder, 1)
-
+                            Spanner()
+                                .append(notification.initiatorName)
+                                .append(" commented on your answer to the question ", Spans.font("roboto_medium"))
+                                .append(question.title)
                         }
-
-
+                        else -> "NotificationBoard failed to load"
                     }
 
 
+                    /*
 
-                        /*
+                    1 : question upvoted
+                    3 : answer upvoted
+                    4 : question or answer downvoted
+                    10 : question saved
 
-                        1 : question upvoted
-                        3 : answer upvoted
-                        4 : question or answer downvoted
-                        10 : question saved
-
-                         */
-
-
-
-
-
-
-
-//                        val myTypeface = Typeface.create(
-//                            ResourcesCompat.getFont(viewHolder.root.context, R.font.open_sans_semibold),
-//                            Typeface.BOLD)
-//
-//                        val string = SpannableString("${notification.initiatorName} has upvoted your answer on the question ${question.title}")
-//                        string.setSpan(TypefaceSpan(myTypeface), 10, 18, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-
-//                        string.setSpan(TypefaceSpan("monospace"), 19, 22, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-
-
-
-//                        val notificationText =
-//                            SpannableStringBuilder("${notification.initiatorName} has upvoted your answer on the question ${question.title}")
-//
-//                        val notText = Spanner("${notification.initiatorName} has upvoted your answer on the question ${question.title}")
-//                            .append(notification.initiatorName)
-//                            .append(" has upvoted your answer on the question ", sizeDP(45))
-//                            .append(question.title)
-
-//                        notificationText.setSpan(android.text.style.TypefaceSpan(R.font.open_sans_bold))
-
-
-
-
-
-
+                     */
                 }
-
             }
-
         })
     }
 
-    private fun inflateInitiatorImage(viewHolder : ViewHolder, case : Int){
-
-        if (case == 1){
-            val refInitiator = FirebaseDatabase.getInstance().getReference("/users/${notification.initiatorId}/profile")
-
-            refInitiator.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-
-                }
-
-                override fun onDataChange(p0: DataSnapshot) {
-
-                    val user = p0.getValue(Users::class.java)
-
-                    if (user != null) {
-                        Glide.with(viewHolder.root.context).load(user.image)
-                            .into(viewHolder.itemView.board_notification_initiator_image)
-
-                    }
-
-                }
-
-            })
-        } else {
-            Glide.with(viewHolder.root.context).load(R.drawable.user_profile)
-                .into(viewHolder.itemView.board_notification_initiator_image)
-        }
-
-
-
-    }
+//    private fun inflateInitiatorImage(viewHolder: ViewHolder, case: Int) {
+//
+//        if (case == 4) {
+//            Glide.with(viewHolder.root.context).load(R.drawable.user_profile)
+//                .into(viewHolder.itemView.board_notification_initiator_image)
+//        } else {
+//            val refInitiator = FirebaseDatabase.getInstance().getReference("/users/${notification.initiatorId}/profile")
+//
+//            refInitiator.addListenerForSingleValueEvent(object : ValueEventListener {
+//                override fun onCancelled(p0: DatabaseError) {
+//                }
+//
+//                override fun onDataChange(p0: DataSnapshot) {
+//
+//                    val user = p0.getValue(Users::class.java)
+//
+//                    if (user != null) {
+//                        Glide.with(viewHolder.root.context).load(
+//                            if (user.image.isNotEmpty()) {
+//                                user.image
+//                            } else {
+//                                R.drawable.user_profile
+//                            }
+//                        )
+//                            .into(viewHolder.itemView.board_notification_initiator_image)
+//                    }
+//                }
+//            })
+//        }
+//    }
 }

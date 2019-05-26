@@ -1,10 +1,15 @@
 package co.getdere.fragments
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -12,13 +17,15 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.NonNull
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -27,6 +34,7 @@ import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
+import co.getdere.models.Users
 import co.getdere.otherClasses.CustomMapView
 import co.getdere.otherClasses.MyCircleProgressBar
 import co.getdere.roomclasses.LocalImagePost
@@ -36,25 +44,31 @@ import co.getdere.viewmodels.SharedViewModelTags
 import com.bumptech.glide.Glide
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.location.LocationComponent
 import com.mapbox.mapboxsdk.location.modes.RenderMode
-import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
+import com.mapbox.mapboxsdk.plugins.places.autocomplete.PlaceAutocomplete
+import com.mapbox.mapboxsdk.plugins.places.autocomplete.model.PlaceOptions
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
@@ -63,31 +77,36 @@ import kotlinx.android.synthetic.main.fragment_dark_room_edit_map.*
 import me.echodev.resizer.Resizer
 import org.apache.commons.io.FileUtils
 import java.io.File
-import java.io.FileInputStream
-import java.io.InputStream
-import java.net.URI
 import java.util.*
 
 
 class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
-    lateinit var localImagePost: LocalImagePost
-    lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
+
+    var REQUEST_CODE_AUTOCOMPLETE = 9
+//    val geojsonSourceLayerId: String = "geojsonSourceLayerId"
+//    val symbolIconId = "symbolIconId"
+
+    private lateinit var localImagePost: LocalImagePost
+    private lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
     lateinit var sharedViewModelTags: SharedViewModelTags
 
     private lateinit var localImageViewModel: LocalImageViewModel
 
+    lateinit var currentLocalImagePost: LocalImagePost
 
-    val tagsFiltredAdapter = GroupAdapter<ViewHolder>()
+    val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
     lateinit var imageChipGroup: ChipGroup
-    val tagsRef = FirebaseDatabase.getInstance().getReference("/tags")
+    private val tagsRef = FirebaseDatabase.getInstance().getReference("/tags")
 
     lateinit var imageLocationInput: TextView
-    lateinit var imageUrl: TextView
+    lateinit var imageUrl: EditText
     var imageTagsList: MutableList<String> = mutableListOf()
     var imagePrivacy = false
+    lateinit var imageTagsInput: EditText
 
     lateinit var progressBar: MyCircleProgressBar
+    lateinit var uploadBackground: ConstraintLayout
     private lateinit var shareButton: TextView
 
     private var mapView: CustomMapView? = null
@@ -99,6 +118,20 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     var imageLat = 0.0
     var imageLong = 0.0
 
+    private lateinit var infoActiveButton: ImageButton
+    private lateinit var infoUnactiveButton: ImageButton
+    private lateinit var tagsActiveButton: ImageButton
+    private lateinit var tagsUnactiveButton: ImageButton
+    private lateinit var urlActiveButton: ImageButton
+    private lateinit var urlUnactiveButton: ImageButton
+
+    lateinit var infoContainer: ConstraintLayout
+    lateinit var tagsContainer: ConstraintLayout
+    lateinit var urlContainer: ConstraintLayout
+
+    lateinit var currentUser: Users
+
+    lateinit var locationComponent: LocationComponent
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -116,15 +149,10 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
                 val tagName = p0.key.toString()
-
                 val count = p0.childrenCount.toInt()
-
                 tags.add(SingleTagForList(tagName, count))
-
                 sharedViewModelTags.tagList = tags
-
             }
 
             override fun onCancelled(p0: DatabaseError) {
@@ -164,135 +192,219 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val imageVertical = dark_room_edit_image_vertical
-        val imageHorizontal = dark_room_edit_image_horizontal
+        val activity = activity as CameraActivity
+
+        val imageView = dark_room_edit_image_horizontal
         val addTagButton = dark_room_edit_add_tag_button
-        val imageTagsInput = dark_room_edit_tag_input
+        imageTagsInput = dark_room_edit_tag_input
         imageChipGroup = dark_room_edit_chip_group
         imageLocationInput = dark_room_edit_location_input
         imageUrl = dark_room_edit_url
 
         mapView = dark_room_edit_mapview
+        val mapContainer = dark_room_edit_map_include
+
+        val currentUserName = dark_room_edit_author_name
+        val currentUserPhoto = dark_room_edit_author_image
+
+        val uid = FirebaseAuth.getInstance().uid
+        val userRef = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
+        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                currentUser = p0.getValue(Users::class.java)!!
+                currentUserName.text = currentUser.name
+                Glide.with(activity).load(currentUser.image).into(currentUserPhoto)
+            }
+        })
+
 
         var symbolOptions: SymbolOptions
 
-        val removeButton = dark_room_edit_remove
 
-        val deleteMessage = dark_room_edit_delete_message
-        val deleteButton = dark_room_edit_delete_remove_button
+        val options = dark_room_edit_options
+        val optionsContainer = dark_room_edit_options_background
+
+        val editDeleteContainer = dark_room_edit_options_edit_delete
+        val deleteButton = dark_room_edit_delete
+        val saveButton = dark_room_edit_save
+
+        val deleteContainer = dark_room_edit_options_delete_container
+        val deleteRemoveButton = dark_room_edit_delete_remove_button
         val cancelButton = dark_room_edit_delete_cancel_button
 
-        val setLocation = dark_room_edit_set_location
+        shareButton = dark_room_edit_share
 
         val focus = dark_room_edit_map_focus
+        val pinAction = dark_room_edit_map_pin
+        //buttons
+        infoActiveButton = dark_room_edit_info_button_active
+        infoUnactiveButton = dark_room_edit_info_button_unactive
+        tagsActiveButton = dark_room_edit_tags_button_active
+        tagsUnactiveButton = dark_room_edit_tags_button_unactive
+        urlActiveButton = dark_room_edit_url_button_active
+        urlUnactiveButton = dark_room_edit_url_button_unactive
 
+        //containers
+        infoContainer = dark_room_edit_information_container
+        tagsContainer = dark_room_edit_tags_container
+        urlContainer = dark_room_edit_url_container
 
+        options.setOnClickListener {
+            optionsContainer.visibility = View.VISIBLE
+        }
 
+        optionsContainer.setOnClickListener {
+            optionsContainer.visibility = View.GONE
+        }
+
+        infoUnactiveButton.setOnClickListener {
+            makeInfoActive()
+        }
+
+        tagsUnactiveButton.setOnClickListener {
+            makeTagsActive()
+        }
+
+        urlUnactiveButton.setOnClickListener {
+            makeUrlActive()
+        }
 
         focus.setOnClickListener {
-            panToCurrentLocation(activity as CameraActivity, myMapboxMap!!)
+            panToCurrentLocation(activity, myMapboxMap!!)
         }
 
 
-        removeButton.setOnClickListener {
-
-            removeButton.visibility = View.GONE
-
-            deleteMessage.visibility = View.VISIBLE
-            deleteButton.visibility = View.VISIBLE
-            cancelButton.visibility = View.VISIBLE
+        deleteButton.setOnClickListener {
+            deleteContainer.visibility = View.VISIBLE
+            editDeleteContainer.visibility = View.GONE
         }
 
         cancelButton.setOnClickListener {
-
-            removeButton.visibility = View.VISIBLE
-
-            deleteMessage.visibility = View.GONE
-            deleteButton.visibility = View.GONE
-            cancelButton.visibility = View.GONE
+            editDeleteContainer.visibility = View.VISIBLE
+            deleteContainer.visibility = View.GONE
         }
 
-        deleteButton.setOnClickListener {
+        deleteRemoveButton.setOnClickListener {
             localImageViewModel.delete(localImagePost)
+            activity.subFm.beginTransaction()
+                .remove(activity.darkRoomEditFragment).commit()
+            activity.switchVisibility(0)
         }
 
+        saveButton.setOnClickListener {
 
-        val saveButton = view.findViewById<TextView>(R.id.dark_room_edit_save)
-        shareButton = dark_room_edit_share
+            val locationInput = imageLocationInput.text.toString()
+            val url = imageUrl.text.toString()
+
+            val updatedImage = LocalImagePost(
+                localImagePost.timestamp,
+                imageLong,
+                imageLat,
+                localImagePost.imageUri,
+                locationInput,
+                url,
+                localImagePost.verified
+            )
+
+            localImageViewModel.update(updatedImage).invokeOnCompletion {
+                Toast.makeText(this.context, "Photo details saved successfully", Toast.LENGTH_LONG).show()
+            }
+
+            if (currentLocalImagePost != updatedImage) {
+                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                firebaseAnalytics.logEvent("local_image_updated", null)
+            }
+        }
+
 
         progressBar = dark_room_edit_progress_bar
+        uploadBackground = dark_room_edit_white_background
+
+
+        mapView?.getMapAsync { mapboxMap ->
+            mapboxMap.setStyle(Style.LIGHT) { style ->
+
+                myMapboxMap = mapboxMap
+                myStyle = style
+
+                val geoJsonOptions = GeoJsonOptions().withTolerance(0.4f)
+                val symbolManager = SymbolManager(mapView!!, myMapboxMap!!, myStyle, null, geoJsonOptions)
+
+                symbolManager.iconAllowOverlap = true
+
+
+                style.addImage(
+                    DERE_PIN,
+                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map))!!
+                )
+//
+//                style.addImage(
+//                    symbolIconId, BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.facebook_logo))!!
+//                    )
+
+
+                initSearchFab()
+
+//                setUpSource(style)
+
+//                setupLayer(style)
+
+
+                sharedViewModelLocalImagePost.sharedImagePostObject.observe(this, Observer {
+                    it?.let { localImageObject ->
+
+
+                        currentLocalImagePost = localImageObject
+
+                        Glide.with(this).load(localImageObject.imageUri).into(imageView)
+                        localImagePost = localImageObject
+
+                        imageLocationInput.text = localImageObject.details
+                        imageUrl.setText(localImageObject.url)
+                        imageLat = localImageObject.locationLat
+                        imageLong = localImageObject.locationLong
+
+
+                        dark_room_edit_privacy_text.text = getString(R.string.public_text)
+
+                        dark_room_edit_privacy_container.setOnClickListener {
+
+                            if (dark_room_edit_privacy_text.text == "private") {
+                                dark_room_edit_privacy_text.text = getString(R.string.public_text)
+                                imagePrivacy = false
+                            } else {
+                                dark_room_edit_privacy_text.text = getString(R.string.private_text)
+                                imagePrivacy = true
+                            }
+                        }
 
 
 
+                        if (localImagePost.verified) {
+                            mapContainer.visibility = View.GONE
+                        } else {
+                            mapContainer.visibility = View.VISIBLE
+                        }
 
-        sharedViewModelLocalImagePost.sharedImagePostObject.observe(this, Observer {
-            it?.let { localImageObject ->
-                Glide.with(this).load(localImageObject.imageUri).into(imageHorizontal)
-                localImagePost = localImageObject
-
-                imageLocationInput.text = localImageObject.details
-                imageUrl.text = localImageObject.url
-                imageLat = localImageObject.locationLat
-                imageLong = localImageObject.locationLong
-
-                if (!localImagePost.verified) {
-                    mapView!!.visibility = View.VISIBLE
-                }
-
-                mapView?.getMapAsync { mapboxMap ->
-                    mapboxMap.setStyle(Style.LIGHT) { style ->
-
-                        myMapboxMap = mapboxMap
-                        myStyle = style
-
-                        val geoJsonOptions = GeoJsonOptions().withTolerance(0.4f)
-                        val symbolManager = SymbolManager(mapView!!, myMapboxMap!!, myStyle, null, geoJsonOptions)
-
-                        symbolManager.iconAllowOverlap = true
-
+                        symbolManager.deleteAll()
                         symbolOptions = SymbolOptions()
                             .withLatLng(LatLng(imageLat, imageLong))
                             .withIconImage(DERE_PIN)
-                            .withIconSize(1.3f)
+                            .withIconSize(1f)
                             .withZIndex(10)
                             .withDraggable(false)
 
 
                         symbolManager.create(symbolOptions)
 
-                        setLocation.setOnClickListener {
-                            symbolManager.deleteAll()
-
-
-                            symbolOptions = SymbolOptions()
-                                .withLatLng(
-                                    LatLng(
-                                        mapboxMap.cameraPosition.target.latitude,
-                                        mapboxMap.cameraPosition.target.longitude
-                                    )
-                                )
-                                .withIconImage(DERE_PIN)
-                                .withIconSize(1.3f)
-                                .withZIndex(10)
-                                .withDraggable(false)
-
-                            symbolManager.create(symbolOptions)
-
-                            imageLat = mapboxMap.cameraPosition.target.latitude
-                            imageLong = mapboxMap.cameraPosition.target.longitude
-                        }
-
-
-                        val position = CameraPosition.Builder()
-                            .target(LatLng(localImageObject.locationLat, localImageObject.locationLong))
-                            .zoom(10.0)
-                            .build()
-
-                        mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position))
-
-                        val locationComponent = mapboxMap.locationComponent
+                        locationComponent = mapboxMap.locationComponent
 
                         if (PermissionsManager.areLocationPermissionsGranted(this.context)) {
+
+                            panToCurrentLocation(activity, myMapboxMap!!)
 
 
                             // Activate with options
@@ -307,9 +419,6 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                             // Enable to make component visible
                             locationComponent.isLocationComponentEnabled = true
 
-                            // Set the component's camera mode
-//                    locationComponent.cameraMode = CameraMode.TRACKING
-
                             // Set the component's render mode
                             locationComponent.renderMode = RenderMode.COMPASS
 
@@ -320,30 +429,43 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                         }
 
 
-                        style.addImage(
-                            DERE_PIN,
-                            BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.pin_icon))!!,
-                            true
-                        )
 
+
+                        pinAction.setOnClickListener {
+                            symbolManager.deleteAll()
+
+                            symbolOptions = SymbolOptions()
+                                .withLatLng(
+                                    LatLng(
+                                        mapboxMap.cameraPosition.target.latitude,
+                                        mapboxMap.cameraPosition.target.longitude
+                                    )
+                                )
+                                .withIconImage(DERE_PIN)
+                                .withIconSize(1f)
+                                .withZIndex(10)
+                                .withDraggable(false)
+
+                            symbolManager.create(symbolOptions)
+
+                            imageLat = mapboxMap.cameraPosition.target.latitude
+                            imageLong = mapboxMap.cameraPosition.target.longitude
+                        }
                     }
-                }
-
-
+                })
             }
-        })
+        }
 
 
-        val tagSuggestionRecycler =
-            view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.dark_room_edit_tag_recycler)
+        val tagSuggestionRecycler = dark_room_edit_tag_recycler
         val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
-        tagSuggestionRecycler.adapter = tagsFiltredAdapter
+        tagSuggestionRecycler.adapter = tagsFilteredAdapter
 
 
         addTagButton.setOnClickListener {
 
-            if (!imageTagsInput.text.isEmpty()) {
+            if (imageTagsInput.text.isNotEmpty()) {
 
                 var tagsMatchCount = 0
 
@@ -356,7 +478,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                 if (tagsMatchCount == 0) {
                     if (imageChipGroup.childCount < 5) {
-                        onTagSelected(imageTagsInput.text.toString())
+                        onTagSelected(imageTagsInput.text.toString().toLowerCase().trimEnd().replace(" ", "-"))
                         imageTagsInput.text.clear()
                     } else {
                         Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
@@ -372,7 +494,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
 
-        tagsFiltredAdapter.setOnItemClickListener { item, _ ->
+        tagsFilteredAdapter.setOnItemClickListener { item, _ ->
             val row = item as SingleTagSuggestion
             if (imageChipGroup.childCount < 5) {
                 onTagSelected(row.tag.tagString)
@@ -386,9 +508,9 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         imageTagsInput.addTextChangedListener(object : TextWatcher {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                tagsFiltredAdapter.clear()
+                tagsFilteredAdapter.clear()
 
-                val userInput = s.toString()
+                val userInput = s.toString().toLowerCase().replace(" ", "-")
 
                 if (userInput == "") {
                     tagSuggestionRecycler.visibility = View.GONE
@@ -399,25 +521,17 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                     for (t in relevantTags) {
 
-//                        tagSuggestionRecycler.visibility = View.VISIBLE
-//                        tagsFilteredAdapter.add(SingleTagSuggestion(t))
                         var countTagMatches = 0
                         for (i in 0 until imageChipGroup.childCount) {
                             val chip = imageChipGroup.getChildAt(i) as Chip
 
                             if (t.tagString == chip.text.toString()) {
-
                                 countTagMatches += 1
-
                             }
-
                         }
-
-
                         if (countTagMatches == 0) {
                             tagSuggestionRecycler.visibility = View.VISIBLE
-                            tagsFiltredAdapter.add(SingleTagSuggestion(t))
-
+                            tagsFilteredAdapter.add(SingleTagSuggestion(t))
                         }
                     }
                 }
@@ -428,80 +542,121 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
-
         })
-
 
 
 
 
         shareButton.setOnClickListener {
 
-            shareButton.isClickable = false
-
-            for (i in 0 until imageChipGroup.childCount) {
-                val chip = imageChipGroup.getChildAt(i) as Chip
-                imageTagsList.add(chip.text.toString())
+            if (imageChipGroup.childCount > 0) {
+                Log.d("children", "are more than 0")
+                for (i in 0 until imageChipGroup.childCount) {
+                    val chip = imageChipGroup.getChildAt(i) as Chip
+                    imageTagsList.add(chip.text.toString())
+                }
+                progressBar.visibility = View.VISIBLE
+                uploadBackground.visibility = View.VISIBLE
+                uploadPhotoToStorage()
+                closeKeyboard(activity)
+            } else {
+                Toast.makeText(this.context, "Please add at least one tag", Toast.LENGTH_SHORT).show()
+                makeTagsActive()
             }
-
-            uploadPhotoToStorage()
         }
-
-
-        saveButton.setOnClickListener {
-
-            val locationInput = imageLocationInput.text.toString()
-            val url = imageUrl.text.toString()
-
-
-            val updatedImage = LocalImagePost(
-                localImagePost.timestamp,
-                imageLong,
-                imageLat,
-                localImagePost.imageUri,
-                locationInput,
-                url,
-                localImagePost.verified
-            )
-
-            localImageViewModel.update(updatedImage).invokeOnCompletion {
-                //                Toast.makeText(this.context, "Photo details saved successfully", Toast.LENGTH_LONG).show()
-            }
-
-        }
-
     }
 
-    var imageFile : File = File.createTempFile("smallfile","temporary")
+
+    private fun initSearchFab() {
+        dark_room_edit_map_search.setOnClickListener {
+            val intent = PlaceAutocomplete.IntentBuilder()
+                .accessToken(Mapbox.getAccessToken()!!)
+                .placeOptions(
+                    PlaceOptions.builder()
+                        .backgroundColor(Color.parseColor("#EEEEEE"))
+                        .limit(10)
+                        .build(PlaceOptions.MODE_CARDS)
+                )
+                .build(activity)
+            startActivityForResult(intent, REQUEST_CODE_AUTOCOMPLETE)
+        }
+    }
+
+//    private fun setUpSource(@NonNull loadedMapStyle: Style) {
+//        loadedMapStyle.addSource(GeoJsonSource(geojsonSourceLayerId))
+//    }
+
+//    private fun setupLayer(loadedMapStyle: Style) {
+//        loadedMapStyle.addLayer(
+//            SymbolLayer("SYMBOL_LAYER_ID", geojsonSourceLayerId).withProperties(
+//                PropertyFactory.iconImage(symbolIconId),
+//                PropertyFactory.iconOffset(arrayOf(0f, -8f))
+//            )
+//        )
+//    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        closeKeyboard(activity as CameraActivity)
+
+        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_AUTOCOMPLETE) {
+            // Retrieve selected location's CarmenFeature
+            val selectedCarmenFeature = PlaceAutocomplete.getPlace(data!!)
+
+            // Create a new FeatureCollection and add a new Feature to it using selectedCarmenFeature above.
+            // Then retrieve and update the source designated for showing a selected location's symbol layer icon
+
+            if (myMapboxMap != null) {
+                val style = myMapboxMap!!.style
+                if (style != null) {
+//                    val source: GeoJsonSource = style.getSourceAs(geojsonSourceLayerId)!!
+//                    source.setGeoJson(
+//                        FeatureCollection.fromFeatures(
+//                            arrayOf<Feature>(Feature.fromJson(selectedCarmenFeature.toJson()))
+//                        )
+//                    )
+
+                    // Move map camera to the selected location
+                    myMapboxMap!!.animateCamera(
+                        CameraUpdateFactory.newCameraPosition(
+                            CameraPosition.Builder()
+                                .target(
+                                    LatLng(
+                                        (selectedCarmenFeature.geometry() as Point).latitude(),
+                                        (selectedCarmenFeature.geometry() as Point).longitude()
+                                    )
+                                )
+                                .zoom(14.0)
+                                .build()
+                        ), 4000
+                    )
+                }
+            }
+        }
+    }
 
 
     private fun uploadPhotoToStorage() {
-
-        if (localImagePost.verified) {
-            Log.d("verified yes", localImagePost.imageUri)
-        } else {
-            Log.d("verified no", localImagePost.imageUri)
-        }
-
-
 
         progressBar.visibility = View.VISIBLE
         progressBar.progress = 0f
 
         val randomName = UUID.randomUUID().toString()
-        val storagePath = Environment.getExternalStorageDirectory().absolutePath
         val path =
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "Dere"
 
         val refBigImage = FirebaseStorage.getInstance().getReference("/images/feed/$randomName/big")
         val refSmallImage = FirebaseStorage.getInstance().getReference("/images/feed/$randomName/small")
 
-        val myInputStream = activity!!.contentResolver.openInputStream(Uri.parse(localImagePost.imageUri))
+        var imageFile: File = File.createTempFile("ImageFile", "temporary")
 
 
         if (localImagePost.verified) {
             imageFile = File(localImagePost.imageUri)
         } else {
+            val myInputStream =
+                (activity as CameraActivity).contentResolver.openInputStream(Uri.parse(localImagePost.imageUri))
             FileUtils.copyInputStreamToFile(myInputStream, imageFile)
         }
 
@@ -509,7 +664,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         refSmallImage.putFile(
             Uri.fromFile(
                 Resizer(this.context)
-                    .setTargetLength(200)
+                    .setTargetLength(400)
                     .setQuality(100)
                     .setOutputFormat("PNG")
                     .setOutputFilename(randomName + "Small")
@@ -534,7 +689,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
                 refBigImage.putFile(
                     Uri.fromFile(
                         Resizer(this.context)
-                            .setTargetLength(800)
+                            .setTargetLength(1200)
                             .setQuality(100)
                             .setOutputFormat("PNG")
                             .setOutputFilename(randomName + "Big")
@@ -553,8 +708,34 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                         val bigImageUri = bigUri.toString()
 
+                        val imageBitmap = BitmapFactory.decodeFile(imageFile.path)
 
-                        addImageToFirebaseDatabase(bigImageUri, smallImageUri, localImagePost.verified)
+                        val imageHeight: Int = imageBitmap.height
+                        val imageWidth: Int = imageBitmap.width
+
+                        val imageRatio = "$imageWidth:$imageHeight"
+
+                        addImageToFirebaseDatabase(bigImageUri, smallImageUri, localImagePost.verified, imageRatio)
+
+                        val fileBig = File(bigUri.path)
+                        if (fileBig.exists()) {
+                            if (fileBig.delete()) {
+                                Log.d("deleteOperation", "deleted big file")
+                            } else {
+                                Log.d("deleteOperation", "couldn't delete big file")
+                            }
+                        }
+
+                        val fileSmall = File(smallUri.path)
+                        if (fileSmall.exists()) {
+                            if (fileSmall.delete()) {
+                                Log.d("deleteOperation", "deleted big file")
+                            } else {
+                                Log.d("deleteOperation", "couldn't delete big file")
+
+                            }
+                        }
+
 
                     }.addOnFailureListener {
                         uploadFail()
@@ -563,8 +744,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                 }.addOnFailureListener {
                     uploadFail()
-                    Log.d("RegisterActivity", "Failed to upload image to server $it")
-//                    progress.visibility = View.GONE
+                    Log.d("UploadActivity", "Failed to upload image to server $it")
                 }
 
 
@@ -575,32 +755,34 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
         }.addOnFailureListener {
             uploadFail()
-            Log.d("RegisterActivity", "Failed to upload image to server $it")
-//            progress.visibility = View.GONE
-
+            Log.d("UploadActivity", "Failed to upload image to server $it")
         }
     }
 
 
-    private fun addImageToFirebaseDatabase(bigImage: String, smallImage: String, verified : Boolean) {
+    private fun addImageToFirebaseDatabase(bigImage: String, smallImage: String, verified: Boolean, ratio: String) {
 
         val uid = FirebaseAuth.getInstance().uid
         val ref = FirebaseDatabase.getInstance().getReference("/images/").push()
         val imageBodyRef = FirebaseDatabase.getInstance().getReference("/images/${ref.key}/body")
+        val userImagesRef = FirebaseDatabase.getInstance().getReference("/users/$uid/images/${ref.key}")
 
         val newImage = Images(
             ref.key!!,
             bigImage,
             smallImage,
-            false,
+            imagePrivacy,
             uid!!,
             imageUrl.text.toString(),
             imageLocationInput.text.toString(),
-            mutableListOf(localImagePost.locationLat, localImagePost.locationLong),
+            mutableListOf(imageLat, imageLong),
             localImagePost.timestamp,
             System.currentTimeMillis(),
             imageTagsList,
-            verified
+            verified,
+            System.currentTimeMillis(),
+            ratio,
+            0
         )
 
 
@@ -608,29 +790,47 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
             .addOnSuccessListener {
                 progressBar.progress = 85f
                 Log.d("imageToDatabase", "image saved to feed successfully: ${ref.key}")
-                val refToUsersDatabase = FirebaseDatabase.getInstance().getReference("/users/$uid/images")
 
-                refToUsersDatabase.setValue(mapOf(ref.key to true))
-                    .addOnSuccessListener {
-                        progressBar.progress = 95f
-                        Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
 
-                        for (t in imageTagsList) {
-                            val refTag = FirebaseDatabase.getInstance().getReference("/tags/$t/${ref.key}")
-                            val refUserTags = FirebaseDatabase.getInstance().getReference("users/$uid/interests/$t")
 
-                            refTag.setValue("image")
-                            refUserTags.setValue(true)
-                            progressBar.progress = 100f
-                        }
+                userImagesRef.setValue(true).addOnSuccessListener {
 
-                        localImageViewModel.delete(localImagePost)
+                    progressBar.progress = 95f
+                    Log.d("imageToDatabaseByUser", "image saved to byUser successfully: ${ref.key}")
 
+                    for (t in imageTagsList) {
+                        val refTag = FirebaseDatabase.getInstance().getReference("/tags/$t/${ref.key}")
+                        val refUserTags = FirebaseDatabase.getInstance().getReference("users/$uid/interests/$t")
+
+                        refTag.setValue("image")
+                        refUserTags.setValue(true)
+                        progressBar.progress = 100f
+                    }
+
+
+                    localImageViewModel.delete(localImagePost).invokeOnCompletion {
+
+
+                        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                        firebaseAnalytics.logEvent(
+                            if (newImage.verified) {
+                                "image_added_verified"
+                            } else {
+                                "image_added_unverified"
+                            }, null
+                        )
 
                         val backToFeed = Intent((activity as CameraActivity), MainActivity::class.java)
                         startActivity(backToFeed)
 
+                        val activity = activity as CameraActivity
+                        activity.subFm.beginTransaction()
+                            .remove(activity.darkRoomEditFragment).commit()
                     }
+
+
+                }
+
                     .addOnFailureListener {
                         uploadFail()
                         Log.d("imageToDatabaseByUser", "image did not save to byUser")
@@ -643,8 +843,61 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     }
 
 
+    private fun makeTagsActive() {
+        imageTagsInput.requestFocus()
+
+        infoUnactiveButton.visibility = View.VISIBLE
+        infoActiveButton.visibility = View.GONE
+
+        tagsUnactiveButton.visibility = View.GONE
+        tagsActiveButton.visibility = View.VISIBLE
+
+        urlUnactiveButton.visibility = View.VISIBLE
+        urlActiveButton.visibility = View.GONE
+
+        infoContainer.visibility = View.GONE
+        tagsContainer.visibility = View.VISIBLE
+        urlContainer.visibility = View.GONE
+
+    }
+
+    private fun makeUrlActive() {
+        imageUrl.requestFocus()
+
+        infoUnactiveButton.visibility = View.VISIBLE
+        infoActiveButton.visibility = View.GONE
+
+        tagsUnactiveButton.visibility = View.VISIBLE
+        tagsActiveButton.visibility = View.GONE
+
+        urlUnactiveButton.visibility = View.GONE
+        urlActiveButton.visibility = View.VISIBLE
+
+        infoContainer.visibility = View.GONE
+        tagsContainer.visibility = View.GONE
+        urlContainer.visibility = View.VISIBLE
+    }
+
+    private fun makeInfoActive() {
+        imageLocationInput.requestFocus()
+        infoUnactiveButton.visibility = View.GONE
+        infoActiveButton.visibility = View.VISIBLE
+
+        tagsUnactiveButton.visibility = View.VISIBLE
+        tagsActiveButton.visibility = View.GONE
+
+        urlUnactiveButton.visibility = View.VISIBLE
+        urlActiveButton.visibility = View.GONE
+
+        infoContainer.visibility = View.VISIBLE
+        tagsContainer.visibility = View.GONE
+        urlContainer.visibility = View.GONE
+    }
+
+
     private fun uploadFail() {
         progressBar.visibility = View.GONE
+        uploadBackground.visibility = View.GONE
         shareButton.isClickable = true
     }
 
@@ -656,6 +909,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         chip.isCheckable = false
         chip.isClickable = false
         chip.setChipBackgroundColorResource(R.color.green700)
+        chip.setCloseIconTintResource(R.color.green200)
         chip.setTextAppearance(R.style.ChipSelectedStyle)
         chip.setOnCloseIconClickListener {
             imageChipGroup.removeView(it)

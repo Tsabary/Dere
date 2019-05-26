@@ -23,6 +23,7 @@ import co.getdere.viewmodels.SharedViewModelRandomUser
 import co.getdere.viewmodels.SharedViewModelTags
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
@@ -32,6 +33,7 @@ import com.tobiasschuerg.prefixsuffix.PrefixSuffixEditText
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.fragment_new_question.*
 import kotlinx.android.synthetic.main.tag_auto_complete.view.*
 
 
@@ -47,7 +49,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
     lateinit var questionChipGroup: ChipGroup
     var tagsList: MutableList<String> = mutableListOf()
     lateinit var questionDetails: EditText
-    lateinit var questionTitle: PrefixSuffixEditText
+    lateinit var questionTitle: EditText
 
 
     override fun onAttach(context: Context) {
@@ -104,28 +106,28 @@ class NewQuestionFragment : Fragment(), DereMethods {
         super.onViewCreated(view, savedInstanceState)
 
 
-        questionTitle = view.findViewById(R.id.new_question_title)
+        questionTitle = new_question_title
         questionTitle.requestFocus()
-        questionDetails = view.findViewById(R.id.new_question_details)
-        val questionButton = view.findViewById<TextView>(R.id.new_question_btn)
-        val questionTagsInput = view.findViewById<EditText>(R.id.new_question_tag_input)
-        val addTagButton = view.findViewById<ImageButton>(R.id.new_question_add_tag_button)
-        questionChipGroup = view.findViewById(R.id.new_question_chip_group)
+        questionDetails = new_question_details
+        val questionButton = new_question_btn
+        val questionTagsInput = new_question_tag_input
+        val addTagButton = new_question_add_tag_button
+        questionChipGroup = new_question_chip_group
 
         questionTitle.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                if (questionTitle.text!!.isEmpty()) {
-                    questionTitle.suffix = ""
-                }
+//                if (questionTitle.text!!.isNotEmpty()) {
+//                    questionTitle.setText("${questionTitle.text}?")
+//                } else {
+//                    questionTitle.setText("")
+//                }
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (questionTitle.text!!.isNotEmpty()) {
-                    questionTitle.suffix = "?"
-                }
+
 
             }
 
@@ -140,7 +142,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
             } else if (questionDetails.text.isEmpty()) {
                 Toast.makeText(this.context, "Please give your question some more details", Toast.LENGTH_SHORT).show()
             } else if (questionChipGroup.childCount == 0) {
-                Toast.makeText(this.context, "Please add at least one tag to your question", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this.context, "Please add at least one tag_unactive to your question", Toast.LENGTH_SHORT).show()
             } else {
 
 
@@ -164,15 +166,10 @@ class NewQuestionFragment : Fragment(), DereMethods {
         }
 
 
-        val tagSuggestionRecycler =
-            view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.new_question_tag_recycler)
+        val tagSuggestionRecycler = new_question_tag_recycler
         val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
         tagSuggestionRecycler.adapter = tagsFilteredAdapter
-
-
-
-        activity!!.title = "New question"
 
 
         questionTagsInput.addTextChangedListener(object : TextWatcher {
@@ -180,7 +177,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 tagsFilteredAdapter.clear()
 
-                val userInput = s.toString()
+                val userInput = s.toString().toLowerCase()
 
                 if (userInput == "") {
                     tagSuggestionRecycler.visibility = View.GONE
@@ -191,32 +188,21 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
                     for (t in relevantTags) {
 
-//                        tagSuggestionRecycler.visibility = View.VISIBLE
-//                        tagsFilteredAdapter.add(SingleTagSuggestion(t))
                         var countTagMatches = 0
                         for (i in 0 until questionChipGroup.childCount) {
                             val chip = questionChipGroup.getChildAt(i) as Chip
 
                             if (t.tagString == chip.text.toString()) {
-
                                 countTagMatches += 1
-
                             }
-
                         }
-
 
                         if (countTagMatches == 0) {
                             tagSuggestionRecycler.visibility = View.VISIBLE
                             tagsFilteredAdapter.add(SingleTagSuggestion(t))
-
                         }
-
-
                     }
-
                 }
-
             }
 
 
@@ -231,7 +217,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
         addTagButton.setOnClickListener {
 
-            if (!questionTagsInput.text.isEmpty()){
+            if (questionTagsInput.text.isNotEmpty()){
 
                 var tagsMatchCount = 0
 
@@ -244,7 +230,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
                 if (tagsMatchCount == 0) {
                     if (questionChipGroup.childCount < 5) {
-                        onTagSelected(questionTagsInput.text.toString())
+                        onTagSelected(questionTagsInput.text.toString().toLowerCase().trimEnd().replace(" ","-"))
                         questionTagsInput.text.clear()
                     } else {
                         Toast.makeText(this.context, "Maximum 5 tags", Toast.LENGTH_LONG).show()
@@ -277,6 +263,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
         chip.isCloseIconVisible = true
         chip.isCheckable = false
         chip.isClickable = false
+        chip.setCloseIconTintResource(R.color.green200)
         chip.setChipBackgroundColorResource(R.color.green700)
         chip.setTextAppearance(R.style.ChipSelectedStyle)
         chip.setOnCloseIconClickListener {
@@ -288,13 +275,6 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
     }
 
-//    override fun onActivityCreated(savedInstanceState: Bundle?) {
-//        super.onActivityCreated(savedInstanceState)
-//
-//        val imm = activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-//        imm.hideSoftInputFromWindow(view!!.windowToken, 0)
-//    }
-
 
     private fun postQuestion(title: String, details: String, tags: MutableList<String>, timestamp: Long) {
 
@@ -304,6 +284,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
         val ref = FirebaseDatabase.getInstance().getReference("/questions").push()
         val refQuestionMain = FirebaseDatabase.getInstance().getReference("/questions/${ref.key}/main/body")
+        val refUserQuestion = FirebaseDatabase.getInstance().getReference("/users/$uid/questions/${ref.key}")
 
         val newQuestion = Question(ref.key!!, title, details, tags, timestamp, uid, timestamp)
 
@@ -313,38 +294,35 @@ class NewQuestionFragment : Fragment(), DereMethods {
         refQuestionMain.setValue(newQuestion)
             .addOnSuccessListener {
 
-                for (t in tags) {
-                    val refTag = FirebaseDatabase.getInstance().getReference("/tags/$t/${ref.key}")
-                    val refUserTags = FirebaseDatabase.getInstance().getReference("users/$uid/interests/$t")
+                refUserQuestion.setValue(true).addOnSuccessListener {
+                    for (t in tags) {
+                        val refTag = FirebaseDatabase.getInstance().getReference("/tags/$t/${ref.key}")
+                        val refUserTags = FirebaseDatabase.getInstance().getReference("users/$uid/interests/$t")
 
-                    refTag.setValue("question")
-                    refUserTags.setValue(true)
+                        refTag.setValue("question")
+                        refUserTags.setValue(true)
+                    }
 
-//                    refTag.setValue(mapOf(ref.key!! to true))
+
+
+                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
+                        .commit()
+                    activity.subActive = activity.openedQuestionFragment
+
+                    activity.fm.beginTransaction().detach(activity.boardFragment).commit()
+                    activity.fm.beginTransaction().attach(activity.boardFragment).commit()
+                    activity.fm.beginTransaction().show(activity.boardFragment).commit()
+
+                    questionTitle.text!!.clear()
+                    questionDetails.text.clear()
+                    questionChipGroup.removeAllViews()
+                    tagsList.clear()
+
+                    closeKeyboard(activity)
+
+                    val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                    firebaseAnalytics.logEvent("question_added", null)
                 }
-
-
-
-                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
-                    .commit()
-                activity.subActive = activity.openedQuestionFragment
-
-                activity.fm.beginTransaction().detach(activity.boardFragment).commit()
-                activity.fm.beginTransaction().attach(activity.boardFragment).commit()
-                activity.fm.beginTransaction().show(activity.boardFragment).commit()
-
-                questionTitle.text!!.clear()
-                questionDetails.text.clear()
-                questionChipGroup.removeAllViews()
-                tagsList.clear()
-
-                closeKeyboard(activity)
-
-                Log.d("postQuestionActivity", "Saved question to Firebase Database")
-//                val action = NewQuestionFragmentDirections.actionDestinationNewQuestionToDestinationBoard()
-//                findNavController().navigate(action)
-
-
             }.addOnFailureListener {
                 Log.d("postQuestionActivity", "Failed to save question to database")
             }
@@ -352,7 +330,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
 
     companion object {
-        fun newInstance(): BoardFragment = BoardFragment()
+        fun newInstance(): NewQuestionFragment = NewQuestionFragment()
     }
 
 }

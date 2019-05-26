@@ -2,6 +2,7 @@ package co.getdere.fragments
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color.parseColor
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +11,6 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import co.getdere.CameraActivity
-import co.getdere.R
 import co.getdere.interfaces.DereMethods
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -19,14 +19,35 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.plugins.places.autocomplete.PlaceAutocomplete
+import com.mapbox.mapboxsdk.plugins.places.autocomplete.model.PlaceOptions
 import com.mapbox.mapboxsdk.utils.BitmapUtils
+import kotlinx.android.synthetic.main.fragment_dark_room_edit_map.*
 import kotlinx.android.synthetic.main.fragment_image_map_view.*
+import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.camera.CameraPosition
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
+import com.mapbox.api.geocoding.v5.models.CarmenFeature
+import android.app.Activity
+import android.content.Intent
+import android.graphics.BitmapFactory
+import androidx.annotation.NonNull
+import co.getdere.R
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.Point
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer
+import com.mapbox.mapboxsdk.style.sources.Source
 
 
 class DarkRoomMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
     private val DERE_PIN = "derePin"
-    var myMapboxMap : MapboxMap? = null
+    var myMapboxMap: MapboxMap? = null
+
 
     private var mapView: MapView? = null
     private lateinit var permissionsManager: PermissionsManager
@@ -41,9 +62,9 @@ class DarkRoomMapViewFragment : Fragment(), PermissionsListener, DereMethods {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
 
-        Mapbox.getInstance(activity!!.applicationContext, getString(R.string.mapbox_access_token))
+        Mapbox.getInstance(activity!!.applicationContext, getString(co.getdere.R.string.mapbox_access_token))
 
-        return inflater.inflate(R.layout.fragment_dark_room_edit_map, container, false)
+        return inflater.inflate(co.getdere.R.layout.fragment_dark_room_edit_map, container, false)
     }
 
 
@@ -64,6 +85,7 @@ class DarkRoomMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                 myMapboxMap = mapboxMap
 
+
                 val locationComponent = mapboxMap.locationComponent
 
                 if (PermissionsManager.areLocationPermissionsGranted(this.context)) {
@@ -76,18 +98,18 @@ class DarkRoomMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
                         locationComponent.activateLocationComponent(this.context!!, mapboxMap.style!!)
-                    }
 
-                    // Enable to make component visible
-                    locationComponent.isLocationComponentEnabled = true
+                        // Enable to make component visible
+                        locationComponent.isLocationComponentEnabled = true
 
-                    // Set the component's camera mode
+                        // Set the component's camera mode
 //                    locationComponent.cameraMode = CameraMode.TRACKING
 
-                    // Set the component's render mode
-                    locationComponent.renderMode = RenderMode.COMPASS
+                        // Set the component's render mode
+                        locationComponent.renderMode = RenderMode.COMPASS
 
-                    panToCurrentLocation(activity as CameraActivity, myMapboxMap!!)
+                        panToCurrentLocation(activity as CameraActivity, mapboxMap)
+                    }
 
 
                 } else {
@@ -98,14 +120,14 @@ class DarkRoomMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                 style.addImage(
                     DERE_PIN,
-                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.pin_icon))!!,
-                    true
+                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(co.getdere.R.drawable.location_map))!!
                 )
 
             }
         }
 
     }
+
 
 
     override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {

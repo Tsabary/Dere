@@ -1,6 +1,7 @@
 package co.getdere.fragments
 
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,11 +12,12 @@ import co.getdere.CameraActivity
 import co.getdere.adapters.CameraPagerAdapter
 import co.getdere.R
 import com.google.android.material.tabs.TabLayout
+import kotlinx.android.synthetic.main.fragment_new_photo.*
 
 
 class NewPhotoFragment : Fragment() {
 
-    lateinit var pagerAdapter : CameraPagerAdapter
+    lateinit var pagerAdapter: CameraPagerAdapter
 
 
     override fun onCreateView(
@@ -29,8 +31,10 @@ class NewPhotoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val tabLayout = new_photo_pager_tab_layout
 
-        val viewPager = view.findViewById<ViewPager>(R.id.new_photo_pager_pager)
+
+        val viewPager = new_photo_pager_pager
         pagerAdapter = CameraPagerAdapter(childFragmentManager)
         viewPager.adapter = pagerAdapter
 
@@ -42,32 +46,32 @@ class NewPhotoFragment : Fragment() {
             }
 
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+                viewPagerController(activity, position, tabLayout)
 
             }
+
             override fun onPageSelected(position: Int) {
 
-                when(position){
-
-                    0 -> {
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.photoEditorFragment).commit()
-                        activity.subActive = activity.photoEditorFragment
-                    }
-
-                    1 -> {
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.darkRoomEditFragment).commit()
-                        activity.subActive = activity.darkRoomEditFragment
-                    }
-
-                }
+                viewPagerController(activity, position, tabLayout)
 
             }
 
         })
 
-        val tabLayout = view.findViewById<TabLayout>(R.id.new_photo_pager_tab_layout)
         tabLayout.setupWithViewPager(viewPager)
     }
 
+    private fun viewPagerController(activity: CameraActivity, position : Int, tabLayout: TabLayout){
+        when (position) {
 
+            0 -> {
+            }
+
+            1 -> {
+                tabLayout.setBackgroundColor(Color.parseColor("#FF616161"))
+            }
+
+        }
+    }
 
 }

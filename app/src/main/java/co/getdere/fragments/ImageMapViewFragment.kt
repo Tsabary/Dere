@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProviders
 import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
+import co.getdere.models.Images
 import co.getdere.viewmodels.SharedViewModelImage
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -29,6 +30,7 @@ import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions
+import com.mapbox.mapboxsdk.style.sources.ImageSource
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import kotlinx.android.synthetic.main.fragment_image_map_view.*
 
@@ -36,9 +38,8 @@ import kotlinx.android.synthetic.main.fragment_image_map_view.*
 class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
     private val DERE_PIN = "derePin"
-//    lateinit var imageBitmap : Bitmap
-    var myMapboxMap : MapboxMap? = null
-
+    var myMapboxMap: MapboxMap? = null
+    lateinit var imageObject: Images
 
     private lateinit var sharedViewModelForImage: SharedViewModelImage
 
@@ -76,9 +77,19 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
         mapView = image_map_view
 
         val currentLocationFocus = image_map_focus
+        val imageLocationFocus = image_map_pin
 
         currentLocationFocus.setOnClickListener {
             panToCurrentLocation(activity as MainActivity, myMapboxMap!!)
+        }
+
+        imageLocationFocus.setOnClickListener {
+            val position = CameraPosition.Builder()
+                .target(LatLng(imageObject.location[0], imageObject.location[1]))
+                .zoom(10.0)
+                .build()
+
+            myMapboxMap!!.animateCamera(CameraUpdateFactory.newCameraPosition(position), 3000)
         }
 
 
@@ -117,14 +128,10 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                 }
 
 
-
-
                 style.addImage(
                     DERE_PIN,
-                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.pin_icon))!!,
-                    true
+                    BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map))!!
                 )
-
 
 
                 val geoJsonOptions = GeoJsonOptions().withTolerance(0.4f)
@@ -134,13 +141,14 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                 sharedViewModelForImage.sharedImageObject.observe(this, Observer {
                     it?.let { image ->
 
+                        imageObject = image
 
-
+                        symbolManager.deleteAll()
 
                         val symbolOptions = SymbolOptions()
                             .withLatLng(LatLng(image.location[0], image.location[1]))
                             .withIconImage(DERE_PIN)
-                            .withIconSize(1.3f)
+                            .withIconSize(1f)
                             .withZIndex(10)
                             .withDraggable(false)
 
@@ -151,7 +159,7 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                         val position = CameraPosition.Builder()
                             .target(LatLng(image.location[0], image.location[1]))
-                            .zoom(10.0)
+                            .zoom(5.0)
                             .build()
 
                         mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position))
@@ -173,7 +181,6 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
     override fun onPermissionResult(granted: Boolean) {
         if (granted) {
-//            enableLocation()
         }
     }
 

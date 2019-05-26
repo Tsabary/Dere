@@ -9,26 +9,29 @@
         android:backgroundTint="@color/white">
 
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent">
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-            <androidx.recyclerview.widget.RecyclerView
-                    android:layout_width="0dp"
+            <TextView
+                    android:text="Itineraries"
+                    android:layout_width="80dp"
                     android:layout_height="wrap_content"
-                    app:layout_constraintTop_toBottomOf="@+id/profile_li_bucket_btn"
+                    android:id="@+id/profile_li_itineraries_btn"
+                    android:textStyle="bold"
+                    android:textColor="@color/gray300"
+                    android:fontFamily="@font/roboto_bold"
+                    app:layout_constraintTop_toTopOf="@+id/profile_li_bucket_btn"
+                    app:layout_constraintBottom_toBottomOf="@+id/profile_li_bucket_btn"
+                    app:layout_constraintStart_toEndOf="@+id/profile_li_bucket_btn"
+                    app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    android:id="@+id/profile_li_gallery_buckets"
-                    android:layout_marginTop="24dp"
-                    android:layout_marginBottom="8dp"
-                    android:visibility="gone"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"/>
+                    android:gravity="center"/>
+
+
             <View
                     android:id="@+id/divider5"
                     android:layout_width="0dp"
@@ -40,18 +43,19 @@
                     android:layout_marginTop="24dp"
                     app:layout_constraintTop_toBottomOf="@+id/profile_li_photos_static"/>
             <TextView
-                    android:text="ROLL"
-                    android:layout_width="wrap_content"
+                    android:text="Roll"
+                    android:layout_width="80dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/profile_li_roll_btn"
                     android:textStyle="bold"
                     android:textColor="@color/gray700"
-                    android:fontFamily="@font/open_sans_bold"
+                    android:fontFamily="@font/roboto_bold"
                     app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/divider5"
+                    android:layout_marginTop="24dp"
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintEnd_toStartOf="@+id/profile_li_bucket_btn"
-                    app:layout_constraintTop_toBottomOf="@+id/divider5"
-                    android:layout_marginTop="24dp"/>
+                    android:gravity="center"/>
             <View
                     android:id="@+id/divider"
                     android:layout_width="0dp"
@@ -69,10 +73,10 @@
                     android:elevation="4dp"
                     android:id="@+id/profile_li_image"
                     app:layout_constraintStart_toStartOf="parent"
-                    tools:src="@drawable/no_dread"
                     android:layout_marginTop="32dp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/profile_li_toolbar"/>
+                    app:layout_constraintTop_toBottomOf="@+id/profile_li_toolbar"
+                    android:src="@drawable/user_profile"/>
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -83,7 +87,7 @@
                     android:layout_marginEnd="48dp"
                     app:layout_constraintStart_toStartOf="parent"
                     android:layout_marginStart="48dp"
-                    android:fontFamily="@font/open_sans_semibold"
+                    android:fontFamily="@font/roboto_medium"
                     android:textColor="@color/gray500"
                     tools:text="tagline"
                     android:textAlignment="center"/>
@@ -101,7 +105,8 @@
                     app:layout_constraintTop_toBottomOf="@+id/profile_li_tagline"
                     android:layout_marginEnd="8dp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    android:visibility="gone"/>
+                    android:visibility="gone"
+                    android:contentDescription="inastagram button"/>
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -113,20 +118,23 @@
                     app:layout_constraintTop_toBottomOf="@+id/profile_li_image"
                     app:layout_constraintEnd_toEndOf="@+id/profile_li_image"
                     app:layout_constraintStart_toStartOf="@+id/profile_li_image"
-                    android:fontFamily="@font/open_sans_bold"/>
+                    android:fontFamily="@font/roboto_black"
+                    android:textColor="@color/gray800"/>
             <TextView
-                    android:text="BUCKETS"
-                    android:layout_width="wrap_content"
+                    android:text="Buckets"
+                    android:layout_width="80dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/profile_li_bucket_btn"
                     android:textStyle="bold"
                     android:textColor="@color/gray300"
-                    android:fontFamily="@font/open_sans_bold"
+                    android:fontFamily="@font/roboto_bold"
                     app:layout_constraintTop_toTopOf="@+id/profile_li_roll_btn"
                     app:layout_constraintBottom_toBottomOf="@+id/profile_li_roll_btn"
                     app:layout_constraintStart_toEndOf="@+id/profile_li_roll_btn"
                     app:layout_constraintHorizontal_bias="0.5"
-                    app:layout_constraintEnd_toEndOf="parent"/>
+                    app:layout_constraintEnd_toStartOf="@+id/profile_li_itineraries_btn"
+                    android:gravity="center"/>
+
             <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -137,13 +145,42 @@
                     android:id="@+id/profile_li_gallery_roll"
                     android:layout_marginTop="24dp"
                     android:layout_marginBottom="8dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@+id/profile_li_bucket_btn"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:id="@+id/profile_li_gallery_buckets"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@+id/profile_li_bucket_btn"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:id="@+id/profile_li_gallery_itineraries"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"/>
+
             <TextView
                     android:text="Reputation"
                     android:layout_width="wrap_content"
                     android:layout_height="15dp"
                     android:id="@+id/profile_li_reputation_static"
                     android:textColor="@color/gray500"
-                    android:fontFamily="@font/open_sans_semibold"
+                    android:fontFamily="@font/roboto_medium"
                     android:textSize="11sp"
                     app:layout_constraintTop_toTopOf="@+id/profile_li_photos_static"
                     app:layout_constraintBottom_toBottomOf="@+id/profile_li_photos_static"
@@ -157,15 +194,16 @@
                     app:layout_constraintEnd_toEndOf="@+id/profile_li_reputation_static"
                     app:layout_constraintStart_toStartOf="@+id/profile_li_reputation_static"
                     app:layout_constraintBottom_toBottomOf="@+id/profile_li_photos_count"
-                    android:fontFamily="@font/open_sans_bold"
-                    tools:text="32k"/>
+                    android:fontFamily="@font/roboto_black"
+                    tools:text="32k"
+                    android:textColor="@color/gray800"/>
             <TextView
                     android:text="Photos"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/profile_li_photos_static"
                     android:textSize="11sp"
-                    android:fontFamily="@font/open_sans_semibold"
+                    android:fontFamily="@font/roboto_medium"
                     android:textColor="@color/gray500"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
@@ -179,7 +217,7 @@
                     android:id="@+id/profile_li_followers_static"
                     android:textSize="11sp"
                     android:textColor="@color/gray500"
-                    android:fontFamily="@font/open_sans_semibold"
+                    android:fontFamily="@font/roboto_medium"
                     app:layout_constraintTop_toTopOf="@+id/profile_li_reputation_static"
                     app:layout_constraintBottom_toBottomOf="@+id/profile_li_reputation_static"
                     app:layout_constraintStart_toEndOf="@+id/profile_li_reputation_static"
@@ -191,10 +229,11 @@
                     android:id="@+id/profile_li_photos_count"
                     app:layout_constraintEnd_toEndOf="@+id/profile_li_photos_static"
                     app:layout_constraintStart_toStartOf="@+id/profile_li_photos_static"
-                    android:fontFamily="@font/open_sans_bold"
+                    android:fontFamily="@font/roboto_bold"
                     android:layout_marginTop="24dp"
                     app:layout_constraintTop_toBottomOf="@+id/divider"
-                    tools:text="27"/>
+                    tools:text="27"
+                    android:textColor="@color/gray800"/>
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -202,25 +241,25 @@
                     app:layout_constraintBottom_toBottomOf="@+id/profile_li_reputation_count"
                     app:layout_constraintStart_toStartOf="@+id/profile_li_followers_static"
                     app:layout_constraintEnd_toEndOf="@+id/profile_li_followers_static"
-                    android:fontFamily="@font/open_sans_bold"
-                    tools:text="12"/>
+                    android:fontFamily="@font/roboto_bold"
+                    tools:text="12"
+                    android:textColor="@color/gray800"/>
             <ImageButton
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     app:srcCompat="@drawable/edit"
                     android:id="@+id/profile_li_edit_profile_button"
                     android:background="@android:color/transparent"
                     android:scaleType="centerCrop"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintEnd_toStartOf="@+id/profile_li_image"
                     app:layout_constraintTop_toTopOf="@+id/profile_li_image"
-                    app:layout_constraintBottom_toBottomOf="@+id/profile_li_image"
-                    app:layout_constraintStart_toEndOf="@+id/profile_li_image"
-                    android:layout_marginStart="8dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginEnd="8dp"/>
+                    app:layout_constraintBottom_toBottomOf="@+id/profile_li_image"/>
             <androidx.appcompat.widget.Toolbar
                     android:layout_width="0dp"
                     android:layout_height="50dp"
-                    android:background="@color/white"
+                    android:background="@color/gray900"
                     android:theme="?attr/actionBarTheme"
                     android:minHeight="?attr/actionBarSize"
                     android:id="@+id/profile_li_toolbar"
@@ -228,8 +267,20 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
             />
+            <ImageButton
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    app:srcCompat="@drawable/world"
+                    android:id="@+id/profile_li_map"
+                    app:layout_constraintStart_toEndOf="@+id/profile_li_image"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/profile_li_image"
+                    app:layout_constraintBottom_toBottomOf="@+id/profile_li_image"
+                    android:scaleType="centerCrop"
+                    android:background="@android:color/transparent"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
     <!--<View-->
     <!--android:answerId="@+answerId/divider2"-->
     <!--android:layout_width="0dp"-->

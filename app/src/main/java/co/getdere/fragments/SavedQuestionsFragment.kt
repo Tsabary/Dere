@@ -8,8 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.fragment.findNavController
-import co.getdere.groupieAdapters.SingleQuestion
+import co.getdere.MainActivity
+import co.getdere.groupieAdapters.BoardRow
 import co.getdere.models.Question
 import co.getdere.models.Users
 import co.getdere.R
@@ -18,6 +18,7 @@ import co.getdere.viewmodels.SharedViewModelQuestion
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.board_toolbar.*
 import kotlinx.android.synthetic.main.fragment_saved_questions.view.*
 
 
@@ -27,7 +28,7 @@ class SavedQuestionsFragment : Fragment() {
 
     private lateinit var currentUser: Users
 
-    lateinit var sharedViewModelForQuestion : SharedViewModelQuestion
+    lateinit var sharedViewModelForQuestion: SharedViewModelQuestion
 
 
     override fun onAttach(context: Context) {
@@ -51,13 +52,25 @@ class SavedQuestionsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity!!.title = "Saved discussions"
-
+        val activity = activity as MainActivity
         val questionsRecycler = view.saved_questions_recycler
 
         val questionRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         questionsRecycler.adapter = questionsRecyclerAdapter
         questionsRecycler.layoutManager = questionRecyclerLayoutManager
+
+        val boardNotificationIcon = board_toolbar_notifications_icon
+        val boardSavedQuestionIcon = board_toolbar_saved_questions_icon
+
+        boardNotificationIcon.setOnClickListener {
+            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.boardNotificationsFragment)
+                .commit()
+            activity.subActive = activity.boardNotificationsFragment
+        }
+        boardSavedQuestionIcon.setImageResource(R.drawable.bookmark_active)
+        boardSavedQuestionIcon.setOnClickListener {
+            listenToQuestions()
+        }
 
         listenToQuestions()
 
@@ -65,7 +78,7 @@ class SavedQuestionsFragment : Fragment() {
 
         questionsRecyclerAdapter.setOnItemClickListener { item, _ ->
 
-            val row = item as SingleQuestion
+            val row = item as BoardRow
 
             sharedViewModelForQuestion.questionObject.postValue(row.question)
         }
@@ -100,7 +113,7 @@ class SavedQuestionsFragment : Fragment() {
                             val singleQuestionObjectFromDB = p0.getValue(Question::class.java)
 
                             if (singleQuestionObjectFromDB != null) {
-                                questionsRecyclerAdapter.add(SingleQuestion(singleQuestionObjectFromDB))
+                                questionsRecyclerAdapter.add(BoardRow(singleQuestionObjectFromDB))
 
                             }
 

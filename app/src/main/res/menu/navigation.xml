@@ -6,19 +6,25 @@
     <item
             app:showAsAction="ifRoom"
             android:id="@+id/destination_feed"
-            android:icon="@drawable/feed_icon"
+            android:icon="@drawable/footprint"
             android:title="@string/feed"/>
 
     <item
             app:showAsAction="ifRoom"
             android:id="@+id/destination_board"
-            android:icon="@drawable/forum_icon"
+            android:icon="@drawable/signpost"
             android:title="@string/board"/>
 
     <item
             app:showAsAction="ifRoom"
+            android:id="@+id/destination_marketplace"
+            android:icon="@drawable/itinerary"
+            android:title="@string/marketplace"/>
+
+    <item
+            app:showAsAction="ifRoom"
             android:id="@+id/destination_profile_logged_in_user"
-            android:icon="@drawable/profile_icon"
+            android:icon="@drawable/astronaut"
             android:title="@string/profile"/>
 
 </menu>

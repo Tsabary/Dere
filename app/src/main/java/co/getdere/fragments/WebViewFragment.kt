@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProviders
 import co.getdere.viewmodels.SharedViewModelImage
 
 import co.getdere.R
+import kotlinx.android.synthetic.main.fragment_web_view.*
 
 class WebViewFragment : Fragment() {
 
@@ -39,21 +40,19 @@ class WebViewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val webView = view.findViewById<WebView>(R.id.webview_view)
+        val webView = webview_view
 
         sharedViewModelForImage.sharedImageObject.observe(this, Observer {
             it?.let {image->
 
                 val url = image.link
 
-                Log.d("checkUrl", image.link)
-
                 webView.settings.loadWithOverviewMode = true
                 webView.settings.useWideViewPort = true
                 webView.settings.builtInZoomControls = true
                 webView.settings.pluginState = WebSettings.PluginState.ON
                 webView.webViewClient = WebViewClient()
-                webView.loadUrl("https://www.ycombinator.com/")
+                webView.loadUrl(url)
 
             }
         }

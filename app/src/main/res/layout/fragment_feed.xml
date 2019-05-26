@@ -27,7 +27,9 @@
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
             android:id="@+id/feed_search_tags_recycler"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:elevation="2dp"
+            android:background="@color/white"/>
 
 
     <com.google.android.material.tabs.TabLayout
@@ -38,9 +40,10 @@
             android:id="@+id/feed_pager_tab_layout"
             app:tabIndicatorColor="@color/green500"
             app:tabTextColor="@color/gray500"
-            app:tabSelectedTextColor="@color/green700"
+            app:tabSelectedTextColor="@color/white"
             app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintTop_toBottomOf="@+id/feed_search_tags_recycler">
+            app:layout_constraintTop_toBottomOf="@id/include2"
+            android:background="@color/gray900">
 
         <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"

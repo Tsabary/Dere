@@ -6,7 +6,7 @@ import co.getdere.interfaces.ImageDao
 
 class ImagePostsRepository (private val imageDao : ImageDao) {
 
-    val allImagePosts: LiveData<List<LocalImagePost>> = imageDao.getAllWords()
+    val allImagePosts: LiveData<List<LocalImagePost>> = imageDao.getAllImages()
 
     @WorkerThread
     suspend fun insert(imagePost: LocalImagePost) {

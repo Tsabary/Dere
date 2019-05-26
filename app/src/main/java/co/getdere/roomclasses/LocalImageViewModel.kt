@@ -24,8 +24,8 @@ class LocalImageViewModel(application: Application) : AndroidViewModel(applicati
     private val scope = CoroutineScope(coroutineContext)
 
     init {
-        val wordsDao = DereRoomDatabase.getDatabase(application, scope).imageDao()
-        repository = ImagePostsRepository(wordsDao)
+        val imagesDao = DereRoomDatabase.getDatabase(application, scope).imageDao()
+        repository = ImagePostsRepository(imagesDao)
         allImagePosts = repository.allImagePosts
     }
 

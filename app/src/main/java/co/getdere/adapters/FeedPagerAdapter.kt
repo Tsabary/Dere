@@ -6,18 +6,22 @@ import androidx.fragment.app.FragmentPagerAdapter
 import co.getdere.fragments.FollowingFeedFragment
 import co.getdere.fragments.InterestsFeedFragment
 import co.getdere.fragments.RecentFeedFragment
+import co.getdere.fragments.RecentFeedOnBoardingFragment
+import com.google.firebase.auth.FirebaseAuth
 
 class FeedPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAdapter(fragmentManager) {
 
-    private val tabTitles = arrayOf("Interests", "Following", "Recent")
+    private val tabTitles = arrayOf("Interests", "Following", "All")
+    val uid = FirebaseAuth.getInstance().uid
 
     override fun getItem(p0: Int): Fragment {
 
-        when (p0) {
-            0 -> return InterestsFeedFragment.newInstance()
-            1 -> return FollowingFeedFragment.newInstance()
-            2 -> return RecentFeedFragment.newInstance()
-            else -> return InterestsFeedFragment.newInstance()
+
+        return when (p0) {
+            0 -> InterestsFeedFragment.newInstance()
+            1 -> FollowingFeedFragment.newInstance()
+            2 -> RecentFeedFragment.newInstance()
+            else -> InterestsFeedFragment.newInstance()
         }
     }
 
@@ -27,6 +31,7 @@ class FeedPagerAdapter(fragmentManager: FragmentManager) : FragmentPagerAdapter(
 
 
     override fun getCount(): Int {
+
         return 3
     }
 

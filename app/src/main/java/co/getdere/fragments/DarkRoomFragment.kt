@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -23,26 +24,29 @@ import co.getdere.roomclasses.LocalImagePost
 import co.getdere.roomclasses.LocalImageViewModel
 import co.getdere.viewmodels.SharedViewModelLocalImagePost
 import com.bumptech.glide.Glide
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.activity_register.*
+import com.yalantis.ucrop.UCrop
+import kotlinx.android.synthetic.main.feed_single_photo.view.*
 import kotlinx.android.synthetic.main.fragment_dark_room.*
+import java.io.File
 
 
 class DarkRoomFragment : Fragment() {
 
     private lateinit var localImageViewModel: LocalImageViewModel
-    lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
+    private lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
+    val adapter = GroupAdapter<ViewHolder>()
 
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
         activity?.let {
-            localImageViewModel = ViewModelProviders.of(this).get(LocalImageViewModel::class.java)
+            localImageViewModel = ViewModelProviders.of(it).get(LocalImageViewModel::class.java)
             sharedViewModelLocalImagePost = ViewModelProviders.of(it).get(SharedViewModelLocalImagePost::class.java)
-
         }
     }
 
@@ -61,19 +65,16 @@ class DarkRoomFragment : Fragment() {
 
         val recyclerView = dark_room_recyclerview
         val addImageFab = dark_room_fab
-        val adapter = GroupAdapter<ViewHolder>()
 
         recyclerView.adapter = adapter
         recyclerView.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
 
         localImageViewModel.allImagePosts.observe(this, Observer { images ->
-
             adapter.clear()
-            Log.d("ClearInitiated", "and repopulating")
-
             images?.let {
                 for (i in images) {
                     adapter.add(DarkRoomGroupieAdapter(i))
+                    activity.localImagePost.postValue(i)
                 }
             }
         })
@@ -83,7 +84,8 @@ class DarkRoomFragment : Fragment() {
             val adapterImage = item as DarkRoomGroupieAdapter
 
             sharedViewModelLocalImagePost.sharedImagePostObject.postValue(adapterImage.image)
-
+            activity.subFm.beginTransaction()
+                .add(activity.subFrame.id, activity.darkRoomEditFragment, "darkRoomEditFragment").commit()
             activity.switchVisibility(1)
         }
 
@@ -91,7 +93,7 @@ class DarkRoomFragment : Fragment() {
         addImageFab.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             intent.type = "image/*"
-            startActivityForResult(intent, 0)
+            startActivityForResult(intent, 1)
         }
 
     }
@@ -100,7 +102,7 @@ class DarkRoomFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == 0 && resultCode == Activity.RESULT_OK && data != null) {
+        if (requestCode == 1 && resultCode == Activity.RESULT_OK && data != null) {
             Log.d("Main", "Photo was selected")
 
             val selectedPhotoUri = data.data
@@ -113,10 +115,13 @@ class DarkRoomFragment : Fragment() {
                     selectedPhotoUri.toString(),
                     "",
                     "",
-                    false
+                    verified = false
                 )
 
                 localImageViewModel.insert(localImagePost)
+
+                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                firebaseAnalytics.logEvent("image_uploaded_from_device", null)
             }
         }
     }
@@ -124,7 +129,6 @@ class DarkRoomFragment : Fragment() {
 
     companion object {
         fun newInstance(): DarkRoomFragment = DarkRoomFragment()
-        const val newWordActivityRequestCode = 1
     }
 }
 
@@ -136,9 +140,7 @@ class DarkRoomGroupieAdapter(val image: LocalImagePost) : Item<ViewHolder>() {
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
-        val photoHolder = viewHolder.itemView.findViewById<ImageView>(R.id.feed_single_photo_photo)
+        val photoHolder = viewHolder.itemView.feed_single_photo_photo
         Glide.with(viewHolder.root.context).load(image.imageUri).into(photoHolder)
     }
-
-
 }

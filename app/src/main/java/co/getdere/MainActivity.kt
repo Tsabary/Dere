@@ -7,29 +7,32 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.fragments.*
+import co.getdere.interfaces.DereMethods
 import co.getdere.models.Answers
 import co.getdere.models.Images
 import co.getdere.models.Question
 import co.getdere.models.Users
-import co.getdere.registerLogin.RegisterActivity
 import co.getdere.viewmodels.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.pusher.pushnotifications.PushNotifications
-import com.pusher.pushnotifications.PushNotificationsInstance
+import com.stripe.android.Stripe
 import io.branch.indexing.BranchUniversalObject
 import io.branch.referral.Branch
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.subcontents_main.*
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), DereMethods {
 
     lateinit var mBottomNav: BottomNavigationView
 
@@ -37,15 +40,19 @@ class MainActivity : AppCompatActivity() {
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var sharedViewModelQuestion: SharedViewModelQuestion
-    lateinit var sharedViewModelBucket: SharedViewModelBucket
+    lateinit var sharedViewModelCollection: SharedViewModelCollection
 
+    lateinit var onBoardingFragment: OnBoardingFragment
     lateinit var feedFragment: FeedFragment
     lateinit var boardFragment: BoardFragment
+    lateinit var marketplaceFragment: MarketplaceFragment
     lateinit var profileLoggedInUserFragment: ProfileLoggedInUserFragment
 
     lateinit var imageFullSizeFragment: ImageFullSizeFragment
+    lateinit var secondImageFullSizeFragment: SecondImageFullSizeFragment
     lateinit var profileRandomUserFragment: ProfileRandomUserFragment
-    lateinit var bucketFragment: AddToBucketFragment
+    lateinit var profileSecondRandomUserFragment: ProfileSecondRandomUserFragment
+    lateinit var addToBucketFragment: AddToBucketFragment
     lateinit var openedQuestionFragment: OpenedQuestionFragment
     lateinit var feedNotificationsFragment: FeedNotificationsFragment
     lateinit var boardNotificationsFragment: BoardNotificationsFragment
@@ -54,95 +61,70 @@ class MainActivity : AppCompatActivity() {
     lateinit var answerFragment: AnswerFragment
     lateinit var newQuestionFragment: NewQuestionFragment
     lateinit var editProfileFragment: EditProfileFragment
-    lateinit var bucketGalleryFragment: BucketGalleryFragment
+    lateinit var collectionGalleryFragment: CollectionGalleryFragment
     lateinit var addImageToAnswer: AddImageToAnswerFragment
-
+    lateinit var imagePostEditFragment: ImagePostEditFragment
+    lateinit var webViewFragment: WebViewFragment
+    lateinit var editQuestionFragment: EditQuestionFragment
+    lateinit var editAnswerFragment: EditAnswerFragment
+    lateinit var editInterestsFragment: EditInterestsFragment
+    lateinit var collectionMapView: CollectionMapViewFragment
+    lateinit var addToItineraryFragment: AddToItineraryFragment
+    lateinit var itineraryFragment: ItineraryFragment
+    lateinit var itineraryEditFragment: ItineraryEditFragment
+    lateinit var addImagesToItineraryFragment: AddImagesToItineraryFragment
+    lateinit var marketplacePurchasedFragment: MarketplacePurchasedFragment
+    lateinit var buyItineraryFragment: BuyItineraryFragment
 
     lateinit var mainFrame: FrameLayout
     lateinit var subFrame: FrameLayout
 
     val fm = supportFragmentManager
+    val fmTransaction = fm.beginTransaction()
     val subFm = supportFragmentManager
+    val subFmTransaction = subFm.beginTransaction()
+
 
     lateinit var active: Fragment
     lateinit var subActive: Fragment
 
     var answerObject = Answers()
+    var boardNotificationsCount = MutableLiveData<Int>()
+    var feedNotificationsCount = MutableLiveData<Int>()
 
+    var isCollectionMapViewActive = false
     var isBucketGalleryActive = false
     var isOpenedQuestionActive = false
+    var isEditAnswerActive = false
+    var isFeedNotificationsActive = false
+    var isBoardNotificationsActive = false
+    var isFeedActive = false
+    var isRandomUserProfileActive = false
+    var isSecondRandomUserProfileActive = false
+    var isItineraryActive = false
+    var isSavedItinerariesActive = false
 
 
-//    lateinit var notificationManager: NotificationManager
-//    lateinit var notificationChannel: NotificationChannel
-//    lateinit var builder: Notification.Builder
-//    val channelId = "co.getdere"
-//    var description = "My notification"
+    var fragmentsHaveBeenInitialized = false
+
+    lateinit var currentUser: Users
+
+    lateinit var firebaseAnalytics: FirebaseAnalytics
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        PushNotifications.start(applicationContext, "8286cd5e-eaaa-4d81-a57b-0f4d985b0a47")
-        PushNotifications.addDeviceInterest("hello")
-
-//        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-//        val intent = Intent(applicationContext, MainActivity::class.java)
-//        val pendingIntent = PendingIntent.getActivity(this, 0 , intent, PendingIntent.FLAG_UPDATE_CURRENT)
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            notificationChannel = NotificationChannel(channelId, description, NotificationManager.IMPORTANCE_HIGH)
-//            notificationChannel.enableLights(true)
-//            notificationChannel.lightColor = Color.GREEN
-//            notificationChannel.enableVibration(true)
-//            notificationManager.createNotificationChannel(notificationChannel)
-//
-//            builder = Notification.Builder(this, channelId)
-//                .setContentTitle("My title youtube")
-//                .setContentText("My text youtube")
-//                .setSmallIcon(R.drawable.pin_icon)
-//                .setContentIntent(pendingIntent)
-//        } else {
-//            builder = Notification.Builder(this)
-//                .setContentTitle("My title youtube")
-//                .setContentText("My text youtube")
-//                .setSmallIcon(R.drawable.pin_icon)
-//                .setContentIntent(pendingIntent)
-//        }
-//
-//        notificationManager.notify(0, builder.build())
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
 
-
-
-
-
-        val instanceId = "YOUR_INSTANCE_ID_HERE"
-        val secretKey = "YOUR_SECRET_KEY_HERE"
-
-        val beamsClient = PushNotifications(instanceId, secretKey)
-
-        val interests = listOf("donuts", "pizza")
-        val publishRequest = hashMapOf(
-            "fcm" to hashMapOf("notification" to hashMapOf("title" to "hello", "body" to "Hello world"))
-        )
-
-        beamsClient.publish(interests, publishRequest)
-
-
-
-
-
-
-        mBottomNav = feed_bottom_nav
-
-        mBottomNav.isClickable = false
+        checkIfLoggedIn()
 
         sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
         sharedViewModelQuestion = ViewModelProviders.of(this).get(SharedViewModelQuestion::class.java)
 
         FirebaseApp.initializeApp(this)
-        checkIfLoggedIn()
 
 
         sharedViewModelImage = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
@@ -151,92 +133,34 @@ class MainActivity : AppCompatActivity() {
         sharedViewModelRandomUser = ViewModelProviders.of(this).get(SharedViewModelRandomUser::class.java)
         sharedViewModelRandomUser.randomUserObject.postValue(Users())
 
-        sharedViewModelBucket = ViewModelProviders.of(this).get(SharedViewModelBucket::class.java)
+        sharedViewModelCollection = ViewModelProviders.of(this).get(SharedViewModelCollection::class.java)
 
-        subFrame = findViewById(R.id.feed_subcontents_frame_container)
+        subFrame = feed_subcontents_frame_container
 
-        mainFrame = findViewById(R.id.feed_frame_container)
+        mainFrame = feed_frame_container
 
         switchVisibility(0)
-
     }
 
     private fun setupBottomNav() {
 
-        mBottomNav.isClickable = true
+        mBottomNav = feed_bottom_nav
 
         mBottomNav.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
 
-
                 R.id.destination_feed -> {
-
-                    fm.beginTransaction().hide(active).show(feedFragment).commit()
-                    active = feedFragment
-
-                    val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
-                    menuItem.isChecked = true
-
-
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
-
-                    if (mainFrame.visibility == View.GONE) {
-                        switchVisibility(0)
-                    }
-
-                    isOpenedQuestionActive = false
-                    isBucketGalleryActive = false
-
-                    sharedViewModelImage.sharedImageObject.postValue(Images())
-                    sharedViewModelRandomUser.randomUserObject.postValue(Users())
+                    navigateToFeed()
                 }
 
                 R.id.destination_board -> {
-
-                    fm.beginTransaction().hide(active).show(boardFragment).commit()
-                    active = boardFragment
-
-                    val menuItem = mBottomNav.menu.findItem(R.id.destination_board)
-                    menuItem.isChecked = true
-
-
-                    if (mainFrame.visibility == View.GONE) {
-                        switchVisibility(0)
-                    }
-
-                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
-                    subActive = openedQuestionFragment
-
-                    isOpenedQuestionActive = false
-                    isBucketGalleryActive = false
-
-                    sharedViewModelImage.sharedImageObject.postValue(Images())
-                    sharedViewModelRandomUser.randomUserObject.postValue(Users())
-
+                    navigateToBoard()
+                }
+                R.id.destination_marketplace -> {
+                    navigateToMarketplace()
                 }
                 R.id.destination_profile_logged_in_user -> {
-
-                    fm.beginTransaction().hide(active).show(profileLoggedInUserFragment).commit()
-                    active = profileLoggedInUserFragment
-
-                    val menuItem = mBottomNav.menu.findItem(R.id.destination_profile_logged_in_user)
-                    menuItem.isChecked = true
-
-
-                    if (mainFrame.visibility == View.GONE) {
-                        switchVisibility(0)
-                    }
-
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
-
-                    isOpenedQuestionActive = false
-                    isBucketGalleryActive = false
-
-                    sharedViewModelImage.sharedImageObject.postValue(Images())
-                    sharedViewModelRandomUser.randomUserObject.postValue(Users())
-
+                    navigateToProfile()
                 }
             }
             false
@@ -256,6 +180,26 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun resetImageExpended() {
+        sharedViewModelImage.sharedImageObject.postValue(Images())
+        imageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
+        imageFullSizeFragment.optionsContainer.visibility = View.GONE
+        imageFullSizeFragment.deleteEditContainer.visibility = View.VISIBLE
+        imageFullSizeFragment.deleteContainer.visibility = View.GONE
+        imageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
+        imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
+
+    }
+
+    private fun resetSecondImageExpended() {
+        sharedViewModelImage.sharedImageObject.postValue(Images())
+        secondImageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
+        secondImageFullSizeFragment.optionsContainer.visibility = View.GONE
+        secondImageFullSizeFragment.deleteEditContainer.visibility = View.VISIBLE
+        secondImageFullSizeFragment.deleteContainer.visibility = View.GONE
+        secondImageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
+        secondImageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
+    }
 
     override fun onBackPressed() {
 
@@ -264,46 +208,128 @@ class MainActivity : AppCompatActivity() {
             when (subActive) {
 
                 imageFullSizeFragment -> {
-                    if (isBucketGalleryActive) {
-                        subFm.beginTransaction().hide(subActive).show(bucketGalleryFragment).commit()
-                        subActive = bucketGalleryFragment
-                        sharedViewModelImage.sharedImageObject.postValue(Images())
+                    when {
+                        isCollectionMapViewActive && isBucketGalleryActive -> {
+                            subFm.beginTransaction().hide(subActive).show(collectionGalleryFragment).commit()
+                            subActive = collectionGalleryFragment
+                            collectionGalleryFragment.galleryViewPager.currentItem = 1
+                            resetImageExpended()
+                            isCollectionMapViewActive = false
+                        }
 
-                    } else if (isOpenedQuestionActive) {
-                        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
-                        subActive = openedQuestionFragment
-                        sharedViewModelImage.sharedImageObject.postValue(Images())
-                    } else {
-                        switchVisibility(0)
-                        sharedViewModelImage.sharedImageObject.postValue(Images())
+                        isCollectionMapViewActive && !isBucketGalleryActive -> {
+                            subFm.beginTransaction().hide(subActive).show(collectionMapView).commit()
+                            subActive = collectionMapView
+                            resetImageExpended()
+                            isCollectionMapViewActive = false
+                        }
+
+                        isBucketGalleryActive && !isCollectionMapViewActive -> {
+                            subFm.beginTransaction().hide(subActive).show(collectionGalleryFragment).commit()
+                            subActive = collectionGalleryFragment
+                            collectionGalleryFragment.galleryViewPager.currentItem = 0
+                            resetImageExpended()
+                        }
+                        isOpenedQuestionActive -> {
+                            subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                            subActive = openedQuestionFragment
+                            resetImageExpended()
+                        }
+                        isFeedNotificationsActive -> {
+                            subFm.beginTransaction().hide(subActive).show(feedNotificationsFragment).commit()
+                            subActive = feedNotificationsFragment
+                            resetImageExpended()
+                        }
+                        isBoardNotificationsActive -> {
+                            subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
+                            subActive = boardNotificationsFragment
+                            resetImageExpended()
+                        }
+                        isRandomUserProfileActive -> {
+                            subFm.beginTransaction().hide(subActive).show(profileRandomUserFragment).commit()
+                            subActive = profileRandomUserFragment
+                            resetImageExpended()
+                        }
+
+                        else -> {
+                            switchVisibility(0)
+                            resetImageExpended()
+                        }
                     }
                 }
-                bucketFragment -> {
-
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    fm.beginTransaction().detach(profileLoggedInUserFragment).attach(profileLoggedInUserFragment)
-                        .commit()
-
+                addToBucketFragment -> {
+                    if (isFeedActive) {
+                        switchVisibility(0)
+                        isFeedActive = false
+                    }
+                    subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
                     subActive = imageFullSizeFragment
                 }
 
                 profileRandomUserFragment -> {
+                    when {
+                        isFeedActive -> {
+                            navigateToFeed()
+                            isFeedActive = false
+                            isRandomUserProfileActive = false
+                        }
+                        isFeedNotificationsActive -> {
+                            subFm.beginTransaction().hide(subActive).show(feedNotificationsFragment).commit()
+                            subActive = feedNotificationsFragment
+                            isRandomUserProfileActive = false
+                        }
 
-                    imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
+                        isBoardNotificationsActive -> {
+                            subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
+                            subActive = boardNotificationsFragment
+                            isRandomUserProfileActive = false
+                        }
+                        isOpenedQuestionActive -> {
+                            subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                            subActive = openedQuestionFragment
+                            isRandomUserProfileActive = false
+                        }
 
-                    sharedViewModelRandomUser.randomUserObject.postValue(Users())
+                        isItineraryActive -> {
+                            subFm.beginTransaction().hide(subActive).show(itineraryFragment).commit()
+                            subActive = itineraryFragment
+                        }
+                        else -> {
+                            imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
+                            subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                            subActive = imageFullSizeFragment
+
+//                            sharedViewModelSecondRandomUser.randomUserObject.postValue(Users())
+                            isRandomUserProfileActive = false
+                        }
+                    }
+                }
+                profileSecondRandomUserFragment -> {
+                    if (isOpenedQuestionActive) {
+                        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                        subActive = openedQuestionFragment
+                    } else {
+                        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                        subActive = imageFullSizeFragment
+                    }
                 }
 
                 feedNotificationsFragment -> {
                     switchVisibility(0)
+                    isFeedNotificationsActive = false
                 }
 
                 openedQuestionFragment -> {
-                    switchVisibility(0)
-                    sharedViewModelQuestion.questionObject.postValue(Question())
-                    isOpenedQuestionActive = false
+                    if (isBoardNotificationsActive) {
+                        subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
+                        subActive = boardNotificationsFragment
+                        isOpenedQuestionActive = false
+                        openedQuestionFragment.deleteBox.visibility = View.GONE
+                    } else {
+                        switchVisibility(0)
+                        isOpenedQuestionActive = false
+                        openedQuestionFragment.deleteBox.visibility = View.GONE
+                    }
                 }
 
                 boardNotificationsFragment -> {
@@ -315,7 +341,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 answerCommentFragment -> {
-                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                    subFm.beginTransaction().remove(subActive).show(openedQuestionFragment).commit()
                     subActive = openedQuestionFragment
                 }
 
@@ -328,23 +354,155 @@ class MainActivity : AppCompatActivity() {
                     switchVisibility(0)
                 }
 
-                bucketGalleryFragment -> {
-                    switchVisibility(0)
-                    isBucketGalleryActive = false
-//                    sharedViewModelBucket.sharedBucketId.postValue(DataSnapshot(DatabaseReference(),""))
+                collectionGalleryFragment -> {
+//                    subFm.beginTransaction().hide(collectionGalleryFragment).show(imageFullSizeFragment).commit()
+//                    subActive = imageFullSizeFragment
+//                    collectionGalleryFragment.pagerAdapter.notifyDataSetChanged()
+                    if (isSavedItinerariesActive){
+                        subFm.beginTransaction().hide(subActive).show(marketplacePurchasedFragment).commit()
+                        subActive = marketplacePurchasedFragment
+                    } else {
+                        switchVisibility(0)
+                        isBucketGalleryActive = false
+                        collectionGalleryFragment.mapButton.setImageResource(R.drawable.world)
+                    }
                 }
 
                 editProfileFragment -> {
                     switchVisibility(0)
                 }
 
+                imagePostEditFragment -> {
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+                }
+
+                webViewFragment -> {
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+                }
+
+                editQuestionFragment -> {
+                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                    subActive = openedQuestionFragment
+                }
+
+                editAnswerFragment -> {
+                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                    subActive = openedQuestionFragment
+                    isEditAnswerActive = false
+                }
+
+                addImageToAnswer -> {
+                    if (isEditAnswerActive) {
+                        subFm.beginTransaction().hide(subActive).show(editAnswerFragment).commit()
+                        subActive = editAnswerFragment
+                    } else {
+                        subFm.beginTransaction().hide(subActive).show(answerFragment).commit()
+                        subActive = answerFragment
+                    }
+                }
+
+                editInterestsFragment -> {
+                    switchVisibility(0)
+                }
+
+                collectionMapView -> {
+
+                    when {
+                        isRandomUserProfileActive -> {
+                            subFm.beginTransaction().hide(subActive).show(profileRandomUserFragment).commit()
+                            subActive = profileRandomUserFragment
+                            isRandomUserProfileActive = false
+                        }
+                        isSecondRandomUserProfileActive -> {
+                            subFm.beginTransaction().hide(subActive).show(profileSecondRandomUserFragment).commit()
+                            subActive = profileSecondRandomUserFragment
+                            isSecondRandomUserProfileActive = false
+                        }
+                        else -> switchVisibility(0)
+                    }
+
+                }
+
+                secondImageFullSizeFragment -> {
+                    subFm.beginTransaction().hide(secondImageFullSizeFragment).show(profileRandomUserFragment).commit()
+                    subActive = profileRandomUserFragment
+                    resetSecondImageExpended()
+                }
+
+                addToItineraryFragment -> {
+                    if (isFeedActive) {
+                        switchVisibility(0)
+                        isFeedActive = false
+                    }
+                    subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+                }
+
+                itineraryFragment -> {
+                    switchVisibility(0)
+                    isItineraryActive = false
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+                }
+
+                itineraryEditFragment -> {
+                    subFm.beginTransaction().remove(subActive).remove(addImagesToItineraryFragment)
+                        .show(collectionGalleryFragment).commit()
+                    subActive = collectionGalleryFragment
+
+                    //need to save the data to the itinerary
+                }
+
+                addImagesToItineraryFragment -> {
+                    subFm.beginTransaction().hide(subActive).show(itineraryEditFragment).commit()
+                    subActive = itineraryEditFragment
+                }
+
+                marketplacePurchasedFragment -> {
+                    subFm.beginTransaction().remove(marketplacePurchasedFragment).commit()
+                    subActive = imageFullSizeFragment
+                    switchVisibility(0)
+                    isSavedItinerariesActive = false
+                }
+                buyItineraryFragment -> {
+                    subFm.beginTransaction().remove(buyItineraryFragment).show(itineraryFragment).commit()
+                    subActive = itineraryFragment
+                }
 
             }
-
-
-        } else {
+        } else if (fragmentsHaveBeenInitialized) {
 
             when (active) { // main frame is active
+
+                onBoardingFragment -> {
+                    when (onBoardingFragment.viewPager.currentItem) {
+                        0 -> {
+                        }
+
+                        1 -> {
+                            onBoardingFragment.setUpItem1()
+                        }
+
+                        2 -> {
+                            onBoardingFragment.setUpItem2()
+                        }
+
+                        3 -> {
+                            onBoardingFragment.setUpItem3()
+                        }
+
+                        4 -> {
+                            onBoardingFragment.setUpItem4()
+                        }
+
+                        5 -> {
+                            onBoardingFragment.setUpItem5()
+                        }
+                    }
+
+                }
 
                 profileLoggedInUserFragment -> {
 
@@ -373,33 +531,66 @@ class MainActivity : AppCompatActivity() {
                     menuItem.isChecked = true
 
                     switchVisibility(0)
-
                 }
 
                 feedFragment -> super.onBackPressed()
             }
 
+        } else {
+            super.onBackPressed()
         }
 
     }
 
+    private fun resetFragments() {
+        closeKeyboard(this)
+
+        openedQuestionFragment.deleteBox.visibility = View.GONE
+        collectionGalleryFragment.mapButton.setImageResource(R.drawable.world)
+
+        isCollectionMapViewActive = false
+        isBucketGalleryActive = false
+        isOpenedQuestionActive = false
+        isEditAnswerActive = false
+        isFeedNotificationsActive = false
+        isBoardNotificationsActive = false
+        isRandomUserProfileActive = false
+        isSecondRandomUserProfileActive = false
+        isFeedActive = false
+        isItineraryActive = false
+        isSavedItinerariesActive = false
+
+
+        sharedViewModelImage.sharedImageObject.postValue(Images())
+        sharedViewModelRandomUser.randomUserObject.postValue(Users())
+        sharedViewModelQuestion.questionObject.postValue(Question())
+
+        if (mainFrame.visibility == View.GONE) {
+            switchVisibility(0)
+        }
+
+        imageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
+
+        subFm.beginTransaction().remove(addToBucketFragment).commit()
+        subFm.beginTransaction().remove(addToItineraryFragment).commit()
+//        subFm.beginTransaction().remove(itineraryFragment).commit()
+        subFm.beginTransaction().remove(marketplacePurchasedFragment).commit()
+    }
 
     private fun checkIfLoggedIn() {
 
         val uid = FirebaseAuth.getInstance().uid
         if (uid == null) {
-            val intent = Intent(this, RegisterActivity::class.java)
+            val intent = Intent(this, RegisterLoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
         } else {
-            fetchCurrentUser()
+            fetchCurrentUser(uid)
         }
-
     }
 
-    private fun fetchCurrentUser() {
+    private fun fetchCurrentUser(uid: String) {
 
-        val uid = FirebaseAuth.getInstance().uid
         val ref = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -407,15 +598,11 @@ class MainActivity : AppCompatActivity() {
 
             override fun onDataChange(p0: DataSnapshot) {
 
-
-                sharedViewModelCurrentUser.currentUserObject = p0.getValue(Users::class.java)!!
-                Log.d("checkLocation", "fetchCurrentUser")
-
-                addFragmentsToFragmentManagers()
-
-                setupBottomNav()
+                if (p0.getValue(Users::class.java) != null) {
+                    sharedViewModelCurrentUser.currentUserObject = p0.getValue(Users::class.java)!!
+                    addFragmentsToFragmentManagers()
+                }
             }
-
         })
     }
 
@@ -423,26 +610,57 @@ class MainActivity : AppCompatActivity() {
     fun addFragmentsToFragmentManagers() {
 
         //main container
-
+        onBoardingFragment = OnBoardingFragment()
         feedFragment = FeedFragment()
         boardFragment = BoardFragment()
+        marketplaceFragment = MarketplaceFragment()
         profileLoggedInUserFragment = ProfileLoggedInUserFragment()
 
-        fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment").commit()
+
+        val uid = FirebaseAuth.getInstance().uid
+        val interestsRef = FirebaseDatabase.getInstance().getReference("/users/$uid/interests")
+        interestsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                if (p0.hasChildren()) {
+                    fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment")
+                        .commitAllowingStateLoss()
+
+                    active = feedFragment
+
+                    fragmentsHaveBeenInitialized = true
+
+                } else {
+                    fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment")
+                        .hide(feedFragment).commitAllowingStateLoss()
+                    fm.beginTransaction().add(R.id.feed_frame_container, onBoardingFragment, "onBoardingFragment")
+                        .commitAllowingStateLoss()
+
+                    active = onBoardingFragment
+
+                    fragmentsHaveBeenInitialized = true
+
+                }
+            }
+        })
 
         fm.beginTransaction().add(R.id.feed_frame_container, boardFragment, "boardFragment").hide(boardFragment)
-            .commit()
+            .commitAllowingStateLoss()
+        fm.beginTransaction().add(R.id.feed_frame_container, marketplaceFragment, "marketplaceFragment")
+            .hide(marketplaceFragment)
+            .commitAllowingStateLoss()
         fm.beginTransaction()
             .add(R.id.feed_frame_container, profileLoggedInUserFragment, "profileLoggedInUserFragment")
-            .hide(profileLoggedInUserFragment).commit()
-
-        active = feedFragment
+            .hide(profileLoggedInUserFragment).commitAllowingStateLoss()
 
 
         //sub container
         imageFullSizeFragment = ImageFullSizeFragment()
         profileRandomUserFragment = ProfileRandomUserFragment()
-        bucketFragment = AddToBucketFragment()
+        profileSecondRandomUserFragment = ProfileSecondRandomUserFragment()
+        addToBucketFragment = AddToBucketFragment()
         openedQuestionFragment = OpenedQuestionFragment()
         feedNotificationsFragment = FeedNotificationsFragment()
         boardNotificationsFragment = BoardNotificationsFragment()
@@ -451,57 +669,90 @@ class MainActivity : AppCompatActivity() {
         answerFragment = AnswerFragment()
         newQuestionFragment = NewQuestionFragment()
         editProfileFragment = EditProfileFragment()
-        bucketGalleryFragment = BucketGalleryFragment()
+        collectionGalleryFragment = CollectionGalleryFragment()
         addImageToAnswer = AddImageToAnswerFragment()
+        imagePostEditFragment = ImagePostEditFragment()
+        webViewFragment = WebViewFragment()
+        editQuestionFragment = EditQuestionFragment()
+        editAnswerFragment = EditAnswerFragment()
+        editInterestsFragment = EditInterestsFragment()
+        collectionMapView = CollectionMapViewFragment()
+        secondImageFullSizeFragment = SecondImageFullSizeFragment()
+        addToItineraryFragment = AddToItineraryFragment()
+        itineraryFragment = ItineraryFragment()
+        itineraryEditFragment = ItineraryEditFragment()
+        addImagesToItineraryFragment = AddImagesToItineraryFragment()
+        marketplacePurchasedFragment = MarketplacePurchasedFragment()
+        buyItineraryFragment = BuyItineraryFragment()
+
 
 
         subFm.beginTransaction()
-            .add(R.id.feed_subcontents_frame_container, imageFullSizeFragment, "imageFullSizeFragment").commit()
+            .add(R.id.feed_subcontents_frame_container, imageFullSizeFragment, "imageFullSizeFragment")
+            .commitAllowingStateLoss()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, profileRandomUserFragment, "profileRandomUserFragment")
-            .hide(profileRandomUserFragment).commit()
+            .hide(profileRandomUserFragment).commitAllowingStateLoss()
         subFm.beginTransaction()
-            .add(R.id.feed_subcontents_frame_container, bucketFragment, "bucketFragment").hide(bucketFragment).commit()
+            .add(R.id.feed_subcontents_frame_container, profileSecondRandomUserFragment, "profileRandomUserFragment")
+            .hide(profileSecondRandomUserFragment).commitAllowingStateLoss()
+//        subFm.beginTransaction()
+//            .add(R.id.feed_subcontents_frame_container, addToBucketFragment, "addToBucketFragment").hide(addToBucketFragment).commit()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, openedQuestionFragment, "openedQuestionFragment")
-            .hide(openedQuestionFragment).commit()
+            .hide(openedQuestionFragment).commitAllowingStateLoss()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, feedNotificationsFragment, "feedNotificationsFragment")
-            .hide(feedNotificationsFragment).commit()
+            .hide(feedNotificationsFragment).commitAllowingStateLoss()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, boardNotificationsFragment, "boardNotificationsFragment")
-            .hide(boardNotificationsFragment).commit()
+            .hide(boardNotificationsFragment).commitAllowingStateLoss()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, savedQuestionFragment, "savedQuestionFragment")
-            .hide(savedQuestionFragment).commit()
-        subFm.beginTransaction()
-            .add(R.id.feed_subcontents_frame_container, answerCommentFragment, "answerCommentFragment")
-            .hide(answerCommentFragment).commit()
+            .hide(savedQuestionFragment).commitAllowingStateLoss()
+//        subFm.beginTransaction()
+//            .add(R.id.feed_subcontents_frame_container, answerCommentFragment, "answerCommentFragment")
+//            .hide(answerCommentFragment).commitAllowingStateLoss()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, answerFragment, "answerFragment")
-            .hide(answerFragment).commit()
+            .hide(answerFragment).commitAllowingStateLoss()
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, newQuestionFragment, "newQuestionFragment")
-            .hide(newQuestionFragment).commit()
+            .hide(newQuestionFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editProfileFragment, "editProfileFragment")
-            .hide(editProfileFragment).commit()
-        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, bucketGalleryFragment, "bucketGalleryFragment")
-            .hide(bucketGalleryFragment).commit()
+            .hide(editProfileFragment).commitAllowingStateLoss()
+        fm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, collectionGalleryFragment, "collectionGalleryFragment")
+            .hide(collectionGalleryFragment).commitAllowingStateLoss()
         fm.beginTransaction().add(R.id.feed_subcontents_frame_container, addImageToAnswer, "addImageToAnswer")
-            .hide(addImageToAnswer).commit()
+            .hide(addImageToAnswer).commitAllowingStateLoss()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, imagePostEditFragment, "imagePostEditFragment")
+            .hide(imagePostEditFragment).commitAllowingStateLoss()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, webViewFragment, "webViewFragment")
+            .hide(webViewFragment).commitAllowingStateLoss()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editQuestionFragment, "editQuestionFragment")
+            .hide(editQuestionFragment).commitAllowingStateLoss()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editAnswerFragment, "editAnswerFragment")
+            .hide(editAnswerFragment).commitAllowingStateLoss()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, editInterestsFragment, "editInterestsFragment")
+            .hide(editInterestsFragment).commitAllowingStateLoss()
+        fm.beginTransaction().add(R.id.feed_subcontents_frame_container, collectionMapView, "collectionMapView")
+            .hide(collectionMapView).commitAllowingStateLoss()
+        fm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, secondImageFullSizeFragment, "collectionMapView")
+            .hide(secondImageFullSizeFragment).commitAllowingStateLoss()
+        fm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, itineraryFragment, "itineraryFragment")
+            .hide(itineraryFragment).commitAllowingStateLoss()
+
 
 
         subActive = imageFullSizeFragment
 
+        setupBottomNav()
     }
 
-
-    override fun onStart() {
-        super.onStart()
-
-        println("branch on start")
-
-
+    private fun branchInitSession() {
         Branch.getInstance().initSession({ branchUniversalObject, referringParams, error ->
 
             if (error == null) {
@@ -518,6 +769,7 @@ class MainActivity : AppCompatActivity() {
 
                         "question" -> collectQuestion(branchUniversalObject)
 
+                        "user" -> collectProfile(branchUniversalObject)
                     }
 
 
@@ -531,8 +783,92 @@ class MainActivity : AppCompatActivity() {
 
 
         }, this.intent.data, this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        branchInitSession()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        branchInitSession()
+    }
+
+    private fun navigateToFeed() {
+        fm.beginTransaction().hide(active).show(feedFragment).commit()
+        active = feedFragment
+        val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+        menuItem.isChecked = true
+        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+        subActive = imageFullSizeFragment
+        resetFragments()
+    }
+
+    private fun navigateToBoard() {
+        fm.beginTransaction().hide(active).show(boardFragment).commit()
+        active = boardFragment
+        val menuItem = mBottomNav.menu.findItem(R.id.destination_board)
+        menuItem.isChecked = true
+        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+        subActive = openedQuestionFragment
+        resetFragments()
+        isFeedActive = false
+    }
+
+    private fun navigateToMarketplace() {
+        fm.beginTransaction().hide(active).show(marketplaceFragment).commit()
+        active = marketplaceFragment
+        val menuItem = mBottomNav.menu.findItem(R.id.destination_marketplace)
+        menuItem.isChecked = true
+        resetFragments()
+        isFeedActive = false
+        isItineraryActive = false
+
+        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+        subActive = imageFullSizeFragment
+    }
 
 
+    fun navigateToProfile() {
+        fm.beginTransaction().hide(active).show(profileLoggedInUserFragment).commit()
+        active = profileLoggedInUserFragment
+        val menuItem = mBottomNav.menu.findItem(R.id.destination_profile_logged_in_user)
+        menuItem.isChecked = true
+        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+        subActive = imageFullSizeFragment
+        resetFragments()
+        isFeedActive = false
+    }
+
+    private fun collectProfile(branchUniversalObject: BranchUniversalObject) {
+        val uid = FirebaseAuth.getInstance().uid
+
+        val profileIdentifier = branchUniversalObject.canonicalIdentifier
+
+        if (uid == profileIdentifier) {
+            navigateToProfile()
+        } else {
+
+            val profileRef = FirebaseDatabase.getInstance().getReference("/users/$profileIdentifier/profile")
+
+            profileRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+                    val user = p0.getValue(Users::class.java)
+
+                    sharedViewModelRandomUser.randomUserObject.postValue(user)
+                    subFm.beginTransaction().hide(subActive).show(profileRandomUserFragment).commit()
+                    switchVisibility(1)
+                    subActive = profileRandomUserFragment
+
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_profile_logged_in_user)
+                    menuItem.isChecked = true
+                }
+            })
+        }
     }
 
 
@@ -563,18 +899,16 @@ class MainActivity : AppCompatActivity() {
                         sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
 
                         subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-
                         switchVisibility(1)
-
                         subActive = imageFullSizeFragment
+
+                        val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+                        menuItem.isChecked = true
                     }
 
                 })
             }
-
-
         })
-
     }
 
 
@@ -612,6 +946,9 @@ class MainActivity : AppCompatActivity() {
 
                         subActive = openedQuestionFragment
                         active = boardFragment
+
+                        val menuItem = mBottomNav.menu.findItem(R.id.destination_board)
+                        menuItem.isChecked = true
                     }
 
                 })
@@ -620,16 +957,12 @@ class MainActivity : AppCompatActivity() {
 
         })
 
-
-    }
-
-    fun sendNotification(){
-
     }
 
 
     public override fun onNewIntent(intent: Intent) {
         this.intent = intent
+        super.onNewIntent(intent)//this is not sure!!!!!! If there are problems this might be the source of it, instructions didn't say to add  the super but studio has
     }
 
 

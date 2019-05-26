@@ -1,168 +1,133 @@
 package co.getdere.fragments
 
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import co.getdere.MainActivity
 import co.getdere.groupieAdapters.FeedImage
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.R
-import co.getdere.registerLogin.LoginActivity
-import co.getdere.viewmodels.SharedViewModelCurrentUser
-import co.getdere.viewmodels.SharedViewModelRandomUser
+import co.getdere.viewmodels.*
 import com.bumptech.glide.Glide
-import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.fragment_profile_random_user.*
 
 
 class ProfileRandomUserFragment : Fragment(), DereMethods {
 
+    private lateinit var sharedViewModelSecondImage: SharedViewModelSecondImage
     private lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
+    private lateinit var sharedViewModelForSecondRandomUser: SharedViewModelSecondRandomUser
+    private lateinit var sharedViewModelCollection: SharedViewModelCollection
 
-    private var userProfile = Users()
+    lateinit var userProfile: Users
     lateinit var currentUser: Users
+    lateinit var userRef: DatabaseReference
 
     val galleryRollAdapter = GroupAdapter<ViewHolder>()
-    val galleryBucketAdapter = GroupAdapter<ViewHolder>()
-    private lateinit var bucketBtn: TextView
-    private lateinit var rollBtn: TextView
     lateinit var followButton: TextView
     lateinit var profileGallery: RecyclerView
 
-    lateinit var activityName: String
+    var imageList = mutableListOf<FeedImage>()
+
 
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
         activity?.let {
-
+            sharedViewModelSecondImage = ViewModelProviders.of(it).get(SharedViewModelSecondImage::class.java)
             sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
-
+            sharedViewModelForSecondRandomUser = ViewModelProviders.of(it).get(SharedViewModelSecondRandomUser::class.java)
+            sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-
-
         }
     }
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
-        val myView = inflater.inflate(R.layout.fragment_profile_random_user, container, false)
-
-//        val profileTagline = myView.findViewById<TextView>(R.id.profile_ru_tagline)
-//        val profilePicture: ImageView = myView.findViewById(R.id.profile_ru_image)
-//        val profileName: TextView = myView.findViewById(R.id.profile_ru_user_name)
-//        profileGallery = myView.findViewById(R.id.profile_ru_gallery)
-//        val profileReputation = myView.findViewById<TextView>(R.id.profile_ru_reputation_count)
-//        val profilePhotos = myView.findViewById<TextView>(R.id.profile_ru_photos_count)
-//        val profileFollowers = myView.findViewById<TextView>(R.id.profile_ru_followers_count)
-//        followButton = myView.findViewById(R.id.profile_ru_follow_button)
-//
-//
-//
-//        sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
-//            it?.let { user ->
-//                userProfile = user
-//                Glide.with(this).load(it.image).into(profilePicture)
-//                profileName.text = it.name
-//                profileReputation.text = it.reputation
-//                profileTagline.text = it.tagline
-//                setUpGalleryAdapter(profileGallery, 0)
-//                changeGalleryFeed("Roll")
-//
-//                executeFollow(0, followButton)
-//
-//
-//                val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
-//
-//                photosRef.addValueEventListener(object : ValueEventListener {
-//
-//                    override fun onCancelled(p0: DatabaseError) {
-//
-//                    }
-//
-//                    override fun onDataChange(p0: DataSnapshot) {
-//
-//                        profilePhotos.text = p0.childrenCount.toString()
-//
-//                    }
-//
-//                })
-//
-//
-//                val followersRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/followers")
-//
-//                followersRef.addValueEventListener(object : ValueEventListener {
-//
-//                    override fun onCancelled(p0: DatabaseError) {
-//
-//                    }
-//
-//                    override fun onDataChange(p0: DataSnapshot) {
-//
-//                        profileFollowers.text = p0.childrenCount.toString()
-//
-//                    }
-//
-//                })
-//
-//
-//            }
-//        }
-//        )
-//
-
-
-
-        return myView
-
-    }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_profile_random_user, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val activity = activity as MainActivity
+
+        val profileTagline = profile_ru_tagline
+        val profilePicture: ImageView = profile_ru_image
+        val profileName: TextView = profile_ru_user_name
+        val instagramButton = profile_ru_insta_icon
+        profileGallery = profile_ru_gallery
+        val profileReputation = profile_ru_reputation_count
+        val profilePhotos = profile_ru_photos_count
+        val profileFollowers = profile_ru_followers_count
+        followButton = profile_ru_follow_button
+        var instaLink = ""
+        val userMapButton = profile_ru_map
 
 
-
-
-        val profileTagline = view.findViewById<TextView>(R.id.profile_ru_tagline)
-        val profilePicture: ImageView = view.findViewById(R.id.profile_ru_image)
-        val profileName: TextView = view.findViewById(R.id.profile_ru_user_name)
-        profileGallery = view.findViewById(R.id.profile_ru_gallery)
-        val profileReputation = view.findViewById<TextView>(R.id.profile_ru_reputation_count)
-        val profilePhotos = view.findViewById<TextView>(R.id.profile_ru_photos_count)
-        val profileFollowers = view.findViewById<TextView>(R.id.profile_ru_followers_count)
-        followButton = view.findViewById(R.id.profile_ru_follow_button)
-
+        instagramButton.setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(instaLink)))
+            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+            firebaseAnalytics.logEvent("instagram_clicked_other_user", null)
+        }
 
 
         sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
             it?.let { user ->
                 userProfile = user
-                Glide.with(this).load(it.image).into(profilePicture)
+
+
+                userRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}")
+
+                userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {}
+
+                    override fun onDataChange(p0: DataSnapshot) {
+                        if (p0.child("stax/instagram").exists()) {
+                            instagramButton.visibility = View.VISIBLE
+                            instaLink = "https://www.instagram.com/${p0.child("stax").child("instagram").value}"
+                        } else {
+                            instagramButton.visibility = View.GONE
+                        }
+                    }
+
+                })
+
+
+                if (it.image.isNotEmpty()) {
+                    Glide.with(this).load(it.image).into(profilePicture)
+                } else {
+                    Glide.with(this).load(R.drawable.user_profile).into(profilePicture)
+                }
+
                 profileName.text = it.name
                 profileReputation.text = numberCalculation(it.reputation)
                 profileTagline.text = it.tagline
-                setUpGalleryAdapter(profileGallery, 0)
-                changeGalleryFeed("Roll")
 
-                executeFollow(0, followButton)
+                galleryRollAdapter.clear()
+                listenToImagesFromRoll()
+
+                executeFollow(0, followButton, activity)
 
 
                 val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
@@ -174,13 +139,9 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                     }
 
                     override fun onDataChange(p0: DataSnapshot) {
-
                         profilePhotos.text = numberCalculation(p0.childrenCount)
-
                     }
-
                 })
-
 
                 val followersRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/followers")
 
@@ -191,74 +152,57 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                     }
 
                     override fun onDataChange(p0: DataSnapshot) {
-
                         profileFollowers.text = numberCalculation(p0.childrenCount)
-
                     }
-
                 })
 
+                galleryRollAdapter.setOnItemClickListener { item, view ->
+                    val image = item as FeedImage
 
+                    sharedViewModelSecondImage.sharedSecondImageObject.postValue(image.image)
+                    sharedViewModelForSecondRandomUser.randomUserObject.postValue(userProfile)
+
+                    activity.subFm.beginTransaction().hide(activity.subActive)
+                        .show(activity.secondImageFullSizeFragment)
+                        .commit()
+                    activity.subActive = activity.secondImageFullSizeFragment
+
+                    Log.d("whatimage", image.image.imageSmall)
+                }
             }
         }
         )
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-        bucketBtn = view.findViewById(R.id.profile_ru_bucket_btn)
-        rollBtn = view.findViewById(R.id.profile_ru_roll_btn)
-
-
-
-
-
-
         followButton.setOnClickListener {
-            executeFollow(1, followButton)
+            executeFollow(1, followButton, activity)
         }
 
 
-        bucketBtn.setOnClickListener {
-            changeGalleryFeed("bucket")
-            setUpGalleryAdapter(profileGallery, 1)
+        userMapButton.setOnClickListener {
+            activity.isRandomUserProfileActive = true
+            userRef.child("images").addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                }
 
+                override fun onDataChange(p0: DataSnapshot) {
+
+                    if (p0.hasChildren()) {
+                        sharedViewModelCollection.imageCollection.postValue(p0)
+                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionMapView)
+                            .commit()
+                        activity.subActive = activity.collectionMapView
+                        val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
+                        firebaseAnalytics.logEvent("map_checked_user", null)
+                    } else {
+                        Toast.makeText(activity, "User has no photos to view on the map", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            })
         }
-
-        rollBtn.setOnClickListener {
-            changeGalleryFeed("roll")
-            setUpGalleryAdapter(profileGallery, 0)
-
-        }
-
-        activity!!.title = "Profile"
-
-        setHasOptionsMenu(true)
-
-
-        galleryRollAdapter.setOnItemClickListener { item, _ ->
-
-            val row = item as FeedImage
-//            val imageId = row.image
-
-
-
-        }
-
     }
 
-    private fun executeFollow(case: Int, followButton: TextView) {
+    private fun executeFollow(case: Int, followButton: TextView, activity: Activity) {
 
         val followerRef = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/following")
         val beingFollowedRef = FirebaseDatabase.getInstance().getReference("users/${userProfile.uid}/followers")
@@ -285,12 +229,13 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                         followButton.setBackgroundResource(R.drawable.follow_button)
                         followButton.setTextColor(ContextCompat.getColor(context!!, R.color.white))
                         followButton.text = "Follow"
+//                        followButton.tag = "unfollowed"
 
                     } else {
-                        followButton.visibility = View.VISIBLE
                         followButton.setBackgroundResource(R.drawable.unfollow_button)
                         followButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray300))
                         followButton.text = "Unfollow"
+//                        followButton.tag = "followed"
 
                     }
 
@@ -298,184 +243,105 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
                     if (case == 1) {
 
-                        followerRef.setValue(mapOf(userProfile.uid to true))
-                        beingFollowedRef.setValue(mapOf(currentUser.uid to true))
+                        followerRef.child(userProfile.uid).setValue(true)
+                        beingFollowedRef.child(currentUser.uid).setValue(true)
 
                         followButton.setBackgroundResource(R.drawable.unfollow_button)
                         followButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray300))
                         followButton.text = "Unfollow"
 
-                        changeReputation(20,userProfile.uid, userProfile.uid, currentUser.uid, currentUser.name, userProfile.uid, TextView(context), "follow")
+                        changeReputation(
+                            20,
+                            userProfile.uid,
+                            userProfile.uid,
+                            currentUser.uid,
+                            currentUser.name,
+                            userProfile.uid,
+                            TextView(context),
+                            "follow",
+                            activity
+                        )
 
                     } else {
-                        followButton.visibility = View.VISIBLE
                         followButton.setBackgroundResource(R.drawable.follow_button)
                         followButton.setTextColor(ContextCompat.getColor(context!!, R.color.white))
                         followButton.text = "Follow"
-
                     }
-
                 }
-
             }
-
-
         })
-
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.profile_navigation, menu)
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-
-        when (id) {
-            R.id.profile_logout -> {
-                FirebaseAuth.getInstance().signOut()
-
-                val intent = Intent(this.context, LoginActivity::class.java)
-
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-            }
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun changeGalleryFeed(source: String) {
-
-        if (source == "bucket") {
-            rollBtn.setTextColor(resources.getColor(R.color.gray500))
-            bucketBtn.setTextColor(resources.getColor(R.color.gray700))
-            listenToImagesFromBucket()
-
-        } else {
-            rollBtn.setTextColor(resources.getColor(R.color.gray700))
-            bucketBtn.setTextColor(resources.getColor(R.color.gray500))
-            listenToImagesFromRoll()
-        }
-    }
-
-    private fun setUpGalleryAdapter(gallery: androidx.recyclerview.widget.RecyclerView, type: Int) {
-
-        if (type == 0) {
-            gallery.adapter = galleryRollAdapter
-            val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
-            gallery.layoutManager = galleryLayoutManager
-        } else {
-            gallery.adapter = galleryBucketAdapter
-            val galleryLayoutManager = LinearLayoutManager(this.context)
-            gallery.layoutManager = galleryLayoutManager
-        }
     }
 
 
-    private fun listenToImagesFromRoll() { //This needs to be fixed to not update in real time. Or should it?
+    private fun listenToImagesFromRoll() {
+
+        profileGallery.adapter = galleryRollAdapter
+        val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
+        profileGallery.layoutManager = galleryLayoutManager
 
         galleryRollAdapter.clear()
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
 
-        ref.addChildEventListener(object : ChildEventListener {
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
 
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                for (imagePath in p0.children) {
 
-                val imagePath = p0.key
+                    val imageObjectPath =
+                        FirebaseDatabase.getInstance().getReference("/images/${imagePath.key}/body")
 
-                val imageObjectPath =
-                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
-
-                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onCancelled(p0: DatabaseError) {
-
-                    }
-
-                    override fun onDataChange(p0: DataSnapshot) {
-                        val imageObject = p0.getValue(Images::class.java)
-
-                        galleryRollAdapter.add(FeedImage(imageObject!!))
-                    }
-                })
-
-
-//                val singleImageFromDB = p0.getValue(Images::class.java)
-//
-//                if (singleImageFromDB != null) {
-//
-//                    galleryAdapter.add(FeedImage(singleImageFromDB))
-//
-//                }
-            }
-
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
-
-        })
-    }
-
-
-    private fun listenToImagesFromBucket() { //This needs to be fixed to not update in real time. Or should it?
-
-        galleryBucketAdapter.clear()
-
-        val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/buckets")
-
-        ref.addChildEventListener(object : ChildEventListener {
-
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
-                val singleImageFromDBlink = p0.key
-
-
-                val refForImageObjects =
-                    FirebaseDatabase.getInstance().getReference("/images/$singleImageFromDBlink/body")
-
-                refForImageObjects.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onCancelled(p0: DatabaseError) {
-                    }
-
-                    override fun onDataChange(p0: DataSnapshot) {
-                        val singleImageFromDB = p0.getValue(Images::class.java)
-
-                        if (singleImageFromDB != null) {
-
-                            galleryBucketAdapter.add(FeedImage(singleImageFromDB))
-
+                    imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
                         }
-                    }
 
+                        override fun onDataChange(p0: DataSnapshot) {
+                            val imageObject = p0.getValue(Images::class.java)
+                            if (imageObject != null) {
 
-                })
+                                imageList.add(FeedImage(imageObject, 1))
+                                galleryRollAdapter.clear()
+                                galleryRollAdapter.addAll(imageList.reversed())
+                            }
+                        }
+                    })
+                }
             }
+
+//            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+//
+//                val imagePath = p0.key
+//
+//                val imageObjectPath =
+//                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+//
+//                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+//                    override fun onCancelled(p0: DatabaseError) {
+//
+//                    }
+//
+//                    override fun onDataChange(p0: DataSnapshot) {
+//                        val imageObject = p0.getValue(Images::class.java)
+//
+//                        galleryRollAdapter.add(FeedImage(imageObject!!, 0))
+//                    }
+//                })
+//            }
 
             override fun onCancelled(p0: DatabaseError) {
-            }
 
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
             }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
+//
+//            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+//            }
+//
+//            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+//            }
+//
+//            override fun onChildRemoved(p0: DataSnapshot) {
+//            }
 
         })
-
     }
 
 

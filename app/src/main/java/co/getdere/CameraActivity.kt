@@ -5,9 +5,13 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModelProviders
 import co.getdere.fragments.DarkRoomEditFragment
 import co.getdere.fragments.NewPhotoFragment
-import co.getdere.fragments.PhotoEditorFragment
+import co.getdere.roomclasses.LocalImagePost
+import co.getdere.roomclasses.LocalImageViewModel
+import co.getdere.viewmodels.SharedViewModelLocalImagePost
 import kotlinx.android.synthetic.main.content_camera.*
 import kotlinx.android.synthetic.main.subcontent_camera.*
 
@@ -17,8 +21,6 @@ class CameraActivity : AppCompatActivity() {
     lateinit var mainFrame: FrameLayout
     lateinit var subFrame: FrameLayout
 
-    var currentPhotoUri = ""
-
     val fm = supportFragmentManager
     val subFm = supportFragmentManager
 
@@ -26,29 +28,27 @@ class CameraActivity : AppCompatActivity() {
     lateinit var subActive: Fragment
 
     lateinit var newPhotoFragment: NewPhotoFragment
-    lateinit var photoEditorFragment: PhotoEditorFragment
-    lateinit var darkRoomEditFragment : DarkRoomEditFragment
+    lateinit var darkRoomEditFragment: DarkRoomEditFragment
+    var localImagePost = MutableLiveData<LocalImagePost>()
 
+    private lateinit var localImageViewModel: LocalImageViewModel
+    lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
 
+        localImageViewModel = ViewModelProviders.of(this).get(LocalImageViewModel::class.java)
+        sharedViewModelLocalImagePost = ViewModelProviders.of(this).get(SharedViewModelLocalImagePost::class.java)
+
         mainFrame = camera_frame_container
         subFrame = camera_subcontents_frame_container
 
         newPhotoFragment = NewPhotoFragment()
-        photoEditorFragment = PhotoEditorFragment()
         darkRoomEditFragment = DarkRoomEditFragment()
 
-        fm.beginTransaction().add(R.id.camera_frame_container, newPhotoFragment, "newPhotoFragment").commit()
+        fm.beginTransaction().add(mainFrame.id, newPhotoFragment, "newPhotoFragment").commit()
         active = newPhotoFragment
-
-        subFm.beginTransaction()
-            .add(R.id.camera_subcontents_frame_container, darkRoomEditFragment, "darkRoomEditFragment")
-            .hide(darkRoomEditFragment).commit()
-        subFm.beginTransaction().add(R.id.camera_subcontents_frame_container, photoEditorFragment, "photoEditorFragment").commit()
-        subActive = photoEditorFragment
 
     }
 
@@ -66,9 +66,11 @@ class CameraActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
 
-        if (mainFrame.visibility == View.GONE){
+        if (mainFrame.visibility == 8) {
+            subFm.beginTransaction()
+                .remove(darkRoomEditFragment).commit()
             switchVisibility(0)
-        } else{
+        } else {
             super.onBackPressed()
         }
     }
