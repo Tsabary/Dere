@@ -3,9 +3,11 @@
              xmlns:tools="http://schemas.android.com/tools"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
-             tools:context=".fragments.CollectionFeedFragment">
+             tools:context=".fragments.CollectionFeedFragment"
+             android:background="@color/white">
     <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/add_image_to_answer_recycler"/>
+            android:id="@+id/add_image_to_collection_recycler"
+            android:background="@color/white"/>
 </FrameLayout>

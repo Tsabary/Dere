@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
@@ -16,7 +17,6 @@ import co.getdere.R
 import co.getdere.groupieAdapters.ImageSelector
 import co.getdere.models.Images
 import co.getdere.models.ItineraryBody
-import co.getdere.models.Users
 import co.getdere.viewmodels.*
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
@@ -27,9 +27,8 @@ class AddImagesToItineraryFragment : Fragment() {
 
 
     lateinit var sharedViewModelItineraryImages: SharedViewModelItineraryImages
-    lateinit var currentUser: Users
     val galleryAdapter = GroupAdapter<ViewHolder>()
-    var myImageList = mutableListOf<Images>()
+    var myImageList = mutableListOf<String>()
 
     lateinit var sharedViewModelItinerary: SharedViewModelItinerary
     lateinit var itineraryObject: ItineraryBody
@@ -46,10 +45,19 @@ class AddImagesToItineraryFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val activity = activity as MainActivity
+
+        val galleryRecycler = add_image_to_collection_recycler
+        val imagesRecyclerLayoutManager =
+            GridLayoutManager(this.context, 3, RecyclerView.VERTICAL, false)
+        galleryRecycler.adapter = galleryAdapter
+        galleryRecycler.layoutManager = imagesRecyclerLayoutManager
+
+
         activity.let {
             sharedViewModelItinerary = ViewModelProviders.of(activity).get(SharedViewModelItinerary::class.java)
             sharedViewModelItinerary.itinerary.observe(this, Observer {
                 it?.let { itinerary ->
+                    galleryAdapter.clear()
                     itineraryObject = itinerary.child("body").getValue(ItineraryBody::class.java)!!
 
                     val imagesRef = FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryObject.id}/body/images")
@@ -83,18 +91,10 @@ class AddImagesToItineraryFragment : Fragment() {
             })
         }
 
-        val galleryRecycler = add_image_to_answer_recycler
 
-        val imagesRecyclerLayoutManager =
-            GridLayoutManager(this.context, 3, RecyclerView.VERTICAL, false)
-
-        galleryRecycler.adapter = galleryAdapter
-        galleryRecycler.layoutManager = imagesRecyclerLayoutManager
 
 
         activity.let {
-            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-
             sharedViewModelItineraryImages = ViewModelProviders.of(it).get(SharedViewModelItineraryImages::class.java)
             sharedViewModelItineraryImages.imageList.observe(activity, Observer { mutableList ->
                 mutableList?.let { existingImageList ->
@@ -109,17 +109,15 @@ class AddImagesToItineraryFragment : Fragment() {
 
             val image = item as ImageSelector
 
-            if (!myImageList.contains(image.image)) {
-                myImageList.add(image.image)
+            if (!myImageList.contains(image.image.id)) {
+                myImageList.add(image.image.id)
                 sharedViewModelItineraryImages.imageList.postValue(myImageList)
             } else {
-                myImageList.remove(image.image)
+                myImageList.remove(image.image.id)
                 sharedViewModelItineraryImages.imageList.postValue(myImageList)
             }
-
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.itineraryEditFragment)
-                .commit()
             activity.subActive = activity.itineraryEditFragment
+            activity.subFm.popBackStack("addImagesToItineraryFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
         }
     }
 

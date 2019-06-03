@@ -2,7 +2,6 @@ package co.getdere.fragments
 
 
 import android.app.Activity
-import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -11,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
@@ -19,7 +19,6 @@ import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.*
-import co.getdere.otherClasses.*
 import co.getdere.viewmodels.SharedViewModelItinerary
 import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
@@ -31,14 +30,14 @@ import com.google.firebase.database.ValueEventListener
 import com.peekandpop.shalskar.peekandpop.PeekAndPop
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerFullScreenListener
 
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.budget_includes_layout.view.*
 import kotlinx.android.synthetic.main.feed_single_photo.view.*
 import kotlinx.android.synthetic.main.fragment_itinerary.*
-import kotlinx.android.synthetic.main.image_peek.view.*
+import kotlinx.android.synthetic.main.image_peek_itinerary.view.*
 import kotlinx.android.synthetic.main.review_layout.view.*
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
@@ -51,13 +50,14 @@ class ItineraryFragment : Fragment(), DereMethods {
     val sampleImagesAdapter = GroupAdapter<ViewHolder>()
     val lastReviewsAdapter = GroupAdapter<ViewHolder>()
     val allReviewsAdapter = GroupAdapter<ViewHolder>()
-
-    lateinit var peekAndPop: PeekAndPop
-    lateinit var peekView: View
+    val budgetIncludesAdapter = GroupAdapter<ViewHolder>()
 
     val reviewsList = mutableListOf<SingleItineraryReview>()
-
-    lateinit var itineraryObject: ItineraryBody
+    lateinit var allReviewsContainer: ConstraintLayout
+    lateinit var itineraryBody: ItineraryBody
+    lateinit var itineraryListing: ItineraryListing
+    lateinit var itineraryContent: ItineraryInformational
+    lateinit var itineraryBudget: ItineraryBudget
 
     val uid = FirebaseAuth.getInstance().uid
 
@@ -92,13 +92,15 @@ class ItineraryFragment : Fragment(), DereMethods {
         val dummyDescription = getString(R.string.dummy_itinerary_description)
         val dummyYoutubeVideo = getString(R.string.dummy_youtube_video)
 
-        val purchaseBtn = itinerary_buy_button
+        val purchaseBtn = itinerary_buy_cta_container
+        val purchaseBtn2 = itinerary_buy_cta_container_2
 
-        val coverImage = itinerary_cover_image
+//        val coverImage = itinerary_cover_image
         val title = itinerary_title
         val description = itinerary_description
         val location = itinerary_location
         val price = itinerary_price
+        val priceBottom = itinerary_buy_price_bottom
         val youtubePlayer = itinerary_youtube_player
         val sampleImagesRecycler = itinerary_sample_photos_recycler
         val imageCount = itinerary_photo_count
@@ -117,6 +119,11 @@ class ItineraryFragment : Fragment(), DereMethods {
         val accommodationContainer = itinerary_includes_accommodation_container
         val transportationContainer = itinerary_includes_transportation_container
 
+        val budget = itinerary_budget
+        val budgetAlsoIncludes = itinerary_budget_also_includes_text
+
+        val aboutGuide = itinerary_guide_about
+
         val leaveReview = itinerary_leave_review
         val reviewContainer = itinerary_review_container
         val reviewCancel = itinerary_review_cancel
@@ -126,10 +133,11 @@ class ItineraryFragment : Fragment(), DereMethods {
 
         val readAllReviews = itinerary_read_more_reviews
         val dismissAllReviews = itinerary_all_reviews_dismiss
-        val allReviewsContainer = itinerary_all_reviews_container
+        allReviewsContainer = itinerary_all_reviews_container
 
         val latestReviewsRecycler = itinerary_last_reviews_recycler
         val allReviewsRecycler = itinerary_all_reviews_recycler
+        val budgetIncludesRecycler = itinerary_budget_includes_recycler
 
         starBarBg = itinerary_1_star_background_bar
         starBar1Fg = itinerary_1_star_filling_bar
@@ -139,16 +147,16 @@ class ItineraryFragment : Fragment(), DereMethods {
         starBar5Fg = itinerary_5_star_filling_bar
 
         sampleImagesRecycler.adapter = sampleImagesAdapter
-        val sampleImageLayoutManager = GridLayoutManager(this.context, 4)
-        sampleImagesRecycler.layoutManager = sampleImageLayoutManager
+        sampleImagesRecycler.layoutManager = GridLayoutManager(this.context, 4)
 
         latestReviewsRecycler.adapter = lastReviewsAdapter
-        val lastReviewLayoutManager = LinearLayoutManager(this.context)
-        latestReviewsRecycler.layoutManager = lastReviewLayoutManager
+        latestReviewsRecycler.layoutManager = LinearLayoutManager(this.context)
 
         allReviewsRecycler.adapter = allReviewsAdapter
-        val allReviewLayoutManager = LinearLayoutManager(this.context)
-        allReviewsRecycler.layoutManager = allReviewLayoutManager
+        allReviewsRecycler.layoutManager = LinearLayoutManager(this.context)
+
+        budgetIncludesRecycler.adapter = budgetIncludesAdapter
+        budgetIncludesRecycler.layoutManager = GridLayoutManager(this.context, 2)
 
         readAllReviews.setOnClickListener {
             allReviewsContainer.visibility = View.VISIBLE
@@ -167,22 +175,17 @@ class ItineraryFragment : Fragment(), DereMethods {
         }
 
         purchaseBtn.setOnClickListener {
+            purchaseItinerary(activity)
+        }
 
-            activity.subFm.beginTransaction().hide(activity.subActive).add(R.id.feed_subcontents_frame_container, activity.buyItineraryFragment, "buyItineraryFragment").commit()
-            activity.subActive = activity.buyItineraryFragment
-
-//            if (itineraryObject.creator != uid) {
-//                FirebaseDatabase.getInstance().getReference("/users/$uid/purchasedItineraries/${itineraryObject.id}")
-//                    .setValue(true)
-//            } else {
-//                Toast.makeText(this.context, "Can't buy your own itinerary", Toast.LENGTH_SHORT).show()
-//            }
+        purchaseBtn2.setOnClickListener {
+            purchaseItinerary(activity)
         }
 
         reviewSubmit.setOnClickListener {
             if (reviewInput.text.isNotEmpty() && reviewStars.rating.toInt() != 0) {
                 val reviewRef =
-                    FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryObject.id}/reviews").push()
+                    FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryBody.id}/reviews").push()
                 val newReview = ItineraryReview(
                     reviewRef.key!!,
                     reviewInput.text.toString(),
@@ -194,42 +197,23 @@ class ItineraryFragment : Fragment(), DereMethods {
                 reviewRef.child("body").setValue(newReview).addOnSuccessListener {
 
                     numAllReviews++
-                    sumAllReviews += reviewStars.rating.toInt()
+                    sumAllReviews += reviewStars.rating
                     val newRating = sumAllReviews / numAllReviews
-                    FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryObject.id}/listing/rating")
+                    FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryBody.id}/listing/rating")
                         .setValue(newRating).addOnSuccessListener {
                             reviewInput.text.clear()
                             reviewStars.rating = 0f
                             reviewContainer.visibility = View.GONE
+                            closeKeyboard(activity)
+
                         }
                 }
 
-                closeKeyboard(activity)
             }
         }
 
 
         lifecycle.addObserver(youtubePlayer)
-
-//        youtubePlayer.getPlayerUiController().setFullScreenButtonClickListener(View.OnClickListener {
-//            if (youtubePlayer.isFullScreen()) {
-//                youtubePlayer.exitFullScreen()
-//            } else {
-//                youtubePlayer.enterFullScreen()
-//            }
-//        })
-
-//        youtubePlayer.addFullScreenListener(object :YouTubePlayerFullScreenListener{
-//            override fun onYouTubePlayerEnterFullScreen() {
-//                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
-//                fullScreenHelper.enterFullScreen()
-//            }
-//
-//            override fun onYouTubePlayerExitFullScreen() {
-//
-//            }
-//
-//        })
 
         activity.let {
             sharedViewModelItinerary = ViewModelProviders.of(it).get(SharedViewModelItinerary::class.java)
@@ -240,47 +224,41 @@ class ItineraryFragment : Fragment(), DereMethods {
 
                     sharedViewModelItinerary.itinerary.observe(activity, Observer { itineraries ->
                         itineraries?.let { itinerarySnapshot ->
-                            val itineraryBody = itinerarySnapshot.child("body").getValue(ItineraryBody::class.java)
-                            val itineraryDetails =
-                                itinerarySnapshot.child("listing").getValue(ItineraryTechnical::class.java)
-                            val itineraryContent =
-                                itinerarySnapshot.child("content").getValue(ItineraryInformational::class.java)
+                            lastReviewsAdapter.clear()
+                            allReviewsAdapter.clear()
+                            reviewsList.clear()
 
-                            if (itineraryDetails != null) {
+                            itineraryBody = itinerarySnapshot.child("body").getValue(ItineraryBody::class.java)!!
+                            itineraryListing =
+                                itinerarySnapshot.child("listing").getValue(ItineraryListing::class.java)!!
+                            itineraryContent =
+                                itinerarySnapshot.child("content").getValue(ItineraryInformational::class.java)!!
+                            itineraryBudget =
+                                itinerarySnapshot.child("budget").getValue(ItineraryBudget::class.java)!!
 
-                                firstImage@ for (image in itineraryDetails.sampleImages) {
+                            leaveReview.visibility = if (itinerarySnapshot.hasChild("buyers/$uid")) {
+                                View.VISIBLE
+                            } else {
+                                View.GONE
+                            }
 
-                                    val imageRef =
-                                        FirebaseDatabase.getInstance().getReference("/images/${image.key}/body")
-                                    imageRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                                        override fun onCancelled(p0: DatabaseError) {
-                                        }
-
-                                        override fun onDataChange(p0: DataSnapshot) {
-
-                                            val imageObject = p0.getValue(Images::class.java)!!
-
-                                            Glide.with(activity).load(imageObject.imageBig).into(coverImage)
-                                        }
-
-                                    })
-                                    break@firstImage
-                                }
-
+                            if (itineraryListing != null) {
+                                sampleImagesAdapter.clear()
 
                                 youTubePlayer.cueVideo(
-                                    if (itineraryDetails.video.isNotEmpty()) {
-                                        itineraryDetails.video
+                                    if (itineraryListing.video.isNotEmpty()) {
+                                        itineraryListing.video
                                     } else {
                                         dummyYoutubeVideo
                                     }, 0f
                                 )
 
-                                price.text = "($${itineraryDetails.price})"
+                                price.text = "($${itineraryListing.price})"
+                                priceBottom.text = "($${itineraryListing.price})"
 
-                                if (itineraryDetails.sampleImages.isNotEmpty()) {
+                                if (itineraryListing.sampleImages.isNotEmpty()) {
                                     sampleImagesRecycler.visibility = View.VISIBLE
-                                    for (imagePath in itineraryDetails.sampleImages) {
+                                    for (imagePath in itineraryListing.sampleImages) {
                                         val imagesRef =
                                             FirebaseDatabase.getInstance().getReference("/images/${imagePath.key}/body")
 
@@ -304,7 +282,7 @@ class ItineraryFragment : Fragment(), DereMethods {
                             }
 
                             if (itineraryBody != null) {
-                                itineraryObject = itineraryBody
+                                itineraryBody = itineraryBody
                                 listenToLastReviews()
 
                                 title.text = itineraryBody.title
@@ -367,6 +345,35 @@ class ItineraryFragment : Fragment(), DereMethods {
                                     transportationContainer.visibility = View.GONE
                                 }
 
+                                aboutGuide.text = itineraryContent.aboutAuthor
+                            }
+
+                            if (itineraryBudget != null) {
+
+                                budgetIncludesAdapter.clear()
+
+                                budget.text = "$${itineraryBudget.budget}"
+
+                                if (itineraryBudget.food) {
+                                    budgetIncludesAdapter.add(BudgetIncludes("Food"))
+                                }
+                                if (itineraryBudget.nightlife) {
+                                    budgetIncludesAdapter.add(BudgetIncludes("Nightlife"))
+                                }
+                                if (itineraryBudget.activities) {
+                                    budgetIncludesAdapter.add(BudgetIncludes("Activities"))
+                                }
+                                if (itineraryBudget.accommodation) {
+                                    budgetIncludesAdapter.add(BudgetIncludes("Accommodation"))
+                                }
+                                if (itineraryBudget.transportation) {
+                                    budgetIncludesAdapter.add(BudgetIncludes("Transportation"))
+                                }
+
+                                if (itineraryBudget.other.isNotEmpty()) {
+                                    budgetAlsoIncludes.text = itineraryBudget.other
+                                }
+
 
                             }
                         }
@@ -376,11 +383,40 @@ class ItineraryFragment : Fragment(), DereMethods {
         }
     }
 
+    private fun purchaseItinerary(activity: MainActivity) {
+        if (itineraryBody.creator != uid) {
+
+            if (itineraryListing.price > 0) {
+                activity.subFm.beginTransaction().hide(activity.subActive)
+                    .add(R.id.feed_subcontents_frame_container, activity.buyItineraryFragment, "buyItineraryFragment")
+                    .addToBackStack("buyItineraryFragment").commit()
+                activity.subActive = activity.buyItineraryFragment
+            } else {
+                FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryBody.id}/buyers/$uid")
+                    .setValue(true).addOnSuccessListener {
+                        FirebaseDatabase.getInstance()
+                            .getReference("/users/$uid/purchasedItineraries/${itineraryBody.id}")
+                            .setValue(true).addOnSuccessListener {
+                                Toast.makeText(this.context, "Itinerary purchased successfully", Toast.LENGTH_SHORT)
+                                    .show()
+                                activity.marketplacePurchasedFragment.listenToItineraries()
+                                activity.subFm.beginTransaction().show(activity.marketplacePurchasedFragment).commit()
+                                activity.subFm.popBackStack(
+                                    "itineraryFragment",
+                                    FragmentManager.POP_BACK_STACK_INCLUSIVE
+                                )
+                            }
+                    }
+            }
+        } else {
+            Toast.makeText(this.context, "Can't buy your own itinerary", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun listenToLastReviews() {
 
         allReviewsAdapter.clear()
         lastReviewsAdapter.clear()
-        sampleImagesAdapter.clear()
 
         oneStarReviews = 0f
         twoStarReviews = 0f
@@ -388,7 +424,7 @@ class ItineraryFragment : Fragment(), DereMethods {
         fourStarReviews = 0f
         fiveStarReviews = 0f
 
-        val reviewsRef = FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryObject.id}/reviews")
+        val reviewsRef = FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryBody.id}/reviews")
         reviewsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
             }
@@ -404,23 +440,23 @@ class ItineraryFragment : Fragment(), DereMethods {
                             when (reviewObject.rating) {
                                 1 -> {
                                     oneStarReviews++
-                                    sumAllReviews += 1
+                                    sumAllReviews += 1f
                                 }
                                 2 -> {
                                     twoStarReviews++
-                                    sumAllReviews += 2
+                                    sumAllReviews += 2f
                                 }
                                 3 -> {
                                     threeStarReviews++
-                                    sumAllReviews += 3
+                                    sumAllReviews += 3f
                                 }
                                 4 -> {
                                     fourStarReviews++
-                                    sumAllReviews += 4
+                                    sumAllReviews += 4f
                                 }
                                 5 -> {
                                     fiveStarReviews++
-                                    sumAllReviews += 5
+                                    sumAllReviews += 5f
                                 }
                             }
                         }
@@ -437,34 +473,40 @@ class ItineraryFragment : Fragment(), DereMethods {
                         val fourStarPercentage = fourStarReviews / numAllReviews
                         val fiveStarPercentage = fiveStarReviews / numAllReviews
 
-                        (starBar1Fg.layoutParams as ConstraintLayout.LayoutParams).width = if (oneStarReviews > 0) {
-                            (starBarBg.width * oneStarPercentage).toInt()
+                        if (oneStarReviews > 0) {
+                            (starBar1Fg.layoutParams as ConstraintLayout.LayoutParams).width = (starBarBg.width * oneStarPercentage).toInt()
+                            starBar1Fg.visibility = View.VISIBLE
                         } else {
-                            1
+                            starBar1Fg.visibility = View.GONE
                         }
 
-                        (starBar2Fg.layoutParams as ConstraintLayout.LayoutParams).width = if (twoStarReviews > 0) {
-                            (starBarBg.width * twoStarPercentage).toInt()
+                        if (twoStarReviews > 0) {
+                            (starBar2Fg.layoutParams as ConstraintLayout.LayoutParams).width = (starBarBg.width * twoStarPercentage).toInt()
+                            starBar2Fg.visibility = View.VISIBLE
                         } else {
-                            1
+                            starBar2Fg.visibility = View.GONE
                         }
 
-                        (starBar3Fg.layoutParams as ConstraintLayout.LayoutParams).width = if (threeStarReviews > 0) {
-                            (starBarBg.width * threeStarPercentage).toInt()
+                        if (threeStarReviews > 0) {
+                            (starBar3Fg.layoutParams as ConstraintLayout.LayoutParams).width = (starBarBg.width * threeStarPercentage).toInt()
+                            starBar3Fg.visibility = View.VISIBLE
+
                         } else {
-                            1
+                            starBar3Fg.visibility = View.GONE
                         }
 
-                        (starBar4Fg.layoutParams as ConstraintLayout.LayoutParams).width = if (fourStarReviews > 0) {
-                            (starBarBg.width * fourStarPercentage).toInt()
+                        if (fourStarReviews > 0) {
+                            (starBar4Fg.layoutParams as ConstraintLayout.LayoutParams).width = (starBarBg.width * fourStarPercentage).toInt()
+                            starBar4Fg.visibility = View.VISIBLE
                         } else {
-                            1
+                            starBar4Fg.visibility = View.GONE
                         }
 
-                        (starBar5Fg.layoutParams as ConstraintLayout.LayoutParams).width = if (fiveStarReviews > 0) {
-                            (starBarBg.width * fiveStarPercentage).toInt()
+                        if (fiveStarReviews > 0) {
+                            (starBar5Fg.layoutParams as ConstraintLayout.LayoutParams).width = (starBarBg.width * fiveStarPercentage).toInt()
+                            starBar5Fg.visibility = View.VISIBLE
                         } else {
-                            1
+                            starBar5Fg.visibility = View.GONE
                         }
 
                         itinerary_1_star_percentage.text = "${(oneStarPercentage * 100).toInt()}%"
@@ -475,10 +517,13 @@ class ItineraryFragment : Fragment(), DereMethods {
 
                     }
 
-                    val numOfReviews = if (reviewsList.size > 3) {
-                        2
+                    var numOfReviews = 0
+                    if (reviewsList.size > 3) {
+                        numOfReviews = 2
+                        itinerary_read_more_reviews.visibility = View.VISIBLE
                     } else {
-                        reviewsList.size - 1
+                        numOfReviews = reviewsList.size - 1
+                        itinerary_read_more_reviews.visibility = View.GONE
                     }
 
                     for (index in 0..numOfReviews) {
@@ -486,7 +531,7 @@ class ItineraryFragment : Fragment(), DereMethods {
                         val review = reviewsList[index]
                         lastReviewsAdapter.add(review)
                     }
-
+                    allReviewsAdapter.clear()
                     allReviewsAdapter.addAll(reviewsList.reversed())
 
 
@@ -520,12 +565,12 @@ class SampleImages(val image: Images, val activity: Activity) : Item<ViewHolder>
         viewHolder.itemView.feed_single_photo_card.radius = px
 
         peekAndPop = PeekAndPop.Builder(activity)
-            .peekLayout(R.layout.image_peek)
+            .peekLayout(R.layout.image_peek_itinerary)
             .longClickViews(viewHolder.itemView)
             .build();
 
         peekView = peekAndPop.peekView
-        val imageView = peekView.image_peek_image
+        val imageView = peekView.image_peek_itinerary_image
         peekAndPop.setOnGeneralActionListener(object : PeekAndPop.OnGeneralActionListener {
             override fun onPop(p0: View?, p1: Int) {
 
@@ -543,7 +588,8 @@ class SampleImages(val image: Images, val activity: Activity) : Item<ViewHolder>
     }
 }
 
-class SingleItineraryReview(private val review: ItineraryReview, val activity: MainActivity) : Item<ViewHolder>() {
+class SingleItineraryReview(private val review: ItineraryReview, val activity: MainActivity) : Item<ViewHolder>(),
+    DereMethods {
 
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
 
@@ -630,7 +676,7 @@ class SingleItineraryReview(private val review: ItineraryReview, val activity: M
                 val author = p0.getValue(Users::class.java)
                 Glide.with(viewHolder.root.context).load(author!!.image).into(authorImage)
                 authorName.text = author.name
-                authorReputation.text = "(${author.reputation})"
+                authorReputation.text = "(${numberCalculation(author.reputation)})"
 
                 authorImage.setOnClickListener {
                     goToProfile(author)
@@ -651,10 +697,26 @@ class SingleItineraryReview(private val review: ItineraryReview, val activity: M
     fun goToProfile(user: Users) {
         if (user.uid != uid) {
             sharedViewModelRandomUser.randomUserObject.postValue(user)
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileRandomUserFragment).commit()
+            activity.subFm.beginTransaction().add(
+                R.id.feed_subcontents_frame_container,
+                activity.profileRandomUserFragment,
+                "profileRandomUserFragment"
+            ).addToBackStack("profileRandomUserFragment")
+                .commit()
             activity.subActive = activity.profileRandomUserFragment
         } else {
             activity.navigateToProfile()
         }
     }
+}
+
+class BudgetIncludes(val includes: String) : Item<ViewHolder>() {
+    override fun getLayout(): Int {
+        return R.layout.budget_includes_layout
+    }
+
+    override fun bind(viewHolder: ViewHolder, position: Int) {
+        viewHolder.itemView.budget_includes_text.text = includes
+    }
+
 }

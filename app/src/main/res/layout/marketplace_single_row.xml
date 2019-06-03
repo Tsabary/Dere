@@ -68,7 +68,7 @@
                     app:layout_constraintEnd_toStartOf="@+id/marketplace_single_row_rating"
                     android:isIndicator="true"
                     app:srb_numStars="5"
-                    app:srb_minimumStars="1"
+                    app:srb_minimumStars="0"
                     app:srb_rating="0"
                     app:srb_starWidth="12dp"
                     app:srb_starHeight="12dp"

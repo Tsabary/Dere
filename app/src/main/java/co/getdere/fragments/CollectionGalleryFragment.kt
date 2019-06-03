@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProviders
 import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.adapters.BucketGalleryPagerAdapter
+import co.getdere.adapters.ItineraryGalleryParentPagerAdapter
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Users
 import co.getdere.otherClasses.SwipeLockableViewPager
@@ -26,6 +27,7 @@ import kotlinx.android.synthetic.main.fragment_collection_gallery.*
 
 class CollectionGalleryFragment : Fragment(), DereMethods {
 
+    lateinit var sharedViewModelItineraryDayImages: SharedViewModelItineraryDayImages
     lateinit var sharedViewModelCollection: SharedViewModelCollection
     lateinit var sharedViewModelItinerary: SharedViewModelItinerary
     lateinit var sharedViewModelImage: SharedViewModelImage
@@ -38,7 +40,6 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
     lateinit var editableTitle: EditText
     lateinit var fixedTitle: TextView
     lateinit var galleryViewPager: SwipeLockableViewPager
-    lateinit var pagerAdapter: BucketGalleryPagerAdapter
 
     var viewPagerPosition = 0
 
@@ -64,8 +65,8 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
         fixedTitle = collection_gallery_title
 
         galleryViewPager = collection_gallery_viewpager
-        pagerAdapter = BucketGalleryPagerAdapter(childFragmentManager)
-        galleryViewPager.adapter = pagerAdapter
+        val pagerAdapterBucket = BucketGalleryPagerAdapter(childFragmentManager)
+        val pagerAdapterItinerary = ItineraryGalleryParentPagerAdapter(childFragmentManager)
 
 
         mapButton.setOnClickListener {
@@ -84,7 +85,8 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
             sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
             sharedViewModelItinerary = ViewModelProviders.of(it).get(SharedViewModelItinerary::class.java)
-
+            sharedViewModelItineraryDayImages =
+                ViewModelProviders.of(it).get(SharedViewModelItineraryDayImages::class.java)
 
 
             sharedViewModelCollection.imageCollection.observe(this, Observer { dataSnapshot ->
@@ -92,7 +94,7 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
 
                     collection = collectionSnapshot
 
-                    if (collection.child("body/creator").value != currentUser.uid || collection.key == "AllBuckets"){
+                    if (collection.child("body/creator").value != currentUser.uid || collection.key == "AllBuckets") {
                         editButton.visibility = View.GONE
                     } else {
                         editButton.visibility = View.VISIBLE
@@ -107,25 +109,28 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
                     collection_gallery_photos_count.text =
                         collectionSnapshot.child("/body/images").childrenCount.toString() + " photos"
 
-                    if (collectionSnapshot.hasChild("body/locationId") && collectionSnapshot.child("body/creator").value == currentUser.uid) {
-                        publish.visibility = View.VISIBLE
+                    if (collectionSnapshot.hasChild("body/locationId")) {
+                        galleryViewPager.adapter = pagerAdapterItinerary
+
+                        if (collectionSnapshot.child("body/creator").value == currentUser.uid) {
+                            publish.visibility = View.VISIBLE
+                        }
+
                     } else {
                         publish.visibility = View.GONE
+                        galleryViewPager.adapter = pagerAdapterBucket
+
                     }
 
                     publish.setOnClickListener {
 
                         sharedViewModelItinerary.itinerary.postValue(collectionSnapshot)
 
-                        activity.subFm.beginTransaction().hide(activity.subActive).add(
+                        activity.subFm.beginTransaction().add(
                             R.id.feed_subcontents_frame_container,
-                            activity.addImagesToItineraryFragment,
-                            "addImagesToItineraryFragment"
-                        )
-                            .hide(activity.addImagesToItineraryFragment)
-                            .add(R.id.feed_subcontents_frame_container, activity.itineraryEditFragment, "itineraryEditFragment")
-                            .commit()
-
+                            activity.itineraryEditFragment,
+                            "itineraryEditFragment"
+                        ).addToBackStack("itineraryEditFragment").commit()
                         activity.subActive = activity.itineraryEditFragment
                     }
                 }
@@ -151,7 +156,7 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
     }
 
     private fun switchEditableTitle() {
-        val activity= activity as MainActivity
+        val activity = activity as MainActivity
         if (fixedTitle.visibility == View.VISIBLE) {
             fixedTitle.visibility = View.GONE
             editableTitle.visibility = View.VISIBLE
@@ -166,7 +171,7 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
             editableTitle.visibility = View.GONE
             editButton.setImageResource(R.drawable.edit)
 
-            if (editableTitle.text.isNotEmpty()){
+            if (editableTitle.text.isNotEmpty()) {
                 if (publish.visibility == View.VISIBLE) {
                     FirebaseDatabase.getInstance().getReference("/itineraries/${collection.key}/body/title")
                         .setValue(newTitle)

@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
@@ -21,8 +22,8 @@ import co.getdere.models.Question
 import co.getdere.models.Users
 
 import co.getdere.R
-import co.getdere.groupieAdapters.AnswerPhoto
-import co.getdere.groupieAdapters.FeedImage
+import co.getdere.groupieAdapters.CollectionPhoto
+import co.getdere.models.Images
 import co.getdere.viewmodels.SharedViewModelAnswerImages
 import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelQuestion
@@ -33,8 +34,6 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.answer_layout.*
-import kotlinx.android.synthetic.main.answer_layout.view.*
 import kotlinx.android.synthetic.main.fragment_answer.*
 import kotlinx.android.synthetic.main.fragment_answer.view.*
 
@@ -62,6 +61,7 @@ class AnswerFragment : Fragment(), DereMethods {
             sharedViewModelQuestion.questionObject.observe(this, Observer { observedQuestion ->
                 observedQuestion?.let { questionObject ->
                     question = questionObject
+                    answerContent.text.clear()
                 }
             })
 
@@ -84,7 +84,7 @@ class AnswerFragment : Fragment(), DereMethods {
 
         val addImage = answer_add_photos_button
         val answerButton = answer_btn
-        answerButton.text = "Answer"
+        answerButton.text = getString(R.string.answer)
 
         val imagesRecycler = answer_photos_recycler
         val imagesRecyclerLayoutManager = GridLayoutManager(this.context, 3)
@@ -106,9 +106,26 @@ class AnswerFragment : Fragment(), DereMethods {
                     View.GONE
                 }
 
+                val imagesRef = FirebaseDatabase.getInstance().getReference("/images")
+
                 for (image in existingImageList) {
-                    imagesRecyclerAdapter.add(AnswerPhoto(image, activity))
-                    imageListFinal.add(image.id)
+
+                    imagesRef.child("$image/body")
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onCancelled(p0: DatabaseError) {
+                            }
+
+                            override fun onDataChange(p0: DataSnapshot) {
+
+                                val imageObject  = p0.getValue(Images::class.java)
+                                if (imageObject != null){
+                                    imagesRecyclerAdapter.add(CollectionPhoto(imageObject, activity, "answer", 0))
+                                    imageListFinal.add(imageObject.id)
+                                }
+                            }
+                        })
+
+
                 }
             }
         })
@@ -157,7 +174,9 @@ class AnswerFragment : Fragment(), DereMethods {
 
 
         addImage.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.addImageToAnswer).commit()
+            activity.subFm.beginTransaction()
+                .add(R.id.feed_subcontents_frame_container, activity.addImageToAnswer, "addImageToAnswer")
+                .addToBackStack("addImageToAnswer").commit()
             activity.subActive = activity.addImageToAnswer
         }
     }
@@ -197,15 +216,14 @@ class AnswerFragment : Fragment(), DereMethods {
 
                 refQuestionLastInteraction.setValue(timestamp).addOnSuccessListener {
                     activity.openedQuestionFragment.listenToAnswers(question.id)
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
-                        .commit()
                     activity.subActive = activity.openedQuestionFragment
                     closeKeyboard(activity)
-
                     answerContent.text.clear()
 
                     val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
                     firebaseAnalytics.logEvent("question_answer_added", null)
+                    activity.subFm.popBackStack("answerFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+
                 }
 
 

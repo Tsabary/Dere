@@ -50,7 +50,6 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
     lateinit var imageAuthor : Users
 
     val commentsRecyclerAdapter = GroupAdapter<ViewHolder>()
-    private val commentsRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
 
     lateinit var layoutScroll: NestedScrollView
 
@@ -137,7 +136,7 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
         val commentsRecycler = image_expended_comments_recycler
 
         commentsRecycler.adapter = commentsRecyclerAdapter
-        commentsRecycler.layoutManager = commentsRecyclerLayoutManager
+        commentsRecycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
 
         Glide.with(this).load(currentUser.image).into(currentUserImage)
 
@@ -240,7 +239,7 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
 //                    linkIcon.visibility = View.VISIBLE
 
                     linkAddress.setOnClickListener {
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.webViewFragment)
+                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.webViewFragment, "webViewFragment").addToBackStack("webViewFragment")
                             .commit()
                         activity.subActive = activity.webViewFragment
                     }
@@ -260,7 +259,7 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
                     }
 
                     editButton.setOnClickListener {
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imagePostEditFragment)
+                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.imagePostEditFragment, "imagePostEditFragment").addToBackStack("imagePostEditFragment")
                             .commit()
                         activity.subActive = activity.imagePostEditFragment
                         optionsContainer.visibility = View.GONE
@@ -316,7 +315,7 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
 
                 actionsContainer.visibility = View.VISIBLE
 
-//                listenToImageComments(image, commentsRecyclerAdapter, commentsRecycler, divider, currentUser, activity)
+                listenToImageComments(image, commentsRecyclerAdapter, commentsRecycler, divider, currentUser, activity)
 
 
 
@@ -376,8 +375,8 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
 
         bucketButton.setOnClickListener {
             if (currentUser.uid != imageObject.photographer) {
-                activity.subFm.beginTransaction().hide(activity.subActive)
-                    .add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment").commit()
+                activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment").addToBackStack("addToBucketFragment")
+                    .commit()
                 activity.subActive = activity.addToBucketFragment
             }
         }
@@ -465,7 +464,8 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
 
         val activity = activity as MainActivity
 
-        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileSecondRandomUserFragment).commit()
+        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.profileSecondRandomUserFragment, "profileSecondRandomUserFragment").addToBackStack("profileSecondRandomUserFragment")
+            .commit()
         activity.subActive = activity.profileSecondRandomUserFragment
 
         activity.isRandomUserProfileActive = true

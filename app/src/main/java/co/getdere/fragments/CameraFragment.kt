@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.CameraActivity
 import co.getdere.R
+import co.getdere.interfaces.DereMethods
 import co.getdere.roomclasses.LocalImagePost
 import co.getdere.roomclasses.LocalImageViewModel
 import co.getdere.viewmodels.SharedViewModelLocalImagePost
@@ -31,7 +32,7 @@ import java.io.File
 import java.io.FileOutputStream
 
 
-class CameraFragment : Fragment() {
+class CameraFragment : Fragment(), DereMethods {
 
     lateinit var cameraKitView: CameraKitView
 
@@ -116,7 +117,7 @@ class CameraFragment : Fragment() {
 
         captureButton.setOnClickListener {
 
-            if (isLocationServiceEnabled()) {
+            if (isLocationServiceEnabled(context!!)) {
 
                 Log.d("photoActivity", "button clicked")
 
@@ -208,18 +209,7 @@ class CameraFragment : Fragment() {
     }
 
 
-    private fun isLocationServiceEnabled(): Boolean {
-        var gpsEnabled = false
 
-        val locationManager: LocationManager = context!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        try {
-            gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        } catch (ex: Exception) {
-            //do nothing...
-        }
-
-        return gpsEnabled
-    }
 
     private fun cropImage(filePath: Uri) {
         val myUcrop = UCrop.of(filePath, filePath)

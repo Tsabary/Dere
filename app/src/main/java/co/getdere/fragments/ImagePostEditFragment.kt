@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.MainActivity
@@ -29,10 +30,7 @@ import co.getdere.viewmodels.SharedViewModelTags
 import com.bumptech.glide.Glide
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
@@ -89,7 +87,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
     lateinit var tagsContainer: ConstraintLayout
     lateinit var urlContainer: ConstraintLayout
 
-    lateinit var currentUser : Users
+    lateinit var currentUser: Users
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -162,7 +160,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         imageLocationInput = dark_room_edit_location_input
         imageUrl = dark_room_edit_url
 
-        val currentUserName= dark_room_edit_author_name
+        val currentUserName = dark_room_edit_author_name
         val currentUserPhoto = dark_room_edit_author_image
         currentUserName.text = currentUser.name
         Glide.with(this.context!!).load(currentUser.image).into(currentUserPhoto)
@@ -230,8 +228,7 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
         cancelButton.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment)
-                .commit()
+            activity.subFm.popBackStack("imagePostEditFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
             activity.subActive = activity.imageFullSizeFragment
             makeInfoActive()
         }
@@ -272,9 +269,12 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                         imageLong = imageObject.location[1]
 
                         imageObject.tags.forEach { tag ->
-                            imageTagsList.add(tag)
+                            //                            imageTagsList.add(tag)
                             onTagSelected(tag)
                         }
+
+                        println("tagsUpdated ${imageObject.tags}")
+
 
                         if (imageObject.private) {
                             dark_room_edit_privacy_text.text = "private"
@@ -368,76 +368,85 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                         saveButton.setOnClickListener {
 
-                            if (imageChipGroup.childCount > 0){
+                            if (imageChipGroup.childCount > 0) {
                                 val locationInput = imageLocationInput.text.toString()
 
-                                val url = if(imageUrl.text.isNotEmpty()){
+                                val url = if (imageUrl.text.isNotEmpty()) {
                                     imageUrl.text.toString()
                                 } else {
                                     ""
                                 }
 
-
-
                                 val privacy = dark_room_edit_privacy_text.text == "private"
 
-                                imageTagsList.clear()
+//                                imageTagsList.clear()
 
                                 for (i in 0 until imageChipGroup.childCount) {
                                     val chip = imageChipGroup.getChildAt(i) as Chip
                                     imageTagsList.add(chip.text.toString())
                                 }
 
-                                val imageRef = FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/body")
+                                val imageRef =
+                                    FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/body")
 
                                 imageRef.child("private").setValue(privacy)
                                 imageRef.child("link").setValue(url)
                                 imageRef.child("details").setValue(locationInput)
                                 imageRef.child("tags").setValue(imageTagsList)
                                 imageRef.child("location").setValue(mutableListOf(imageLat, imageLong))
+//
+//
+//                                val updatedImage = Images(
+//                                    imageObject.id,
+//                                    imageObject.imageBig,
+//                                    imageObject.imageSmall,
+//                                    privacy,
+//                                    imageObject.photographer,
+//                                    url,
+//                                    locationInput,
+//                                    mutableListOf(imageLat, imageLong),
+//                                    imageObject.timestampTaken,
+//                                    imageObject.timestampUpload,
+//                                    imageTagsList,
+//                                    imageObject.verified,
+//                                    0,
+//                                    imageObject.ratio,
+//                                    0
+//                                )
 
+                                FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/body")
+                                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                                        override fun onCancelled(p0: DatabaseError) {
+                                        }
 
+                                        override fun onDataChange(p0: DataSnapshot) {
 
+                                            sharedViewModelImage.sharedImageObject.postValue(p0.getValue(Images::class.java))
+                                            activity.subActive = activity.imageFullSizeFragment
 
-                                val updatedImage = Images(
-                                    imageObject.id,
-                                    imageObject.imageBig,
-                                    imageObject.imageSmall,
-                                    privacy,
-                                    imageObject.photographer,
-                                    url,
-                                    locationInput,
-                                    mutableListOf(imageLat, imageLong),
-                                    imageObject.timestampTaken,
-                                    imageObject.timestampUpload,
-                                    imageTagsList,
-                                    imageObject.verified,
-                                    0,
-                                    imageObject.ratio,
-                                    0
-                                )
+                                            makeInfoActive()
 
+                                            for (t in imageTagsList) {
+                                                val refTag =
+                                                    FirebaseDatabase.getInstance().getReference("/tags/$t/${imageObject.id}")
+                                                val refUserTags = FirebaseDatabase.getInstance()
+                                                    .getReference("users/${imageObject.photographer}/interests/$t")
 
-                                sharedViewModelImage.sharedImageObject.postValue(updatedImage)
+                                                refTag.setValue("image")
+                                                refUserTags.setValue(true)
+                                            }
 
-                                activity.subFm.beginTransaction().hide(activity.subActive)
-                                    .show(activity.imageFullSizeFragment)
-                                    .commit()
-                                activity.subActive = activity.imageFullSizeFragment
+                                            closeKeyboard(activity)
 
-                                makeInfoActive()
+                                            activity.subFm.popBackStack(
+                                                "imagePostEditFragment",
+                                                FragmentManager.POP_BACK_STACK_INCLUSIVE
+                                            )
 
-                                for (t in imageTagsList) {
-                                    val refTag =
-                                        FirebaseDatabase.getInstance().getReference("/tags/$t/${imageObject.id}")
-                                    val refUserTags = FirebaseDatabase.getInstance()
-                                        .getReference("users/${imageObject.photographer}/interests/$t")
+                                        }
 
-                                    refTag.setValue("image")
-                                    refUserTags.setValue(true)
-                                }
+                                    })
 
-                                closeKeyboard(activity)
                             } else {
                                 Toast.makeText(this.context, "Please add at least one tag", Toast.LENGTH_SHORT).show()
                                 makeTagsActive()
@@ -592,8 +601,10 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         chip.isCloseIconVisible = true
         chip.isCheckable = false
         chip.isClickable = false
-        chip.setCloseIconTintResource(R.color.green200)
-        chip.setChipBackgroundColorResource(R.color.green700)
+        chip.setChipBackgroundColorResource(R.color.white)
+        chip.chipStrokeWidth = 1f
+        chip.setChipStrokeColorResource(R.color.gray500)
+        chip.setCloseIconTintResource(R.color.gray500)
         chip.setTextAppearance(R.style.ChipSelectedStyle)
         chip.setOnCloseIconClickListener {
             imageChipGroup.removeView(it)

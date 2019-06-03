@@ -7,5 +7,5 @@ import co.getdere.models.Images
 import com.google.firebase.database.DataSnapshot
 
 class SharedViewModelItineraryImages : ViewModel() {
-    var imageList = MutableLiveData<MutableList<Images>>()
+    var imageList = MutableLiveData<MutableList<String>>()
 }

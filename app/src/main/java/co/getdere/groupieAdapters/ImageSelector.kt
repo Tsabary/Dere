@@ -64,7 +64,7 @@ class ImageSelector(val image: Images, val activity: MainActivity) : Item<ViewHo
                     }
 
                     photo.setOnClickListener {
-                        existingImageList.add(image)
+                        existingImageList.add(image.id)
                         sharedViewModelAnswerImages.imageList.postValue(existingImageList)
                         activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editAnswerFragment)
                             .commit()
@@ -116,11 +116,11 @@ class ImageSelector(val image: Images, val activity: MainActivity) : Item<ViewHo
             .apply(requestOption).into(viewHolder.itemView.feed_single_photo_photo)
     }
 
-    private fun checkExistence(list : MutableList<Images>) : Boolean{
+    private fun checkExistence(list : MutableList<String>) : Boolean{
         var imageMatch = 0
 
         for (singleImage in list){
-            if (singleImage.id == image.id)
+            if (singleImage == image.id)
                 imageMatch ++
         }
 

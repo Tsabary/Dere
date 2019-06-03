@@ -467,8 +467,8 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                         val activity = activity as MainActivity
 
-                        activity.subFm.beginTransaction().hide(activity.subActive)
-                            .show(activity.imageFullSizeFragment).commit()
+                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment").addToBackStack("imageFullSizeFragment").commit()
+
                         activity.subActive = activity.imageFullSizeFragment
 //                        activity.collectionGalleryFragment.galleryViewPager.currentItem = 0
                         activity.isCollectionMapViewActive = true

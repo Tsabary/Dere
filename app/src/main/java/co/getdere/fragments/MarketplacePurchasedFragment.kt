@@ -10,7 +10,8 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.models.ItineraryBody
-import co.getdere.models.ItineraryTechnical
+import co.getdere.models.ItineraryBudget
+import co.getdere.models.ItineraryListing
 import co.getdere.viewmodels.SharedViewModelCollection
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -68,7 +69,7 @@ class MarketplacePurchasedFragment : Fragment() {
 
                 override fun onDataChange(p0: DataSnapshot) {
                     sharedViewModelCollection.imageCollection.postValue(p0)
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionGalleryFragment)
+                    activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
                         .commit()
                     activity.subActive = activity.collectionGalleryFragment
                 }
@@ -76,7 +77,7 @@ class MarketplacePurchasedFragment : Fragment() {
         }
     }
 
-    private fun listenToItineraries() {
+    fun listenToItineraries() {
 
         adapter.clear()
 
@@ -101,10 +102,12 @@ class MarketplacePurchasedFragment : Fragment() {
 
                                 val itinerary = p0.child("body").getValue(ItineraryBody::class.java)
                                 val itineraryListing =
-                                    p0.child("listing").getValue(ItineraryTechnical::class.java)
+                                    p0.child("listing").getValue(ItineraryListing::class.java)
+                                val itineraryBudget =
+                                    p0.child("listing").getValue(ItineraryBudget::class.java)
 
-                                if (itinerary != null && itineraryListing != null) {
-                                    adapter.add(SingleItinerary(itinerary, itineraryListing))
+                                if (itinerary != null && itineraryListing != null && itineraryBudget != null) {
+                                    adapter.add(SingleItinerary(itinerary, itineraryListing, itineraryBudget))
                                 }
 
                             }

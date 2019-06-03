@@ -84,8 +84,9 @@ class DarkRoomFragment : Fragment() {
             val adapterImage = item as DarkRoomGroupieAdapter
 
             sharedViewModelLocalImagePost.sharedImagePostObject.postValue(adapterImage.image)
-            activity.subFm.beginTransaction()
-                .add(activity.subFrame.id, activity.darkRoomEditFragment, "darkRoomEditFragment").commit()
+            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.darkRoomEditFragment, "darkRoomEditFragment").addToBackStack("darkRoomEditFragment").commit()
+            activity.subActive = activity.darkRoomEditFragment
+
             activity.switchVisibility(1)
         }
 

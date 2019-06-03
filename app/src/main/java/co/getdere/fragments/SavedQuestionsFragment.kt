@@ -63,7 +63,8 @@ class SavedQuestionsFragment : Fragment() {
         val boardSavedQuestionIcon = board_toolbar_saved_questions_icon
 
         boardNotificationIcon.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.boardNotificationsFragment)
+            activity.subFm.beginTransaction().hide(activity.savedQuestionFragment)
+                .show(activity.boardNotificationsFragment)
                 .commit()
             activity.subActive = activity.boardNotificationsFragment
         }
@@ -85,7 +86,7 @@ class SavedQuestionsFragment : Fragment() {
     }
 
 
-    private fun listenToQuestions() {
+    fun listenToQuestions() {
 
         questionsRecyclerAdapter.clear()
 

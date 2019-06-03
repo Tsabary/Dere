@@ -57,7 +57,6 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
     lateinit var randomUser: Users
 
     val commentsRecyclerAdapter = GroupAdapter<ViewHolder>()
-    private val commentsRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
 
     lateinit var layoutScroll: NestedScrollView
 
@@ -144,7 +143,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         val commentsRecycler = image_expended_comments_recycler
 
         commentsRecycler.adapter = commentsRecyclerAdapter
-        commentsRecycler.layoutManager = commentsRecyclerLayoutManager
+        commentsRecycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
 
         Glide.with(this).load(currentUser.image).into(currentUserImage)
 
@@ -211,8 +210,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 //                    linkIcon.visibility = View.VISIBLE
 
                     linkAddress.setOnClickListener {
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.webViewFragment)
-                            .commit()
+                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.webViewFragment , "webViewFragment").addToBackStack("webViewFragment").commit()
                         activity.subActive = activity.webViewFragment
                     }
                 } else {
@@ -231,7 +229,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                     }
 
                     editButton.setOnClickListener {
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imagePostEditFragment)
+                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.imagePostEditFragment, "imagePostEditFragment").addToBackStack("imagePostEditFragment")
                             .commit()
                         activity.subActive = activity.imagePostEditFragment
                         optionsContainer.visibility = View.GONE
@@ -383,17 +381,17 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         collectButton.setOnClickListener {
             if (currentUser.uid != imageObject.photographer) {
-                activity.subFm.beginTransaction().hide(activity.subActive)
-                    .add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment")
+                activity.subFm.beginTransaction()
+                    .add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment").addToBackStack("addToBucketFragment")
                     .commit()
                 activity.subActive = activity.addToBucketFragment
             } else {
-                activity.subFm.beginTransaction().hide(activity.subActive)
+                activity.subFm.beginTransaction()
                     .add(
                         R.id.feed_subcontents_frame_container,
                         activity.addToItineraryFragment,
                         "addToItineraryFragment"
-                    ).commit()
+                    ).addToBackStack("addToItineraryFragment").commit()
                 activity.subActive = activity.addToItineraryFragment
             }
         }
@@ -488,7 +486,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         if (currentUser.uid != randomUser.uid) {
 
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileRandomUserFragment).commit()
+            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.profileRandomUserFragment, "profileRandomUserFragment").addToBackStack("profileRandomUserFragment").commit()
             activity.subActive = activity.profileRandomUserFragment
 
             activity.isRandomUserProfileActive = true
@@ -579,25 +577,13 @@ class SingleComment(
         }
 
         commentAuthorImage.setOnClickListener {
-
-            if (currentUser.uid != comment.authorId) {
-                commentUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onCancelled(p0: DatabaseError) {
-                    }
-
-                    override fun onDataChange(p0: DataSnapshot) {
-
-                        sharedViewModelSecondRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
-                        activity.subFm.beginTransaction().hide(activity.subActive)
-                            .show(activity.profileSecondRandomUserFragment)
-                            .commit()
-                        activity.subActive = activity.profileSecondRandomUserFragment
-                        activity.isSecondRandomUserProfileActive = true
-                    }
-                })
-            } else {
-                activity.navigateToProfile()
-            }
+            goToProfile()
+        }
+        commentAuthor.setOnClickListener {
+            goToProfile()
+        }
+        commentAuthorReputation.setOnClickListener {
+            goToProfile()
         }
 
 
@@ -677,7 +663,7 @@ class SingleComment(
                     FirebaseDatabase.getInstance().getReference("/images/${image.id}/comments/${comment.id}")
                 commentRef.removeValue()
 
-                (activity as MainActivity).imageFullSizeFragment.commentsRecyclerAdapter.removeGroup(position)
+                activity.imageFullSizeFragment.commentsRecyclerAdapter.removeGroup(position)
                 activity.imageFullSizeFragment.commentsRecyclerAdapter.notifyDataSetChanged()
                 commentDeleteContainer.visibility = View.GONE
 
@@ -687,6 +673,26 @@ class SingleComment(
         }
     }
 
+    private fun goToProfile(){
+        if (currentUser.uid != comment.authorId) {
+            commentUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+
+                    sharedViewModelSecondRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
+                    activity.subFm.beginTransaction()
+                        .add(R.id.feed_subcontents_frame_container, activity.profileSecondRandomUserFragment, "profileSecondRandomUserFragment").addToBackStack("profileSecondRandomUserFragment")
+                        .commit()
+                    activity.subActive = activity.profileSecondRandomUserFragment
+                    activity.isSecondRandomUserProfileActive = true
+                }
+            })
+        } else {
+            activity.navigateToProfile()
+        }
+    }
 
     private fun listenToCommentLikeCount(commentLikeCount: TextView) {
 

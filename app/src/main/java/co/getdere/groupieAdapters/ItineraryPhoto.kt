@@ -43,7 +43,7 @@ class ItineraryPhoto(val image: Images, val activity: Activity) : Item<ViewHolde
             it?.let { existingImageList ->
 
                 viewHolder.itemView.answer_photo_remove.setOnClickListener {
-                    existingImageList.remove(image)
+                    existingImageList.remove(image.id)
                     sharedViewModelItineraryImages.imageList.postValue(existingImageList)
                 }
             }

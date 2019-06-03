@@ -161,35 +161,23 @@ class BoardFragment : Fragment() {
         val boardSavedQuestionIcon = board_toolbar_saved_questions_icon
 
         notificationBadge.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.boardNotificationsFragment)
-                .commit()
-            activity.subActive = activity.boardNotificationsFragment
-
-            activity.switchVisibility(1)
-            activity.isBoardNotificationsActive = true
-            activity.boardNotificationsFragment.listenToNotifications()
+            gotToNotifications(activity)
         }
 
         boardNotificationIcon.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.boardNotificationsFragment)
-                .commit()
-            activity.subActive = activity.boardNotificationsFragment
-
-            activity.switchVisibility(1)
-            activity.isBoardNotificationsActive = true
-            activity.boardNotificationsFragment.listenToNotifications()
+            gotToNotifications(activity)
         }
 
         boardSavedQuestionIcon.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.savedQuestionFragment).commit()
+            activity.subFm.beginTransaction().hide(activity.boardNotificationsFragment).show(activity.savedQuestionFragment).commit()
             activity.subActive = activity.savedQuestionFragment
-
             activity.switchVisibility(1)
+            activity.isBoardNotificationsActive = true
         }
 
         fab.setOnClickListener {
 
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.newQuestionFragment).commit()
+            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.newQuestionFragment, "newQuestionFragment").addToBackStack("newQuestionFragment").commit()
             activity.subActive = activity.newQuestionFragment
 
             activity.switchVisibility(1)
@@ -293,8 +281,19 @@ class BoardFragment : Fragment() {
         }
     }
 
-    private fun openQuestion(author : String){
+    private fun gotToNotifications(activity: MainActivity) {
+        activity.subFm.beginTransaction().hide(activity.savedQuestionFragment).show(activity.boardNotificationsFragment).commit()
+        activity.subActive = activity.boardNotificationsFragment
+
+        activity.switchVisibility(1)
+        activity.isBoardNotificationsActive = true
+//        activity.boardNotificationsFragment.listenToNotifications()
+    }
+
+    private fun openQuestion(author: String) {
         val activity = activity as MainActivity
+        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.openedQuestionFragment, "openedQuestionFragment").addToBackStack("openedQuestionFragment").commit()
+
         val refRandomUser = FirebaseDatabase.getInstance().getReference("/users/$author/profile")
 
         refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -307,8 +306,7 @@ class BoardFragment : Fragment() {
                 val randomUserFromDB = p0.getValue(Users::class.java)
                 sharedViewModelRandomUser.randomUserObject.postValue(randomUserFromDB)
 
-                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
-                    .commit()
+
                 activity.subActive = activity.openedQuestionFragment
                 activity.isOpenedQuestionActive = true
                 activity.switchVisibility(1)
@@ -413,7 +411,12 @@ class BoardFragment : Fragment() {
 
                                     if (interest == tag) {
                                         questionsRowLayoutAdapter.add(BoardRow(singleQuestionFromDB))
-                                        questionsBlockLayoutAdapter.add((BoardBlock(singleQuestionFromDB, activity as MainActivity)))
+                                        questionsBlockLayoutAdapter.add(
+                                            (BoardBlock(
+                                                singleQuestionFromDB,
+                                                activity as MainActivity
+                                            ))
+                                        )
 
                                         break@singleQuestionLoop
                                     }
@@ -421,7 +424,12 @@ class BoardFragment : Fragment() {
                             }
                         } else {
                             questionsRowLayoutAdapter.add(BoardRow(singleQuestionFromDB))
-                            questionsBlockLayoutAdapter.add((BoardBlock(singleQuestionFromDB, activity as MainActivity)))
+                            questionsBlockLayoutAdapter.add(
+                                (BoardBlock(
+                                    singleQuestionFromDB,
+                                    activity as MainActivity
+                                ))
+                            )
 
                         }
                     }

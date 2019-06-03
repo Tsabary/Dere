@@ -1,43 +1,33 @@
 package co.getdere.fragments
 
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import co.getdere.MainActivity
+import co.getdere.R
+import co.getdere.groupieAdapters.CollectionPhoto
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.Answers
-import co.getdere.models.Question
-import co.getdere.models.Users
-
-import co.getdere.R
-import co.getdere.groupieAdapters.AnswerPhoto
-import co.getdere.groupieAdapters.FeedImage
-import co.getdere.groupieAdapters.ImageSelector
 import co.getdere.models.Images
+import co.getdere.models.Users
 import co.getdere.viewmodels.SharedViewModelAnswer
 import co.getdere.viewmodels.SharedViewModelAnswerImages
 import co.getdere.viewmodels.SharedViewModelCurrentUser
-import co.getdere.viewmodels.SharedViewModelQuestion
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
-import kotlinx.android.synthetic.main.answer_layout.*
-import kotlinx.android.synthetic.main.answer_layout.view.*
 import kotlinx.android.synthetic.main.fragment_answer.*
-import kotlinx.android.synthetic.main.fragment_answer.view.*
 
 
 class EditAnswerFragment : Fragment(), DereMethods {
@@ -96,9 +86,26 @@ class EditAnswerFragment : Fragment(), DereMethods {
                     View.GONE
                 }
 
+                val imagesRef = FirebaseDatabase.getInstance().getReference("/images")
+
                 for (image in existingImageList) {
-                    imagesRecyclerAdapter.add(AnswerPhoto(image, activity))
-                    imageListFinal.add(image.id)
+
+                    imagesRef.child("$image/body")
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onCancelled(p0: DatabaseError) {
+                            }
+
+                            override fun onDataChange(p0: DataSnapshot) {
+
+                                val imageObject  = p0.getValue(Images::class.java)
+                                if (imageObject != null){
+                                    imagesRecyclerAdapter.add(CollectionPhoto(imageObject, activity, "answer", 0))
+                                    imageListFinal.add(imageObject.id)
+                                }
+                            }
+                        })
+
+
                 }
 
 
@@ -113,7 +120,7 @@ class EditAnswerFragment : Fragment(), DereMethods {
                         answerRef.child("content").setValue(content.text.toString())
                         answerRef.child("photos").setValue(imageListFinal)
 
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment).commit()
+                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.openedQuestionFragment, "openedQuestionFragment").addToBackStack("openedQuestionFragment").commit()
                         activity.subActive = activity.openedQuestionFragment
 
                     } else {
@@ -132,7 +139,7 @@ class EditAnswerFragment : Fragment(), DereMethods {
 
                 answer = answerObject
 
-                var answerImagesList = mutableListOf<Images>()
+                val answerImagesList = mutableListOf<String>()
 
                 sharedViewModelAnswerImages.imageList.postValue(mutableListOf())
 
@@ -148,9 +155,11 @@ class EditAnswerFragment : Fragment(), DereMethods {
                         override fun onDataChange(p0: DataSnapshot) {
 
                             val imageObject = p0.getValue(Images::class.java)
-                            answerImagesList.add(imageObject!!)
-                            sharedViewModelAnswerImages.imageList.postValue(answerImagesList)
-                            Log.d("imageList", answerImagesList.toString())
+                            if(imageObject != null){
+                                answerImagesList.add(imageObject.id)
+                                sharedViewModelAnswerImages.imageList.postValue(answerImagesList)
+                            }
+
                         }
                     })
                 }
@@ -168,7 +177,7 @@ class EditAnswerFragment : Fragment(), DereMethods {
 
 
         addImage.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.addImageToAnswer).commit()
+            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.addImageToAnswer, "addImageToAnswer").addToBackStack("addImageToAnswer").commit()
             activity.subActive = activity.addImageToAnswer
         }
     }

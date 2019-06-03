@@ -5,7 +5,8 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/white">
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -118,10 +119,12 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/constraintLayout7">
+            app:layout_constraintBottom_toTopOf="@+id/constraintLayout7"
+            android:background="@color/white">
 
-        <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent"
-                                                           android:layout_height="match_parent">
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -131,6 +134,45 @@
                     android:padding="24dp"
                     android:visibility="visible">
 
+                <TextView
+                        android:text="How many days of travel could be covered with this itinerary?"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView34"
+                        app:layout_constraintTop_toBottomOf="@+id/constraintLayout11"
+                        app:layout_constraintStart_toStartOf="@id/textView13"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="@color/gray900"
+                        app:layout_constraintEnd_toEndOf="@id/textView13"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        android:textSize="15sp"
+                        android:layout_marginTop="24dp"/>
+                <TextView
+                        android:text="What type of traveler is this itinerary for?"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView33"
+                        app:layout_constraintTop_toBottomOf="@+id/itinerary_edit_description"
+                        app:layout_constraintStart_toStartOf="@id/textView13"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="@color/gray900"
+                        app:layout_constraintEnd_toEndOf="@id/textView13"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        android:textSize="15sp"
+                        android:layout_marginTop="24dp"/>
+                <TextView
+                        android:text="Describe your itinerary in a couple of sentances"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView15"
+                        android:layout_marginTop="24dp"
+                        app:layout_constraintTop_toBottomOf="@id/itinerary_edit_title"
+                        app:layout_constraintStart_toStartOf="@id/textView13"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="@color/gray900"
+                        app:layout_constraintEnd_toEndOf="@id/textView13"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        android:textSize="15sp"/>
                 <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -156,7 +198,24 @@
                         android:fontFamily="@font/roboto_bold"
                         android:textColor="@color/gray900"
                         app:layout_constraintEnd_toEndOf="@id/textView13"
-                        app:layout_constraintHorizontal_bias="0.0"/>
+                        app:layout_constraintHorizontal_bias="0.0"
+                        android:textSize="15sp"/>
+                <EditText
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:inputType="textMultiLine"
+                        android:gravity="start|top"
+                        android:ems="10"
+                        android:id="@+id/itinerary_edit_description"
+                        app:layout_constraintTop_toBottomOf="@id/textView15"
+                        android:layout_marginTop="16dp"
+                        android:background="@drawable/gray_form_field"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:hint="For example: great for couples who like to experience local wineries on a budget, and discover the best murals around the city"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textSize="15sp"
+                        android:padding="16dp"/>
                 <EditText
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -174,46 +233,6 @@
                         android:textSize="15sp"
                         android:padding="16dp"/>
                 <TextView
-                        android:text="What's the title of your itinerary?"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/textView14"
-                        android:layout_marginTop="24dp"
-                        app:layout_constraintTop_toBottomOf="@id/itinerary_edit_location"
-                        app:layout_constraintStart_toStartOf="@id/textView13"
-                        android:fontFamily="@font/roboto_bold"
-                        android:textColor="@color/gray900"
-                        app:layout_constraintEnd_toEndOf="@id/textView13"
-                        app:layout_constraintHorizontal_bias="0.0"/>
-                <EditText
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:inputType="textMultiLine"
-                        android:gravity="start|top"
-                        android:ems="10"
-                        android:id="@+id/itinerary_edit_description"
-                        app:layout_constraintTop_toBottomOf="@id/textView15"
-                        android:layout_marginTop="16dp"
-                        android:background="@drawable/gray_form_field"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        android:hint="For example: great for couples who like to experience local wineries on a budget, and discover the best murals around the city"
-                        android:fontFamily="@font/roboto_medium"
-                        android:textSize="15sp"
-                        android:padding="16dp"/>
-                <TextView
-                        android:text="Describe your itinerary in a couple of sentances"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/textView15"
-                        android:layout_marginTop="24dp"
-                        app:layout_constraintTop_toBottomOf="@id/itinerary_edit_title"
-                        app:layout_constraintStart_toStartOf="@id/textView13"
-                        android:fontFamily="@font/roboto_bold"
-                        android:textColor="@color/gray900"
-                        app:layout_constraintEnd_toEndOf="@id/textView13"
-                        app:layout_constraintHorizontal_bias="0.0"/>
-                <TextView
                         android:text="Let's get specific"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -227,86 +246,120 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         android:layout_marginEnd="8dp"
                         app:layout_constraintHorizontal_bias="0.0"/>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-            <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="24dp"
-                    android:visibility="gone"
-                    app:layout_constraintTop_toTopOf="parent"
-                    android:id="@+id/itinerary_edit_about_you_container">
-
                 <TextView
-                        android:text="Let's talk about you"
+                        android:text="What's the title of your itinerary?"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:id="@+id/textView8"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        android:fontFamily="@font/roboto_black"
-                        android:textSize="24sp"
-                        android:textColor="@color/gray900"
-                        android:layout_marginStart="8dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        android:layout_marginEnd="8dp"
-                        app:layout_constraintHorizontal_bias="0.0"/>
-                <TextView
-                        android:text="How long have you lived here?"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/textView9"
+                        android:id="@+id/textView14"
                         android:layout_marginTop="24dp"
-                        app:layout_constraintTop_toBottomOf="@+id/textView8"
-                        app:layout_constraintStart_toStartOf="@+id/textView8"
+                        app:layout_constraintTop_toBottomOf="@id/itinerary_edit_location"
+                        app:layout_constraintStart_toStartOf="@id/textView13"
                         android:fontFamily="@font/roboto_bold"
                         android:textColor="@color/gray900"
-                        app:layout_constraintEnd_toEndOf="@+id/textView8"
-                        app:layout_constraintHorizontal_bias="0.0"/>
-                <TextView
-                        android:text="Select one"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_edit_select_residency"
-                        app:layout_constraintStart_toStartOf="@+id/textView9"
-                        android:layout_marginTop="8dp"
-                        app:layout_constraintTop_toBottomOf="@+id/textView9"
-                        android:textSize="15sp"
-                        android:fontFamily="@font/roboto"
-                        android:textColor="@color/gray700"
-                        app:layout_constraintEnd_toEndOf="@+id/textView9"
-                        app:layout_constraintHorizontal_bias="0.0"/>
+                        app:layout_constraintEnd_toEndOf="@id/textView13"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        android:textSize="15sp"/>
 
-
-                <TextView
-                        android:text="Can you tell your customers more about yourself?"
-                        android:layout_width="0dp"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:id="@+id/textView10"
-                        android:layout_marginTop="24dp"
-                        app:layout_constraintTop_toBottomOf="@+id/itinerary_edit_select_residency"
-                        app:layout_constraintStart_toStartOf="@+id/itinerary_edit_select_residency"
-                        android:fontFamily="@font/roboto_bold"
-                        android:textColor="@color/gray900"
-                        app:layout_constraintEnd_toEndOf="@+id/itinerary_edit_select_residency"/>
-                <EditText
-                        android:layout_width="0dp"
-                        android:layout_height="96dp"
-                        android:inputType="textMultiLine"
-                        android:gravity="start|top"
-                        android:ems="10"
-                        android:id="@+id/itinerary_edit_author_about"
-                        app:layout_constraintTop_toBottomOf="@+id/textView10"
+                        app:layout_constraintTop_toBottomOf="@id/textView33"
                         android:layout_marginTop="16dp"
-                        android:background="@drawable/gray_form_field"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        android:hint="Help people know better who you are an what are your main interets"
+                        app:layout_constraintStart_toStartOf="@+id/itinerary_edit_description"
+                        android:id="@+id/constraintLayout11">
+
+                    <CheckBox
+                            android:text="Couples"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_edit_couples_checkbox"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textColor="@color/gray900"
+                            android:textSize="15sp"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"/>
+
+                    <CheckBox
+                            android:text="Families"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_edit_families_checkbox"
+                            app:layout_constraintStart_toEndOf="@+id/itinerary_edit_couples_checkbox"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textColor="@color/gray900"
+                            android:layout_marginStart="32dp"
+                            app:layout_constraintTop_toTopOf="@+id/itinerary_edit_couples_checkbox"
+                            android:textSize="15sp"/>
+                    <CheckBox
+                            android:text="Groups"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_edit_groups_checkbox"
+                            app:layout_constraintStart_toEndOf="@id/itinerary_edit_families_checkbox"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textColor="@color/gray900"
+                            android:layout_marginStart="32dp"
+                            app:layout_constraintTop_toTopOf="@+id/itinerary_edit_families_checkbox"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            android:textSize="15sp"/>
+                    <CheckBox
+                            android:text="Solo travelers"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_edit_solo_checkbox"
+                            app:layout_constraintTop_toBottomOf="@id/itinerary_edit_couples_checkbox"
+                            android:layout_marginTop="8dp"
+                            app:layout_constraintStart_toStartOf="@+id/itinerary_edit_couples_checkbox"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textColor="@color/gray900"
+                            android:textSize="15sp"/>
+
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <com.crystal.crystalrangeseekbar.widgets.CrystalRangeSeekbar
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/itinerary_edit_days_seekbar"
+                        app:layout_constraintTop_toBottomOf="@+id/textView34"
+                        android:layout_marginTop="24dp"
+                        app:layout_constraintStart_toStartOf="@+id/textView34"
+                        app:layout_constraintEnd_toEndOf="@+id/textView34"
+                        app:min_value="1"
+                        app:max_value="100"
+                        app:max_start_value="100"
+                        app:min_start_value="1"/>
+                <TextView
+                        tools:text="1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/itinerary_edit_days_min"
                         android:fontFamily="@font/roboto_medium"
                         android:textSize="15sp"
-                        android:padding="16dp"/>
+                        android:textColor="@color/gray900"
+                        app:layout_constraintTop_toBottomOf="@+id/itinerary_edit_days_seekbar"
+                        android:layout_marginTop="16dp"
+                        app:layout_constraintStart_toStartOf="@+id/textView34"
+                        android:layout_marginBottom="24dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:layout_marginStart="8dp"/>
+                <TextView
+                        tools:text="30"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/itinerary_edit_days_max"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textSize="15sp"
+                        android:textColor="@color/gray900"
+                        app:layout_constraintTop_toBottomOf="@+id/itinerary_edit_days_seekbar"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="24dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="@+id/textView34"
+                        android:layout_marginEnd="8dp"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
-
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -340,7 +393,8 @@
                         android:fontFamily="@font/roboto_bold"
                         android:textColor="@color/gray900"
                         app:layout_constraintEnd_toEndOf="@id/itinerary_edit_title_2"
-                        app:layout_constraintHorizontal_bias="0.0"/>
+                        app:layout_constraintHorizontal_bias="0.0"
+                        android:textSize="15sp"/>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="0dp"
@@ -644,16 +698,97 @@
 
 
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="24dp"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:id="@+id/itinerary_edit_about_you_container">
+
+                <TextView
+                        android:text="Let's talk about you"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView8"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:fontFamily="@font/roboto_black"
+                        android:textSize="24sp"
+                        android:textColor="@color/gray900"
+                        android:layout_marginStart="8dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_marginEnd="8dp"
+                        app:layout_constraintHorizontal_bias="0.0"/>
+                <TextView
+                        android:text="How long have you lived here?"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView9"
+                        android:layout_marginTop="24dp"
+                        app:layout_constraintTop_toBottomOf="@+id/textView8"
+                        app:layout_constraintStart_toStartOf="@+id/textView8"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="@color/gray900"
+                        app:layout_constraintEnd_toEndOf="@+id/textView8"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        android:textSize="15sp"/>
+                <TextView
+                        android:text="Select one"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/itinerary_edit_select_residency"
+                        app:layout_constraintStart_toStartOf="@+id/textView9"
+                        android:layout_marginTop="8dp"
+                        app:layout_constraintTop_toBottomOf="@+id/textView9"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/roboto"
+                        android:textColor="@color/gray700"
+                        app:layout_constraintEnd_toEndOf="@+id/textView9"
+                        app:layout_constraintHorizontal_bias="0.0"/>
+
+
+                <TextView
+                        android:text="Can you tell your travelers more about yourself?"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView10"
+                        android:layout_marginTop="24dp"
+                        app:layout_constraintTop_toBottomOf="@+id/itinerary_edit_select_residency"
+                        app:layout_constraintStart_toStartOf="@+id/itinerary_edit_select_residency"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="@color/gray900"
+                        app:layout_constraintEnd_toEndOf="@+id/itinerary_edit_select_residency"
+                        android:textSize="15sp"/>
+                <EditText
+                        android:layout_width="0dp"
+                        android:layout_height="96dp"
+                        android:inputType="textMultiLine"
+                        android:gravity="start|top"
+                        android:ems="10"
+                        android:id="@+id/itinerary_edit_author_about"
+                        app:layout_constraintTop_toBottomOf="@+id/textView10"
+                        android:layout_marginTop="16dp"
+                        android:background="@drawable/gray_form_field"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:hint="Help people know better who you are an what are your main interets"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textSize="15sp"
+                        android:padding="16dp"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:layout_constraintTop_toTopOf="parent"
                     android:padding="24dp"
                     android:visibility="gone"
-                    android:id="@+id/itinerary_edit_prices_container">
+                    android:id="@+id/itinerary_edit_budget_container">
 
                 <TextView
-                        android:text="Let's talk prices"
+                        android:text="Let's talk budget"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView18"
@@ -679,7 +814,8 @@
                         android:fontFamily="@font/roboto_bold"
                         android:textColor="@color/gray900"
                         app:layout_constraintEnd_toEndOf="@+id/textView18"
-                        app:layout_constraintHorizontal_bias="0.0"/>
+                        app:layout_constraintHorizontal_bias="0.0"
+                        android:textSize="15sp"/>
 
 
                 <TextView
@@ -693,7 +829,8 @@
                         android:fontFamily="@font/roboto_bold"
                         android:textColor="@color/gray500"
                         app:layout_constraintEnd_toEndOf="@+id/textView19"
-                        app:layout_constraintHorizontal_bias="0.0"/>
+                        app:layout_constraintHorizontal_bias="0.0"
+                        android:textSize="15sp"/>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="0dp"
@@ -704,7 +841,7 @@
                         app:layout_constraintStart_toStartOf="parent"
                         android:padding="16dp"
                         app:layout_constraintEnd_toEndOf="parent"
-                        android:id="@+id/itinerary_edit_budget_container">
+                        android:id="@+id/itinerary_edit_budget_input_container">
 
                     <TextView
                             android:text="$"
@@ -734,87 +871,121 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             android:layout_marginEnd="8dp"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
-
-
                 <TextView
-                        android:text="How much would you like to charge for this itinerary?"
+                        android:text="What is included in this budget?"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:id="@+id/textView29"
+                        android:id="@+id/textView27"
                         android:layout_marginTop="24dp"
-                        app:layout_constraintTop_toBottomOf="@id/itinerary_edit_budget_container"
-                        app:layout_constraintStart_toStartOf="@id/itinerary_edit_budget_container"
+                        app:layout_constraintTop_toBottomOf="@id/itinerary_edit_budget_input_container"
+                        app:layout_constraintStart_toStartOf="@id/textView18"
                         android:fontFamily="@font/roboto_bold"
                         android:textColor="@color/gray900"
-                        app:layout_constraintEnd_toEndOf="@+id/itinerary_edit_budget_container"
+                        app:layout_constraintEnd_toEndOf="@+id/textView18"
                         app:layout_constraintHorizontal_bias="0.0"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginEnd="8dp"/>
-
-                <TextView
-                        android:text="Max price: $"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/textView30"
-                        android:layout_marginTop="8dp"
-                        app:layout_constraintTop_toBottomOf="@id/textView29"
-                        app:layout_constraintStart_toStartOf="@id/textView29"
-                        android:fontFamily="@font/roboto_bold"
-                        android:textColor="@color/gray500"
-                />
-
-                <TextView
-                        tools:text="15"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_edit_price_suggestion"
-                        android:layout_marginTop="8dp"
-                        app:layout_constraintTop_toBottomOf="@id/textView29"
-                        android:fontFamily="@font/roboto_bold"
-                        android:textColor="@color/gray500"
-                        app:layout_constraintStart_toEndOf="@+id/textView30"
-                />
-
+                        android:textSize="15sp"/>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/form_field"
-                        app:layout_constraintTop_toBottomOf="@+id/textView30"
+                        app:layout_constraintTop_toBottomOf="@+id/textView27"
                         android:layout_marginTop="16dp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        android:padding="16dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        android:id="@+id/itinerary_edit_price_container">
+                        app:layout_constraintStart_toStartOf="@+id/itinerary_edit_budget_input_container"
+                >
 
-                    <TextView
-                            android:text="$"
+                    <CheckBox
+                            android:text="Food"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:id="@+id/textView26"
+                            android:id="@+id/itinerary_edit_food_checkbox"
                             android:fontFamily="@font/roboto_medium"
-                            android:textSize="18sp"
-                            android:textColor="@color/gray500"
+                            android:textColor="@color/gray900"
+                            android:textSize="15sp"
                             app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"/>
-                    <EditText
+                            app:layout_constraintStart_toStartOf="parent"/>
+
+                    <CheckBox
+                            android:text="Nightlife"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_edit_nightlife_checkbox"
+                            app:layout_constraintStart_toEndOf="@+id/itinerary_edit_food_checkbox"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textColor="@color/gray900"
+                            android:layout_marginStart="32dp"
+                            app:layout_constraintTop_toTopOf="@+id/itinerary_edit_food_checkbox"
+                            android:textSize="15sp"/>
+                    <CheckBox
+                            android:text="Activities"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_edit_activities_checkbox"
+                            app:layout_constraintStart_toEndOf="@id/itinerary_edit_nightlife_checkbox"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textColor="@color/gray900"
+                            android:layout_marginStart="32dp"
+                            app:layout_constraintTop_toTopOf="@+id/itinerary_edit_nightlife_checkbox"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            android:textSize="15sp"/>
+                    <CheckBox
+                            android:text="Transportation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_edit_transportation_checkbox"
+                            app:layout_constraintTop_toBottomOf="@id/itinerary_edit_food_checkbox"
+                            android:layout_marginTop="8dp"
+                            app:layout_constraintStart_toStartOf="@+id/itinerary_edit_food_checkbox"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textColor="@color/gray900"
+                            android:textSize="15sp"/>
+                    <CheckBox
+                            android:text="Accomodation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_edit_accommodation_checkbox"
+                            app:layout_constraintStart_toEndOf="@+id/itinerary_edit_transportation_checkbox"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textColor="@color/gray900"
+                            android:layout_marginStart="32dp"
+                            app:layout_constraintTop_toTopOf="@+id/itinerary_edit_transportation_checkbox"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            android:textSize="15sp"/>
+
+                    <TextView
+                            android:text="Other:"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:inputType="textPersonName"
-                            tools:text="15"
-                            android:ems="10"
-                            android:id="@+id/itinerary_edit_price"
-                            android:background="@android:color/transparent"
+                            android:id="@+id/textView28"
+                            app:layout_constraintTop_toBottomOf="@+id/itinerary_edit_transportation_checkbox"
+                            app:layout_constraintStart_toStartOf="parent"
                             android:fontFamily="@font/roboto_medium"
-                            app:layout_constraintStart_toEndOf="@+id/textView26"
-                            android:layout_marginStart="8dp"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            android:digits="0123456789"
+                            android:textColor="@color/gray900"
                             app:layout_constraintEnd_toEndOf="parent"
-                            android:layout_marginEnd="8dp"/>
+                            app:layout_constraintHorizontal_bias="0.0"
+                            android:layout_marginTop="8dp"
+                            android:textSize="15sp"
+                            android:layout_marginStart="8dp"/>
+                    <EditText
+                            android:layout_width="0dp"
+                            android:layout_height="120dp"
+                            android:inputType="textMultiLine"
+                            android:gravity="start|top"
+                            android:ems="10"
+                            android:id="@+id/itinerary_edit_budget_other"
+                            app:layout_constraintTop_toBottomOf="@+id/textView28"
+                            android:background="@drawable/gray_form_field"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:hint="Is there anything else that you've calculated into this itinerary budget that is not mentioned in the check boxes?"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textSize="15sp"
+                            android:padding="16dp"
+                            android:layout_marginTop="16dp"/>
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -850,7 +1021,8 @@
                         android:fontFamily="@font/roboto_bold"
                         android:textColor="@color/gray900"
                         app:layout_constraintEnd_toEndOf="@+id/textView23"
-                        android:visibility="gone"/>
+                        android:visibility="gone"
+                        android:textSize="15sp"/>
                 <ImageView
                         android:layout_width="0dp"
                         android:layout_height="0dp"
@@ -902,7 +1074,8 @@
                         android:textColor="@color/gray900"
                         app:layout_constraintStart_toStartOf="@id/textView23"
                         android:layout_marginEnd="8dp"
-                        app:layout_constraintEnd_toEndOf="@id/textView23"/>
+                        app:layout_constraintEnd_toEndOf="@id/textView23"
+                        android:textSize="15sp"/>
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -952,7 +1125,8 @@
                         android:layout_marginTop="24dp"
                         app:layout_constraintTop_toBottomOf="@+id/itinerary_edit_teaser_images_recycler"
                         app:layout_constraintStart_toStartOf="@+id/itinerary_edit_teaser_images_recycler"
-                        app:layout_constraintEnd_toEndOf="@+id/itinerary_edit_teaser_images_recycler"/>
+                        app:layout_constraintEnd_toEndOf="@+id/itinerary_edit_teaser_images_recycler"
+                        android:textSize="15sp"/>
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -978,7 +1152,7 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             android:background="@android:color/transparent"
                             android:textColor="@color/gray900"
-                            android:textSize="14sp"/>
+                            android:textSize="15sp"/>
                     <TextView
                             android:text="youtube.com/watch?v="
                             android:layout_width="wrap_content"
@@ -988,9 +1162,112 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintBottom_toBottomOf="parent"
                             android:fontFamily="@font/roboto_medium"
-                            android:textColor="@color/gray500"/>
+                            android:textColor="@color/gray500"
+                            android:textSize="15sp"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:padding="24dp"
+                    android:visibility="gone"
+                    android:id="@+id/itinerary_edit_price_container">
+
+                <TextView
+                        android:text="Let's talk profit"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView31"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:fontFamily="@font/roboto_black"
+                        android:textSize="24sp"
+                        android:textColor="@color/gray900"
+                        android:layout_marginStart="8dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_marginEnd="8dp"
+                        app:layout_constraintHorizontal_bias="0.0"/>
+                <TextView
+                        android:text="How much would you like to charge for this itinerary?"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView29"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="@color/gray900"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"
+                        app:layout_constraintTop_toBottomOf="@+id/textView31"
+                        android:layout_marginTop="24dp"
+                        android:textSize="15sp"/>
+                <TextView
+                        android:text="Max price for this itinerary: $"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView30"
+                        android:layout_marginTop="8dp"
+                        app:layout_constraintTop_toBottomOf="@id/textView29"
+                        app:layout_constraintStart_toStartOf="@id/textView29"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="@color/gray500"
+                        android:textSize="15sp"/>
+                <TextView
+                        tools:text="15"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/itinerary_edit_price_suggestion"
+                        android:layout_marginTop="8dp"
+                        app:layout_constraintTop_toBottomOf="@id/textView29"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="@color/gray500"
+                        app:layout_constraintStart_toEndOf="@+id/textView30"
+                        android:textSize="15sp"/>
+                <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/form_field"
+                        app:layout_constraintTop_toBottomOf="@+id/textView30"
+                        android:layout_marginTop="16dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:padding="16dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:id="@+id/itinerary_edit_price_input_container">
+
+                    <TextView
+                            android:text="$"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/textView26"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textSize="18sp"
+                            android:textColor="@color/gray500"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"/>
+                    <EditText
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:inputType="textPersonName"
+                            tools:text="15"
+                            android:ems="10"
+                            android:id="@+id/itinerary_edit_price"
+                            android:background="@android:color/transparent"
+                            android:fontFamily="@font/roboto_medium"
+                            app:layout_constraintStart_toEndOf="@+id/textView26"
+                            android:layout_marginStart="8dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:digits="0123456789"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            android:layout_marginEnd="8dp"/>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -1003,7 +1280,9 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:padding="24dp"
-            android:id="@+id/constraintLayout7">
+            android:id="@+id/constraintLayout7"
+            android:background="@color/white"
+            android:clickable="true">
 
         <TextView
                 android:text="Publish"

@@ -20,6 +20,7 @@ import co.getdere.R
 import co.getdere.groupieAdapters.LinearFeedImage
 import co.getdere.groupieAdapters.LinearFeedImageLean
 import co.getdere.groupieAdapters.StaggeredFeedImage
+import co.getdere.interfaces.DereMethods
 import co.getdere.models.*
 import co.getdere.viewmodels.*
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -35,7 +36,7 @@ import mumayank.com.airlocationlibrary.AirLocation
 import java.nio.channels.Selector
 
 
-open class InterestsFeedFragment : Fragment() {
+open class InterestsFeedFragment : Fragment(), DereMethods {
 
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
@@ -103,25 +104,29 @@ open class InterestsFeedFragment : Fragment() {
         val sortByDate = feed_sort_date
 
         sortByDistance.setOnClickListener {
-            sortByDistance.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
-            sortByDate.setTextColor(ContextCompat.getColor(context!!, R.color.gray500))
+            if (isLocationServiceEnabled(context!!)) {
+                sortByDistance.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
+                sortByDate.setTextColor(ContextCompat.getColor(context!!, R.color.gray500))
 
-            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-            firebaseAnalytics.logEvent("sort_by_distance", null)
+                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                firebaseAnalytics.logEvent("sort_by_distance", null)
 
-            isDistanceActive = true
+                isDistanceActive = true
 
-            if (isDistanceListEmpty) {
-                listenToImagesWithLocation(currentUser)
-                if (isLinearActive) {
+                if (isDistanceListEmpty) {
+                    listenToImagesWithLocation(currentUser)
+                    if (isLinearActive) {
+                        feedRecycler.adapter = distanceLinearGalleryAdapter
+                    } else {
+                        feedRecycler.adapter = distanceStaggeredGalleryAdapter
+                    }
+                } else if (isLinearActive) {
                     feedRecycler.adapter = distanceLinearGalleryAdapter
                 } else {
                     feedRecycler.adapter = distanceStaggeredGalleryAdapter
                 }
-            } else if (isLinearActive) {
-                feedRecycler.adapter = distanceLinearGalleryAdapter
             } else {
-                feedRecycler.adapter = distanceStaggeredGalleryAdapter
+                Toast.makeText(this.context, "Please turn on your location", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -156,7 +161,7 @@ open class InterestsFeedFragment : Fragment() {
             feedRecycler.layoutManager = linearGalleryLayoutManager
             linearGalleryLayoutManager.scrollToPosition(position[0])
             isLinearActive = true
-            feedRecycler.adapter = if (isDistanceActive){
+            feedRecycler.adapter = if (isDistanceActive) {
                 distanceLinearGalleryAdapter
             } else {
                 linearGalleryAdapter
@@ -174,7 +179,7 @@ open class InterestsFeedFragment : Fragment() {
             feedRecycler.layoutManager = staggeredGalleryLayoutManager
             staggeredGalleryLayoutManager.scrollToPosition(position)
             isLinearActive = false
-            feedRecycler.adapter  = if (isDistanceActive){
+            feedRecycler.adapter = if (isDistanceActive) {
                 distanceStaggeredGalleryAdapter
             } else {
                 staggeredGalleryAdapter
@@ -263,7 +268,11 @@ open class InterestsFeedFragment : Fragment() {
 
         airLocation = AirLocation(activity as MainActivity, true, true, object : AirLocation.Callbacks {
             override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
-                Toast.makeText(activity, "Could not retrieve your current location $locationFailedEnum", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    activity,
+                    "Could not retrieve your current location $locationFailedEnum",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
 
             override fun onSuccess(location: Location) {

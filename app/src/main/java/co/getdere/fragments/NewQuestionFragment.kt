@@ -305,7 +305,7 @@ class NewQuestionFragment : Fragment(), DereMethods {
 
 
 
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
+                    activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.openedQuestionFragment, "openedQuestionFragment").addToBackStack("openedQuestionFragment")
                         .commit()
                     activity.subActive = activity.openedQuestionFragment
 

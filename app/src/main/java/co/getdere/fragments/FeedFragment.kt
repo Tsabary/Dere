@@ -187,19 +187,11 @@ class FeedFragment : Fragment(), DereMethods {
         val feedToCamera = feed_toolbar_camera_icon
 
         feedNotificationsBadge.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.feedNotificationsFragment).commit()
-            activity.subActive = activity.feedNotificationsFragment
-            activity.switchVisibility(1)
-            activity.isFeedNotificationsActive = true
-            activity.feedNotificationsFragment.listenToNotifications()
+            goToNotifications(activity)
         }
 
         feedNotifications.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.feedNotificationsFragment).commit()
-            activity.subActive = activity.feedNotificationsFragment
-            activity.switchVisibility(1)
-            activity.isFeedNotificationsActive = true
-            activity.feedNotificationsFragment.listenToNotifications()
+            goToNotifications(activity)
         }
 
         feedToCamera.setOnClickListener {
@@ -214,6 +206,14 @@ class FeedFragment : Fragment(), DereMethods {
         recyclersVisibility(0)
     }
 
+    private fun goToNotifications(activity: MainActivity) {
+        activity.subFm.beginTransaction()
+            .show(activity.feedNotificationsFragment).commit()
+        activity.subActive = activity.feedNotificationsFragment
+        activity.switchVisibility(1)
+        activity.isFeedNotificationsActive = true
+//        activity.feedNotificationsFragment.listenToNotifications()
+    }
 
     private fun searchImages(searchedTag: String) { //This needs to be fixed to not update in real time. Or should it?
 

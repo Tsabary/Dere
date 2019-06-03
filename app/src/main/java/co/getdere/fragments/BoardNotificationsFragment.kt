@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.RecyclerView
 import co.getdere.MainActivity
 import co.getdere.models.NotificationBoard
 import co.getdere.models.Question
@@ -75,9 +76,8 @@ class BoardNotificationsFragment : Fragment() {
         }
 
         val notificationsRecycler = notifications_recycler
-        val notificationRecyclerLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         notificationsRecycler.adapter = notificationsRecyclerAdapter
-        notificationsRecycler.layoutManager = notificationRecyclerLayoutManager
+        notificationsRecycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
 
         val boardNotificationIcon = board_toolbar_notifications_icon
         val boardSavedQuestionIcon = board_toolbar_saved_questions_icon
@@ -97,29 +97,10 @@ class BoardNotificationsFragment : Fragment() {
         }
 
         boardSavedQuestionIcon.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.savedQuestionFragment).commit()
+            activity.subFm.beginTransaction().hide(activity.boardNotificationsFragment).show(activity.savedQuestionFragment).commit()
             activity.subActive = activity.savedQuestionFragment
         }
 
-
-//        refBoardNotifications.addChildEventListener(object : ChildEventListener{
-//            override fun onCancelled(p0: DatabaseError) {
-//            }
-//
-//            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-//            }
-//
-//            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-//            }
-//
-//            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-//                listenToNotifications()
-//            }
-//
-//            override fun onChildRemoved(p0: DataSnapshot) {
-//                listenToNotifications()
-//            }
-//        })
 
         notifications_mark_all_as_read.setOnClickListener {
             refBoardNotifications.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -167,10 +148,8 @@ class BoardNotificationsFragment : Fragment() {
 
                         sharedViewModelQuestion.questionObject.postValue(question)
 
-                        val activity = activity as MainActivity
+                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.openedQuestionFragment, "openedQuestionFragment").addToBackStack("openedQuestionFragment").commit()
 
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment)
-                            .commit()
                         activity.subActive = activity.openedQuestionFragment
 
                         val refRandomUser =
@@ -260,8 +239,8 @@ class SingleBoardNotification(val notification: NotificationBoard, val activity:
 
                     override fun onDataChange(p0: DataSnapshot) {
                         sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
-                        activity.subFm.beginTransaction().hide(activity.subActive)
-                            .show(activity.profileRandomUserFragment).commit()
+                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.profileRandomUserFragment, "profileRandomUserFragment").addToBackStack("profileRandomUserFragment").commit()
+
                         activity.subActive = activity.profileRandomUserFragment
                         activity.isBoardNotificationsActive = true
                     }
@@ -315,9 +294,8 @@ class SingleBoardNotification(val notification: NotificationBoard, val activity:
 //                                            )
 //                                        )
 
-                                            activity.subFm.beginTransaction().hide(activity.subActive)
-                                                .show(activity.openedQuestionFragment)
-                                                .commit()
+                                            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.openedQuestionFragment, "openedQuestionFragment").addToBackStack("openedQuestionFragment").commit()
+
                                             activity.subActive = activity.openedQuestionFragment
 
 
@@ -363,9 +341,6 @@ class SingleBoardNotification(val notification: NotificationBoard, val activity:
                 val question = p0.getValue(Question::class.java)
 
                 if (question != null) {
-
-//                    inflateInitiatorImage(viewHolder, notification.scenarioType)
-
 
                     viewHolder.itemView.board_notification_content.text = when (notification.scenarioType) {
 
@@ -434,35 +409,4 @@ class SingleBoardNotification(val notification: NotificationBoard, val activity:
             }
         })
     }
-
-//    private fun inflateInitiatorImage(viewHolder: ViewHolder, case: Int) {
-//
-//        if (case == 4) {
-//            Glide.with(viewHolder.root.context).load(R.drawable.user_profile)
-//                .into(viewHolder.itemView.board_notification_initiator_image)
-//        } else {
-//            val refInitiator = FirebaseDatabase.getInstance().getReference("/users/${notification.initiatorId}/profile")
-//
-//            refInitiator.addListenerForSingleValueEvent(object : ValueEventListener {
-//                override fun onCancelled(p0: DatabaseError) {
-//                }
-//
-//                override fun onDataChange(p0: DataSnapshot) {
-//
-//                    val user = p0.getValue(Users::class.java)
-//
-//                    if (user != null) {
-//                        Glide.with(viewHolder.root.context).load(
-//                            if (user.image.isNotEmpty()) {
-//                                user.image
-//                            } else {
-//                                R.drawable.user_profile
-//                            }
-//                        )
-//                            .into(viewHolder.itemView.board_notification_initiator_image)
-//                    }
-//                }
-//            })
-//        }
-//    }
 }

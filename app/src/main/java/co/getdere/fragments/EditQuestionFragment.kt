@@ -170,7 +170,7 @@ class EditQuestionFragment : Fragment(), DereMethods {
                                 refTag.setValue("question")
                             }
 
-                            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.openedQuestionFragment).commit()
+                            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.openedQuestionFragment, "openedQuestionFragment").addToBackStack("openedQuestionFragment").commit()
                             activity.subActive = activity.openedQuestionFragment
                         }
                     }

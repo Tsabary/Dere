@@ -51,7 +51,7 @@
             android:layout_marginBottom="16dp"
             tools:text="yesterday"
             app:layout_constraintStart_toStartOf="@+id/feed_notification_content"
-            android:textSize="11sp"
+            android:textSize="12sp"
             android:textColor="@color/gray500"
             android:fontFamily="@font/roboto_medium"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

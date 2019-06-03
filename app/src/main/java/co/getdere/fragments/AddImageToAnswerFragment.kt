@@ -28,7 +28,7 @@ class AddImageToAnswerFragment : Fragment() {
     lateinit var sharedViewModelAnswerImages: SharedViewModelAnswerImages
     lateinit var currentUser: Users
     val galleryAdapter = GroupAdapter<ViewHolder>()
-    var myImageList = mutableListOf<Images>()
+    var myImageList = mutableListOf<String>()
 
 
     override fun onCreateView(
@@ -44,7 +44,7 @@ class AddImageToAnswerFragment : Fragment() {
 
         val activity = activity as MainActivity
 
-        val galleryRecycler = add_image_to_answer_recycler
+        val galleryRecycler = add_image_to_collection_recycler
 
         val imagesRecyclerLayoutManager =
             GridLayoutManager(this.context, 3, RecyclerView.VERTICAL, false)
@@ -96,16 +96,16 @@ class AddImageToAnswerFragment : Fragment() {
 
             val image = item as ImageSelector
 
-            if (!myImageList.contains(image.image)) {
-                myImageList.add(image.image)
+            if (!myImageList.contains(image.image.id)) {
+                myImageList.add(image.image.id)
                 sharedViewModelAnswerImages.imageList.postValue(myImageList)
             } else {
-                myImageList.remove(image.image)
+                myImageList.remove(image.image.id)
                 sharedViewModelAnswerImages.imageList.postValue(myImageList)
             }
 
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.answerFragment)
-                .commit()
+            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.answerFragment, "answerFragment").addToBackStack("answerFragment").commit()
+
             activity.subActive = activity.answerFragment
         }
     }

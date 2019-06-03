@@ -1,35 +1,62 @@
 package co.getdere.fragments
 
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import co.getdere.MainActivity
 import co.getdere.R
+import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
 import co.getdere.models.ItineraryBody
-import co.getdere.models.ItineraryTechnical
+import co.getdere.models.ItineraryBudget
+import co.getdere.models.ItineraryListing
 import co.getdere.viewmodels.SharedViewModelItinerary
 import com.bumptech.glide.Glide
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.mapbox.api.geocoding.v5.models.CarmenFeature
+import com.mapbox.mapboxsdk.plugins.places.autocomplete.PlaceAutocomplete
+import com.mapbox.mapboxsdk.plugins.places.autocomplete.model.PlaceOptions
+import com.stfalcon.pricerangebar.model.BarEntry
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.fragment_marketplace.*
+import kotlinx.android.synthetic.main.fragment_marketplace.rangeBar
 import kotlinx.android.synthetic.main.marketplace_single_row.view.*
+import java.math.RoundingMode
+import java.text.DecimalFormat
+import kotlin.collections.ArrayList
 
 
-class MarketplaceFragment : Fragment() {
+class MarketplaceFragment : Fragment(), DereMethods {
 
+    val REQUEST_CODE_AUTOCOMPLETE = 21
     val adapter = GroupAdapter<ViewHolder>()
     lateinit var sharedViewModelItinerary: SharedViewModelItinerary
+    lateinit var filterLocation: TextView
+    var selectedCarmenFeature: CarmenFeature? = null
+
+    var pricesList = mutableListOf<Float>()
+    val barEntries = mutableListOf<BarEntry>()
+
+    var allItineraries = mutableListOf<SingleItinerary>()
+    var filteredItineraries = listOf<SingleItinerary>()
+
+    var minimumBudget = 0
+    var maximumBudget = 0
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,7 +70,13 @@ class MarketplaceFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val activity = activity as MainActivity
-        activity.let{
+        val savedItinerariesIcon = marketplace_saved_itineraries_icon
+        val filterItinerariesIcon = marketplace_filter_icon
+        val filterItinerariesBox = marketplace_filter_box
+        filterLocation = marketplace_filter_location
+
+
+        activity.let {
             sharedViewModelItinerary = ViewModelProviders.of(it).get(SharedViewModelItinerary::class.java)
         }
 
@@ -59,25 +92,65 @@ class MarketplaceFragment : Fragment() {
             marketplace_swipe_refresh.isRefreshing = false
         }
 
-        marketplace_saved_itineraries_icon.setOnClickListener {
-            activity.subFm.beginTransaction().hide(activity.subActive).add(R.id.feed_subcontents_frame_container, activity.marketplacePurchasedFragment, "marketplacePurchasedFragment").commit()
+        savedItinerariesIcon.setOnClickListener {
+            activity.subFm.beginTransaction().show(activity.marketplacePurchasedFragment)
+                .commit()
             activity.subActive = activity.marketplacePurchasedFragment
             activity.switchVisibility(1)
             activity.isSavedItinerariesActive = true
         }
 
+        filterItinerariesIcon.setOnClickListener {
+            if (filterItinerariesBox.visibility == View.VISIBLE) {
+                filterItinerariesBox.visibility = View.GONE
+                filterItinerariesIcon.setImageResource(R.drawable.filter)
+            } else {
+                filterItinerariesBox.visibility = View.VISIBLE
+                filterItinerariesIcon.setImageResource(R.drawable.filter_active)
+            }
+        }
+
+        filterLocation.setOnClickListener {
+            val intent = PlaceAutocomplete.IntentBuilder()
+                .accessToken(getString(R.string.mapbox_access_token))
+                .placeOptions(
+                    PlaceOptions.builder()
+                        .backgroundColor(Color.parseColor("#EEEEEE"))
+                        .limit(10)
+                        .build(PlaceOptions.MODE_CARDS)
+                )
+                .build(activity)
+            startActivityForResult(intent, REQUEST_CODE_AUTOCOMPLETE)
+        }
+
+//        filterButton.setOnClickListener {
+//            filteredItineraries =
+//                allItineraries.filter {
+//                    it.itineraryBudget.budget > filterBudgetMinimum.text.toString().toInt() && it.itineraryBudget.budget < filterBudgetMaximum.text.toString().toInt() && if (selectedCarmenFeature != null) {
+//                        it.itinerary.locationId == selectedCarmenFeature!!.id()
+//                    } else {
+//                        it.itinerary.public
+//                    }
+//                }
+//            adapter.clear()
+//            adapter.addAll(filteredItineraries)
+//        }
+
         adapter.setOnItemClickListener { item, _ ->
 
             val itinerary = item as SingleItinerary
 
-            val itinerarySnapshot = FirebaseDatabase.getInstance().getReference("/itineraries/${itinerary.itinerary.id}")
-            itinerarySnapshot.addListenerForSingleValueEvent(object : ValueEventListener{
+            val itinerarySnapshot =
+                FirebaseDatabase.getInstance().getReference("/itineraries/${itinerary.itinerary.id}")
+            itinerarySnapshot.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
                 }
 
                 override fun onDataChange(p0: DataSnapshot) {
                     sharedViewModelItinerary.itinerary.postValue(p0)
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.itineraryFragment)
+                    activity.subFm.beginTransaction()
+                        .add(R.id.feed_subcontents_frame_container, activity.itineraryFragment, "itineraryFragment")
+                        .addToBackStack("itineraryFragment")
                         .commit()
                     activity.subActive = activity.itineraryFragment
 
@@ -87,9 +160,78 @@ class MarketplaceFragment : Fragment() {
         }
     }
 
+
+    private fun initRangeBar(rangeBarEntries: ArrayList<BarEntry>) {
+        rangeBar.setEntries(rangeBarEntries)
+        rangeBar.onRangeChanged = { leftPinValue, rightPinValue ->
+            rangeBarValue.text = getString(R.string.area_range, leftPinValue, rightPinValue)
+
+            filteredItineraries =
+                allItineraries.filter {
+                    it.itineraryBudget.budget >= leftPinValue!!.toInt() && it.itineraryBudget.budget <= rightPinValue!!.toInt() && if (selectedCarmenFeature != null) {
+                        it.itinerary.locationId == selectedCarmenFeature!!.id()
+                    } else {
+                        it.itinerary.public
+                    }
+                }
+            adapter.clear()
+            adapter.addAll(filteredItineraries)
+
+            minimumBudget = leftPinValue!!.toInt()
+            maximumBudget = rightPinValue!!.toInt()
+        }
+        rangeBar.onLeftPinChanged = { index, leftPinValue ->
+            println("$index $leftPinValue")
+        }
+        rangeBar.onRightPinChanged = { index, rightPinValue ->
+            println("$index $rightPinValue")
+        }
+        rangeBar.onSelectedEntriesSizeChanged = { selectedEntriesSize ->
+            println("$selectedEntriesSize")
+        }
+        rangeBar.onSelectedItemsSizeChanged = { selectedItemsSize ->
+            rangeBarInfo.text = getString(R.string.formatter_elements, selectedItemsSize.toString())
+        }
+
+        var totalSelectedSize = 0
+        rangeBarEntries.forEach { entry ->
+            totalSelectedSize += entry.y.toInt()
+        }
+        rangeBarInfo.text = getString(R.string.formatter_elements, totalSelectedSize.toString())
+
+        if (rangeBarEntries.isNotEmpty()) {
+            rangeBarValue.text = getString(
+                R.string.area_range,
+                rangeBarEntries.first().x.toInt().toString(),
+                rangeBarEntries.last().x.toInt().toString()
+            )
+        }
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        closeKeyboard(activity as MainActivity)
+
+        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_AUTOCOMPLETE) {
+            // Retrieve selected locationId's CarmenFeature
+            selectedCarmenFeature = PlaceAutocomplete.getPlace(data!!)
+
+            filterLocation.text = selectedCarmenFeature!!.placeName()
+
+            filteredItineraries =
+                allItineraries.filter { it.itinerary.locationId == selectedCarmenFeature!!.id() && maximumBudget >= it.itineraryBudget.budget && it.itineraryBudget.budget >= minimumBudget }
+            adapter.clear()
+            adapter.addAll(filteredItineraries)
+        }
+    }
+
     private fun listenToItineraries() {
 
         adapter.clear()
+        allItineraries.clear()
+        pricesList.clear()
+        barEntries.clear()
 
         val itinerariesRef = FirebaseDatabase.getInstance().getReference("/itineraries")
         itinerariesRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -101,11 +243,33 @@ class MarketplaceFragment : Fragment() {
 
                     val itinerary = itinerarySnapshot.child("body").getValue(ItineraryBody::class.java)
                     val itineraryListing =
-                        itinerarySnapshot.child("listing").getValue(ItineraryTechnical::class.java)
+                        itinerarySnapshot.child("listing").getValue(ItineraryListing::class.java)
+                    val itineraryBudget =
+                        itinerarySnapshot.child("budget").getValue(ItineraryBudget::class.java)
 
-                    if (itinerary != null && itineraryListing != null) {
-                        adapter.add(SingleItinerary(itinerary, itineraryListing))
+                    if (itinerary != null && itineraryListing != null && itineraryBudget != null) {
+                        allItineraries.add(SingleItinerary(itinerary, itineraryListing, itineraryBudget))
+                        filteredItineraries = allItineraries
+                        adapter.clear()
+                        adapter.addAll(allItineraries)
+
+                        pricesList.add(itineraryBudget.budget.toFloat())
                     }
+                }
+
+                if(pricesList.isNotEmpty()){
+                    for (entry in pricesList.groupingBy { it }.eachCount()) {
+                        barEntries.add(BarEntry(entry.key, entry.value.toFloat()))
+                    }
+
+                    barEntries.sortBy { it.x }
+
+                    val myArray = ArrayList(barEntries)
+
+                    initRangeBar(myArray)
+
+                    minimumBudget = barEntries.first().x.toInt()
+                    maximumBudget = barEntries.last().x.toInt()
                 }
             }
         })
@@ -117,7 +281,11 @@ class MarketplaceFragment : Fragment() {
     }
 }
 
-class SingleItinerary(val itinerary: ItineraryBody, val itineraryListing: ItineraryTechnical) :
+class SingleItinerary(
+    val itinerary: ItineraryBody,
+    val itineraryListing: ItineraryListing,
+    val itineraryBudget: ItineraryBudget
+) :
     Item<ViewHolder>() {
     override fun getLayout(): Int {
         return R.layout.marketplace_single_row
@@ -125,7 +293,9 @@ class SingleItinerary(val itinerary: ItineraryBody, val itineraryListing: Itiner
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
-        firstImage@for (image in itineraryListing.sampleImages) {
+        val ratingBar = viewHolder.itemView.marketplace_single_row_rating_bar
+
+        firstImage@ for (image in itineraryListing.sampleImages) {
 
             val imageRef = FirebaseDatabase.getInstance().getReference("/images/${image.key}/body")
             imageRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -138,15 +308,17 @@ class SingleItinerary(val itinerary: ItineraryBody, val itineraryListing: Itiner
 
                     val imageView = viewHolder.itemView.marketplace_single_row_image
                     (imageView.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio = imageObject.ratio
-                    Glide.with(viewHolder.root.context).load(imageObject.imageBig).into(viewHolder.itemView.marketplace_single_row_image)
+                    Glide.with(viewHolder.root.context).load(imageObject.imageBig)
+                        .into(viewHolder.itemView.marketplace_single_row_image)
                 }
 
             })
             break@firstImage
         }
-
-        viewHolder.itemView.marketplace_single_row_rating.text = itineraryListing.rating.toString()
-        viewHolder.itemView.marketplace_single_row_rating_bar.rating = itineraryListing.rating.toFloat()
+        val df = DecimalFormat("#.#")
+        df.roundingMode = RoundingMode.CEILING
+        viewHolder.itemView.marketplace_single_row_rating.text = df.format(itineraryListing.rating).toString()
+        ratingBar.rating = itineraryListing.rating
         viewHolder.itemView.marketplace_single_row_title.text = itinerary.title
 
     }

@@ -1,7 +1,6 @@
 package co.getdere.models
 
 class ItineraryInformational(
-    val budget : Int,
     val authorKnowledge : Int,
     val aboutAuthor : String,
     val aboutFood : String,
@@ -10,5 +9,5 @@ class ItineraryInformational(
     val aboutActivities : String,
     val aboutAccommodation : String,
     val aboutTransportation : String) {
-    constructor() : this(0,0, "", "", "", "", "", "", "")
+    constructor() : this(0, "", "", "", "", "", "", "")
 }

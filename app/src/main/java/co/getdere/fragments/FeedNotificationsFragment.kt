@@ -233,8 +233,9 @@ class SingleFeedNotification(val notification: NotificationFeed, val activity: M
 
                     override fun onDataChange(p0: DataSnapshot) {
                         sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
-                        activity.subFm.beginTransaction().hide(activity.subActive)
-                            .show(activity.profileRandomUserFragment).commit()
+                        activity.subFm.beginTransaction()
+                            .add(R.id.feed_subcontents_frame_container, activity.profileRandomUserFragment, "profileRandomUserFragment")
+                            .addToBackStack("profileRandomUserFragment").commit()
                         activity.subActive = activity.profileRandomUserFragment
                         activity.isFeedNotificationsActive = true
                     }
@@ -276,9 +277,9 @@ class SingleFeedNotification(val notification: NotificationFeed, val activity: M
                                         val notificationRef = FirebaseDatabase.getInstance()
                                             .getReference("/users/$uid/notifications/gallery/${notification.mainPostId}${notification.specificPostId}${notification.initiatorId}${notification.scenarioType}/seen")
                                         notificationRef.setValue(1).addOnSuccessListener {
-                                            activity.subFm.beginTransaction().hide(activity.subActive)
-                                                .show(activity.imageFullSizeFragment)
-                                                .commit()
+                                            activity.subFm.beginTransaction()
+                                                .add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment")
+                                                .addToBackStack("imageFullSizeFragment").commit()
                                             activity.subActive = activity.imageFullSizeFragment
                                             activity.feedNotificationsFragment.listenToNotifications()
                                         }

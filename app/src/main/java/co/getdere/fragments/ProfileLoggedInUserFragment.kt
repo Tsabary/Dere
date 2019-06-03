@@ -66,7 +66,6 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     lateinit var buo: BranchUniversalObject
     lateinit var lp: LinkProperties
 
-    var imageList = mutableListOf<FeedImage>()
 
     lateinit var userRef: DatabaseReference
 
@@ -105,7 +104,11 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             when (it.itemId) {
 
                 R.id.profile_edit_interests -> {
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editInterestsFragment)
+                    activity.subFm.beginTransaction().add(
+                        R.id.feed_subcontents_frame_container,
+                        activity.editInterestsFragment,
+                        "editInterestsFragment"
+                    ).addToBackStack("editInterestsFragment")
                         .commit()
                     activity.subActive = activity.editInterestsFragment
                     activity.switchVisibility(1)
@@ -181,16 +184,13 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
 
         galleryRollRecycler.adapter = galleryRollAdapter
-        val rollGalleryLayoutManager = GridLayoutManager(this.context, 3)
-        galleryRollRecycler.layoutManager = rollGalleryLayoutManager
+        galleryRollRecycler.layoutManager = GridLayoutManager(this.context, 3)
 
         galleryBucketsRecycler.adapter = galleryBucketAdapter
-        val bucketsGalleryLayoutManager = GridLayoutManager(this.context, 2)
-        galleryBucketsRecycler.layoutManager = bucketsGalleryLayoutManager
+        galleryBucketsRecycler.layoutManager = GridLayoutManager(this.context, 2)
 
         galleryItinerariesRecycler.adapter = galleryItineraryAdapter
-        val itinerariesGalleryLayoutManager = GridLayoutManager(this.context, 2)
-        galleryItinerariesRecycler.layoutManager = itinerariesGalleryLayoutManager
+        galleryItinerariesRecycler.layoutManager = GridLayoutManager(this.context, 2)
 
         bucketBtn = profile_li_bucket_btn
         rollBtn = profile_li_roll_btn
@@ -287,7 +287,10 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         editButton.setOnClickListener {
 
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editProfileFragment).commit()
+            activity.subFm.beginTransaction()
+                .add(R.id.feed_subcontents_frame_container, activity.editProfileFragment, "editProfileFragment")
+                .addToBackStack("editProfileFragment")
+                .commit()
             activity.subActive = activity.editProfileFragment
 
             activity.switchVisibility(1)
@@ -300,8 +303,9 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             galleryRollRecycler.visibility = View.GONE
             galleryBucketsRecycler.visibility = View.VISIBLE
             changeGalleryFeed("collection")
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionGalleryFragment).commit()
-            activity.subActive = activity.collectionGalleryFragment
+//            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
+//                .commit()
+//            activity.subActive = activity.collectionGalleryFragment
         }
 
         rollBtn.setOnClickListener {
@@ -309,8 +313,9 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             galleryRollRecycler.visibility = View.VISIBLE
             galleryBucketsRecycler.visibility = View.GONE
             changeGalleryFeed("roll")
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
-            activity.subActive = activity.imageFullSizeFragment
+//            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment").addToBackStack("imageFullSizeFragment")
+//                .commit()
+//            activity.subActive = activity.imageFullSizeFragment
         }
 
         itineraryBtn.setOnClickListener {
@@ -318,13 +323,17 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             galleryRollRecycler.visibility = View.GONE
             galleryBucketsRecycler.visibility = View.GONE
             changeGalleryFeed("itinerary")
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionGalleryFragment).commit()
-            activity.subActive = activity.collectionGalleryFragment
+//            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
+//                .commit()
+//            activity.subActive = activity.collectionGalleryFragment
         }
 
 
         galleryRollAdapter.setOnItemClickListener { item, _ ->
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
+            activity.subFm.beginTransaction()
+                .add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment")
+                .addToBackStack("imageFullSizeFragment")
+                .commit()
             activity.subActive = activity.imageFullSizeFragment
 
             val image = item as FeedImage
@@ -334,16 +343,17 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             activity.switchVisibility(1)
         }
 
-
+/*
         galleryBucketAdapter.setOnItemClickListener { item, _ ->
             val bucket = item as SingleCollectionBox
             sharedViewModelCollection.imageCollection.postValue(bucket.collection)
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionGalleryFragment).commit()
+            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
+                .commit()
             activity.subActive = activity.collectionGalleryFragment
-            activity.isBucketGalleryActive = true
+            activity.isCollectionGalleryActive = true
             activity.switchVisibility(1)
         }
-
+*/
         userMapButton.setOnClickListener {
             userRef.child("images").addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
@@ -353,7 +363,9 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
                     if (p0.hasChildren()) {
                         sharedViewModelCollection.imageCollection.postValue(p0)
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionMapView)
+                        activity.subFm.beginTransaction()
+                            .add(R.id.feed_subcontents_frame_container, activity.collectionMapView, "collectionMapView")
+                            .addToBackStack("collectionMapView")
                             .commit()
                         activity.subActive = activity.collectionMapView
                         activity.switchVisibility(1)
@@ -394,6 +406,9 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
     fun listenToImagesFromRoll() {
 
+        val imageList = mutableListOf<FeedImage>()
+        imageList.clear()
+
         galleryRollAdapter.clear()
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
@@ -408,7 +423,6 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
                     imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onCancelled(p0: DatabaseError) {
-
                         }
 
                         override fun onDataChange(p0: DataSnapshot) {
@@ -417,6 +431,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
                             imageList.add(FeedImage(imageObject!!, 1))
                             galleryRollAdapter.clear()
                             galleryRollAdapter.addAll(imageList.reversed())
+                            Log.d("imagepath", imagePath.key)
                         }
                     })
 
@@ -575,27 +590,23 @@ class SingleCollectionBox(
 
 
         imagesRecyclerAdapter.setOnItemClickListener { _, _ ->
-            if (type == "bucket") {
-                goToBucketGallery()
-            } else {
-                goToItineraryGallery()
-            }
+            goToCollectionGallery()
         }
 
         viewHolder.itemView.cardView.setOnClickListener {
-            if (type == "bucket") {
-                goToBucketGallery()
-            } else {
-                goToItineraryGallery()
-            }
+            goToCollectionGallery()
         }
 
         viewHolder.itemView.cardViewBackground.setOnClickListener {
-            if (type == "bucket") {
-                goToBucketGallery()
-            } else {
-                goToItineraryGallery()
-            }
+            goToCollectionGallery()
+        }
+
+        viewHolder.itemView.collection_box_recycler_name.setOnClickListener {
+            goToCollectionGallery()
+        }
+
+        viewHolder.itemView.collection_box_recycler_photo_count.setOnClickListener {
+            goToCollectionGallery()
         }
 
 
@@ -625,22 +636,35 @@ class SingleCollectionBox(
 //
 //    }
 
-
-    private fun goToItineraryGallery() {
+    private fun goToCollectionGallery() {
         sharedViewModelCollection.imageCollection.postValue(collection)
-        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionGalleryFragment).commit()
+        activity.subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment")
+            .addToBackStack("collectionGalleryFragment")
+            .commit()
         activity.subActive = activity.collectionGalleryFragment
-        activity.isBucketGalleryActive = true
+        activity.isCollectionGalleryActive = true
         activity.switchVisibility(1)
     }
 
-    private fun goToBucketGallery() {
-        sharedViewModelCollection.imageCollection.postValue(collection)
-        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionGalleryFragment).commit()
-        activity.subActive = activity.collectionGalleryFragment
-        activity.isBucketGalleryActive = true
-        activity.switchVisibility(1)
-    }
+
+//    private fun goToItineraryGallery() {
+//        sharedViewModelCollection.imageCollection.postValue(collection)
+//        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
+//            .commit()
+//        activity.subActive = activity.collectionGalleryFragment
+//        activity.isCollectionGalleryActive = true
+//        activity.switchVisibility(1)
+//    }
+//
+//    private fun goToBucketGallery() {
+//        sharedViewModelCollection.imageCollection.postValue(collection)
+//        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
+//            .commit()
+//        activity.subActive = activity.collectionGalleryFragment
+//        activity.isCollectionGalleryActive = true
+//        activity.switchVisibility(1)
+//    }
 
 
 }

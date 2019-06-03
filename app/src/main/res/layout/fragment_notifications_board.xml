@@ -5,7 +5,8 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".fragments.FeedNotificationsFragment">
+        tools:context=".fragments.FeedNotificationsFragment"
+        android:background="@color/white">
 
     <include
             layout="@layout/board_toolbar_notifications"
@@ -17,7 +18,7 @@
             android:id="@+id/notification_board_include_toolbar"/>
 
     <TextView
-            android:text="Mark all as read"
+            android:text="@string/mark_all_as_read"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/notifications_mark_all_as_read"
@@ -33,7 +34,6 @@
             android:id="@+id/notifications_swipe_refresh"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:fillViewport="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -47,7 +47,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:id="@+id/notifications_recycler"
-                android:layout_marginTop="16dp"/>
+        />
 
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

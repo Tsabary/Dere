@@ -179,8 +179,12 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
     <androidx.core.widget.NestedScrollView
 
-            android:layout_height="match_parent"
-            android:layout_width="match_parent">
+            android:layout_height="0dp"
+            android:layout_width="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/divider9">
 
         <androidx.constraintlayout.widget.ConstraintLayout
 
@@ -196,69 +200,48 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     android:id="@+id/itinerary_details_box"
-            >
+                    app:layout_constraintHorizontal_bias="0.0">
 
-                <ImageView
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:id="@+id/itinerary_cover_image"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        tools:srcCompat="@android:drawable/sym_def_app_icon"
-                        android:foreground="#4D000000"
-                        android:scaleType="centerCrop"
-                        android:contentDescription="@string/cover_image"
-                        app:layout_constraintBottom_toBottomOf="@id/itinerary_dummy_view"
-                        app:layout_constraintHorizontal_bias="0.0"
-                        app:layout_constraintVertical_bias="0.0"/>
                 <TextView
                         tools:text="One week for couples that like art and surfing"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_title"
                         android:fontFamily="@font/roboto_black"
-                        android:textColor="@color/white"
-                        android:textSize="30sp"
-                        android:layout_marginTop="32dp"
-                        app:layout_constraintTop_toTopOf="@+id/itinerary_cover_image"
-                        android:layout_marginStart="32dp"
+                        android:textColor="@color/gray900"
+                        android:textSize="24sp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="56dp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        android:layout_marginEnd="32dp"/>
+                        android:layout_marginEnd="56dp"
+                        android:layout_marginTop="56dp"
+                />
                 <TextView
                         tools:text="Explore Barcelona's best beaches and art venues, eat where the locals eat and keep it all within budget"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_description"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
-                        android:fontFamily="@font/roboto_black"
-                        app:layout_constraintStart_toStartOf="@+id/itinerary_title"
-                        android:layout_marginTop="16dp"
-                        app:layout_constraintTop_toBottomOf="@+id/itinerary_title"
-                        app:layout_constraintEnd_toEndOf="@+id/itinerary_title"
-                />
-                <TextView
-                        tools:text="TextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_dummy_view"
-                        app:layout_constraintBottom_toBottomOf="@id/itinerary_youtube_player_card"
-                        app:layout_constraintTop_toTopOf="@id/itinerary_youtube_player_card"
-                        app:layout_constraintStart_toStartOf="parent"
-                        android:visibility="gone"/>
+                        android:textColor="@color/gray900"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/roboto_medium"
+                        app:layout_constraintStart_toStartOf="@+id/itinerary_photo_count"
+                        android:layout_marginTop="24dp"
+                        app:layout_constraintTop_toBottomOf="@id/itinerary_sample_photos_recycler"
+                        app:layout_constraintEnd_toEndOf="@+id/itinerary_photo_count"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:layout_marginBottom="24dp"/>
                 <androidx.cardview.widget.CardView
                         android:id="@+id/itinerary_youtube_player_card"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="72dp"
+                        android:layout_marginEnd="48dp"
+                        app:layout_constraintTop_toBottomOf="@+id/itinerary_photo_count"
+                        android:layout_marginTop="24dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        android:layout_marginStart="72dp"
+                        android:layout_marginStart="48dp"
                         app:layout_constraintHorizontal_bias="0.0"
-                        android:layout_marginTop="32dp"
-                        app:layout_constraintTop_toBottomOf="@id/itinerary_photo_count"
                         app:cardCornerRadius="16dp"
                         app:cardElevation="0dp">
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -290,13 +273,14 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_location"
-                        app:layout_constraintStart_toStartOf="@+id/itinerary_description"
-                        app:layout_constraintEnd_toEndOf="@+id/itinerary_description"
-                        android:fontFamily="@font/roboto_black"
-                        android:textColor="@color/white"
+                        app:layout_constraintStart_toStartOf="@+id/itinerary_title"
+                        app:layout_constraintEnd_toEndOf="@+id/itinerary_title"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textColor="@color/gray500"
+                        app:layout_constraintTop_toBottomOf="@+id/itinerary_title"
+                        android:textSize="15sp"
                         android:layout_marginTop="8dp"
-                        app:layout_constraintTop_toBottomOf="@+id/itinerary_description"
-                        android:textSize="18sp"/>
+                />
 
                 <TextView
                         tools:text="47 locations"
@@ -304,23 +288,19 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_photo_count"
                         app:layout_constraintTop_toBottomOf="@+id/itinerary_location"
-                        android:layout_marginTop="8dp"
                         app:layout_constraintStart_toStartOf="@+id/itinerary_location"
-                        android:fontFamily="@font/roboto_black"
-                        android:textColor="@color/white"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textColor="@color/gray500"
                         app:layout_constraintEnd_toEndOf="@+id/itinerary_location"
-                        android:textSize="18sp"/>
+                        android:textSize="15sp"/>
                 <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/itinerary_sample_photos_recycler"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        app:layout_constraintTop_toBottomOf="@id/itinerary_youtube_player_card"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        android:id="@+id/itinerary_sample_photos_recycler"
-                        android:layout_marginStart="32dp"
-                        android:layout_marginEnd="32dp"
-                        android:visibility="gone"/>
+                        android:layout_marginTop="32dp"
+                        app:layout_constraintTop_toBottomOf="@+id/itinerary_youtube_player_card"
+                        app:layout_constraintEnd_toEndOf="@+id/itinerary_youtube_player_card"
+                        app:layout_constraintStart_toStartOf="@+id/itinerary_youtube_player_card"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -336,7 +316,8 @@
                     app:layout_constraintTop_toBottomOf="@id/itinerary_details_box"
                     android:background="@drawable/buttons_shape"
                     android:id="@+id/itinerary_buy_cta_container"
-                    android:layout_marginTop="32dp">
+                    android:layout_marginTop="32dp"
+                    android:visibility="gone">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="wrap_content"
@@ -363,16 +344,15 @@
                             app:layout_constraintBottom_toBottomOf="parent"
                             android:layout_marginEnd="8dp"/>
                     <TextView
-                            tools:text="($6.99)"
+                            android:id="@+id/itinerary_price"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:id="@+id/itinerary_price"
-                            android:fontFamily="@font/roboto_medium"
-                            android:textSize="15sp"
-                            android:visibility="visible"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintBottom_toBottomOf="parent"
+                            tools:text="($6.99)"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textSize="15sp"
                             android:textColor="@color/gray500"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -382,14 +362,14 @@
             <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="32dp"
-                    app:layout_constraintTop_toBottomOf="@id/itinerary_buy_cta_container"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintTop_toBottomOf="@+id/itinerary_details_box"
                     android:layout_marginEnd="32dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     android:layout_marginStart="32dp"
                     app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
+                    app:cardElevation="0dp"
                     android:id="@+id/itinerary_includes_card">
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -404,7 +384,7 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
                             android:fontFamily="@font/roboto_bold"
-                            android:textSize="15sp"
+                            android:textSize="18sp"
                             android:textColor="@color/gray900"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.0"/>
@@ -418,7 +398,7 @@
                             app:layout_constraintStart_toStartOf="parent"
                             android:id="@+id/itinerary_includes_food_container"
                             android:layout_marginTop="24dp"
-                    >
+                            android:visibility="gone">
 
                         <ImageView
                                 android:layout_width="wrap_content"
@@ -426,7 +406,8 @@
                                 app:srcCompat="@drawable/food"
                                 android:id="@+id/itinerary_includes_food_icon"
                                 app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"/>
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"/>
                         <TextView
                                 tools:text="Best street food you can find in anatalia it so good and cheap"
                                 android:layout_width="0dp"
@@ -450,7 +431,7 @@
                             app:layout_constraintStart_toStartOf="parent"
                             android:id="@+id/itinerary_includes_nightlife_container"
                             android:layout_marginTop="16dp"
-                    >
+                            android:visibility="gone">
 
                         <ImageView
                                 android:layout_width="wrap_content"
@@ -458,7 +439,8 @@
                                 app:srcCompat="@drawable/drinks"
                                 android:id="@+id/itinerary_includes_nightlife_icon"
                                 app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"/>
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"/>
                         <TextView
                                 tools:text="Best street food you can find in anatalia it so good and cheap"
                                 android:layout_width="0dp"
@@ -482,7 +464,7 @@
                             app:layout_constraintStart_toStartOf="parent"
                             android:id="@+id/itinerary_includes_activities_container"
                             android:layout_marginTop="16dp"
-                    >
+                            android:visibility="gone">
 
                         <ImageView
                                 android:layout_width="wrap_content"
@@ -490,7 +472,8 @@
                                 app:srcCompat="@drawable/activities"
                                 android:id="@+id/itinerary_includes_activities_icon"
                                 app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"/>
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"/>
                         <TextView
                                 tools:text="Best street food you can find in anatalia it so good and cheap"
                                 android:layout_width="0dp"
@@ -514,7 +497,7 @@
                             app:layout_constraintStart_toStartOf="parent"
                             android:id="@+id/itinerary_includes_nature_container"
                             android:layout_marginTop="16dp"
-                    >
+                            android:visibility="gone">
 
                         <ImageView
                                 android:layout_width="wrap_content"
@@ -522,7 +505,8 @@
                                 app:srcCompat="@drawable/nature"
                                 android:id="@+id/itinerary_includes_nature_icon"
                                 app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"/>
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"/>
                         <TextView
                                 tools:text="Best street food you can find in anatalia it so good and cheap"
                                 android:layout_width="0dp"
@@ -546,7 +530,7 @@
                             app:layout_constraintStart_toStartOf="parent"
                             android:id="@+id/itinerary_includes_accommodation_container"
                             android:layout_marginTop="16dp"
-                    >
+                            android:visibility="gone">
 
                         <ImageView
                                 android:layout_width="wrap_content"
@@ -554,7 +538,8 @@
                                 app:srcCompat="@drawable/bed"
                                 android:id="@+id/itinerary_includes_accommodation_icon"
                                 app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"/>
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"/>
                         <TextView
                                 tools:text="Best street food you can find in anatalia it so good and cheap"
                                 android:layout_width="0dp"
@@ -578,7 +563,7 @@
                             app:layout_constraintStart_toStartOf="parent"
                             android:id="@+id/itinerary_includes_transportation_container"
                             android:layout_marginTop="16dp"
-                    >
+                            android:visibility="gone">
 
                         <ImageView
                                 android:layout_width="wrap_content"
@@ -586,7 +571,8 @@
                                 app:srcCompat="@drawable/bus"
                                 android:id="@+id/itinerary_includes_transportation_icon"
                                 app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"/>
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"/>
                         <TextView
                                 tools:text="Best street food you can find in anatalia it so good and cheap"
                                 android:layout_width="0dp"
@@ -605,564 +591,785 @@
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                    android:id="@+id/itinerary_guide_card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintTop_toBottomOf="@+id/itinerary_includes_card"
+                    android:layout_marginEnd="32dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="32dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+            >
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="24dp">
+
+                    <TextView
+                            android:text="About the guide:"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_guide_title"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:fontFamily="@font/roboto_bold"
+                            android:textSize="18sp"
+                            android:textColor="@color/gray900"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.0"/>
+
+                    <TextView
+                            tools:text="I lived here for more than 2 years"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_guide_about"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/itinerary_guide_title"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textSize="15sp"
+                            android:textColor="@color/gray900"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            android:layout_marginTop="16dp"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                    android:id="@+id/itinerary_budget_card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:layout_constraintTop_toBottomOf="@+id/itinerary_guide_card"
+                    android:layout_marginEnd="32dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="32dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="24dp">
+
+
+                    <TextView
+                            android:text="Budget:"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_budget_title"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:fontFamily="@font/roboto_bold"
+                            android:textSize="18sp"
+                            android:textColor="@color/gray900"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.0"/>
+                    <TextView
+                            tools:text="$74.99"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_budget"
+                            android:fontFamily="@font/roboto_black"
+                            android:textColor="@color/gray900"
+                            android:textSize="18sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:layout_marginTop="16dp"
+                            app:layout_constraintTop_toBottomOf="@+id/itinerary_budget_title"/>
+                    <TextView
+                            android:text="/ Per Person Per Day"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:id="@+id/itinerary_budget_per_day"
+                            android:fontFamily="@font/roboto_medium"
+                            app:layout_constraintBaseline_toBaselineOf="@+id/itinerary_budget"
+                            android:layout_marginStart="4dp"
+                            app:layout_constraintStart_toEndOf="@+id/itinerary_budget"/>
+                    <TextView
+                            android:text="Includes:"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_budget_includes"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/itinerary_budget_per_day"
+                            android:fontFamily="@font/roboto_bold"
+                            android:textSize="15sp"
+                            android:textColor="@color/gray900"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            android:layout_marginTop="16dp"/>
+                    <androidx.recyclerview.widget.RecyclerView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            app:layout_constraintTop_toBottomOf="@+id/itinerary_budget_includes"
+                            android:layout_marginTop="16dp"
+                            app:layout_constraintStart_toStartOf="@+id/itinerary_budget_includes"
+                            app:layout_constraintEnd_toEndOf="@+id/itinerary_budget_includes"
+                            android:id="@+id/itinerary_budget_includes_recycler"
+                            app:layout_constraintHorizontal_bias="0.0">
+                    </androidx.recyclerview.widget.RecyclerView>
+                    <TextView
+                            android:text="Also includes:"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_budget_also_includes"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/itinerary_budget_includes_recycler"
+                            android:fontFamily="@font/roboto_bold"
+                            android:textSize="15sp"
+                            android:textColor="@color/gray900"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            android:layout_marginTop="16dp"/>
+                    <TextView
+                            tools:text="your shopping and soap"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_budget_also_includes_text"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/itinerary_budget_also_includes"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textSize="15sp"
+                            android:textColor="@color/gray900"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            android:layout_marginTop="8dp"/>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
             <TextView
                     android:text="@string/leave_a_review"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/itinerary_leave_review"
                     android:layout_marginTop="32dp"
-                    app:layout_constraintTop_toBottomOf="@id/itinerary_includes_card"
+                    app:layout_constraintTop_toBottomOf="@id/itinerary_budget_card"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintEnd_toEndOf="parent"
                     android:fontFamily="@font/roboto_medium"
                     android:textColor="@color/gray500"
-                    android:layout_marginEnd="32dp"
-                    android:layout_marginStart="32dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_marginStart="40dp"
                     android:padding="16dp"
                     android:background="@drawable/button_with_gray_stroke"
-                    android:gravity="center"/>
+                    android:gravity="center"
+                    android:visibility="gone"/>
+
             <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/stars_container"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/itinerary_leave_review"
                     android:layout_marginTop="32dp"
-                    android:layout_marginEnd="32dp"
-                    android:layout_marginStart="32dp"
-                    android:id="@+id/itinerary_5_star_complete">
+                    android:layout_marginStart="24dp"
+                    android:layout_marginEnd="24dp">
 
-
-                <TextView
-                        android:text="@string/_0"
-                        android:layout_width="32dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_5_star_percentage"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        android:fontFamily="@font/roboto_medium"/>
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/itinerary_5_stars_containers"
-                        android:layout_marginEnd="24dp"
-                        android:id="@+id/itinerary_5_star_background_bar"
-                        android:background="@color/gray300"
-                        app:layout_constraintStart_toEndOf="@+id/itinerary_5_star_percentage"
-                        android:layout_marginStart="16dp">
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-                <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="1dp"
-                        android:layout_height="0dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/itinerary_5_stars_containers"
-                        android:layout_marginEnd="24dp"
-                        android:id="@+id/itinerary_5_star_filling_bar"
-                        android:background="@color/star_yellow"
-                        android:elevation="1dp"
-                        app:layout_constraintStart_toEndOf="@+id/itinerary_5_star_percentage"
-                        android:layout_marginStart="16dp"
-                        app:layout_constraintHorizontal_bias="0.0">
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-                <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        android:id="@+id/itinerary_5_stars_containers">
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginStart="32dp"
+                        android:id="@+id/itinerary_5_star_complete">
 
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_5_stars_5"
+
+                    <TextView
+                            android:text="@string/_0"
+                            android:layout_width="40dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_5_star_percentage"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:fontFamily="@font/roboto_medium"/>
+
+                    <androidx.cardview.widget.CardView android:layout_width="0dp"
+                                                       android:layout_height="0dp"
+                                                       app:cardCornerRadius="16dp"
+                                                       app:layout_constraintTop_toTopOf="parent"
+                                                       app:layout_constraintBottom_toBottomOf="parent"
+                                                       app:layout_constraintEnd_toStartOf="@+id/itinerary_5_stars_containers"
+                                                       android:layout_marginEnd="24dp"
+                                                       app:layout_constraintStart_toEndOf="@+id/itinerary_5_star_percentage"
+                                                       android:layout_marginStart="16dp"
+                                                       app:cardElevation="0dp">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent">
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/itinerary_5_star_background_bar"
+                                    android:background="@color/gray300"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                            />
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:layout_width="1dp"
+                                    android:layout_height="match_parent"
+                                    android:id="@+id/itinerary_5_star_filling_bar"
+                                    android:background="@color/star_yellow"
+                                    android:elevation="1dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    android:visibility="gone"/>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                    </androidx.cardview.widget.CardView>
+
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_5_stars_4"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_5_stars_5"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_5_stars_3"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_5_stars_4"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_5_stars_2"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_5_stars_3"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_5_stars_1"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_5_stars_2"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
+                            android:id="@+id/itinerary_5_stars_containers">
+
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_5_stars_5"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_5_stars_4"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_5_stars_5"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_5_stars_3"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_5_stars_4"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_5_stars_2"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_5_stars_3"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_5_stars_1"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_5_stars_2"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-            <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/itinerary_4_star_complete"
-                    app:layout_constraintTop_toBottomOf="@id/itinerary_5_star_complete"
-                    android:layout_marginTop="16dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginStart="32dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginEnd="32dp">
-
-
-                <TextView
-                        android:text="@string/_0"
-                        android:layout_width="32dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_4_star_percentage"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        android:fontFamily="@font/roboto_medium"/>
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/itinerary_4_stars_containers"
-                        android:layout_marginEnd="24dp"
-                        android:id="@+id/itinerary_4_star_background_bar"
-                        android:background="@color/gray300"
-                        app:layout_constraintStart_toEndOf="@+id/itinerary_4_star_percentage"
-                        android:layout_marginStart="16dp">
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-                <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="1dp"
-                        android:layout_height="0dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/itinerary_4_stars_containers"
-                        android:layout_marginEnd="24dp"
-                        android:id="@+id/itinerary_4_star_filling_bar"
-                        android:background="@color/star_yellow"
-                        android:elevation="1dp"
-                        app:layout_constraintStart_toEndOf="@+id/itinerary_4_star_percentage"
-                        android:layout_marginStart="16dp"
-                        app:layout_constraintHorizontal_bias="0.0">
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-                <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:id="@+id/itinerary_4_star_complete"
+                        app:layout_constraintTop_toBottomOf="@id/itinerary_5_star_complete"
+                        android:layout_marginTop="16dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="32dp"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        android:id="@+id/itinerary_4_stars_containers"
-                        app:layout_constraintVertical_bias="1.0">
+                        android:layout_marginEnd="32dp">
 
-                    <ImageView
-                            android:src="@drawable/star_gray"
-                            android:layout_width="16dp"
+
+                    <TextView
+                            android:text="@string/_0"
+                            android:layout_width="40dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_4_star_percentage"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:fontFamily="@font/roboto_medium"/>
+
+                    <androidx.cardview.widget.CardView
+                            android:layout_width="0dp"
                             android:layout_height="0dp"
-                            android:id="@+id/itinerary_4_stars_5"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@+id/itinerary_4_stars_containers"
+                            android:layout_marginEnd="24dp"
+                            app:layout_constraintStart_toEndOf="@+id/itinerary_4_star_percentage"
+                            android:layout_marginStart="16dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp">
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                        >
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/itinerary_4_star_background_bar"
+                                    android:background="@color/gray300"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"/>
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:layout_width="1dp"
+                                    android:layout_height="match_parent"
+                                    android:id="@+id/itinerary_4_star_filling_bar"
+                                    android:background="@color/star_yellow"
+                                    android:elevation="1dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    android:visibility="gone"/>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_4_stars_4"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_4_stars_5"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_4_stars_3"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_4_stars_4"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_4_stars_2"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_4_stars_3"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_4_stars_1"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_4_stars_2"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
+                            android:id="@+id/itinerary_4_stars_containers"
+                            app:layout_constraintVertical_bias="1.0">
+
+                        <ImageView
+                                android:src="@drawable/star_gray"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_4_stars_5"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_4_stars_4"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_4_stars_5"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_4_stars_3"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_4_stars_4"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_4_stars_2"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_4_stars_3"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_4_stars_1"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_4_stars_2"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-            <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/itinerary_3_star_complete"
-                    app:layout_constraintTop_toBottomOf="@id/itinerary_4_star_complete"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginEnd="32dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="16dp">
-
-
-                <TextView
-                        android:text="@string/_0"
-                        android:layout_width="32dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_3_star_percentage"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        android:fontFamily="@font/roboto_medium"/>
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/itinerary_3_stars_containers"
-                        android:layout_marginEnd="24dp"
-                        android:id="@+id/itinerary_3_star_background_bar"
-                        android:background="@color/gray300"
-                        app:layout_constraintStart_toEndOf="@+id/itinerary_3_star_percentage"
-                        android:layout_marginStart="16dp">
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-                <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="1dp"
-                        android:layout_height="0dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/itinerary_3_stars_containers"
-                        android:layout_marginEnd="24dp"
-                        android:id="@+id/itinerary_3_star_filling_bar"
-                        android:background="@color/star_yellow"
-                        android:elevation="1dp"
-                        app:layout_constraintStart_toEndOf="@+id/itinerary_3_star_percentage"
-                        android:layout_marginStart="16dp"
-                        app:layout_constraintHorizontal_bias="0.0">
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-                <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:id="@+id/itinerary_3_star_complete"
+                        app:layout_constraintTop_toBottomOf="@id/itinerary_4_star_complete"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        android:id="@+id/itinerary_3_stars_containers">
+                        android:layout_marginEnd="32dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginTop="16dp">
 
-                    <ImageView
-                            android:src="@drawable/star_gray"
-                            android:layout_width="16dp"
+
+                    <TextView
+                            android:text="@string/_0"
+                            android:layout_width="40dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_3_star_percentage"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:fontFamily="@font/roboto_medium"/>
+
+                    <androidx.cardview.widget.CardView
+                            android:layout_width="0dp"
                             android:layout_height="0dp"
-                            android:id="@+id/itinerary_3_stars_5"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@+id/itinerary_3_stars_containers"
+                            android:layout_marginEnd="24dp"
+                            app:layout_constraintStart_toEndOf="@+id/itinerary_3_star_percentage"
+                            android:layout_marginStart="16dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent">
+
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/itinerary_3_star_background_bar"
+                                    android:background="@color/gray300"
+                                    android:layout_width="0dp"
+                                    android:layout_height="0dp"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent"/>
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:layout_width="1dp"
+                                    android:layout_height="match_parent"
+                                    android:id="@+id/itinerary_3_star_filling_bar"
+                                    android:background="@color/star_yellow"
+                                    android:elevation="1dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    android:visibility="gone"/>
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </androidx.cardview.widget.CardView>
+
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star_gray"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_3_stars_4"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_3_stars_5"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_3_stars_3"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_3_stars_4"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_3_stars_2"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_3_stars_3"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_3_stars_1"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_3_stars_2"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
+                            android:id="@+id/itinerary_3_stars_containers">
+
+                        <ImageView
+                                android:src="@drawable/star_gray"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_3_stars_5"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star_gray"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_3_stars_4"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_3_stars_5"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_3_stars_3"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_3_stars_4"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_3_stars_2"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_3_stars_3"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_3_stars_1"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_3_stars_2"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-            <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/itinerary_2_star_complete"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginEnd="32dp"
-                    app:layout_constraintTop_toBottomOf="@id/itinerary_3_star_complete"
-                    android:layout_marginTop="16dp">
-
-
-                <TextView
-                        android:text="@string/_0"
-                        android:layout_width="32dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_2_star_percentage"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        android:fontFamily="@font/roboto_medium"/>
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/itinerary_2_stars_containers"
-                        android:layout_marginEnd="24dp"
-                        android:id="@+id/itinerary_2_star_background_bar"
-                        android:background="@color/gray300"
-                        app:layout_constraintStart_toEndOf="@+id/itinerary_2_star_percentage"
-                        android:layout_marginStart="16dp">
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-                <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="1dp"
-                        android:layout_height="0dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/itinerary_2_stars_containers"
-                        android:layout_marginEnd="24dp"
-                        android:id="@+id/itinerary_2_star_filling_bar"
-                        android:background="@color/star_yellow"
-                        android:elevation="1dp"
-                        app:layout_constraintStart_toEndOf="@+id/itinerary_2_star_percentage"
-                        android:layout_marginStart="16dp"
-                        app:layout_constraintHorizontal_bias="0.0">
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-                <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:id="@+id/itinerary_2_star_complete"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        android:id="@+id/itinerary_2_stars_containers">
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        app:layout_constraintTop_toBottomOf="@id/itinerary_3_star_complete"
+                        android:layout_marginTop="16dp">
 
-                    <ImageView
-                            android:src="@drawable/star_gray"
-                            android:layout_width="16dp"
+
+                    <TextView
+                            android:text="@string/_0"
+                            android:layout_width="40dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_2_star_percentage"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:fontFamily="@font/roboto_medium"/>
+
+                    <androidx.cardview.widget.CardView
+                            android:layout_width="0dp"
                             android:layout_height="0dp"
-                            android:id="@+id/itinerary_2_stars_5"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@+id/itinerary_2_stars_containers"
+                            android:layout_marginEnd="24dp"
+                            app:layout_constraintStart_toEndOf="@+id/itinerary_2_star_percentage"
+                            android:layout_marginStart="16dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent">
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/itinerary_2_star_background_bar"
+                                    android:background="@color/gray300"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"/>
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:layout_width="1dp"
+                                    android:layout_height="match_parent"
+                                    android:id="@+id/itinerary_2_star_filling_bar"
+                                    android:background="@color/star_yellow"
+                                    android:elevation="1dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    android:visibility="gone"/>
+
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                    </androidx.cardview.widget.CardView>
+
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star_gray"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_2_stars_4"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_2_stars_5"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star_gray"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_2_stars_3"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_2_stars_4"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_2_stars_2"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_2_stars_3"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_2_stars_1"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_2_stars_2"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
+                            android:id="@+id/itinerary_2_stars_containers">
+
+                        <ImageView
+                                android:src="@drawable/star_gray"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_2_stars_5"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star_gray"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_2_stars_4"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_2_stars_5"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star_gray"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_2_stars_3"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_2_stars_4"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_2_stars_2"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_2_stars_3"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_2_stars_1"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_2_stars_2"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-            <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/itinerary_1_star_complete"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginEnd="32dp"
-                    android:layout_marginStart="32dp"
-                    app:layout_constraintTop_toBottomOf="@id/itinerary_2_star_complete"
-                    android:layout_marginTop="16dp"
-            >
-
-
-                <TextView
-                        android:text="@string/_0"
-                        android:layout_width="32dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_1_star_percentage"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        android:fontFamily="@font/roboto_medium"/>
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/itinerary_1_stars_containers"
-                        android:layout_marginEnd="24dp"
-                        android:id="@+id/itinerary_1_star_background_bar"
-                        android:background="@color/gray300"
-                        app:layout_constraintStart_toEndOf="@+id/itinerary_1_star_percentage"
-                        android:layout_marginStart="16dp">
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-                <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="1dp"
-                        android:layout_height="0dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/itinerary_1_stars_containers"
-                        android:layout_marginEnd="24dp"
-                        android:id="@+id/itinerary_1_star_filling_bar"
-                        android:background="@color/star_yellow"
-                        android:elevation="1dp"
-                        app:layout_constraintStart_toEndOf="@+id/itinerary_1_star_percentage"
-                        android:layout_marginStart="16dp"
-                        app:layout_constraintHorizontal_bias="0.0">
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-                <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:id="@+id/itinerary_1_star_complete"
+                        app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        android:id="@+id/itinerary_1_stars_containers">
+                        android:layout_marginEnd="32dp"
+                        android:layout_marginStart="32dp"
+                        app:layout_constraintTop_toBottomOf="@id/itinerary_2_star_complete"
+                        android:layout_marginTop="16dp"
+                >
 
-                    <ImageView
-                            android:src="@drawable/star_gray"
-                            android:layout_width="16dp"
+
+                    <TextView
+                            android:text="@string/_0"
+                            android:layout_width="40dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/itinerary_1_star_percentage"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:fontFamily="@font/roboto_medium"/>
+
+
+                    <androidx.cardview.widget.CardView
+                            android:layout_width="0dp"
                             android:layout_height="0dp"
-                            android:id="@+id/itinerary_1_stars_5"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@+id/itinerary_1_stars_containers"
+                            android:layout_marginEnd="24dp"
+                            app:layout_constraintStart_toEndOf="@+id/itinerary_1_star_percentage"
+                            android:layout_marginStart="16dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent">
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:id="@+id/itinerary_1_star_background_bar"
+                                    android:background="@color/gray300"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent"/>
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:layout_width="1dp"
+                                    android:layout_height="match_parent"
+                                    android:id="@+id/itinerary_1_star_filling_bar"
+                                    android:background="@color/star_yellow"
+                                    android:elevation="1dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    android:visibility="gone"/>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </androidx.cardview.widget.CardView>
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star_gray"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_1_stars_4"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_1_stars_5"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star_gray"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_1_stars_3"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_1_stars_4"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
-                    <ImageView
-                            android:src="@drawable/star_gray"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_1_stars_2"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_1_stars_3"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"/>
-                    <ImageView
-                            android:src="@drawable/star"
-                            android:layout_width="16dp"
-                            android:layout_height="0dp"
-                            android:id="@+id/itinerary_1_stars_1"
-                            app:layout_constraintEnd_toStartOf="@+id/itinerary_1_stars_2"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginEnd="8dp"
-                            app:layout_constraintDimensionRatio="h,1:1"/>
+                            android:id="@+id/itinerary_1_stars_containers">
+
+                        <ImageView
+                                android:src="@drawable/star_gray"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_1_stars_5"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star_gray"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_1_stars_4"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_1_stars_5"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star_gray"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_1_stars_3"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_1_stars_4"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                        <ImageView
+                                android:src="@drawable/star_gray"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_1_stars_2"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_1_stars_3"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"/>
+                        <ImageView
+                                android:src="@drawable/star"
+                                android:layout_width="16dp"
+                                android:layout_height="0dp"
+                                android:id="@+id/itinerary_1_stars_1"
+                                app:layout_constraintEnd_toStartOf="@+id/itinerary_1_stars_2"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="8dp"
+                                app:layout_constraintDimensionRatio="h,1:1"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
+
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+
             <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    app:layout_constraintTop_toBottomOf="@+id/itinerary_1_star_complete"
+                    app:layout_constraintTop_toBottomOf="@+id/stars_container"
                     android:layout_marginTop="24dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -1180,10 +1387,85 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     android:fontFamily="@font/roboto_black"
-                    android:textColor="@color/green700"
+                    android:textColor="@color/star_yellow"
                     android:gravity="center"
                     android:layout_marginBottom="32dp"
-                    app:layout_constraintBottom_toBottomOf="parent"/>
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:visibility="gone"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
+    <View
+            android:id="@+id/divider9"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintBottom_toTopOf="@+id/constraintLayout9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:background="@color/white"
+            android:paddingStart="40dp"
+            android:paddingEnd="40dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:id="@+id/constraintLayout9">
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:background="@drawable/buttons_shape"
+                android:id="@+id/itinerary_buy_cta_container_2"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+        >
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:id="@+id/constraintLayout10">
+
+                <TextView
+                        app:layout_constraintStart_toEndOf="@id/itinerary_buy_button_2"
+                        android:layout_marginStart="8dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/itinerary_buy_price_bottom"
+                        tools:text="($6.99)"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textSize="15sp"
+                        android:textColor="@color/gray500"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"/>
+                <TextView
+                        android:id="@+id/itinerary_buy_button_2"
+
+                        android:text="@string/buy_itinerary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="20dp"
+
+                        android:gravity="center"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textSize="15sp"
+                        android:textColor="@color/gray500"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="16dp"
+                />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

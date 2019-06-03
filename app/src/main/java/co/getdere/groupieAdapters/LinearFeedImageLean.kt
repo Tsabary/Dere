@@ -259,7 +259,7 @@ class LinearFeedImageLean(val image: Images, val currentUser: Users, val activit
 
                 sharedViewModelRandomUser.randomUserObject.postValue(randomUserObject)
 
-                activity.subFm.beginTransaction().hide(activity.subActive).show(activity.imageFullSizeFragment).commit()
+                activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment").addToBackStack("imageFullSizeFragment").commit()
 
                 activity.switchVisibility(1)
 

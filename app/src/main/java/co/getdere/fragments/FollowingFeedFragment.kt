@@ -22,6 +22,7 @@ import co.getdere.R
 import co.getdere.groupieAdapters.LinearFeedImage
 import co.getdere.groupieAdapters.LinearFeedImageLean
 import co.getdere.groupieAdapters.StaggeredFeedImage
+import co.getdere.interfaces.DereMethods
 import co.getdere.models.LinearWithLocation
 import co.getdere.models.StaggeredWithLocation
 import co.getdere.viewmodels.*
@@ -34,7 +35,7 @@ import kotlinx.android.synthetic.main.fragment_feeds_layout.*
 import mumayank.com.airlocationlibrary.AirLocation
 
 
-open class FollowingFeedFragment : Fragment() {
+open class FollowingFeedFragment : Fragment(), DereMethods {
 
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
@@ -105,25 +106,29 @@ open class FollowingFeedFragment : Fragment() {
         val sortByDate = feed_sort_date
 
         sortByDistance.setOnClickListener {
-            sortByDistance.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
-            sortByDate.setTextColor(ContextCompat.getColor(context!!, R.color.gray500))
+            if (isLocationServiceEnabled(context!!)) {
+                sortByDistance.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
+                sortByDate.setTextColor(ContextCompat.getColor(context!!, R.color.gray500))
 
-            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-            firebaseAnalytics.logEvent("sort_by_distance", null)
+                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+                firebaseAnalytics.logEvent("sort_by_distance", null)
 
-            isDistanceActive = true
+                isDistanceActive = true
 
-            if (isDistanceListEmpty) {
-                listenToImagesWithLocation(currentUser)
-                if (isLinearActive) {
+                if (isDistanceListEmpty) {
+                    listenToImagesWithLocation(currentUser)
+                    if (isLinearActive) {
+                        feedRecycler.adapter = distanceLinearGalleryAdapter
+                    } else {
+                        feedRecycler.adapter = distanceStaggeredGalleryAdapter
+                    }
+                } else if (isLinearActive) {
                     feedRecycler.adapter = distanceLinearGalleryAdapter
                 } else {
                     feedRecycler.adapter = distanceStaggeredGalleryAdapter
                 }
-            } else if (isLinearActive) {
-                feedRecycler.adapter = distanceLinearGalleryAdapter
             } else {
-                feedRecycler.adapter = distanceStaggeredGalleryAdapter
+                Toast.makeText(this.context, "Please turn on your location", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -342,6 +347,7 @@ open class FollowingFeedFragment : Fragment() {
                             }
                         }
                     }
+
                     override fun onCancelled(p0: DatabaseError) {
                     }
                 })

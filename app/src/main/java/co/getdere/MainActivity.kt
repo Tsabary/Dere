@@ -2,11 +2,11 @@ package co.getdere
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.fragments.*
@@ -24,7 +24,6 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.stripe.android.Stripe
 import io.branch.indexing.BranchUniversalObject
 import io.branch.referral.Branch
 import kotlinx.android.synthetic.main.activity_main.*
@@ -75,14 +74,13 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var addImagesToItineraryFragment: AddImagesToItineraryFragment
     lateinit var marketplacePurchasedFragment: MarketplacePurchasedFragment
     lateinit var buyItineraryFragment: BuyItineraryFragment
+    lateinit var addImagesToItineraryDayFragment: AddImagesToItineraryDayFragment
 
     lateinit var mainFrame: FrameLayout
     lateinit var subFrame: FrameLayout
 
     val fm = supportFragmentManager
-    val fmTransaction = fm.beginTransaction()
     val subFm = supportFragmentManager
-    val subFmTransaction = subFm.beginTransaction()
 
 
     lateinit var active: Fragment
@@ -93,7 +91,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
     var feedNotificationsCount = MutableLiveData<Int>()
 
     var isCollectionMapViewActive = false
-    var isBucketGalleryActive = false
+    var isCollectionGalleryActive = false
     var isOpenedQuestionActive = false
     var isEditAnswerActive = false
     var isFeedNotificationsActive = false
@@ -142,440 +140,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
         switchVisibility(0)
     }
 
-    private fun setupBottomNav() {
-
-        mBottomNav = feed_bottom_nav
-
-        mBottomNav.setOnNavigationItemSelectedListener { item ->
-            when (item.itemId) {
-
-                R.id.destination_feed -> {
-                    navigateToFeed()
-                }
-
-                R.id.destination_board -> {
-                    navigateToBoard()
-                }
-                R.id.destination_marketplace -> {
-                    navigateToMarketplace()
-                }
-                R.id.destination_profile_logged_in_user -> {
-                    navigateToProfile()
-                }
-            }
-            false
-        }
-    }
-
-    fun switchVisibility(case: Int) {
-
-        if (case == 0) {
-            mainFrame.visibility = View.VISIBLE
-            subFrame.visibility = View.GONE
-        } else {
-            mainFrame.visibility = View.GONE
-            subFrame.visibility = View.VISIBLE
-        }
-
-
-    }
-
-    private fun resetImageExpended() {
-        sharedViewModelImage.sharedImageObject.postValue(Images())
-        imageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
-        imageFullSizeFragment.optionsContainer.visibility = View.GONE
-        imageFullSizeFragment.deleteEditContainer.visibility = View.VISIBLE
-        imageFullSizeFragment.deleteContainer.visibility = View.GONE
-        imageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
-        imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
-
-    }
-
-    private fun resetSecondImageExpended() {
-        sharedViewModelImage.sharedImageObject.postValue(Images())
-        secondImageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
-        secondImageFullSizeFragment.optionsContainer.visibility = View.GONE
-        secondImageFullSizeFragment.deleteEditContainer.visibility = View.VISIBLE
-        secondImageFullSizeFragment.deleteContainer.visibility = View.GONE
-        secondImageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
-        secondImageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
-    }
-
-    override fun onBackPressed() {
-
-        if (mainFrame.visibility == View.GONE) { // subframe is active
-
-            when (subActive) {
-
-                imageFullSizeFragment -> {
-                    when {
-                        isCollectionMapViewActive && isBucketGalleryActive -> {
-                            subFm.beginTransaction().hide(subActive).show(collectionGalleryFragment).commit()
-                            subActive = collectionGalleryFragment
-                            collectionGalleryFragment.galleryViewPager.currentItem = 1
-                            resetImageExpended()
-                            isCollectionMapViewActive = false
-                        }
-
-                        isCollectionMapViewActive && !isBucketGalleryActive -> {
-                            subFm.beginTransaction().hide(subActive).show(collectionMapView).commit()
-                            subActive = collectionMapView
-                            resetImageExpended()
-                            isCollectionMapViewActive = false
-                        }
-
-                        isBucketGalleryActive && !isCollectionMapViewActive -> {
-                            subFm.beginTransaction().hide(subActive).show(collectionGalleryFragment).commit()
-                            subActive = collectionGalleryFragment
-                            collectionGalleryFragment.galleryViewPager.currentItem = 0
-                            resetImageExpended()
-                        }
-                        isOpenedQuestionActive -> {
-                            subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
-                            subActive = openedQuestionFragment
-                            resetImageExpended()
-                        }
-                        isFeedNotificationsActive -> {
-                            subFm.beginTransaction().hide(subActive).show(feedNotificationsFragment).commit()
-                            subActive = feedNotificationsFragment
-                            resetImageExpended()
-                        }
-                        isBoardNotificationsActive -> {
-                            subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
-                            subActive = boardNotificationsFragment
-                            resetImageExpended()
-                        }
-                        isRandomUserProfileActive -> {
-                            subFm.beginTransaction().hide(subActive).show(profileRandomUserFragment).commit()
-                            subActive = profileRandomUserFragment
-                            resetImageExpended()
-                        }
-
-                        else -> {
-                            switchVisibility(0)
-                            resetImageExpended()
-                        }
-                    }
-                }
-                addToBucketFragment -> {
-                    if (isFeedActive) {
-                        switchVisibility(0)
-                        isFeedActive = false
-                    }
-                    subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
-                }
-
-                profileRandomUserFragment -> {
-                    when {
-                        isFeedActive -> {
-                            navigateToFeed()
-                            isFeedActive = false
-                            isRandomUserProfileActive = false
-                        }
-                        isFeedNotificationsActive -> {
-                            subFm.beginTransaction().hide(subActive).show(feedNotificationsFragment).commit()
-                            subActive = feedNotificationsFragment
-                            isRandomUserProfileActive = false
-                        }
-
-                        isBoardNotificationsActive -> {
-                            subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
-                            subActive = boardNotificationsFragment
-                            isRandomUserProfileActive = false
-                        }
-                        isOpenedQuestionActive -> {
-                            subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
-                            subActive = openedQuestionFragment
-                            isRandomUserProfileActive = false
-                        }
-
-                        isItineraryActive -> {
-                            subFm.beginTransaction().hide(subActive).show(itineraryFragment).commit()
-                            subActive = itineraryFragment
-                        }
-                        else -> {
-                            imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
-                            subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                            subActive = imageFullSizeFragment
-
-//                            sharedViewModelSecondRandomUser.randomUserObject.postValue(Users())
-                            isRandomUserProfileActive = false
-                        }
-                    }
-                }
-                profileSecondRandomUserFragment -> {
-                    if (isOpenedQuestionActive) {
-                        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
-                        subActive = openedQuestionFragment
-                    } else {
-                        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                        subActive = imageFullSizeFragment
-                    }
-                }
-
-                feedNotificationsFragment -> {
-                    switchVisibility(0)
-                    isFeedNotificationsActive = false
-                }
-
-                openedQuestionFragment -> {
-                    if (isBoardNotificationsActive) {
-                        subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
-                        subActive = boardNotificationsFragment
-                        isOpenedQuestionActive = false
-                        openedQuestionFragment.deleteBox.visibility = View.GONE
-                    } else {
-                        switchVisibility(0)
-                        isOpenedQuestionActive = false
-                        openedQuestionFragment.deleteBox.visibility = View.GONE
-                    }
-                }
-
-                boardNotificationsFragment -> {
-                    switchVisibility(0)
-                }
-
-                savedQuestionFragment -> {
-                    switchVisibility(0)
-                }
-
-                answerCommentFragment -> {
-                    subFm.beginTransaction().remove(subActive).show(openedQuestionFragment).commit()
-                    subActive = openedQuestionFragment
-                }
-
-                answerFragment -> {
-                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
-                    subActive = openedQuestionFragment
-                }
-
-                newQuestionFragment -> {
-                    switchVisibility(0)
-                }
-
-                collectionGalleryFragment -> {
-//                    subFm.beginTransaction().hide(collectionGalleryFragment).show(imageFullSizeFragment).commit()
-//                    subActive = imageFullSizeFragment
-//                    collectionGalleryFragment.pagerAdapter.notifyDataSetChanged()
-                    if (isSavedItinerariesActive){
-                        subFm.beginTransaction().hide(subActive).show(marketplacePurchasedFragment).commit()
-                        subActive = marketplacePurchasedFragment
-                    } else {
-                        switchVisibility(0)
-                        isBucketGalleryActive = false
-                        collectionGalleryFragment.mapButton.setImageResource(R.drawable.world)
-                    }
-                }
-
-                editProfileFragment -> {
-                    switchVisibility(0)
-                }
-
-                imagePostEditFragment -> {
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
-                }
-
-                webViewFragment -> {
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
-                }
-
-                editQuestionFragment -> {
-                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
-                    subActive = openedQuestionFragment
-                }
-
-                editAnswerFragment -> {
-                    subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
-                    subActive = openedQuestionFragment
-                    isEditAnswerActive = false
-                }
-
-                addImageToAnswer -> {
-                    if (isEditAnswerActive) {
-                        subFm.beginTransaction().hide(subActive).show(editAnswerFragment).commit()
-                        subActive = editAnswerFragment
-                    } else {
-                        subFm.beginTransaction().hide(subActive).show(answerFragment).commit()
-                        subActive = answerFragment
-                    }
-                }
-
-                editInterestsFragment -> {
-                    switchVisibility(0)
-                }
-
-                collectionMapView -> {
-
-                    when {
-                        isRandomUserProfileActive -> {
-                            subFm.beginTransaction().hide(subActive).show(profileRandomUserFragment).commit()
-                            subActive = profileRandomUserFragment
-                            isRandomUserProfileActive = false
-                        }
-                        isSecondRandomUserProfileActive -> {
-                            subFm.beginTransaction().hide(subActive).show(profileSecondRandomUserFragment).commit()
-                            subActive = profileSecondRandomUserFragment
-                            isSecondRandomUserProfileActive = false
-                        }
-                        else -> switchVisibility(0)
-                    }
-
-                }
-
-                secondImageFullSizeFragment -> {
-                    subFm.beginTransaction().hide(secondImageFullSizeFragment).show(profileRandomUserFragment).commit()
-                    subActive = profileRandomUserFragment
-                    resetSecondImageExpended()
-                }
-
-                addToItineraryFragment -> {
-                    if (isFeedActive) {
-                        switchVisibility(0)
-                        isFeedActive = false
-                    }
-                    subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
-                }
-
-                itineraryFragment -> {
-                    switchVisibility(0)
-                    isItineraryActive = false
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
-                }
-
-                itineraryEditFragment -> {
-                    subFm.beginTransaction().remove(subActive).remove(addImagesToItineraryFragment)
-                        .show(collectionGalleryFragment).commit()
-                    subActive = collectionGalleryFragment
-
-                    //need to save the data to the itinerary
-                }
-
-                addImagesToItineraryFragment -> {
-                    subFm.beginTransaction().hide(subActive).show(itineraryEditFragment).commit()
-                    subActive = itineraryEditFragment
-                }
-
-                marketplacePurchasedFragment -> {
-                    subFm.beginTransaction().remove(marketplacePurchasedFragment).commit()
-                    subActive = imageFullSizeFragment
-                    switchVisibility(0)
-                    isSavedItinerariesActive = false
-                }
-                buyItineraryFragment -> {
-                    subFm.beginTransaction().remove(buyItineraryFragment).show(itineraryFragment).commit()
-                    subActive = itineraryFragment
-                }
-
-            }
-        } else if (fragmentsHaveBeenInitialized) {
-
-            when (active) { // main frame is active
-
-                onBoardingFragment -> {
-                    when (onBoardingFragment.viewPager.currentItem) {
-                        0 -> {
-                        }
-
-                        1 -> {
-                            onBoardingFragment.setUpItem1()
-                        }
-
-                        2 -> {
-                            onBoardingFragment.setUpItem2()
-                        }
-
-                        3 -> {
-                            onBoardingFragment.setUpItem3()
-                        }
-
-                        4 -> {
-                            onBoardingFragment.setUpItem4()
-                        }
-
-                        5 -> {
-                            onBoardingFragment.setUpItem5()
-                        }
-                    }
-
-                }
-
-                profileLoggedInUserFragment -> {
-
-                    fm.beginTransaction().hide(active).show(feedFragment).commit()
-                    active = feedFragment
-
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
-
-                    val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
-                    menuItem.isChecked = true
-
-                    switchVisibility(0)
-
-                }
-
-                boardFragment -> {
-
-                    fm.beginTransaction().hide(active).show(feedFragment).commit()
-                    active = feedFragment
-
-                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                    subActive = imageFullSizeFragment
-
-                    val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
-                    menuItem.isChecked = true
-
-                    switchVisibility(0)
-                }
-
-                feedFragment -> super.onBackPressed()
-            }
-
-        } else {
-            super.onBackPressed()
-        }
-
-    }
-
-    private fun resetFragments() {
-        closeKeyboard(this)
-
-        openedQuestionFragment.deleteBox.visibility = View.GONE
-        collectionGalleryFragment.mapButton.setImageResource(R.drawable.world)
-
-        isCollectionMapViewActive = false
-        isBucketGalleryActive = false
-        isOpenedQuestionActive = false
-        isEditAnswerActive = false
-        isFeedNotificationsActive = false
-        isBoardNotificationsActive = false
-        isRandomUserProfileActive = false
-        isSecondRandomUserProfileActive = false
-        isFeedActive = false
-        isItineraryActive = false
-        isSavedItinerariesActive = false
-
-
-        sharedViewModelImage.sharedImageObject.postValue(Images())
-        sharedViewModelRandomUser.randomUserObject.postValue(Users())
-        sharedViewModelQuestion.questionObject.postValue(Question())
-
-        if (mainFrame.visibility == View.GONE) {
-            switchVisibility(0)
-        }
-
-        imageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
-
-        subFm.beginTransaction().remove(addToBucketFragment).commit()
-        subFm.beginTransaction().remove(addToItineraryFragment).commit()
-//        subFm.beginTransaction().remove(itineraryFragment).commit()
-        subFm.beginTransaction().remove(marketplacePurchasedFragment).commit()
-    }
 
     private fun checkIfLoggedIn() {
 
@@ -606,7 +170,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
         })
     }
 
-
     fun addFragmentsToFragmentManagers() {
 
         //main container
@@ -625,12 +188,11 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
             override fun onDataChange(p0: DataSnapshot) {
                 if (p0.hasChildren()) {
+
                     fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment")
                         .commitAllowingStateLoss()
 
                     active = feedFragment
-
-                    fragmentsHaveBeenInitialized = true
 
                 } else {
                     fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment")
@@ -639,10 +201,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
                         .commitAllowingStateLoss()
 
                     active = onBoardingFragment
-
-                    fragmentsHaveBeenInitialized = true
-
                 }
+                fragmentsHaveBeenInitialized = true
             }
         })
 
@@ -684,9 +244,22 @@ class MainActivity : AppCompatActivity(), DereMethods {
         addImagesToItineraryFragment = AddImagesToItineraryFragment()
         marketplacePurchasedFragment = MarketplacePurchasedFragment()
         buyItineraryFragment = BuyItineraryFragment()
+        addImagesToItineraryDayFragment = AddImagesToItineraryDayFragment()
 
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, feedNotificationsFragment, "feedNotificationsFragment")
+            .hide(feedNotificationsFragment).commitAllowingStateLoss()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, boardNotificationsFragment, "boardNotificationsFragment")
+            .hide(boardNotificationsFragment).commitAllowingStateLoss()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, savedQuestionFragment, "savedQuestionFragment")
+            .hide(savedQuestionFragment).commitAllowingStateLoss()
+        subFm.beginTransaction()
+            .add(R.id.feed_subcontents_frame_container, marketplacePurchasedFragment, "marketplacePurchasedFragment")
+            .hide(marketplacePurchasedFragment).commitAllowingStateLoss()
 
-
+/*
         subFm.beginTransaction()
             .add(R.id.feed_subcontents_frame_container, imageFullSizeFragment, "imageFullSizeFragment")
             .commitAllowingStateLoss()
@@ -749,11 +322,783 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
         subActive = imageFullSizeFragment
 
+        */
         setupBottomNav()
     }
 
+
+    private fun setupBottomNav() {
+
+        mBottomNav = feed_bottom_nav
+
+        mBottomNav.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+
+                R.id.destination_feed -> {
+                    navigateToFeed()
+                }
+
+                R.id.destination_board -> {
+                    navigateToBoard()
+                }
+                R.id.destination_marketplace -> {
+                    navigateToMarketplace()
+                }
+                R.id.destination_profile_logged_in_user -> {
+                    navigateToProfile()
+                }
+            }
+            false
+        }
+    }
+
+    fun switchVisibility(case: Int) {
+
+        if (case == 0) {
+            mainFrame.visibility = View.VISIBLE
+            subFrame.visibility = View.GONE
+        } else {
+            mainFrame.visibility = View.GONE
+            subFrame.visibility = View.VISIBLE
+        }
+
+
+    }
+
+//    private fun resetImageExpended() {
+//        sharedViewModelImage.sharedImageObject.postValue(Images())
+//        imageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
+//        imageFullSizeFragment.optionsContainer.visibility = View.GONE
+//        imageFullSizeFragment.deleteEditContainer.visibility = View.VISIBLE
+//        imageFullSizeFragment.deleteContainer.visibility = View.GONE
+//        imageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
+//        imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
+//
+//    }
+//
+//    private fun resetSecondImageExpended() {
+//        sharedViewModelImage.sharedImageObject.postValue(Images())
+//        secondImageFullSizeFragment.actionsContainer.visibility = View.INVISIBLE
+//        secondImageFullSizeFragment.optionsContainer.visibility = View.GONE
+//        secondImageFullSizeFragment.deleteEditContainer.visibility = View.VISIBLE
+//        secondImageFullSizeFragment.deleteContainer.visibility = View.GONE
+//        secondImageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
+//        secondImageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
+//    }
+
+
+    override fun onBackPressed() {
+
+        when {
+            mainFrame.visibility == View.GONE -> // subframe is active
+
+                when (subActive) {
+
+                    imageFullSizeFragment -> {
+                        subFm.popBackStack("imageFullSizeFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        when {
+                            isCollectionMapViewActive -> subActive = collectionMapView
+                            isCollectionGalleryActive -> subActive = collectionGalleryFragment
+                            else -> switchVisibility(0)
+                        }
+                    }
+                    addToBucketFragment -> {
+                        if (isFeedActive) {
+                            switchVisibility(0)
+                            isFeedActive = false
+                        }
+                        subFm.popBackStack("addToBucketFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subActive = imageFullSizeFragment
+                    }
+
+                    profileRandomUserFragment -> {
+                        when {
+                            isFeedActive -> {
+                                subFm.popBackStack("profileRandomUserFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                                navigateToFeed()
+                                isFeedActive = false
+                                isRandomUserProfileActive = false
+                            }
+                            isFeedNotificationsActive -> {
+                                subFm.popBackStack("profileRandomUserFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+
+                                subActive = feedNotificationsFragment
+                                isRandomUserProfileActive = false
+                            }
+
+                            isBoardNotificationsActive -> {
+                                subFm.popBackStack("profileRandomUserFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                                subActive = boardNotificationsFragment
+                                isRandomUserProfileActive = false
+                            }
+                            isOpenedQuestionActive -> {
+                                subFm.popBackStack("profileRandomUserFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                                subActive = openedQuestionFragment
+                                isRandomUserProfileActive = false
+                            }
+
+                            isItineraryActive -> {
+                                subFm.popBackStack("profileRandomUserFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                                subActive = itineraryFragment
+                            }
+                            else -> {
+                                imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
+                                subFm.popBackStack("profileRandomUserFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                                subActive = imageFullSizeFragment
+
+                                //                            sharedViewModelSecondRandomUser.randomUserObject.postValue(Users())
+                                isRandomUserProfileActive = false
+                            }
+                        }
+                    }
+                    profileSecondRandomUserFragment -> {
+                        subFm.popBackStack("profileSecondRandomUserFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+
+                        if (isOpenedQuestionActive) {
+                            subActive = openedQuestionFragment
+                        } else {
+                            subActive = imageFullSizeFragment
+                        }
+                    }
+
+                    feedNotificationsFragment -> {
+                        //                    subFm.popBackStack("feedNotificationsFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subFm.beginTransaction().hide(feedNotificationsFragment).commit()
+                        switchVisibility(0)
+                        isFeedNotificationsActive = false
+                    }
+
+                    openedQuestionFragment -> {
+                        if (isBoardNotificationsActive) {
+                            subActive = boardNotificationsFragment
+                            //                        openedQuestionFragment.deleteBox.visibility = View.GONE
+                        } else {
+                            switchVisibility(0)
+                            //                        openedQuestionFragment.deleteBox.visibility = View.GONE
+                        }
+                        subFm.popBackStack("openedQuestionFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        isOpenedQuestionActive = false
+                    }
+
+                    boardNotificationsFragment -> {
+                        //                    subFm.popBackStack("boardNotificationsFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subFm.beginTransaction().hide(boardNotificationsFragment).commit()
+                        switchVisibility(0)
+                    }
+
+                    savedQuestionFragment -> {
+                        //                    subFm.popBackStack("savedQuestionFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subFm.beginTransaction().hide(savedQuestionFragment).commit()
+                        switchVisibility(0)
+                    }
+
+                    answerCommentFragment -> {
+                        subFm.popBackStack("answerCommentFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subActive = openedQuestionFragment
+                    }
+
+                    answerFragment -> {
+                        subFm.popBackStack("answerFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subActive = openedQuestionFragment
+                    }
+
+                    newQuestionFragment -> {
+                        subFm.popBackStack("newQuestionFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        switchVisibility(0)
+                    }
+
+                    collectionGalleryFragment -> {
+                        //                    subFm.beginTransaction().hide(collectionGalleryFragment).show(imageFullSizeFragment).commit()
+                        //                    subActive = imageFullSizeFragment
+                        //                    collectionGalleryFragment.pagerAdapter.notifyDataSetChanged()
+                        if (isSavedItinerariesActive) {
+                            subActive = marketplacePurchasedFragment
+                        } else {
+                            switchVisibility(0)
+                            isCollectionGalleryActive = false
+                            //                        collectionGalleryFragment.mapButton.setImageResource(R.drawable.world)
+                        }
+
+                        subFm.popBackStack("collectionGalleryFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+
+                    }
+
+                    editProfileFragment -> {
+                        subFm.popBackStack("editProfileFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        switchVisibility(0)
+                    }
+
+                    imagePostEditFragment -> {
+                        subFm.popBackStack("imagePostEditFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subActive = imageFullSizeFragment
+                    }
+
+                    webViewFragment -> {
+                        subFm.popBackStack("webViewFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subActive = imageFullSizeFragment
+                    }
+
+                    editQuestionFragment -> {
+                        subFm.popBackStack("editQuestionFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subActive = openedQuestionFragment
+                    }
+
+                    editAnswerFragment -> {
+                        subFm.popBackStack("editAnswerFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subActive = openedQuestionFragment
+                        isEditAnswerActive = false
+                    }
+
+                    addImageToAnswer -> {
+
+                        if (isEditAnswerActive) {
+                            subActive = editAnswerFragment
+                        } else {
+                            subActive = answerFragment
+                        }
+                        subFm.popBackStack("addImageToAnswer", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                    }
+
+                    editInterestsFragment -> {
+                        subFm.popBackStack("editInterestsFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        switchVisibility(0)
+                    }
+
+                    collectionMapView -> {
+
+                        when {
+                            isRandomUserProfileActive -> {
+                                subActive = profileRandomUserFragment
+                                isRandomUserProfileActive = false
+                            }
+                            isSecondRandomUserProfileActive -> {
+                                subActive = profileSecondRandomUserFragment
+                                isSecondRandomUserProfileActive = false
+                            }
+                            else -> switchVisibility(0)
+                        }
+                        isCollectionMapViewActive = false
+                        subFm.popBackStack("collectionMapView", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                    }
+
+                    secondImageFullSizeFragment -> {
+                        subFm.popBackStack("secondImageFullSizeFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subActive = profileSecondRandomUserFragment
+                    }
+
+                    addToItineraryFragment -> {
+                        if (isFeedActive) {
+                            switchVisibility(0)
+                            isFeedActive = false
+                        }
+                        subFm.popBackStack("addToItineraryFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subActive = imageFullSizeFragment
+                    }
+
+                    itineraryFragment -> {
+                        if(itineraryFragment.allReviewsContainer.visibility == View.VISIBLE){
+                            itineraryFragment.allReviewsContainer.visibility = View.GONE
+                        } else {
+                            switchVisibility(0)
+                            isItineraryActive = false
+                            subFm.popBackStack("itineraryFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                            subActive = imageFullSizeFragment
+                        }
+                    }
+
+                    itineraryEditFragment -> {
+                        subFm.popBackStack("itineraryEditFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subActive = collectionGalleryFragment
+                        itineraryEditFragment.step = 0
+
+                        //need to save the data to the itinerary
+                    }
+
+                    addImagesToItineraryFragment -> {
+                        subFm.popBackStack("addImagesToItineraryFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subActive = itineraryEditFragment
+                    }
+
+                    marketplacePurchasedFragment -> {
+                        subFm.beginTransaction().hide(marketplacePurchasedFragment).commit()
+                        //                    subActive = imageFullSizeFragment
+                        switchVisibility(0)
+                        isSavedItinerariesActive = false
+                    }
+                    buyItineraryFragment -> {
+                        subFm.popBackStack("buyItineraryFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subActive = itineraryFragment
+                    }
+
+                    addImagesToItineraryDayFragment -> {
+                        subFm.popBackStack("addImagesToItineraryDayFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        subActive = collectionGalleryFragment
+                    }
+
+                }
+            fragmentsHaveBeenInitialized -> when (active) { // main frame is active
+
+                onBoardingFragment -> {
+                    when (onBoardingFragment.viewPager.currentItem) {
+                        0 -> {
+                        }
+
+                        1 -> {
+                            onBoardingFragment.setUpItem1()
+                        }
+
+                        2 -> {
+                            onBoardingFragment.setUpItem2()
+                        }
+
+                        3 -> {
+                            onBoardingFragment.setUpItem3()
+                        }
+
+                        4 -> {
+                            onBoardingFragment.setUpItem4()
+                        }
+
+                        5 -> {
+                            onBoardingFragment.setUpItem5()
+                        }
+                    }
+
+                }
+
+                profileLoggedInUserFragment -> {
+
+                    fm.beginTransaction().hide(active).show(feedFragment).commit()
+                    active = feedFragment
+
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+                    menuItem.isChecked = true
+
+                    switchVisibility(0)
+
+                }
+
+                boardFragment -> {
+
+                    fm.beginTransaction().hide(active).show(feedFragment).commit()
+                    active = feedFragment
+
+                    subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                    subActive = imageFullSizeFragment
+
+                    val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+                    menuItem.isChecked = true
+
+                    switchVisibility(0)
+                }
+
+                feedFragment -> super.onBackPressed()
+            }
+            else -> super.onBackPressed()
+        }
+
+    }
+
+
+    /*
+        override fun onBackPressed() {
+
+            if (mainFrame.visibility == View.GONE) { // subframe is active
+
+                when (subActive) {
+
+                    imageFullSizeFragment -> {
+                        when {
+                            isCollectionMapViewActive && isCollectionGalleryActive -> {
+                                subFm.beginTransaction().hide(subActive).show(collectionGalleryFragment).commit()
+                                subActive = collectionGalleryFragment
+                                collectionGalleryFragment.galleryViewPager.currentItem = 1
+                                resetImageExpended()
+                                isCollectionMapViewActive = false
+                            }
+
+                            isCollectionMapViewActive && !isCollectionGalleryActive -> {
+                                subFm.beginTransaction().hide(subActive).show(collectionMapView).commit()
+                                subActive = collectionMapView
+                                resetImageExpended()
+                                isCollectionMapViewActive = false
+                            }
+
+                            isCollectionGalleryActive && !isCollectionMapViewActive -> {
+                                subFm.beginTransaction().hide(subActive).show(collectionGalleryFragment).commit()
+                                subActive = collectionGalleryFragment
+                                collectionGalleryFragment.galleryViewPager.currentItem = 0
+                                resetImageExpended()
+                            }
+                            isOpenedQuestionActive -> {
+                                subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                                subActive = openedQuestionFragment
+                                resetImageExpended()
+                            }
+                            isFeedNotificationsActive -> {
+                                subFm.beginTransaction().hide(subActive).show(feedNotificationsFragment).commit()
+                                subActive = feedNotificationsFragment
+                                resetImageExpended()
+                            }
+                            isBoardNotificationsActive -> {
+                                subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
+                                subActive = boardNotificationsFragment
+                                resetImageExpended()
+                            }
+                            isRandomUserProfileActive -> {
+                                subFm.beginTransaction().hide(subActive).show(profileRandomUserFragment).commit()
+                                subActive = profileRandomUserFragment
+                                resetImageExpended()
+                            }
+
+                            else -> {
+                                switchVisibility(0)
+                                resetImageExpended()
+                            }
+                        }
+                    }
+                    addToBucketFragment -> {
+                        if (isFeedActive) {
+                            switchVisibility(0)
+                            isFeedActive = false
+                        }
+                        subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
+                        subActive = imageFullSizeFragment
+                    }
+
+                    profileRandomUserFragment -> {
+                        when {
+                            isFeedActive -> {
+                                navigateToFeed()
+                                isFeedActive = false
+                                isRandomUserProfileActive = false
+                            }
+                            isFeedNotificationsActive -> {
+                                subFm.beginTransaction().hide(subActive).show(feedNotificationsFragment).commit()
+                                subActive = feedNotificationsFragment
+                                isRandomUserProfileActive = false
+                            }
+
+                            isBoardNotificationsActive -> {
+                                subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
+                                subActive = boardNotificationsFragment
+                                isRandomUserProfileActive = false
+                            }
+                            isOpenedQuestionActive -> {
+                                subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                                subActive = openedQuestionFragment
+                                isRandomUserProfileActive = false
+                            }
+
+                            isItineraryActive -> {
+                                subFm.beginTransaction().hide(subActive).show(itineraryFragment).commit()
+                                subActive = itineraryFragment
+                            }
+                            else -> {
+                                imageFullSizeFragment.layoutScroll.fullScroll(View.FOCUS_UP)
+                                subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                                subActive = imageFullSizeFragment
+
+    //                            sharedViewModelSecondRandomUser.randomUserObject.postValue(Users())
+                                isRandomUserProfileActive = false
+                            }
+                        }
+                    }
+                    profileSecondRandomUserFragment -> {
+                        if (isOpenedQuestionActive) {
+                            subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                            subActive = openedQuestionFragment
+                        } else {
+                            subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                            subActive = imageFullSizeFragment
+                        }
+                    }
+
+                    feedNotificationsFragment -> {
+                        switchVisibility(0)
+                        isFeedNotificationsActive = false
+                    }
+
+                    openedQuestionFragment -> {
+                        if (isBoardNotificationsActive) {
+                            subFm.beginTransaction().hide(subActive).show(boardNotificationsFragment).commit()
+                            subActive = boardNotificationsFragment
+                            isOpenedQuestionActive = false
+                            openedQuestionFragment.deleteBox.visibility = View.GONE
+                        } else {
+                            switchVisibility(0)
+                            isOpenedQuestionActive = false
+                            openedQuestionFragment.deleteBox.visibility = View.GONE
+                        }
+                    }
+
+                    boardNotificationsFragment -> {
+                        switchVisibility(0)
+                    }
+
+                    savedQuestionFragment -> {
+                        switchVisibility(0)
+                    }
+
+                    answerCommentFragment -> {
+                        subFm.beginTransaction().remove(subActive).show(openedQuestionFragment).commit()
+                        subActive = openedQuestionFragment
+                    }
+
+                    answerFragment -> {
+                        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                        subActive = openedQuestionFragment
+                    }
+
+                    newQuestionFragment -> {
+                        switchVisibility(0)
+                    }
+
+                    collectionGalleryFragment -> {
+    //                    subFm.beginTransaction().hide(collectionGalleryFragment).show(imageFullSizeFragment).commit()
+    //                    subActive = imageFullSizeFragment
+    //                    collectionGalleryFragment.pagerAdapter.notifyDataSetChanged()
+                        if (isSavedItinerariesActive){
+                            subFm.beginTransaction().hide(subActive).show(marketplacePurchasedFragment).commit()
+                            subActive = marketplacePurchasedFragment
+                        } else {
+                            switchVisibility(0)
+                            isCollectionGalleryActive = false
+                            collectionGalleryFragment.mapButton.setImageResource(R.drawable.world)
+                        }
+                    }
+
+                    editProfileFragment -> {
+                        switchVisibility(0)
+                    }
+
+                    imagePostEditFragment -> {
+                        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                        subActive = imageFullSizeFragment
+                    }
+
+                    webViewFragment -> {
+                        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                        subActive = imageFullSizeFragment
+                    }
+
+                    editQuestionFragment -> {
+                        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                        subActive = openedQuestionFragment
+                    }
+
+                    editAnswerFragment -> {
+                        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+                        subActive = openedQuestionFragment
+                        isEditAnswerActive = false
+                    }
+
+                    addImageToAnswer -> {
+                        if (isEditAnswerActive) {
+                            subFm.beginTransaction().hide(subActive).show(editAnswerFragment).commit()
+                            subActive = editAnswerFragment
+                        } else {
+                            subFm.beginTransaction().hide(subActive).show(answerFragment).commit()
+                            subActive = answerFragment
+                        }
+                    }
+
+                    editInterestsFragment -> {
+                        switchVisibility(0)
+                    }
+
+                    collectionMapView -> {
+
+                        when {
+                            isRandomUserProfileActive -> {
+                                subFm.beginTransaction().hide(subActive).show(profileRandomUserFragment).commit()
+                                subActive = profileRandomUserFragment
+                                isRandomUserProfileActive = false
+                            }
+                            isSecondRandomUserProfileActive -> {
+                                subFm.beginTransaction().hide(subActive).show(profileSecondRandomUserFragment).commit()
+                                subActive = profileSecondRandomUserFragment
+                                isSecondRandomUserProfileActive = false
+                            }
+                            else -> switchVisibility(0)
+                        }
+
+                    }
+
+                    secondImageFullSizeFragment -> {
+                        subFm.beginTransaction().hide(secondImageFullSizeFragment).show(profileRandomUserFragment).commit()
+                        subActive = profileRandomUserFragment
+                        resetSecondImageExpended()
+                    }
+
+                    addToItineraryFragment -> {
+                        if (isFeedActive) {
+                            switchVisibility(0)
+                            isFeedActive = false
+                        }
+                        subFm.beginTransaction().remove(subActive).show(imageFullSizeFragment).commit()
+                        subActive = imageFullSizeFragment
+                    }
+
+                    itineraryFragment -> {
+                        switchVisibility(0)
+                        isItineraryActive = false
+                        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                        subActive = imageFullSizeFragment
+                    }
+
+                    itineraryEditFragment -> {
+                        subFm.beginTransaction().remove(subActive).remove(addImagesToItineraryFragment)
+                            .show(collectionGalleryFragment).commit()
+                        subActive = collectionGalleryFragment
+
+                        //need to save the data to the itinerary
+                    }
+
+                    addImagesToItineraryFragment -> {
+                        subFm.beginTransaction().hide(subActive).show(itineraryEditFragment).commit()
+                        subActive = itineraryEditFragment
+                    }
+
+                    marketplacePurchasedFragment -> {
+                        subFm.beginTransaction().remove(marketplacePurchasedFragment).commit()
+                        subActive = imageFullSizeFragment
+                        switchVisibility(0)
+                        isSavedItinerariesActive = false
+                    }
+                    buyItineraryFragment -> {
+                        subFm.beginTransaction().remove(buyItineraryFragment).show(itineraryFragment).commit()
+                        subActive = itineraryFragment
+                    }
+
+                }
+            } else if (fragmentsHaveBeenInitialized) {
+
+                when (active) { // main frame is active
+
+                    onBoardingFragment -> {
+                        when (onBoardingFragment.viewPager.currentItem) {
+                            0 -> {
+                            }
+
+                            1 -> {
+                                onBoardingFragment.setUpItem1()
+                            }
+
+                            2 -> {
+                                onBoardingFragment.setUpItem2()
+                            }
+
+                            3 -> {
+                                onBoardingFragment.setUpItem3()
+                            }
+
+                            4 -> {
+                                onBoardingFragment.setUpItem4()
+                            }
+
+                            5 -> {
+                                onBoardingFragment.setUpItem5()
+                            }
+                        }
+
+                    }
+
+                    profileLoggedInUserFragment -> {
+
+                        fm.beginTransaction().hide(active).show(feedFragment).commit()
+                        active = feedFragment
+
+                        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                        subActive = imageFullSizeFragment
+
+                        val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+                        menuItem.isChecked = true
+
+                        switchVisibility(0)
+
+                    }
+
+                    boardFragment -> {
+
+                        fm.beginTransaction().hide(active).show(feedFragment).commit()
+                        active = feedFragment
+
+                        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+                        subActive = imageFullSizeFragment
+
+                        val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+                        menuItem.isChecked = true
+
+                        switchVisibility(0)
+                    }
+
+                    feedFragment -> super.onBackPressed()
+                }
+
+            } else {
+                super.onBackPressed()
+            }
+
+        }
+    */
+
+
+    private fun resetFragments() {
+        closeKeyboard(this)
+
+//        openedQuestionFragment.deleteBox.visibility = View.GONE
+//        collectionGalleryFragment.mapButton.setImageResource(R.drawable.world)
+
+        isCollectionMapViewActive = false
+        isCollectionGalleryActive = false
+        isOpenedQuestionActive = false
+        isEditAnswerActive = false
+        isFeedNotificationsActive = false
+        isBoardNotificationsActive = false
+        isRandomUserProfileActive = false
+        isSecondRandomUserProfileActive = false
+        isFeedActive = false
+        isItineraryActive = false
+        isSavedItinerariesActive = false
+
+
+//        sharedViewModelImage.sharedImageObject.postValue(Images())
+//        sharedViewModelRandomUser.randomUserObject.postValue(Users())
+//        sharedViewModelQuestion.questionObject.postValue(Question())
+
+        if (mainFrame.visibility == View.GONE) {
+            switchVisibility(0)
+        }
+
+        for (i in 0 until subFm.backStackEntryCount) {
+            subFm.popBackStack()
+        }
+
+        subFm.beginTransaction().hide(savedQuestionFragment).hide(boardNotificationsFragment)
+            .hide(feedNotificationsFragment).hide(marketplacePurchasedFragment).commit()
+
+        itineraryEditFragment.step = 0
+
+
+//        clearStack()
+
+//        imageFullSizeFragment.showLocation.setImageResource(R.drawable.location)
+
+        /*
+            subFm.beginTransaction().remove(addToBucketFragment).commit()
+            subFm.beginTransaction().remove(addToItineraryFragment).commit()
+    //        subFm.beginTransaction().remove(itineraryFragment).commit()
+            subFm.beginTransaction().remove(marketplacePurchasedFragment).commit()
+            */
+    }
+
+
     private fun branchInitSession() {
-        Branch.getInstance().initSession({ branchUniversalObject, referringParams, error ->
+        Branch.getInstance().initSession({ branchUniversalObject, _, error ->
 
             if (error == null) {
                 println("branch no error")
@@ -761,9 +1106,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
                 if (branchUniversalObject != null) {
 
-                    val type = branchUniversalObject.contentMetadata.customMetadata["type"]
-
-                    when (type) {
+                    when (branchUniversalObject.contentMetadata.customMetadata["type"]) {
 
                         "image" -> collectImage(branchUniversalObject)
 
@@ -771,14 +1114,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
                         "user" -> collectProfile(branchUniversalObject)
                     }
-
-
                 }
-
-
             } else {
                 println("branch definitely error" + error.message)
-
             }
 
 
@@ -800,8 +1138,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
         active = feedFragment
         val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
         menuItem.isChecked = true
-        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-        subActive = imageFullSizeFragment
+//        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+//        subActive = imageFullSizeFragment
         resetFragments()
     }
 
@@ -810,8 +1148,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
         active = boardFragment
         val menuItem = mBottomNav.menu.findItem(R.id.destination_board)
         menuItem.isChecked = true
-        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
-        subActive = openedQuestionFragment
+//        subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
+//        subActive = openedQuestionFragment
         resetFragments()
         isFeedActive = false
     }
@@ -825,8 +1163,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
         isFeedActive = false
         isItineraryActive = false
 
-        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-        subActive = imageFullSizeFragment
+//        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+//        subActive = imageFullSizeFragment
     }
 
 
@@ -835,8 +1173,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
         active = profileLoggedInUserFragment
         val menuItem = mBottomNav.menu.findItem(R.id.destination_profile_logged_in_user)
         menuItem.isChecked = true
-        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-        subActive = imageFullSizeFragment
+//        subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
+//        subActive = imageFullSizeFragment
         resetFragments()
         isFeedActive = false
     }

@@ -49,14 +49,14 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
     var imageList = mutableListOf<FeedImage>()
 
 
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
         activity?.let {
             sharedViewModelSecondImage = ViewModelProviders.of(it).get(SharedViewModelSecondImage::class.java)
             sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
-            sharedViewModelForSecondRandomUser = ViewModelProviders.of(it).get(SharedViewModelSecondRandomUser::class.java)
+            sharedViewModelForSecondRandomUser =
+                ViewModelProviders.of(it).get(SharedViewModelSecondRandomUser::class.java)
             sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
         }
@@ -162,12 +162,13 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                     sharedViewModelSecondImage.sharedSecondImageObject.postValue(image.image)
                     sharedViewModelForSecondRandomUser.randomUserObject.postValue(userProfile)
 
-                    activity.subFm.beginTransaction().hide(activity.subActive)
-                        .show(activity.secondImageFullSizeFragment)
+                    activity.subFm.beginTransaction().add(
+                        R.id.feed_subcontents_frame_container,
+                        activity.secondImageFullSizeFragment,
+                        "secondImageFullSizeFragment"
+                    ).addToBackStack("secondImageFullSizeFragment")
                         .commit()
                     activity.subActive = activity.secondImageFullSizeFragment
-
-                    Log.d("whatimage", image.image.imageSmall)
                 }
             }
         }
@@ -189,7 +190,9 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
                     if (p0.hasChildren()) {
                         sharedViewModelCollection.imageCollection.postValue(p0)
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionMapView)
+                        activity.subFm.beginTransaction()
+                            .add(R.id.feed_subcontents_frame_container, activity.collectionMapView, "collectionMapView")
+                            .addToBackStack("collectionMapView")
                             .commit()
                         activity.subActive = activity.collectionMapView
                         val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
@@ -276,10 +279,10 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
     private fun listenToImagesFromRoll() {
 
         profileGallery.adapter = galleryRollAdapter
-        val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
-        profileGallery.layoutManager = galleryLayoutManager
+        profileGallery.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
 
         galleryRollAdapter.clear()
+        imageList.clear()
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
 
@@ -298,10 +301,11 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                         override fun onDataChange(p0: DataSnapshot) {
                             val imageObject = p0.getValue(Images::class.java)
                             if (imageObject != null) {
-
-                                imageList.add(FeedImage(imageObject, 1))
-                                galleryRollAdapter.clear()
-                                galleryRollAdapter.addAll(imageList.reversed())
+                                if (!imageObject.private) {
+                                    imageList.add(FeedImage(imageObject, 1))
+                                    galleryRollAdapter.clear()
+                                    galleryRollAdapter.addAll(imageList.reversed())
+                                }
                             }
                         }
                     })

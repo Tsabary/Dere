@@ -84,7 +84,7 @@
             app:layout_constraintStart_toStartOf="parent"
             android:id="@+id/collection_gallery_viewpager"
             app:layout_constraintBottom_toTopOf="@+id/collection_gallery_publish"
-            android:layout_marginBottom="16dp">
+    >
     </co.getdere.otherClasses.SwipeLockableViewPager>
 
     <TextView

@@ -7,8 +7,9 @@ class ItineraryBody(
     val title: String,
     val description: String,
     val images: Map<String, Boolean>,
+    val days: List<Map<String, Boolean>>,
     val locationId: String,
     val locationName: String
 ) {
-    constructor() : this("", false, "", "", "", mapOf(), "","")
+    constructor() : this("", false, "", "", "", mapOf(), listOf(), "","")
 }

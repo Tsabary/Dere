@@ -43,6 +43,7 @@ class ProfileSecondRandomUserFragment : Fragment(), DereMethods {
     val galleryRollAdapter = GroupAdapter<ViewHolder>()
     lateinit var followButton: TextView
     lateinit var profileGallery: RecyclerView
+    lateinit var profilePhotos: TextView
 
     var imageList = mutableListOf<FeedImage>()
 
@@ -73,12 +74,14 @@ class ProfileSecondRandomUserFragment : Fragment(), DereMethods {
         val instagramButton = profile_ru_insta_icon
         profileGallery = profile_ru_gallery
         val profileReputation = profile_ru_reputation_count
-        val profilePhotos = profile_ru_photos_count
+        profilePhotos = profile_ru_photos_count
         val profileFollowers = profile_ru_followers_count
         followButton = profile_ru_follow_button
         var instaLink = ""
         val userMapButton = profile_ru_map
 
+        profileGallery.adapter = galleryRollAdapter
+        profileGallery.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
 
         instagramButton.setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(instaLink)))
@@ -123,19 +126,6 @@ class ProfileSecondRandomUserFragment : Fragment(), DereMethods {
                 executeFollow(0, followButton, activity)
 
 
-                val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
-
-                photosRef.addValueEventListener(object : ValueEventListener {
-
-                    override fun onCancelled(p0: DatabaseError) {
-
-                    }
-
-                    override fun onDataChange(p0: DataSnapshot) {
-                        profilePhotos.text = numberCalculation(p0.childrenCount)
-                    }
-                })
-
                 val followersRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/followers")
 
                 followersRef.addValueEventListener(object : ValueEventListener {
@@ -155,8 +145,11 @@ class ProfileSecondRandomUserFragment : Fragment(), DereMethods {
 
                     sharedViewModelSecondImage.sharedSecondImageObject.postValue(image.image)
 
-                    activity.subFm.beginTransaction().hide(activity.subActive)
-                        .show(activity.secondImageFullSizeFragment)
+                    activity.subFm.beginTransaction().add(
+                        R.id.feed_subcontents_frame_container,
+                        activity.secondImageFullSizeFragment,
+                        "secondImageFullSizeFragment"
+                    ).addToBackStack("secondImageFullSizeFragment")
                         .commit()
                     activity.subActive = activity.secondImageFullSizeFragment
                 }
@@ -180,7 +173,9 @@ class ProfileSecondRandomUserFragment : Fragment(), DereMethods {
 
                     if (p0.hasChildren()) {
                         sharedViewModelCollection.imageCollection.postValue(p0)
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.collectionMapView)
+                        activity.subFm.beginTransaction()
+                            .add(R.id.feed_subcontents_frame_container, activity.collectionMapView, "collectionMapView")
+                            .addToBackStack("collectionMapView")
                             .commit()
                         activity.subActive = activity.collectionMapView
                         val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
@@ -264,20 +259,19 @@ class ProfileSecondRandomUserFragment : Fragment(), DereMethods {
     }
 
 
-    private fun listenToImagesFromRoll() { //This needs to be fixed to not update in real time. Or should it?
-
-        profileGallery.adapter = galleryRollAdapter
-        val galleryLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this.context, 3)
-        profileGallery.layoutManager = galleryLayoutManager
+    private fun listenToImagesFromRoll() {
 
         galleryRollAdapter.clear()
+        imageList.clear()
 
         val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
 
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
 
-                for (imagePath in p0.children){
+                profilePhotos.text = numberCalculation(p0.childrenCount)
+
+                for (imagePath in p0.children) {
 
 
                     val imageObjectPath =
@@ -291,10 +285,11 @@ class ProfileSecondRandomUserFragment : Fragment(), DereMethods {
                         override fun onDataChange(p0: DataSnapshot) {
                             val imageObject = p0.getValue(Images::class.java)
                             if (imageObject != null) {
-
-                                imageList.add(FeedImage(imageObject, 1))
-                                galleryRollAdapter.clear()
-                                galleryRollAdapter.addAll(imageList.reversed())
+                                if (!imageObject.private) {
+                                    imageList.add(FeedImage(imageObject, 1))
+                                    galleryRollAdapter.clear()
+                                    galleryRollAdapter.addAll(imageList.reversed())
+                                }
                             }
                         }
                     })

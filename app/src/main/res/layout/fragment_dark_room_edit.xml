@@ -6,7 +6,9 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".fragments.DarkRoomEditFragment">
+        tools:context=".fragments.DarkRoomEditFragment"
+        android:background="@color/white"
+        android:clickable="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -579,7 +581,7 @@
                         android:background="@drawable/buttons_shape"
                         app:layout_constraintHorizontal_bias="0.5"
                         app:layout_constraintEnd_toEndOf="parent"
-                        android:textColor="@color/white"
+                        android:textColor="@color/gray500"
                         android:gravity="center"
                         app:layout_constraintTop_toTopOf="parent"
                         android:layout_marginTop="32dp"
@@ -598,7 +600,7 @@
                         android:textAlignment="center"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintHorizontal_bias="0.5"
-                        android:textColor="@color/green700"
+                        android:textColor="@color/gray500"
                         android:gravity="center"
                         android:layout_marginStart="32dp"
                         mapbox:layout_constraintTop_toTopOf="@+id/dark_room_edit_after_post_save"

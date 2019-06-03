@@ -3,6 +3,7 @@ package co.getdere.interfaces
 import android.app.Activity
 import android.content.Context
 import android.location.Location
+import android.location.LocationManager
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -1458,6 +1459,18 @@ interface DereMethods : FCMMethods {
 // Send a message to the device corresponding to the provided
 // registration token.
 
+    fun isLocationServiceEnabled(context : Context): Boolean {
+        var gpsEnabled = false
+
+        val locationManager: LocationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        try {
+            gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        } catch (ex: Exception) {
+            //do nothing...
+        }
+
+        return gpsEnabled
+    }
 
     fun closeKeyboard(activity: Activity) {
 

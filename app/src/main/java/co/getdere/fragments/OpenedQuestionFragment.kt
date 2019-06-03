@@ -55,6 +55,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
     lateinit var openedQuestionAuthorReputation: TextView
     lateinit var deleteBox: ConstraintLayout
+    lateinit var editDeleteBox : ConstraintLayout
 
 
     lateinit var buo: BranchUniversalObject
@@ -102,6 +103,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
         val openedQuestionAuthorImage = opened_question_author_image
         val openedQuestionAuthorName = opened_question_author_name
         deleteBox = opened_question_delete_box
+        editDeleteBox = opened_question_edit_delete_container
         val deleteButton = opened_question_delete
         val editButton = opened_question_edit
         val removeButton = opened_question_remove
@@ -124,12 +126,10 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 listenToAnswers(questionObject.id)
 
                 if (question.author == currentUserObject.uid || currentUserObject.uid == "hQ3KL1zqpsZIhY38IpSRW2G0wXJ2") {
-                    deleteButton.visibility = View.VISIBLE
-                    editButton.visibility = View.VISIBLE
+                    editDeleteBox.visibility = View.VISIBLE
 
                 } else {
-                    deleteButton.visibility = View.GONE
-                    editButton.visibility = View.GONE
+                    editDeleteBox.visibility = View.GONE
                 }
 
                 deleteButton.setOnClickListener {
@@ -137,7 +137,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 }
 
                 editButton.setOnClickListener {
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editQuestionFragment)
+                    activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.editQuestionFragment, "editQuestionFragment").addToBackStack("editQuestionFragment")
                         .commit()
                     activity.subActive = activity.editQuestionFragment
                 }
@@ -222,20 +222,11 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 openedQuestionAuthorReputation.text = "(${numberCalculation(user.reputation)})"
 
                 openedQuestionAuthorImage.setOnClickListener {
-                    if (user.uid != uid){
-                        activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileRandomUserFragment)
-                            .commit()
-                        activity.subActive = activity.profileRandomUserFragment
-                    } else {
-                        activity.navigateToProfile()
-                    }
-
+                    goToProfile(activity, user)
                 }
 
                 openedQuestionAuthorName.setOnClickListener {
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.profileRandomUserFragment)
-                        .commit()
-                    activity.subActive = activity.profileRandomUserFragment
+                    goToProfile(activity, user)
                 }
             }
         }
@@ -314,7 +305,8 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
         answerButton.setOnClickListener {
 
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.answerFragment).commit()
+            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.answerFragment, "answerFragment").addToBackStack("answerFragment")
+                .commit()
             activity.subActive = activity.answerFragment
         }
 
@@ -323,6 +315,15 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
         answersRecycler.layoutManager = answersRecyclerLayoutManager
     }
 
+    private fun goToProfile(activity : MainActivity, user : Users){
+        if (user.uid != uid){
+            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.profileRandomUserFragment, "profileRandomUserFragment").addToBackStack("profileRandomUserFragment")
+                .commit()
+            activity.subActive = activity.profileRandomUserFragment
+        } else {
+            activity.navigateToProfile()
+        }
+    }
 
     fun listenToAnswers(qId: String) {
 
@@ -394,6 +395,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
                                 val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
                                 firebaseAnalytics.logEvent("question_unsaved", null)
+                                (activity as MainActivity).savedQuestionFragment.listenToQuestions()
                             }
                         }
 
@@ -437,6 +439,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
 
                                     val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
                                     firebaseAnalytics.logEvent("question_saved", null)
+                                    (activity as MainActivity).savedQuestionFragment.listenToQuestions()
                                 }
                             }
 
@@ -507,7 +510,8 @@ class SingleAnswer(
 
         edit.setOnClickListener {
             sharedViewModelAnswer.sharedAnswerObject.postValue(answer)
-            activity.subFm.beginTransaction().hide(activity.subActive).show(activity.editAnswerFragment).commit()
+            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.editAnswerFragment, "editAnswerFragment").addToBackStack("editAnswerFragment")
+                .commit()
             activity.subActive = activity.editAnswerFragment
             activity.isEditAnswerActive = true
         }
@@ -548,8 +552,7 @@ class SingleAnswer(
                     override fun onDataChange(p0: DataSnapshot) {
 
                         sharedViewModelSecondRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
-                        activity.subFm.beginTransaction().hide(activity.subActive)
-                            .show(activity.profileSecondRandomUserFragment)
+                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.profileSecondRandomUserFragment, "profileSecondRandomUserFragment").addToBackStack("profileSecondRandomUserFragment")
                             .commit()
                         activity.subActive = activity.profileSecondRandomUserFragment
                         activity.isSecondRandomUserProfileActive = true
@@ -695,8 +698,7 @@ class SingleAnswer(
 
         comment.setOnClickListener {
             activity.answerObject = answer
-            activity.subFm.beginTransaction().hide(activity.subActive)
-                .add(R.id.feed_subcontents_frame_container, activity.answerCommentFragment, "answerCommentFragment")
+            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.answerCommentFragment, "answerCommentFragment").addToBackStack("answerCommentFragment")
                 .commit()
             activity.subActive = activity.answerCommentFragment
 
@@ -714,7 +716,7 @@ class SingleAnswer(
                 override fun onDataChange(p0: DataSnapshot) {
                     sharedViewModelSecondRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
 
-                    activity.subFm.beginTransaction().hide(activity.subActive).show(activity.secondImageFullSizeFragment)
+                    activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.secondImageFullSizeFragment, "secondImageFullSizeFragment").addToBackStack("secondImageFullSizeFragment")
                         .commit()
                     activity.subActive = activity.secondImageFullSizeFragment
 //                    activity.isOpenedQuestionActive = true
@@ -743,6 +745,7 @@ class SingleAnswerComment(val comment: AnswerComments, val activity: MainActivit
 
         val commentContent = viewHolder.itemView.answer_comment_comment
         val commentContentEditable = viewHolder.itemView.answer_comment_comment_editable
+        val commentContentTimestamp = viewHolder.itemView.answer_comment_timestamp
         val edit = viewHolder.itemView.answer_comment_edit
         val save = viewHolder.itemView.answer_comment_save
         val delete = viewHolder.itemView.answer_comment_delete
@@ -754,6 +757,7 @@ class SingleAnswerComment(val comment: AnswerComments, val activity: MainActivit
 
         commentContent.text = comment.content
         commentContentEditable.setText(comment.content)
+        commentContentTimestamp.text = PrettyTime().format(Date(comment.timestamp))
 
 
         val commentRef = FirebaseDatabase.getInstance()
@@ -821,8 +825,8 @@ class SingleAnswerComment(val comment: AnswerComments, val activity: MainActivit
                     override fun onDataChange(p0: DataSnapshot) {
 
                         sharedViewModelSecondRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
-                        activity.subFm.beginTransaction().hide(activity.subActive)
-                            .show(activity.profileSecondRandomUserFragment).commit()
+                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.profileSecondRandomUserFragment, "profileSecondRandomUserFragment").addToBackStack("profileSecondRandomUserFragment")
+                            .commit()
                         activity.subActive = activity.profileSecondRandomUserFragment
                     }
                 })
