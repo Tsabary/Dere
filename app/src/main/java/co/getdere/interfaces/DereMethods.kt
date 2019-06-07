@@ -920,10 +920,8 @@ interface DereMethods : FCMMethods {
 
 
     fun checkIfBucketed(bucketButton: ImageView, image: Images, uid: String) {
-        Log.d("Image Bucketed", "function called")
 
-
-        val refUserBucket = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets/All Buckets")
+        val refUserBucket = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets/AllBuckets/body/images")
 
         refUserBucket.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
@@ -943,25 +941,37 @@ interface DereMethods : FCMMethods {
     }
 
     fun checkIfInItinerary (collectButton: ImageView, image: Images, uid: String) {
+        collectButton.setImageResource(R.drawable.itinerary)
 
         val refUserItinerary = FirebaseDatabase.getInstance().getReference("/users/$uid/itineraries")
 
         refUserItinerary.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
 
-                var existsInItineraries = 0
+//                var existsInItineraries = 0
 
                 for (itinerary in p0.children){
-                    if (itinerary.hasChild(image.id)) {
-                        existsInItineraries++
-                    }
+
+                    FirebaseDatabase.getInstance().getReference("/itineraries/${itinerary.key}/body/images").addListenerForSingleValueEvent(object : ValueEventListener{
+                        override fun onCancelled(p0: DatabaseError) {
+                        }
+
+                        override fun onDataChange(p0: DataSnapshot) {
+                            if (p0.hasChild(image.id)) {
+                                collectButton.setImageResource(R.drawable.itinerary_saved)
+
+//                                existsInItineraries++
+                            }
+                        }
+
+                    })
                 }
 
-                if (existsInItineraries > 0) {
-                    collectButton.setImageResource(R.drawable.itinerary_saved)
-                } else {
-                    collectButton.setImageResource(R.drawable.itinerary)
-                }
+//                if (existsInItineraries > 0) {
+//                    collectButton.setImageResource(R.drawable.itinerary_saved)
+//                } else {
+//                    collectButton.setImageResource(R.drawable.itinerary)
+//                }
             }
 
             override fun onCancelled(p0: DatabaseError) {

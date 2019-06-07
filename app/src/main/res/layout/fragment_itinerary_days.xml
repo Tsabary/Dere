@@ -5,14 +5,18 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".fragments.CollectionFeedFragment">
+        tools:context=".fragments.CollectionFeedFragment"
+        android:background="@color/white">
 
     <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:id="@+id/itinerary_days_scroll_layout"
+            android:descendantFocusability="blocksDescendants">
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:descendantFocusability="blocksDescendants">
 
 
             <TextView
@@ -40,7 +44,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/itinerary_days_spinner"
-                    android:layout_marginTop="24dp"/>
+            />
             <com.jaredrummler.materialspinner.MaterialSpinner
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -48,14 +52,16 @@
                     app:layout_constraintTop_toTopOf="@+id/textView38"
                     android:layout_marginStart="8dp"
                     app:layout_constraintStart_toEndOf="@+id/textView38"
-                    app:layout_constraintBottom_toBottomOf="@+id/textView38"/>
+                    app:layout_constraintBottom_toBottomOf="@+id/textView38"
+                    android:ems="9"
+                    android:gravity="start"/>
             <TextView
                     android:text="Itinerary starts on: "
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView38"
                     app:layout_constraintTop_toTopOf="parent"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="32dp"
                     app:layout_constraintStart_toStartOf="parent"
                     android:layout_marginStart="24dp"
                     android:fontFamily="@font/roboto_medium"

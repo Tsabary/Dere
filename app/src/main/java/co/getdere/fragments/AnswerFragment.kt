@@ -61,6 +61,9 @@ class AnswerFragment : Fragment(), DereMethods {
             sharedViewModelQuestion.questionObject.observe(this, Observer { observedQuestion ->
                 observedQuestion?.let { questionObject ->
                     question = questionObject
+//                    imageListFinal.clear()
+//                    imagesRecyclerAdapter.clear()
+                    sharedViewModelAnswerImages.imageList.postValue(mutableListOf())
                     answerContent.text.clear()
                 }
             })

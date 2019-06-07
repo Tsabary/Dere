@@ -25,7 +25,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#80FFFFFF"
+                android:background="#A6FFFFFF"
                 android:elevation="1dp"
                 android:visibility="gone"
                 android:id="@+id/feed_single_photo_chosen">

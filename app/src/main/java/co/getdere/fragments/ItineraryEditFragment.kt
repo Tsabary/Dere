@@ -70,10 +70,6 @@ class ItineraryEditFragment : Fragment(), DereMethods {
     lateinit var audienceCouples: CheckBox
     lateinit var audienceFamilies: CheckBox
     lateinit var audienceGroups: CheckBox
-    lateinit var lengthSeekBar: CrystalRangeSeekbar
-    var lengthMin = 1
-    var lengthMax = 30
-
 
     private var authorResidency = 0
     lateinit var authorAbout: EditText
@@ -144,7 +140,6 @@ class ItineraryEditFragment : Fragment(), DereMethods {
         audienceCouples = itinerary_edit_couples_checkbox
         audienceFamilies = itinerary_edit_families_checkbox
         audienceGroups = itinerary_edit_groups_checkbox
-        lengthSeekBar = itinerary_edit_days_seekbar
         val lengthMinText = itinerary_edit_days_min
         val lengthMaxText = itinerary_edit_days_max
 
@@ -280,13 +275,6 @@ class ItineraryEditFragment : Fragment(), DereMethods {
         val residency5 = itinerary_edit_author_residency_5
         val residency6 = itinerary_edit_author_residency_6
 
-        lengthSeekBar.setOnRangeSeekbarChangeListener { minValue, maxValue ->
-            lengthMinText.text = minValue.toString()
-            lengthMin = minValue.toInt()
-            lengthMaxText.text = maxValue.toString()
-            lengthMax = maxValue.toInt()
-        }
-
         location.setOnClickListener {
             val intent = PlaceAutocomplete.IntentBuilder()
                 .accessToken(Mapbox.getAccessToken()!!)
@@ -356,7 +344,7 @@ class ItineraryEditFragment : Fragment(), DereMethods {
         }
 
         publishBtn.setOnClickListener {
-            publishItinerary()
+            publishItinerary(1)
         }
 
         val teaserImagesRecycler = itinerary_edit_teaser_images_recycler
@@ -390,7 +378,14 @@ class ItineraryEditFragment : Fragment(), DereMethods {
 
                                     val imageObject = p0.getValue(Images::class.java)
                                     if (imageObject != null) {
-                                        teaserImagesRecyclerAdapter.add(CollectionPhoto(imageObject, activity, "itinerary", 0))
+                                        teaserImagesRecyclerAdapter.add(
+                                            CollectionPhoto(
+                                                imageObject,
+                                                activity,
+                                                "itinerary",
+                                                0
+                                            )
+                                        )
                                         sampleImages[imageObject.id] = true
                                     }
                                 }
@@ -405,6 +400,12 @@ class ItineraryEditFragment : Fragment(), DereMethods {
 
             }
         })
+    }
+
+    override fun onPause() {
+        super.onPause()
+        step = 0
+        publishItinerary(0)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -502,7 +503,7 @@ class ItineraryEditFragment : Fragment(), DereMethods {
         }
     }
 
-    private fun publishItinerary() {
+    private fun publishItinerary(case: Int) {
         val activity = activity as MainActivity
 
         val time = System.currentTimeMillis()
@@ -517,16 +518,18 @@ class ItineraryEditFragment : Fragment(), DereMethods {
             ItineraryListing(
                 time,
                 time,
-                if (price.text.toString().toInt() < maxPrice) {
-                    price.text.toString().toInt()
+                if (price.text.isNotEmpty()) {
+                    if (price.text.toString().toInt() < maxPrice) {
+                        price.text.toString().toInt().toDouble()
+                    } else {
+                        maxPrice.toInt().toDouble()
+                    }
                 } else {
-                    maxPrice.toInt()
+                    maxPrice.toInt().toDouble()
                 }
                 ,
                 0f,
                 audience,
-                lengthMin,
-                lengthMax,
                 youtubeVideo.text.toString(),
                 sampleImages
             )
@@ -555,12 +558,13 @@ class ItineraryEditFragment : Fragment(), DereMethods {
 
         val updatedItineraryBody = ItineraryBody(
             itineraryBody.id,
-            true,
+            case != 0,
             itineraryBody.creator,
             title.text.toString(),
             description.text.toString(),
             itineraryBody.images,
-            listOf(),
+            itineraryBody.days,
+            0,
             locationIdString,
             locationNameString
         )

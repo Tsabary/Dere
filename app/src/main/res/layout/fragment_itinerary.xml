@@ -5,7 +5,8 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_height="match_parent"
-        android:layout_width="match_parent">
+        android:layout_width="match_parent"
+        android:background="@color/white">
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -230,7 +231,7 @@
                         app:layout_constraintTop_toBottomOf="@id/itinerary_sample_photos_recycler"
                         app:layout_constraintEnd_toEndOf="@+id/itinerary_photo_count"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        android:layout_marginBottom="24dp"/>
+                        android:layout_marginBottom="16dp"/>
                 <androidx.cardview.widget.CardView
                         android:id="@+id/itinerary_youtube_player_card"
                         android:layout_width="match_parent"
@@ -293,14 +294,20 @@
                         android:textColor="@color/gray500"
                         app:layout_constraintEnd_toEndOf="@+id/itinerary_location"
                         android:textSize="15sp"/>
+
+
                 <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/itinerary_sample_photos_recycler"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="32dp"
                         app:layout_constraintTop_toBottomOf="@+id/itinerary_youtube_player_card"
-                        app:layout_constraintEnd_toEndOf="@+id/itinerary_youtube_player_card"
-                        app:layout_constraintStart_toStartOf="@+id/itinerary_youtube_player_card"/>
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginEnd="48dp"
+                        android:layout_marginStart="48dp">
+
+                </androidx.recyclerview.widget.RecyclerView>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -374,7 +381,10 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="24dp">
+                        android:paddingStart="24dp"
+                        android:paddingEnd="24dp"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp">
 
                     <TextView
                             android:text="@string/this_itinerary_includes"
@@ -609,7 +619,10 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="24dp">
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp"
+                        android:paddingEnd="24dp"
+                        android:paddingStart="24dp">
 
                     <TextView
                             android:text="About the guide:"
@@ -657,7 +670,10 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="24dp">
+                        android:paddingEnd="24dp"
+                        android:paddingStart="24dp"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp">
 
 
                     <TextView
@@ -709,7 +725,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             app:layout_constraintTop_toBottomOf="@+id/itinerary_budget_includes"
-                            android:layout_marginTop="16dp"
+                            android:layout_marginTop="8dp"
                             app:layout_constraintStart_toStartOf="@+id/itinerary_budget_includes"
                             app:layout_constraintEnd_toEndOf="@+id/itinerary_budget_includes"
                             android:id="@+id/itinerary_budget_includes_recycler"

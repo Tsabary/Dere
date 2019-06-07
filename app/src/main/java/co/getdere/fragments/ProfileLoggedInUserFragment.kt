@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
@@ -61,6 +62,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     lateinit var sharedViewModelImage: SharedViewModelImage
     private lateinit var sharedViewModelCollection: SharedViewModelCollection
     private lateinit var sharedViewModelItinerary: SharedViewModelItinerary
+    lateinit var scrollView: NestedScrollView
 
 
     lateinit var buo: BranchUniversalObject
@@ -78,7 +80,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         super.onViewCreated(view, savedInstanceState)
 
         val activity = activity as MainActivity
-
+        scrollView = profile_li_scrollview
         val picture: ImageView = profile_li_image
         val name: TextView = profile_li_user_name
         val galleryRollRecycler = profile_li_gallery_roll
@@ -302,7 +304,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             galleryItinerariesRecycler.visibility = View.GONE
             galleryRollRecycler.visibility = View.GONE
             galleryBucketsRecycler.visibility = View.VISIBLE
-            changeGalleryFeed("collection")
+            changeGalleryFeed("purchasedItineraryObject")
 //            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
 //                .commit()
 //            activity.subActive = activity.collectionGalleryFragment
@@ -346,7 +348,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 /*
         galleryBucketAdapter.setOnItemClickListener { item, _ ->
             val bucket = item as SingleCollectionBox
-            sharedViewModelCollection.imageCollection.postValue(bucket.collection)
+            sharedViewModelCollection.imageCollection.postValue(bucket.purchasedItineraryObject)
             activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
                 .commit()
             activity.subActive = activity.collectionGalleryFragment
@@ -384,7 +386,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     private fun changeGalleryFeed(source: String) {
 
         when (source) {
-            "collection" -> {
+            "purchasedItineraryObject" -> {
                 rollBtn.setTextColor(resources.getColor(R.color.gray300))
                 bucketBtn.setTextColor(resources.getColor(R.color.gray700))
                 itineraryBtn.setTextColor(resources.getColor(R.color.gray300))
@@ -613,7 +615,7 @@ class SingleCollectionBox(
     }
 
 //    private fun goToItinerary() {
-//        val itineraryRef = FirebaseDatabase.getInstance().getReference("/itineraries/${collection.key}/body")
+//        val itineraryRef = FirebaseDatabase.getInstance().getReference("/itineraries/${purchasedItineraryObject.key}/body")
 //
 //        itineraryRef.addListenerForSingleValueEvent(object : ValueEventListener {
 //            override fun onCancelled(p0: DatabaseError) {
@@ -649,7 +651,7 @@ class SingleCollectionBox(
 
 
 //    private fun goToItineraryGallery() {
-//        sharedViewModelCollection.imageCollection.postValue(collection)
+//        sharedViewModelCollection.imageCollection.postValue(purchasedItineraryObject)
 //        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
 //            .commit()
 //        activity.subActive = activity.collectionGalleryFragment
@@ -658,7 +660,7 @@ class SingleCollectionBox(
 //    }
 //
 //    private fun goToBucketGallery() {
-//        sharedViewModelCollection.imageCollection.postValue(collection)
+//        sharedViewModelCollection.imageCollection.postValue(purchasedItineraryObject)
 //        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
 //            .commit()
 //        activity.subActive = activity.collectionGalleryFragment

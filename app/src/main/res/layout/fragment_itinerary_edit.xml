@@ -228,7 +228,7 @@
                         android:background="@drawable/gray_form_field"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        android:hint="For example: one week for couples that like street art and good wine"
+                        android:hint='For example: "Hikes and Camping" or "Art and Fine Dining"'
                         android:fontFamily="@font/roboto_medium"
                         android:textSize="15sp"
                         android:padding="16dp"/>
@@ -247,7 +247,7 @@
                         android:layout_marginEnd="8dp"
                         app:layout_constraintHorizontal_bias="0.0"/>
                 <TextView
-                        android:text="What's the title of your itinerary?"
+                        android:text="What is the focus of your itinerary?"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView14"

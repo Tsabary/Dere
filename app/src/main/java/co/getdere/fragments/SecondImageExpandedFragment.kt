@@ -330,7 +330,7 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
 
         shareButton.setOnClickListener {
 
-            val ss = ShareSheetStyle(activity, "Check this place out!", "Save it to your collection list")
+            val ss = ShareSheetStyle(activity, "Check this place out!", "Save it to your purchasedItineraryObject list")
                 .setCopyUrlStyle(resources.getDrawable(android.R.drawable.ic_menu_send), "Copy", "Added to clipboard")
                 .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
                 .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)

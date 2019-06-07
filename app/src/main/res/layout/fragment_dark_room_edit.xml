@@ -523,7 +523,7 @@
                         android:ems="10"
                         android:hint="Any useful links that you can share?"
                         android:elevation="2dp"
-                        android:inputType="textUri|textMultiLine"
+                        android:inputType="textEmailAddress"
                         android:background="@android:color/transparent"
                         android:gravity="top"
                         android:lineSpacingExtra="4sp"

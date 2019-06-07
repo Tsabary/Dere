@@ -107,6 +107,7 @@ class AddToItineraryFragment : Fragment(), DereMethods {
                     "",
                     itineraryImages,
                     listOf(),
+                    0,
                     "",
                     ""
                 )

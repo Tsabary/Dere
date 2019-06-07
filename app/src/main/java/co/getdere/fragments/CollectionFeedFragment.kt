@@ -66,12 +66,9 @@ class CollectionFeedFragment : Fragment() {
                 bucketName?.let { bucket ->
                     galleryAdapter.clear()
                     listenToImagesFromCollection(bucket)
-
                 }
             })
-
         }
-
 
         galleryAdapter.setOnItemClickListener { item, _ ->
 
@@ -107,6 +104,31 @@ class CollectionFeedFragment : Fragment() {
 
         galleryAdapter.clear()
 
+        for (image in collectionSnapshot.child("/body/images").children) {
+
+            val imagePath = image.key
+
+            val imageObjectPath =
+                FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+
+            imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+                    val imageObject = p0.getValue(Images::class.java)
+
+                    galleryAdapter.add(FeedImage(imageObject!!, 1))
+
+                }
+            })
+
+
+        }
+
+
+/*
         if(collectionSnapshot.hasChild("body")){
             for (image in collectionSnapshot.child("/body/images").children) {
 
@@ -154,10 +176,9 @@ class CollectionFeedFragment : Fragment() {
 
 
             }
-
         }
 
-
+*/
     }
 
 

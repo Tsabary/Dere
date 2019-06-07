@@ -121,6 +121,7 @@ class ItineraryFragment : Fragment(), DereMethods {
 
         val budget = itinerary_budget
         val budgetAlsoIncludes = itinerary_budget_also_includes_text
+        val budgetAlsoIncludesTitle = itinerary_budget_also_includes
 
         val aboutGuide = itinerary_guide_about
 
@@ -371,10 +372,13 @@ class ItineraryFragment : Fragment(), DereMethods {
                                 }
 
                                 if (itineraryBudget.other.isNotEmpty()) {
+                                    budgetAlsoIncludes.visibility = View.VISIBLE
+                                    budgetAlsoIncludesTitle.visibility = View.VISIBLE
                                     budgetAlsoIncludes.text = itineraryBudget.other
+                                } else {
+                                    budgetAlsoIncludes.visibility = View.GONE
+                                    budgetAlsoIncludesTitle.visibility = View.GONE
                                 }
-
-
                             }
                         }
                     })
@@ -382,6 +386,7 @@ class ItineraryFragment : Fragment(), DereMethods {
             })
         }
     }
+
 
     private fun purchaseItinerary(activity: MainActivity) {
         if (itineraryBody.creator != uid) {
@@ -394,18 +399,57 @@ class ItineraryFragment : Fragment(), DereMethods {
             } else {
                 FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryBody.id}/buyers/$uid")
                     .setValue(true).addOnSuccessListener {
-                        FirebaseDatabase.getInstance()
-                            .getReference("/users/$uid/purchasedItineraries/${itineraryBody.id}")
-                            .setValue(true).addOnSuccessListener {
-                                Toast.makeText(this.context, "Itinerary purchased successfully", Toast.LENGTH_SHORT)
-                                    .show()
-                                activity.marketplacePurchasedFragment.listenToItineraries()
-                                activity.subFm.beginTransaction().show(activity.marketplacePurchasedFragment).commit()
-                                activity.subFm.popBackStack(
-                                    "itineraryFragment",
-                                    FragmentManager.POP_BACK_STACK_INCLUSIVE
-                                )
-                            }
+
+                        val newPurchasedItineraryRef =
+                            FirebaseDatabase.getInstance().getReference("/sharedItineraries").push()
+
+
+
+                        if (uid != null && newPurchasedItineraryRef.key != null) {
+
+                            val newPurchasedItinerary = SharedItineraryBody(
+                                itineraryBody.id,
+                                newPurchasedItineraryRef.key!!,
+                                false,
+                                itineraryBody.creator,
+                                mapOf(uid to true),
+                                itineraryBody.title,
+                                itineraryBody.description,
+                                itineraryBody.images,
+                                itineraryBody.days,
+                                itineraryBody.images,
+                                itineraryBody.days,
+                                itineraryBody.startDay,
+                                itineraryBody.locationId,
+                                itineraryBody.locationName,
+                                itineraryListing.price
+                            )
+
+
+                            newPurchasedItineraryRef.child("body").setValue(newPurchasedItinerary)
+                                .addOnSuccessListener {
+
+                                    val userSharedItinerariesRef = FirebaseDatabase.getInstance()
+                                        .getReference("/users/$uid/sharedItineraries/${newPurchasedItineraryRef.key}")
+
+                                    userSharedItinerariesRef.setValue(true).addOnSuccessListener {
+                                        Toast.makeText(
+                                            this.context,
+                                            "Itinerary purchased successfully",
+                                            Toast.LENGTH_SHORT
+                                        )
+                                            .show()
+                                        activity.marketplacePurchasedFragment.listenToItineraries()
+                                        activity.subFm.beginTransaction().show(activity.marketplacePurchasedFragment)
+                                            .commit()
+                                        activity.subFm.popBackStack(
+                                            "itineraryFragment",
+                                            FragmentManager.POP_BACK_STACK_INCLUSIVE
+                                        )
+                                    }
+                                }
+                        }
+
                     }
             }
         } else {
@@ -474,21 +518,24 @@ class ItineraryFragment : Fragment(), DereMethods {
                         val fiveStarPercentage = fiveStarReviews / numAllReviews
 
                         if (oneStarReviews > 0) {
-                            (starBar1Fg.layoutParams as ConstraintLayout.LayoutParams).width = (starBarBg.width * oneStarPercentage).toInt()
+                            (starBar1Fg.layoutParams as ConstraintLayout.LayoutParams).width =
+                                (starBarBg.width * oneStarPercentage).toInt()
                             starBar1Fg.visibility = View.VISIBLE
                         } else {
                             starBar1Fg.visibility = View.GONE
                         }
 
                         if (twoStarReviews > 0) {
-                            (starBar2Fg.layoutParams as ConstraintLayout.LayoutParams).width = (starBarBg.width * twoStarPercentage).toInt()
+                            (starBar2Fg.layoutParams as ConstraintLayout.LayoutParams).width =
+                                (starBarBg.width * twoStarPercentage).toInt()
                             starBar2Fg.visibility = View.VISIBLE
                         } else {
                             starBar2Fg.visibility = View.GONE
                         }
 
                         if (threeStarReviews > 0) {
-                            (starBar3Fg.layoutParams as ConstraintLayout.LayoutParams).width = (starBarBg.width * threeStarPercentage).toInt()
+                            (starBar3Fg.layoutParams as ConstraintLayout.LayoutParams).width =
+                                (starBarBg.width * threeStarPercentage).toInt()
                             starBar3Fg.visibility = View.VISIBLE
 
                         } else {
@@ -496,14 +543,16 @@ class ItineraryFragment : Fragment(), DereMethods {
                         }
 
                         if (fourStarReviews > 0) {
-                            (starBar4Fg.layoutParams as ConstraintLayout.LayoutParams).width = (starBarBg.width * fourStarPercentage).toInt()
+                            (starBar4Fg.layoutParams as ConstraintLayout.LayoutParams).width =
+                                (starBarBg.width * fourStarPercentage).toInt()
                             starBar4Fg.visibility = View.VISIBLE
                         } else {
                             starBar4Fg.visibility = View.GONE
                         }
 
                         if (fiveStarReviews > 0) {
-                            (starBar5Fg.layoutParams as ConstraintLayout.LayoutParams).width = (starBarBg.width * fiveStarPercentage).toInt()
+                            (starBar5Fg.layoutParams as ConstraintLayout.LayoutParams).width =
+                                (starBarBg.width * fiveStarPercentage).toInt()
                             starBar5Fg.visibility = View.VISIBLE
                         } else {
                             starBar5Fg.visibility = View.GONE
@@ -539,6 +588,10 @@ class ItineraryFragment : Fragment(), DereMethods {
 
             }
         })
+    }
+
+    companion object {
+        fun newInstance(): ItineraryFragment = ItineraryFragment()
     }
 }
 

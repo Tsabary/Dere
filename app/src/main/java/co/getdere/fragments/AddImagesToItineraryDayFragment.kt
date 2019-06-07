@@ -2,7 +2,6 @@ package co.getdere.fragments
 
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +17,7 @@ import co.getdere.R
 import co.getdere.groupieAdapters.ImageSelector
 import co.getdere.models.Images
 import co.getdere.models.ItineraryBody
+import co.getdere.models.SharedItineraryBody
 import co.getdere.viewmodels.*
 import com.google.firebase.database.*
 import com.xwray.groupie.GroupAdapter
@@ -27,41 +27,39 @@ import kotlinx.android.synthetic.main.fragment_add_image_to_collection.*
 class AddImagesToItineraryDayFragment : Fragment() {
 
 
-    lateinit var sharedViewModelItineraryDayImages: SharedViewModelItineraryDayImages
-    val galleryAdapter = GroupAdapter<ViewHolder>()
-    var myImageList = mutableListOf<MutableMap<String, Boolean>>()
-
+    private lateinit var sharedViewModelItineraryDayStrings: SharedViewModelItineraryDayStrings
     lateinit var sharedViewModelItinerary: SharedViewModelItinerary
     lateinit var sharedViewModelCollection: SharedViewModelCollection
-    lateinit var itineraryObject: ItineraryBody
+
+    val galleryAdapter = GroupAdapter<ViewHolder>()
+    var myImageList = mutableListOf<MutableMap<String, Boolean>>()
+    lateinit var imagesRef : DatabaseReference
+
+    private lateinit var itineraryObject: ItineraryBody
+    private lateinit var purchasedItineraryObject: SharedItineraryBody
 
     var day = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_image_to_collection, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_add_image_to_collection, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val activity = activity as MainActivity
 
-
         val galleryRecycler = add_image_to_collection_recycler
         galleryRecycler.adapter = galleryAdapter
-        val imagesRecyclerLayoutManager =
-            GridLayoutManager(this.context, 3, RecyclerView.VERTICAL, false)
-        galleryRecycler.layoutManager = imagesRecyclerLayoutManager
+        galleryRecycler.layoutManager = GridLayoutManager(this.context, 3, RecyclerView.VERTICAL, false)
 
         activity.let {
 
-            sharedViewModelItineraryDayImages =
-                ViewModelProviders.of(it).get(SharedViewModelItineraryDayImages::class.java)
-            sharedViewModelItineraryDayImages.imageList.observe(activity, Observer { mutableList ->
+            sharedViewModelItineraryDayStrings =
+                ViewModelProviders.of(it).get(SharedViewModelItineraryDayStrings::class.java)
+            sharedViewModelItineraryDayStrings.daysList.observe(activity, Observer { mutableList ->
                 mutableList?.let { existingImageList ->
                     myImageList = existingImageList
                 }
@@ -69,35 +67,32 @@ class AddImagesToItineraryDayFragment : Fragment() {
 
             sharedViewModelItinerary = ViewModelProviders.of(activity).get(SharedViewModelItinerary::class.java)
             sharedViewModelCollection = ViewModelProviders.of(activity).get(SharedViewModelCollection::class.java)
-            sharedViewModelCollection.imageCollection.observe(this, Observer {
-                it?.let { itinerary ->
+            sharedViewModelCollection.imageCollection.observe(this, Observer { dataSnapshot ->
+                dataSnapshot?.let { itinerary ->
                     galleryAdapter.clear()
-                    itineraryObject = itinerary.child("body").getValue(ItineraryBody::class.java)!!
 
-                    val imagesRef =
-                        FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryObject.id}/body/images")
+                    if (itinerary.hasChild("body/contributors")){
+                        purchasedItineraryObject = itinerary.child("body").getValue(SharedItineraryBody::class.java)!!
+                        imagesRef = FirebaseDatabase.getInstance().getReference("/sharedItineraries/${purchasedItineraryObject.id}/body/images")
+                    } else {
+                        itineraryObject = itinerary.child("body").getValue(ItineraryBody::class.java)!!
+                        imagesRef = FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryObject.id}/body/images")
+                    }
 
                     imagesRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-
-                        }
+                        override fun onCancelled(p0: DatabaseError) {}
 
                         override fun onDataChange(p0: DataSnapshot) {
-
                             for (imagePath in p0.children) {
 
-                                val singleImageRef =
-                                    FirebaseDatabase.getInstance().getReference("/images/${imagePath.key}/body")
-
-                                singleImageRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                                    override fun onCancelled(p0: DatabaseError) {
-
-                                    }
+                                    FirebaseDatabase.getInstance().getReference("/images/${imagePath.key}/body").addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onCancelled(p0: DatabaseError) {}
 
                                     override fun onDataChange(p0: DataSnapshot) {
-
                                         val imageObject = p0.getValue(Images::class.java)
-                                        galleryAdapter.add(ImageSelector(imageObject!!, activity))
+                                        if(imageObject != null){
+                                            galleryAdapter.add(ImageSelector(imageObject, activity, "itineraryDay", day))
+                                        }
                                     }
                                 })
                             }
@@ -108,30 +103,25 @@ class AddImagesToItineraryDayFragment : Fragment() {
         }
 
 
-
         galleryAdapter.setOnItemClickListener { item, _ ->
-
-            Log.d("checks", "day $day")
 
             val image = item as ImageSelector
             if (myImageList.isNotEmpty()) {
                 if (myImageList[day].contains(image.image.id)) {
                     myImageList[day].remove(image.image.id)
-                    sharedViewModelItineraryDayImages.imageList.postValue(myImageList)
+                    sharedViewModelItineraryDayStrings.daysList.postValue(myImageList)
                 } else {
-//                    myImageList[day] = (mutableMapOf(image.image.id to true))
                     myImageList[day][image.image.id] = true
-                    sharedViewModelItineraryDayImages.imageList.postValue(myImageList)
+                    sharedViewModelItineraryDayStrings.daysList.postValue(myImageList)
                 }
             } else {
                 myImageList.add(day, mutableMapOf(image.image.id to true))
-
-//                myImageList[day][image.image.id] = true
-                sharedViewModelItineraryDayImages.imageList.postValue(myImageList)
+                sharedViewModelItineraryDayStrings.daysList.postValue(myImageList)
             }
 
             activity.subActive = activity.collectionGalleryFragment
             activity.subFm.popBackStack("addImagesToItineraryDayFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            activity.collectionGalleryFragment.hasItineraryDataChanged = true
         }
     }
 

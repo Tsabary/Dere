@@ -45,7 +45,7 @@ class WebViewFragment : Fragment() {
         sharedViewModelForImage.sharedImageObject.observe(this, Observer {
             it?.let {image->
 
-                val url = image.link
+                val url = "https://${image.link}"
 
                 webView.settings.loadWithOverviewMode = true
                 webView.settings.useWideViewPort = true

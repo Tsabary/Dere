@@ -27,19 +27,18 @@ class AddImagesToItineraryFragment : Fragment() {
 
 
     lateinit var sharedViewModelItineraryImages: SharedViewModelItineraryImages
+    lateinit var sharedViewModelItinerary: SharedViewModelItinerary
+
+    lateinit var itineraryObject: ItineraryBody
+
     val galleryAdapter = GroupAdapter<ViewHolder>()
     var myImageList = mutableListOf<String>()
-
-    lateinit var sharedViewModelItinerary: SharedViewModelItinerary
-    lateinit var itineraryObject: ItineraryBody
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_image_to_collection, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_add_image_to_collection, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -47,52 +46,8 @@ class AddImagesToItineraryFragment : Fragment() {
         val activity = activity as MainActivity
 
         val galleryRecycler = add_image_to_collection_recycler
-        val imagesRecyclerLayoutManager =
-            GridLayoutManager(this.context, 3, RecyclerView.VERTICAL, false)
         galleryRecycler.adapter = galleryAdapter
-        galleryRecycler.layoutManager = imagesRecyclerLayoutManager
-
-
-        activity.let {
-            sharedViewModelItinerary = ViewModelProviders.of(activity).get(SharedViewModelItinerary::class.java)
-            sharedViewModelItinerary.itinerary.observe(this, Observer {
-                it?.let { itinerary ->
-                    galleryAdapter.clear()
-                    itineraryObject = itinerary.child("body").getValue(ItineraryBody::class.java)!!
-
-                    val imagesRef = FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryObject.id}/body/images")
-
-                    imagesRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-
-                        }
-
-                        override fun onDataChange(p0: DataSnapshot) {
-
-                            for (imagePath in p0.children) {
-
-                                val singleImageRef = FirebaseDatabase.getInstance().getReference("/images/${imagePath.key}/body")
-
-                                singleImageRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                                    override fun onCancelled(p0: DatabaseError) {
-
-                                    }
-
-                                    override fun onDataChange(p0: DataSnapshot) {
-
-                                        val imageObject = p0.getValue(Images::class.java)
-                                        galleryAdapter.add(ImageSelector(imageObject!!, activity))
-                                    }
-                                })
-                            }
-                        }
-                    })
-                }
-            })
-        }
-
-
-
+        galleryRecycler.layoutManager = GridLayoutManager(this.context, 3, RecyclerView.VERTICAL, false)
 
         activity.let {
             sharedViewModelItineraryImages = ViewModelProviders.of(it).get(SharedViewModelItineraryImages::class.java)
@@ -101,12 +56,48 @@ class AddImagesToItineraryFragment : Fragment() {
                     myImageList = existingImageList
                 }
             })
+
+            sharedViewModelItinerary = ViewModelProviders.of(activity).get(SharedViewModelItinerary::class.java)
+            sharedViewModelItinerary.itinerary.observe(this, Observer {
+                it?.let { itinerary ->
+                    galleryAdapter.clear()
+                    itineraryObject = itinerary.child("body").getValue(ItineraryBody::class.java)!!
+
+                    FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryObject.id}/body/images")
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onCancelled(p0: DatabaseError) {}
+
+                            override fun onDataChange(p0: DataSnapshot) {
+
+                                for (imagePath in p0.children) {
+
+                                    FirebaseDatabase.getInstance().getReference("/images/${imagePath.key}/body")
+                                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                                            override fun onCancelled(p0: DatabaseError) {}
+
+                                            override fun onDataChange(p0: DataSnapshot) {
+
+                                                val imageObject = p0.getValue(Images::class.java)
+                                                if (imageObject != null) {
+                                                    galleryAdapter.add(
+                                                        ImageSelector(
+                                                            imageObject!!,
+                                                            activity,
+                                                            "itinerary",
+                                                            0
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        })
+                                }
+                            }
+                        })
+                }
+            })
         }
 
-
-
         galleryAdapter.setOnItemClickListener { item, _ ->
-
             val image = item as ImageSelector
 
             if (!myImageList.contains(image.image.id)) {

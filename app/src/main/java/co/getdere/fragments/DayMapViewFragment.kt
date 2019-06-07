@@ -22,10 +22,7 @@ import co.getdere.interfaces.DereMethods
 import co.getdere.models.Images
 import co.getdere.models.Users
 import co.getdere.otherClasses.StartSnapHelper
-import co.getdere.viewmodels.SharedViewModelCollection
-import co.getdere.viewmodels.SharedViewModelCurrentUser
-import co.getdere.viewmodels.SharedViewModelImage
-import co.getdere.viewmodels.SharedViewModelRandomUser
+import co.getdere.viewmodels.*
 import com.bumptech.glide.Glide
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -53,7 +50,7 @@ import kotlinx.android.synthetic.main.rv_on_top_of_map_card.view.*
 import mumayank.com.airlocationlibrary.AirLocation
 
 
-class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
+class DayMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
     private val derePin = "derePin"
     private val foodPin = "foodPin"
@@ -63,7 +60,7 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
     private val accommodationPin = "accomodationPin"
     private val transportationPin = "transportationPin"
 
-    private lateinit var sharedViewModelCollection: SharedViewModelCollection
+    private lateinit var sharedViewModelDayCollection: SharedViewModelDayCollection
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var currentUser: Users
@@ -91,7 +88,7 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
         super.onAttach(context)
 
         activity?.let {
-            sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
+            sharedViewModelDayCollection = ViewModelProviders.of(it).get(SharedViewModelDayCollection::class.java)
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
@@ -184,86 +181,40 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                 symbolManager.iconAllowOverlap = true
 
-                sharedViewModelCollection.imageCollection.observe(this, Observer {
-                    it?.let { collectionSnapshot ->
+                sharedViewModelDayCollection.imageCollection.observe(this, Observer {
+                    it?.let { collectionList ->
 
                         myAdapter.clear()
                         myAdapter.notifyDataSetChanged()
                         coordinates.clear()
                         symbolManager.deleteAll()
 
-                        if(collectionSnapshot.hasChild("body")){
-                            for (image in collectionSnapshot.child("/body/images").children) {
+                        for (image in collectionList) {
 
-                                val imagePath = image.key
+                            val imagePath = image.key
 
-                                val imageObjectPath =
-                                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+                            val imageObjectPath =
+                                FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
 
-                                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                                    override fun onCancelled(p0: DatabaseError) {
+                            imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onCancelled(p0: DatabaseError) {
 
-                                    }
+                                }
 
-                                    override fun onDataChange(p0: DataSnapshot) {
-                                        val imageObject = p0.getValue(Images::class.java)
+                                override fun onDataChange(p0: DataSnapshot) {
+                                    val imageObject = p0.getValue(Images::class.java)
 
-                                        coordinates.add(LatLng(imageObject!!.location[0], imageObject.location[1]))
+                                    coordinates.add(LatLng(imageObject!!.location[0], imageObject.location[1]))
 
-                                        myAdapter.add(ImageOnMap(imageObject, positionAssignmentForAdapter))
+                                    myAdapter.add(ImageOnMap(imageObject, positionAssignmentForAdapter))
 
-                                        val symbolOptions = SymbolOptions()
-                                            .withLatLng(LatLng(imageObject.location[0], imageObject.location[1]))
-                                            .withIconImage(when(imageObject.type){
+                                    val symbolOptions = SymbolOptions()
+                                        .withLatLng(LatLng(imageObject.location[0], imageObject.location[1]))
+                                        .withIconImage(
+                                            when (imageObject.type) {
                                                 0 -> derePin
                                                 1 -> foodPin
-                                                2-> nightlifePin
-                                                3 -> activitiesPin
-                                                4 -> naturePin
-                                                5 -> accommodationPin
-                                                6 -> transportationPin
-                                                else -> derePin
-
-                                            })
-                                            .withIconSize(1f)
-                                            .withZIndex(10)
-                                            .withDraggable(false)
-
-                                        symbolManager.create(symbolOptions)
-
-                                        positionAssignmentForAdapter += 1
-                                    }
-                                })
-
-
-                            }
-
-                        } else {
-                            for (image in collectionSnapshot.children) {
-
-                                val imagePath = image.key
-
-                                val imageObjectPath =
-                                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
-
-                                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                                    override fun onCancelled(p0: DatabaseError) {
-
-                                    }
-
-                                    override fun onDataChange(p0: DataSnapshot) {
-                                        val imageObject = p0.getValue(Images::class.java)
-
-                                        coordinates.add(LatLng(imageObject!!.location[0], imageObject.location[1]))
-
-                                        myAdapter.add(ImageOnMap(imageObject, positionAssignmentForAdapter))
-
-                                        val symbolOptions = SymbolOptions()
-                                            .withLatLng(LatLng(imageObject.location[0], imageObject.location[1]))
-                                            .withIconImage(when(imageObject.type){
-                                                0 -> derePin
-                                                1 -> foodPin
-                                                2-> nightlifePin
+                                                2 -> nightlifePin
                                                 3 -> activitiesPin
                                                 4 -> naturePin
                                                 5 -> accommodationPin
@@ -272,21 +223,21 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                                             }
 
-                                            )
-                                            .withIconSize(1f)
-                                            .withZIndex(10)
-                                            .withDraggable(false)
+                                        )
+                                        .withIconSize(1f)
+                                        .withZIndex(10)
+                                        .withDraggable(false)
 
-                                        symbolManager.create(symbolOptions)
+                                    symbolManager.create(symbolOptions)
 
-                                        positionAssignmentForAdapter += 1
-                                    }
-                                })
+                                    positionAssignmentForAdapter += 1
+                                }
+                            })
 
-
-                            }
 
                         }
+
+
 
                         panToCurrentLocation(activity, myMapboxMap!!)
                     }
@@ -314,8 +265,6 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
         })
 
     }
-
-
 
 
     override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
@@ -383,7 +332,7 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    fun addPins(style: Style){
+    fun addPins(style: Style) {
         style.addImage(
             derePin,
             BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map))!!
@@ -421,7 +370,7 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
     }
 
     companion object {
-        fun newInstance(): CollectionMapViewFragment = CollectionMapViewFragment()
+        fun newInstance(): DayMapViewFragment = DayMapViewFragment()
     }
 
 
@@ -469,7 +418,11 @@ class CollectionMapViewFragment : Fragment(), PermissionsListener, DereMethods {
 
                         val activity = activity as MainActivity
 
-                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment").addToBackStack("imageFullSizeFragment").commit()
+                        activity.subFm.beginTransaction().add(
+                            R.id.feed_subcontents_frame_container,
+                            activity.imageFullSizeFragment,
+                            "imageFullSizeFragment"
+                        ).addToBackStack("imageFullSizeFragment").commit()
 
                         activity.subActive = activity.imageFullSizeFragment
 //                        activity.collectionGalleryFragment.galleryViewPager.currentItem = 0

@@ -184,6 +184,8 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
                 )
 
                 listenToBucketCount(bucketCount, image)
+
+
                 if (image.photographer == currentUser.uid) {
                     checkIfInItinerary(collectButton, image, currentUser.uid)
 //                    bucketCount.visibility = View.GONE
@@ -336,7 +338,7 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
 
         shareButton.setOnClickListener {
 
-            val ss = ShareSheetStyle(activity, "Check this place out!", "Save it to your collection list")
+            val ss = ShareSheetStyle(activity, "Check this place out!", "Save it to your purchasedItineraryObject list")
                 .setCopyUrlStyle(resources.getDrawable(android.R.drawable.ic_menu_send), "Copy", "Added to clipboard")
                 .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
                 .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
@@ -382,9 +384,9 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         collectButton.setOnClickListener {
             if (currentUser.uid != imageObject.photographer) {
                 activity.subFm.beginTransaction()
-                    .add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment").addToBackStack("addToBucketFragment")
+                    .add(R.id.feed_subcontents_frame_container, activity.bucketAndSharedItineraryPagerFragment, "bucketAndSharedItineraryPagerFragment").addToBackStack("bucketAndSharedItineraryPagerFragment")
                     .commit()
-                activity.subActive = activity.addToBucketFragment
+                activity.subActive = activity.bucketAndSharedItineraryPagerFragment
             } else {
                 activity.subFm.beginTransaction()
                     .add(
@@ -493,6 +495,16 @@ class ImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethods {
         } else {
             activity.navigateToProfile()
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        collectButton.setImageResource(R.drawable.bucket)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        layoutScroll.fullScroll(View.FOCUS_UP)
     }
 }
 

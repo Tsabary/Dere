@@ -215,7 +215,7 @@ class AddToBucketFragment : Fragment(), DereMethods {
             currentUser.name,
             imageObject.photographer,
             TextView(context),
-            "collection",
+            "purchasedItineraryObject",
             activity
         )
 
@@ -363,7 +363,7 @@ class SingleBucketSuggestion(
                                                             currentUser.name,
                                                             image.photographer,
                                                             TextView(context),
-                                                            "collection",
+                                                            "purchasedItineraryObject",
                                                             activity
                                                         )
 
@@ -438,7 +438,7 @@ class SingleBucketSuggestion(
                                                 currentUser.name,
                                                 image.photographer,
                                                 TextView(context),
-                                                "collection",
+                                                "purchasedItineraryObject",
                                                 activity
                                             )
 //
@@ -548,7 +548,7 @@ class SingleBucketSuggestion(
 //                                        currentUser.name,
 //                                        image.photographer,
 //                                        TextView(context),
-//                                        "collection",
+//                                        "purchasedItineraryObject",
 //                                        activity
 //                                    )
 //

@@ -8,8 +8,9 @@ class ItineraryBody(
     val description: String,
     val images: Map<String, Boolean>,
     val days: List<Map<String, Boolean>>,
+    val startDay : Int,
     val locationId: String,
     val locationName: String
 ) {
-    constructor() : this("", false, "", "", "", mapOf(), listOf(), "","")
+    constructor() : this("", false, "", "", "", mapOf(), listOf(),0, "","")
 }

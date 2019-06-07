@@ -34,7 +34,7 @@ import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.fragment_marketplace.*
 import kotlinx.android.synthetic.main.fragment_marketplace.rangeBar
-import kotlinx.android.synthetic.main.marketplace_single_row.view.*
+import kotlinx.android.synthetic.main.marketplace_single_itinerary.view.*
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import kotlin.collections.ArrayList
@@ -288,7 +288,7 @@ class SingleItinerary(
 ) :
     Item<ViewHolder>() {
     override fun getLayout(): Int {
-        return R.layout.marketplace_single_row
+        return R.layout.marketplace_single_itinerary
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {

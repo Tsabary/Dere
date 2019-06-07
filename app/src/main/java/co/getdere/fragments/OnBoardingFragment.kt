@@ -44,7 +44,7 @@ class OnBoardingFragment : Fragment() {
 
     val title5 = "Interests"
     val subTitle5 =
-        "Are what filters the content you see in the app, and are saved automatically as you use Dere. Press and hold your finger on a photo to create your first collection and collect its tags to your interests"
+        "Are what filters the content you see in the app, and are saved automatically as you use Dere. Press and hold your finger on a photo to create your first purchasedItineraryObject and collect its tags to your interests"
 
 
     var viewPagerPosition = 0
@@ -145,7 +145,7 @@ class OnBoardingFragment : Fragment() {
 
                     }
                 } else {
-                    Toast.makeText(activity, "Please create your first collection", Toast.LENGTH_LONG).show()
+                    Toast.makeText(activity, "Please create your first purchasedItineraryObject", Toast.LENGTH_LONG).show()
                 }
             }
         })
