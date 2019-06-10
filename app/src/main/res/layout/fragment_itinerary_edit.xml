@@ -33,7 +33,7 @@
                     android:padding="24dp">
 
                 <TextView
-                        android:text="All my life"
+                        android:text="@string/all_my_life"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_edit_author_residency_1"
@@ -44,7 +44,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         android:textColor="@color/gray900"/>
                 <TextView
-                        android:text="Most of my life"
+                        android:text="@string/most_of_my_life"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_edit_author_residency_2"
@@ -57,7 +57,7 @@
                         android:textColor="@color/gray900"/>
 
                 <TextView
-                        android:text="Over 5 years"
+                        android:text="@string/over_5_years"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_edit_author_residency_3"
@@ -70,7 +70,7 @@
                         android:textColor="@color/gray900"/>
 
                 <TextView
-                        android:text="Over 2 years"
+                        android:text="@string/over_2_years"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_edit_author_residency_4"
@@ -83,7 +83,7 @@
                         android:textColor="@color/gray900"/>
 
                 <TextView
-                        android:text="Less than 2 years"
+                        android:text="@string/less_than_2_years"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_edit_author_residency_5"
@@ -96,7 +96,7 @@
                         android:textColor="@color/gray900"/>
 
                 <TextView
-                        android:text="I've traveled here"
+                        android:text="@string/i_ve_traveled_here"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_edit_author_residency_6"
@@ -135,20 +135,7 @@
                     android:visibility="visible">
 
                 <TextView
-                        android:text="How many days of travel could be covered with this itinerary?"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/textView34"
-                        app:layout_constraintTop_toBottomOf="@+id/constraintLayout11"
-                        app:layout_constraintStart_toStartOf="@id/textView13"
-                        android:fontFamily="@font/roboto_bold"
-                        android:textColor="@color/gray900"
-                        app:layout_constraintEnd_toEndOf="@id/textView13"
-                        app:layout_constraintHorizontal_bias="0.0"
-                        android:textSize="15sp"
-                        android:layout_marginTop="24dp"/>
-                <TextView
-                        android:text="What type of traveler is this itinerary for?"
+                        android:text="@string/what_type_of_traveler_is_this_itinerary_for"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView33"
@@ -161,7 +148,7 @@
                         android:textSize="15sp"
                         android:layout_marginTop="24dp"/>
                 <TextView
-                        android:text="Describe your itinerary in a couple of sentances"
+                        android:text="@string/describe_your_itinerary_in_a_couple_of_sentances"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView15"
@@ -185,10 +172,10 @@
                         android:fontFamily="@font/roboto_medium"
                         android:textSize="15sp"
                         android:padding="8dp"
-                        android:text="Select location"
+                        android:text="@string/select_location"
                         android:textColor="@color/gray500"/>
                 <TextView
-                        android:text="What part of the world your itinerary explores?"
+                        android:text="@string/what_part_of_the_world_your_itinerary_explores"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView16"
@@ -212,7 +199,7 @@
                         android:background="@drawable/gray_form_field"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        android:hint="For example: great for couples who like to experience local wineries on a budget, and discover the best murals around the city"
+                        android:hint="@string/for_example_great_for_couples_who_like_to_experience_local_wineries_on_a_budget_and_discover_the_best_murals_around_the_city"
                         android:fontFamily="@font/roboto_medium"
                         android:textSize="15sp"
                         android:padding="16dp"/>
@@ -228,12 +215,12 @@
                         android:background="@drawable/gray_form_field"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        android:hint='For example: "Hikes and Camping" or "Art and Fine Dining"'
+                        android:hint="@string/for_example_hikes_and_camping_or_art_and_fine_dining"
                         android:fontFamily="@font/roboto_medium"
                         android:textSize="15sp"
                         android:padding="16dp"/>
                 <TextView
-                        android:text="Let's get specific"
+                        android:text="@string/let_s_get_specific"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView13"
@@ -247,7 +234,7 @@
                         android:layout_marginEnd="8dp"
                         app:layout_constraintHorizontal_bias="0.0"/>
                 <TextView
-                        android:text="What is the focus of your itinerary?"
+                        android:text="@string/what_is_the_focus_of_your_itinerary"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView14"
@@ -266,10 +253,12 @@
                         app:layout_constraintTop_toBottomOf="@id/textView33"
                         android:layout_marginTop="16dp"
                         app:layout_constraintStart_toStartOf="@+id/itinerary_edit_description"
-                        android:id="@+id/constraintLayout11">
+                        android:id="@+id/constraintLayout11"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:layout_marginBottom="16dp">
 
                     <CheckBox
-                            android:text="Couples"
+                            android:text="@string/couples"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_couples_checkbox"
@@ -280,7 +269,7 @@
                             app:layout_constraintStart_toStartOf="parent"/>
 
                     <CheckBox
-                            android:text="Families"
+                            android:text="@string/families"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_families_checkbox"
@@ -291,7 +280,7 @@
                             app:layout_constraintTop_toTopOf="@+id/itinerary_edit_couples_checkbox"
                             android:textSize="15sp"/>
                     <CheckBox
-                            android:text="Groups"
+                            android:text="@string/groups"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_groups_checkbox"
@@ -304,7 +293,7 @@
                             app:layout_constraintHorizontal_bias="0.0"
                             android:textSize="15sp"/>
                     <CheckBox
-                            android:text="Solo travelers"
+                            android:text="@string/solo_travelers"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_solo_checkbox"
@@ -318,47 +307,6 @@
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <com.crystal.crystalrangeseekbar.widgets.CrystalRangeSeekbar
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_edit_days_seekbar"
-                        app:layout_constraintTop_toBottomOf="@+id/textView34"
-                        android:layout_marginTop="24dp"
-                        app:layout_constraintStart_toStartOf="@+id/textView34"
-                        app:layout_constraintEnd_toEndOf="@+id/textView34"
-                        app:min_value="1"
-                        app:max_value="100"
-                        app:max_start_value="100"
-                        app:min_start_value="1"/>
-                <TextView
-                        tools:text="1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_edit_days_min"
-                        android:fontFamily="@font/roboto_medium"
-                        android:textSize="15sp"
-                        android:textColor="@color/gray900"
-                        app:layout_constraintTop_toBottomOf="@+id/itinerary_edit_days_seekbar"
-                        android:layout_marginTop="16dp"
-                        app:layout_constraintStart_toStartOf="@+id/textView34"
-                        android:layout_marginBottom="24dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        android:layout_marginStart="8dp"/>
-                <TextView
-                        tools:text="30"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/itinerary_edit_days_max"
-                        android:fontFamily="@font/roboto_medium"
-                        android:textSize="15sp"
-                        android:textColor="@color/gray900"
-                        app:layout_constraintTop_toBottomOf="@+id/itinerary_edit_days_seekbar"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginBottom="24dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="@+id/textView34"
-                        android:layout_marginEnd="8dp"/>
-
             </androidx.constraintlayout.widget.ConstraintLayout>
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -369,7 +317,7 @@
                     android:id="@+id/itinerary_edit_about_itinerary_container">
 
                 <TextView
-                        android:text="Let's talk about your itinerary"
+                        android:text="@string/let_s_talk_about_your_itinerary"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_edit_title_2"
@@ -383,7 +331,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.0"/>
                 <TextView
-                        android:text="Write about each catagory your itinerary explores"
+                        android:text="@string/write_about_each_catagory_your_itinerary_explores"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_edit_s2q1"
@@ -415,7 +363,7 @@
                             app:layout_constraintStart_toStartOf="parent"
                     />
                     <TextView
-                            android:text="Food"
+                            android:text="@string/food"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_food_title"
@@ -438,7 +386,7 @@
                             android:background="@drawable/gray_form_field"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            android:hint="What types of food would you be guiding travelers to?"
+                            android:hint="@string/what_types_of_food_would_you_be_guiding_travelers_to"
                             android:fontFamily="@font/roboto_medium"
                             android:textSize="15sp"
                             android:padding="16dp"
@@ -463,9 +411,9 @@
                             android:id="@+id/itinerary_edit_drinks_icon"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                    />
+                            android:contentDescription="@string/nightlife_icon"/>
                     <TextView
-                            android:text="Drinks and nightlife"
+                            android:text="@string/drinks_and_nightlife"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_drinks_title"
@@ -489,7 +437,7 @@
                             android:background="@drawable/gray_form_field"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            android:hint="Would you be guiding travelers to bars or clubs? What type?"
+                            android:hint="@string/would_you_be_guiding_travelers_to_bars_or_clubs_what_type"
                             android:fontFamily="@font/roboto_medium"
                             android:textSize="15sp"
                             android:padding="16dp"/>
@@ -513,9 +461,9 @@
                             android:id="@+id/itinerary_edit_nature_icon"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                    />
+                            android:contentDescription="@string/nature_icon"/>
                     <TextView
-                            android:text="Nature"
+                            android:text="@string/nature"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_nature_title"
@@ -539,7 +487,7 @@
                             android:background="@drawable/gray_form_field"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            android:hint="Would you be guiding travelers into nature? Hikes? What levels of difficulty?"
+                            android:hint="@string/would_you_be_guiding_travelers_into_nature_hikes_what_levels_of_difficulty"
                             android:fontFamily="@font/roboto_medium"
                             android:textSize="15sp"
                             android:padding="16dp"/>
@@ -563,9 +511,9 @@
                             android:id="@+id/itinerary_edit_activities_icon"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                    />
+                            android:contentDescription="@string/activities_icon"/>
                     <TextView
-                            android:text="Activities"
+                            android:text="@string/activities"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_activities_title"
@@ -589,7 +537,7 @@
                             android:background="@drawable/gray_form_field"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            android:hint="Does your itinerary include any activities? Are there any prerequisites to be able to participate in these activities?"
+                            android:hint="@string/does_your_itinerary_include_any_activities_are_there_any_prerequisites_to_be_able_to_participate_in_these_activities"
                             android:fontFamily="@font/roboto_medium"
                             android:textSize="15sp"
                             android:padding="16dp"/>
@@ -613,9 +561,9 @@
                             android:id="@+id/itinerary_edit_accommodation_icon"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                    />
+                            android:contentDescription="@string/accommodation_icon"/>
                     <TextView
-                            android:text="Accommodation"
+                            android:text="@string/accommodation"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_accommodation_title"
@@ -639,7 +587,7 @@
                             android:background="@drawable/gray_form_field"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            android:hint="Would your itinerary suggest private accomodations? Shared? What vibes should travelers excpect in these accomodations?"
+                            android:hint="@string/would_your_itinerary_suggest_private_accomodations_shared_what_vibes_should_travelers_excpect_in_these_accomodations"
                             android:fontFamily="@font/roboto_medium"
                             android:textSize="15sp"
                             android:padding="16dp"/>
@@ -663,9 +611,9 @@
                             android:id="@+id/itinerary_edit_transportation_icon"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                    />
+                            android:contentDescription="@string/transportation_icon"/>
                     <TextView
-                            android:text="Transportation"
+                            android:text="@string/transportation"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_transportation_title"
@@ -689,7 +637,7 @@
                             android:background="@drawable/gray_form_field"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            android:hint="What means of transportation are needed to follow this itinerary? Private or public? If public, would you guide travelers to the stations?"
+                            android:hint="@string/what_means_of_transportation_are_needed_to_follow_this_itinerary_private_or_public_if_public_would_you_guide_travelers_to_the_stations"
                             android:fontFamily="@font/roboto_medium"
                             android:textSize="15sp"
                             android:padding="16dp"/>
@@ -708,7 +656,7 @@
                     android:id="@+id/itinerary_edit_about_you_container">
 
                 <TextView
-                        android:text="Let's talk about you"
+                        android:text="@string/let_s_talk_about_you"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView8"
@@ -722,7 +670,7 @@
                         android:layout_marginEnd="8dp"
                         app:layout_constraintHorizontal_bias="0.0"/>
                 <TextView
-                        android:text="How long have you lived here?"
+                        android:text="@string/how_long_have_you_lived_here"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView9"
@@ -735,7 +683,7 @@
                         app:layout_constraintHorizontal_bias="0.0"
                         android:textSize="15sp"/>
                 <TextView
-                        android:text="Select one"
+                        android:text="@string/select_one"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/itinerary_edit_select_residency"
@@ -750,7 +698,7 @@
 
 
                 <TextView
-                        android:text="Can you tell your travelers more about yourself?"
+                        android:text="@string/can_you_tell_your_travelers_more_about_yourself"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView10"
@@ -773,7 +721,7 @@
                         android:background="@drawable/gray_form_field"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        android:hint="Help people know better who you are an what are your main interets"
+                        android:hint="@string/help_people_know_better_who_you_are_an_what_are_your_main_interets"
                         android:fontFamily="@font/roboto_medium"
                         android:textSize="15sp"
                         android:padding="16dp"/>
@@ -788,7 +736,7 @@
                     android:id="@+id/itinerary_edit_budget_container">
 
                 <TextView
-                        android:text="Let's talk budget"
+                        android:text="@string/let_s_talk_budget"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView18"
@@ -804,7 +752,7 @@
 
 
                 <TextView
-                        android:text="What would be the budget for this itinerary?\nThink Price Per Person Per Day"
+                        android:text="@string/what_would_be_the_budget_for_this_itinerary_nthink_price_per_person_per_day"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView19"
@@ -819,7 +767,7 @@
 
 
                 <TextView
-                        android:text="Answer in increments of $5 USD"
+                        android:text="@string/answer_in_increments_of_5_usd"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView20"
@@ -844,7 +792,7 @@
                         android:id="@+id/itinerary_edit_budget_input_container">
 
                     <TextView
-                            android:text="$"
+                            android:text="@string/dollar_sign"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/textView21"
@@ -872,7 +820,7 @@
                             android:layout_marginEnd="8dp"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
                 <TextView
-                        android:text="What is included in this budget?"
+                        android:text="@string/what_is_included_in_this_budget"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView27"
@@ -894,7 +842,7 @@
                 >
 
                     <CheckBox
-                            android:text="Food"
+                            android:text="@string/food"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_food_checkbox"
@@ -905,7 +853,7 @@
                             app:layout_constraintStart_toStartOf="parent"/>
 
                     <CheckBox
-                            android:text="Nightlife"
+                            android:text="@string/drinks_and_nightlife"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_nightlife_checkbox"
@@ -916,7 +864,7 @@
                             app:layout_constraintTop_toTopOf="@+id/itinerary_edit_food_checkbox"
                             android:textSize="15sp"/>
                     <CheckBox
-                            android:text="Activities"
+                            android:text="@string/activities"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_activities_checkbox"
@@ -929,7 +877,7 @@
                             app:layout_constraintHorizontal_bias="0.0"
                             android:textSize="15sp"/>
                     <CheckBox
-                            android:text="Transportation"
+                            android:text="@string/transportation"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_transportation_checkbox"
@@ -940,7 +888,7 @@
                             android:textColor="@color/gray900"
                             android:textSize="15sp"/>
                     <CheckBox
-                            android:text="Accomodation"
+                            android:text="@string/accommodation"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_accommodation_checkbox"
@@ -954,7 +902,7 @@
                             android:textSize="15sp"/>
 
                     <TextView
-                            android:text="Other:"
+                            android:text="@string/other"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:id="@+id/textView28"
@@ -978,7 +926,7 @@
                             android:background="@drawable/gray_form_field"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            android:hint="Is there anything else that you've calculated into this itinerary budget that is not mentioned in the check boxes?"
+                            android:hint="@string/is_there_anything_else_that_you_ve_calculated_into_this_itinerary_budget_that_is_not_mentioned_in_the_check_boxes"
                             android:fontFamily="@font/roboto_medium"
                             android:textSize="15sp"
                             android:padding="16dp"
@@ -997,7 +945,7 @@
                     android:id="@+id/itinerary_edit_presentation_container">
 
                 <TextView
-                        android:text="Let's talk presentation"
+                        android:text="@string/let_s_talk_presentation"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView23"
@@ -1011,7 +959,7 @@
                         android:layout_marginEnd="8dp"
                         app:layout_constraintHorizontal_bias="0.0"/>
                 <TextView
-                        android:text="We need to sell your itinerary. Help us make it look best."
+                        android:text="@string/we_need_to_sell_your_itinerary_help_us_make_it_look_best"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView22"
@@ -1033,7 +981,8 @@
                         app:layout_constraintStart_toStartOf="@+id/textView22"
                         app:layout_constraintEnd_toEndOf="@+id/textView22"
                         app:layout_constraintDimensionRatio="w,3:5"
-                        android:visibility="gone"/>
+                        android:visibility="gone"
+                        android:contentDescription="@string/cover_image"/>
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -1047,7 +996,7 @@
                         app:layout_constraintTop_toTopOf="@+id/itinerary_edit_cover_image_image">
 
                     <TextView
-                            android:text="Choose a cover image"
+                            android:text="@string/choose_a_cover_image"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_cover_image_cta"
@@ -1064,7 +1013,7 @@
                             android:textColor="@color/gray500"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
                 <TextView
-                        android:text="Choose some teaser photos.\nPotential buyers would only see the photos but none of their information.\n\nYour first image would be used as a cover image"
+                        android:text="@string/choose_some_teaser_photos_npotential_buyers_would_only_see_the_photos_but_none_of_their_information_n_nyour_first_image_would_be_used_as_a_cover_image"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView24"
@@ -1092,7 +1041,7 @@
                         android:paddingBottom="8dp">
 
                     <TextView
-                            android:text="Choose images"
+                            android:text="@string/choose_images"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/itinerary_edit_teaser_images_cta"
@@ -1116,7 +1065,7 @@
                         android:id="@+id/itinerary_edit_teaser_images_recycler">
                 </androidx.recyclerview.widget.RecyclerView>
                 <TextView
-                        android:text="Do you have a video to share? Guides with videos sell more."
+                        android:text="@string/do_you_have_a_video_to_share_guides_with_videos_sell_more"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView25"
@@ -1154,7 +1103,7 @@
                             android:textColor="@color/gray900"
                             android:textSize="15sp"/>
                     <TextView
-                            android:text="youtube.com/watch?v="
+                            android:text="@string/youtube_com_watch_v"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/textView12"
@@ -1177,7 +1126,7 @@
                     android:id="@+id/itinerary_edit_price_container">
 
                 <TextView
-                        android:text="Let's talk profit"
+                        android:text="@string/let_s_talk_profit"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView31"
@@ -1191,7 +1140,7 @@
                         android:layout_marginEnd="8dp"
                         app:layout_constraintHorizontal_bias="0.0"/>
                 <TextView
-                        android:text="How much would you like to charge for this itinerary?"
+                        android:text="@string/how_much_would_you_like_to_charge_for_this_itinerary"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView29"
@@ -1206,7 +1155,7 @@
                         android:layout_marginTop="24dp"
                         android:textSize="15sp"/>
                 <TextView
-                        android:text="Max price for this itinerary: $"
+                        android:text="@string/max_price_for_this_itinerary"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView30"
@@ -1239,7 +1188,7 @@
                         android:id="@+id/itinerary_edit_price_input_container">
 
                     <TextView
-                            android:text="$"
+                            android:text="@string/dollar_sign"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/textView26"
@@ -1282,10 +1231,11 @@
             android:padding="24dp"
             android:id="@+id/constraintLayout7"
             android:background="@color/white"
-            android:clickable="true">
+            android:clickable="true"
+            android:focusable="true">
 
         <TextView
-                android:text="Publish"
+                android:text="@string/publish"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/itinerary_edit_publish"
@@ -1298,7 +1248,7 @@
                 android:layout_marginEnd="48dp"
                 android:visibility="gone"/>
         <TextView
-                android:text="Next"
+                android:text="@string/next"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/itinerary_edit_next"
@@ -1310,7 +1260,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginEnd="48dp"/>
         <TextView
-                android:text="Back"
+                android:text="@string/back"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/itinerary_edit_back"

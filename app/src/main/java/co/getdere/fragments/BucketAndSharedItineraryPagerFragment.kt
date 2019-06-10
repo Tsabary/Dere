@@ -17,16 +17,14 @@ class BucketAndSharedItineraryPagerFragment : Fragment() {
 
     var viewPagerPosition = 0
     lateinit var viewpager: ViewPager
-    lateinit var rightArrow: ImageView
-    lateinit var leftArrow: ImageView
+    private lateinit var rightArrow: ImageView
+    private lateinit var leftArrow: ImageView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_bucket_and_shared_itinerary_pager, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_bucket_and_shared_itinerary_pager, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -76,5 +74,4 @@ class BucketAndSharedItineraryPagerFragment : Fragment() {
     companion object {
         fun newInstance(): BucketAndSharedItineraryPagerFragment = BucketAndSharedItineraryPagerFragment()
     }
-
 }

@@ -8,7 +8,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/feed_notification_box">
 
-
     <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -40,7 +39,8 @@
             android:id="@+id/feed_notification_post_image"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="24dp"
-            android:scaleType="centerCrop"/>
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/thumbnail"/>
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

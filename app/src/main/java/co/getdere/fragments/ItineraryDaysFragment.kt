@@ -38,17 +38,14 @@ class ItineraryDaysFragment : Fragment() {
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
     lateinit var currentUser: Users
-    lateinit var itineraryBody: ItineraryBody
+    private lateinit var itineraryBody: ItineraryBody
     lateinit var sharedItineraryBody: SharedItineraryBody
     lateinit var scrollLayout: NestedScrollView
-    val uid = FirebaseAuth.getInstance().uid
 
     var myImageList = mutableListOf<MutableMap<String, Boolean>>()
+    private val fillerList = mutableListOf<MutableMap<String, Boolean>>()
 
-    val fillerList = mutableListOf<MutableMap<String, Boolean>>()
-
-
-    val daysAdapter = GroupAdapter<ViewHolder>()
+    private val daysAdapter = GroupAdapter<ViewHolder>()
     var startDay = 0
 
     var isShared = 0
@@ -67,16 +64,14 @@ class ItineraryDaysFragment : Fragment() {
         val activity = activity as MainActivity
         val addDayBtn = itinerary_days_add_day
         val startDaySpinner = itinerary_days_spinner
-        val galleryRecycler = itinerary_days_recycler
         scrollLayout = itinerary_days_scroll_layout
 
-        val imagesRecyclerLayoutManager =
-            LinearLayoutManager(this.context)
-
+        val galleryRecycler = itinerary_days_recycler
         galleryRecycler.adapter = daysAdapter
-        galleryRecycler.layoutManager = imagesRecyclerLayoutManager
+        galleryRecycler.layoutManager = LinearLayoutManager(this.context)
 
         activity.let {
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
             sharedViewModelItineraryDayStrings =
                 ViewModelProviders.of(it).get(SharedViewModelItineraryDayStrings::class.java)
 
@@ -125,8 +120,6 @@ class ItineraryDaysFragment : Fragment() {
 
                             populateDays(activity)
                         }
-
-
                     }
                 }
             })
@@ -140,11 +133,9 @@ class ItineraryDaysFragment : Fragment() {
 
             sharedViewModelItineraryDayStrings.daysList.observe(activity, Observer { mutableList ->
                 mutableList?.let { existingImageList ->
-                    //                    myImageList.clear()
                     myImageList = existingImageList
                 }
             })
-
         }
 
         startDaySpinner.setItems(
@@ -159,32 +150,26 @@ class ItineraryDaysFragment : Fragment() {
         )
 
         startDaySpinner.setOnItemSelectedListener { _, position, _, _ ->
-
             activity.collectionGalleryFragment.itineraryStartDay.postValue(position)
-
-//            startDay = position
             activity.collectionGalleryFragment.hasItineraryDataChanged = true
-//            sharedViewModelItineraryDayStrings.daysList.postValue(fillerList)
         }
 
         addDayBtn.setOnClickListener {
-            daysAdapter.add(SingleDay(activity, startDay + 1, uid!!))
+            daysAdapter.add(SingleDay(activity, startDay + 1, currentUser.uid))
             myImageList.add(mutableMapOf())
             sharedViewModelItineraryDayStrings.daysList.postValue(myImageList)
             activity.collectionGalleryFragment.hasItineraryDataChanged = true
             scrollLayout.fullScroll(View.FOCUS_DOWN)
         }
-
-
     }
 
     private fun populateDays(activity: MainActivity) {
         daysAdapter.clear()
         for (day in fillerList) {
             if(isShared==0){
-                daysAdapter.add(SingleDay(activity, startDay, uid!!))
+                daysAdapter.add(SingleDay(activity, startDay, currentUser.uid))
             } else {
-                daysAdapter.add(SingleDay(activity, startDay, uid!!))
+                daysAdapter.add(SingleDay(activity, startDay, currentUser.uid))
             }
         }
     }
@@ -192,7 +177,6 @@ class ItineraryDaysFragment : Fragment() {
     private fun saveDays() {
         val itineraryDaysRef = if (isShared == 0) {
             FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryBody.id}/body")
-
         } else {
             FirebaseDatabase.getInstance().getReference("/sharedItineraries/${sharedItineraryBody.id}/body")
         }
@@ -238,7 +222,6 @@ class SingleDay(
         ViewModelProviders.of(activity).get(SharedViewModelDayCollection::class.java)
 
     val imagesAdapter = GroupAdapter<ViewHolder>()
-//        val dayLocationsImages = mutableMapOf<String, Boolean>()
 
     override fun getLayout(): Int {
         return R.layout.itinerary_day
@@ -249,36 +232,23 @@ class SingleDay(
         val moveDown = viewHolder.itemView.itinerary_day_move_down
         val addImagesBtn = viewHolder.itemView.itinerary_day_plus
         val mapBtn = viewHolder.itemView.itinerary_day_map
+
         val imagesRecycler = viewHolder.itemView.itinerary_day_images_recycler
         imagesRecycler.adapter = imagesAdapter
         imagesRecycler.layoutManager = GridLayoutManager(viewHolder.root.context, 4)
-
-//        if (uid != itineraryBody.creator) {
-//            addImagesBtn.visibility = View.GONE
-//            moveUp.visibility = View.GONE
-//            moveDown.visibility = View.GONE
-//        } else {
-//            addImagesBtn.visibility = View.VISIBLE
-//            moveUp.visibility = View.VISIBLE
-//            moveDown.visibility = View.VISIBLE
-//        }
-
 
         activity.let {
             sharedViewModelItineraryImages.daysList.observe(activity, Observer { it1 ->
                 it1?.let { existingDaysList ->
 
                     imagesAdapter.clear()
-//                        dayLocationsImages.clear()
-
-                    val imagesRef = FirebaseDatabase.getInstance().getReference("/images")
 
                     if (existingDaysList.size > position) {
                         imagesRecycler.visibility = View.VISIBLE
 
                         for (image in existingDaysList[position]) {
 
-                            imagesRef.child("${image.key}/body")
+                            FirebaseDatabase.getInstance().getReference("/images").child("${image.key}/body")
                                 .addListenerForSingleValueEvent(object : ValueEventListener {
                                     override fun onCancelled(p0: DatabaseError) {
                                     }
@@ -294,13 +264,10 @@ class SingleDay(
                                                     position
                                                 )
                                             )
-//                                                dayLocationsImages[imageObject.id] = true
                                         }
                                     }
 
                                 })
-
-
                         }
 
                         if (position == 0) {
@@ -355,8 +322,8 @@ class SingleDay(
         }
 
         imagesAdapter.setOnItemClickListener { item, view ->
-
             val image = item as CollectionPhoto
+
             sharedViewModelImage.sharedImageObject.postValue(image.image)
 
             FirebaseDatabase.getInstance().getReference("/users/${image.image.photographer}/profile")
@@ -420,11 +387,8 @@ class SingleDay(
             }
 
             else -> ("unknown")
-
         }
-
     }
-
 }
 
 

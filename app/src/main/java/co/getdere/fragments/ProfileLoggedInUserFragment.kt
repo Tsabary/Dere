@@ -1,6 +1,7 @@
 package co.getdere.fragments
 
 
+import android.accounts.Account
 import android.content.Intent
 import android.graphics.PorterDuff
 import android.net.Uri
@@ -32,6 +33,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.messaging.FirebaseMessaging
+import com.stripe.android.Stripe
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
@@ -65,8 +67,8 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
     lateinit var scrollView: NestedScrollView
 
 
-    lateinit var buo: BranchUniversalObject
-    lateinit var lp: LinkProperties
+    private lateinit var buo: BranchUniversalObject
+    private lateinit var lp: LinkProperties
 
 
     lateinit var userRef: DatabaseReference
@@ -78,8 +80,9 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
         val activity = activity as MainActivity
+
         scrollView = profile_li_scrollview
         val picture: ImageView = profile_li_image
         val name: TextView = profile_li_user_name
@@ -98,92 +101,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
         val toolbar = profile_li_toolbar
         setHasOptionsMenu(true)
         toolbar.inflateMenu(R.menu.profile_navigation)
-
         toolbar.overflowIcon!!.setColorFilter(resources.getColor(R.color.gray500), PorterDuff.Mode.SRC_ATOP)
-
-        toolbar.setOnMenuItemClickListener {
-
-            when (it.itemId) {
-
-                R.id.profile_edit_interests -> {
-                    activity.subFm.beginTransaction().add(
-                        R.id.feed_subcontents_frame_container,
-                        activity.editInterestsFragment,
-                        "editInterestsFragment"
-                    ).addToBackStack("editInterestsFragment")
-                        .commit()
-                    activity.subActive = activity.editInterestsFragment
-                    activity.switchVisibility(1)
-                    return@setOnMenuItemClickListener true
-                }
-
-                R.id.profile_logout -> {
-
-                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestIdToken(getString(R.string.default_web_client_id))
-                        .requestEmail()
-                        .build();
-
-                    val uid = FirebaseAuth.getInstance().uid
-                    FirebaseMessaging.getInstance().unsubscribeFromTopic(uid).addOnSuccessListener {
-                        FirebaseAuth.getInstance().signOut()
-                        GoogleSignIn.getClient(activity, gso).signOut().addOnSuccessListener {
-                            val intent = Intent(this.context, RegisterLoginActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            startActivity(intent)
-                        }
-                    }
-
-                    return@setOnMenuItemClickListener true
-                }
-
-                R.id.profile_invite_a_friend -> {
-
-                    val ss =
-                        ShareSheetStyle(this.context!!, "Check out my profile", "Follow me around the world")
-                            .setCopyUrlStyle(
-                                resources.getDrawable(android.R.drawable.ic_menu_send),
-                                "Copy",
-                                "Added to clipboard"
-                            )
-                            .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
-                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
-                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK_MESSENGER)
-                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.WHATS_APP)
-                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.TWITTER)
-                            .setAsFullWidthStyle(true)
-                            .setSharingTitle("Share With")
-
-                    buo.showShareSheet(activity, lp, ss, object : Branch.BranchLinkShareListener {
-                        override fun onShareLinkDialogLaunched() {}
-                        override fun onShareLinkDialogDismissed() {}
-                        override fun onLinkShareResponse(
-                            sharedLink: String,
-                            sharedChannel: String,
-                            error: BranchError
-                        ) {
-                        }
-
-                        override fun onChannelSelected(channelName: String) {
-                            val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
-                            firebaseAnalytics.logEvent("profile_shared_$channelName", null)
-                        }
-
-
-                    })
-
-                    return@setOnMenuItemClickListener true
-
-
-                }
-                else -> return@setOnMenuItemClickListener false
-
-
-            }
-
-
-        }
-
 
         galleryRollRecycler.adapter = galleryRollAdapter
         galleryRollRecycler.layoutManager = GridLayoutManager(this.context, 3)
@@ -237,38 +155,114 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         }
 
+        toolbar.setOnMenuItemClickListener {
 
-        val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
-        val followersRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/followers")
+            when (it.itemId) {
+
+                R.id.profile_invite_a_friend -> {
+
+                    val ss =
+                        ShareSheetStyle(this.context!!, "Check out my profile", "Follow me around the world")
+                            .setCopyUrlStyle(
+                                resources.getDrawable(android.R.drawable.ic_menu_send),
+                                "Copy",
+                                "Added to clipboard"
+                            )
+                            .setMoreOptionStyle(resources.getDrawable(android.R.drawable.ic_menu_search), "Show more")
+                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
+                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK_MESSENGER)
+                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.WHATS_APP)
+                            .addPreferredSharingOption(SharingHelper.SHARE_WITH.TWITTER)
+                            .setAsFullWidthStyle(true)
+                            .setSharingTitle("Share With")
+
+                    buo.showShareSheet(activity, lp, ss, object : Branch.BranchLinkShareListener {
+                        override fun onShareLinkDialogLaunched() {}
+                        override fun onShareLinkDialogDismissed() {}
+                        override fun onLinkShareResponse(
+                            sharedLink: String,
+                            sharedChannel: String,
+                            error: BranchError
+                        ) {
+                        }
+
+                        override fun onChannelSelected(channelName: String) {
+                            firebaseAnalytics.logEvent("profile_shared_$channelName", null)
+                        }
+                    })
+                    return@setOnMenuItemClickListener true
+                }
+
+                R.id.profile_create_stripe_account -> {
+
+//
+//                    Stripey = "sk_test_CpX62UbxpfkokWyctce5ieXf";
+//
+//                    val params = HashMap<String, Object>();
+//                    params.put("country", "US");
+//                    params.put("type", "custom");
+//
+//                    Account acct = Account . create (params);
 
 
-        photosRef.addValueEventListener(object : ValueEventListener {
+                    return@setOnMenuItemClickListener true
+                }
 
-            override fun onCancelled(p0: DatabaseError) {
+                R.id.profile_edit_interests -> {
+                    activity.subFm.beginTransaction().add(
+                        R.id.feed_subcontents_frame_container,
+                        activity.editInterestsFragment,
+                        "editInterestsFragment"
+                    ).addToBackStack("editInterestsFragment")
+                        .commit()
+                    activity.subActive = activity.editInterestsFragment
+                    activity.switchVisibility(1)
+                    return@setOnMenuItemClickListener true
+                }
+
+                R.id.profile_logout -> {
+
+                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(getString(R.string.default_web_client_id))
+                        .requestEmail()
+                        .build();
+
+                    val uid = FirebaseAuth.getInstance().uid
+                    FirebaseMessaging.getInstance().unsubscribeFromTopic(uid).addOnSuccessListener {
+                        FirebaseAuth.getInstance().signOut()
+                        GoogleSignIn.getClient(activity, gso).signOut().addOnSuccessListener {
+                            val intent = Intent(this.context, RegisterLoginActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
+                        }
+                    }
+                    return@setOnMenuItemClickListener true
+                }
+
+
+                else -> return@setOnMenuItemClickListener false
             }
+        }
 
-            override fun onDataChange(p0: DataSnapshot) {
+        FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {}
+                override fun onDataChange(p0: DataSnapshot) {
 
-                photos.text = numberCalculation(p0.childrenCount)
-            }
+                    photos.text = numberCalculation(p0.childrenCount)
+                }
+            })
 
-        })
-
-        followersRef.addValueEventListener(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                followers.text = numberCalculation(p0.childrenCount)
-            }
-        })
-
-
+        FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/followers")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {}
+                override fun onDataChange(p0: DataSnapshot) {
+                    followers.text = numberCalculation(p0.childrenCount)
+                }
+            })
 
         userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
+            override fun onCancelled(p0: DatabaseError) {}
 
             override fun onDataChange(p0: DataSnapshot) {
                 if (p0.hasChild("stax")) {
@@ -278,17 +272,14 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
                     instagramButton.visibility = View.GONE
                 }
             }
-
         })
 
         instagramButton.setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(instaLink)))
-            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
             firebaseAnalytics.logEvent("instagram_clicked_self", null)
         }
 
         editButton.setOnClickListener {
-
             activity.subFm.beginTransaction()
                 .add(R.id.feed_subcontents_frame_container, activity.editProfileFragment, "editProfileFragment")
                 .addToBackStack("editProfileFragment")
@@ -296,7 +287,6 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             activity.subActive = activity.editProfileFragment
 
             activity.switchVisibility(1)
-
         }
 
 
@@ -305,9 +295,6 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             galleryRollRecycler.visibility = View.GONE
             galleryBucketsRecycler.visibility = View.VISIBLE
             changeGalleryFeed("purchasedItineraryObject")
-//            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
-//                .commit()
-//            activity.subActive = activity.collectionGalleryFragment
         }
 
         rollBtn.setOnClickListener {
@@ -315,9 +302,6 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             galleryRollRecycler.visibility = View.VISIBLE
             galleryBucketsRecycler.visibility = View.GONE
             changeGalleryFeed("roll")
-//            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment").addToBackStack("imageFullSizeFragment")
-//                .commit()
-//            activity.subActive = activity.imageFullSizeFragment
         }
 
         itineraryBtn.setOnClickListener {
@@ -325,9 +309,6 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             galleryRollRecycler.visibility = View.GONE
             galleryBucketsRecycler.visibility = View.GONE
             changeGalleryFeed("itinerary")
-//            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
-//                .commit()
-//            activity.subActive = activity.collectionGalleryFragment
         }
 
 
@@ -345,24 +326,11 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
             activity.switchVisibility(1)
         }
 
-/*
-        galleryBucketAdapter.setOnItemClickListener { item, _ ->
-            val bucket = item as SingleCollectionBox
-            sharedViewModelCollection.imageCollection.postValue(bucket.purchasedItineraryObject)
-            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
-                .commit()
-            activity.subActive = activity.collectionGalleryFragment
-            activity.isCollectionGalleryActive = true
-            activity.switchVisibility(1)
-        }
-*/
+
         userMapButton.setOnClickListener {
             userRef.child("images").addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-                }
-
+                override fun onCancelled(p0: DatabaseError) {}
                 override fun onDataChange(p0: DataSnapshot) {
-
                     if (p0.hasChildren()) {
                         sharedViewModelCollection.imageCollection.postValue(p0)
                         activity.subFm.beginTransaction()
@@ -371,7 +339,6 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
                             .commit()
                         activity.subActive = activity.collectionMapView
                         activity.switchVisibility(1)
-                        val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
                         firebaseAnalytics.logEvent("map_checked_self", null)
 
                     } else {
@@ -402,9 +369,7 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
                 itineraryBtn.setTextColor(resources.getColor(R.color.gray700))
             }
         }
-
     }
-
 
     fun listenToImagesFromRoll() {
 
@@ -413,38 +378,28 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         galleryRollAdapter.clear()
 
-        val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
-
-                for (imagePath in p0.children) {
-
-
-                    val imageObjectPath =
+        FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
+                    for (imagePath in p0.children) {
                         FirebaseDatabase.getInstance().getReference("/images/${imagePath.key}/body")
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onCancelled(p0: DatabaseError) {
+                                }
 
-                    imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-                        }
+                                override fun onDataChange(p0: DataSnapshot) {
+                                    val imageObject = p0.getValue(Images::class.java)
 
-                        override fun onDataChange(p0: DataSnapshot) {
-                            val imageObject = p0.getValue(Images::class.java)
-
-                            imageList.add(FeedImage(imageObject!!, 1))
-                            galleryRollAdapter.clear()
-                            galleryRollAdapter.addAll(imageList.reversed())
-                            Log.d("imagepath", imagePath.key)
-                        }
-                    })
-
+                                    imageList.add(FeedImage(imageObject!!, 1))
+                                    galleryRollAdapter.clear()
+                                    galleryRollAdapter.addAll(imageList.reversed())
+                                }
+                            })
+                    }
                 }
 
-            }
-
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-        })
+                override fun onCancelled(p0: DatabaseError) {}
+            })
 
     }
 
@@ -453,81 +408,69 @@ class ProfileLoggedInUserFragment : Fragment(), DereMethods {
 
         galleryBucketAdapter.clear()
 
-        val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/buckets")
-
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
-                for (bucket in p0.children) {
-                    galleryBucketAdapter.add(
-                        SingleCollectionBox(
-                            bucket,
-                            userProfile.uid,
-                            activity as MainActivity,
-                            "bucket"
+        FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/buckets")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
+                    for (bucket in p0.children) {
+                        galleryBucketAdapter.add(
+                            SingleCollectionBox(
+                                bucket,
+                                activity as MainActivity,
+                                "bucket"
+                            )
                         )
-                    )
+                    }
                 }
-            }
 
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-        })
-
+                override fun onCancelled(p0: DatabaseError) {
+                }
+            })
     }
 
     fun listenToItineraries() {
 
         galleryItineraryAdapter.clear()
 
-        val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/itineraries")
-        val itineraryRef = FirebaseDatabase.getInstance().getReference("/itineraries")
+        FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/itineraries")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
+                    for (path in p0.children) {
+                        if (path != null) {
+                            FirebaseDatabase.getInstance().getReference("/itineraries").child(path.key!!)
+                                .addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onCancelled(p0: DatabaseError) {
+                                    }
 
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
-                for (path in p0.children) {
-                    if (path != null) {
-                        itineraryRef.child(path.key!!).addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onCancelled(p0: DatabaseError) {
-                            }
+                                    override fun onDataChange(p0: DataSnapshot) {
 
-                            override fun onDataChange(p0: DataSnapshot) {
+                                        galleryItineraryAdapter.add(
+                                            SingleCollectionBox(
+                                                p0,
+                                                activity as MainActivity,
+                                                "itinerary"
+                                            )
+                                        )
 
-                                galleryItineraryAdapter.add(
-                                    SingleCollectionBox(
-                                        p0,
-                                        userProfile.uid,
-                                        activity as MainActivity,
-                                        "itinerary"
-                                    )
-                                )
+                                    }
 
-                            }
-
-                        })
+                                })
+                        }
                     }
                 }
-            }
 
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-        })
-
+                override fun onCancelled(p0: DatabaseError) {
+                }
+            })
     }
-
 
     companion object {
         fun newInstance(): ProfileLoggedInUserFragment = ProfileLoggedInUserFragment()
     }
-
-
 }
 
 
 class SingleCollectionBox(
-    val collection: DataSnapshot,
-    val userUid: String,
+    private val collection: DataSnapshot,
     val activity: MainActivity,
     val type: String
 ) :
@@ -536,22 +479,15 @@ class SingleCollectionBox(
 
     val imagesRecyclerAdapter = GroupAdapter<ViewHolder>()
     private val sharedViewModelCollection = ViewModelProviders.of(activity).get(SharedViewModelCollection::class.java)
-    private val sharedViewModelItinerary = ViewModelProviders.of(activity).get(SharedViewModelItinerary::class.java)
 
-    override fun getLayout(): Int {
-        return R.layout.collection_box_recycler
-    }
+    override fun getLayout(): Int = R.layout.collection_box_recycler
+
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
-
         val imagesRecycler = viewHolder.itemView.collection_box_recycler_recycler
-
-        val imagesRecyclerLayoutManager =
-            GridLayoutManager(viewHolder.root.context, 2, RecyclerView.VERTICAL, false)
-
-        imagesRecycler.layoutManager = imagesRecyclerLayoutManager
         imagesRecycler.adapter = imagesRecyclerAdapter
+        imagesRecycler.layoutManager = GridLayoutManager(viewHolder.root.context, 2, RecyclerView.VERTICAL, false)
 
         val bucketName = viewHolder.itemView.collection_box_recycler_name
         bucketName.text =
@@ -562,34 +498,24 @@ class SingleCollectionBox(
 
         var count = 0
 
-
-
         for (imageSnapshot in collection.child("body/images").children) {
 
             if (count < 4) {
 
-                val imagePath = imageSnapshot.key
-                val imageObjectPath =
-                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+                FirebaseDatabase.getInstance().getReference("/images/${imageSnapshot.key}/body")
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {}
 
-                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onCancelled(p0: DatabaseError) {
-
-                    }
-
-                    override fun onDataChange(p0: DataSnapshot) {
-                        val imageObject = p0.getValue(Images::class.java)
-
-                        imagesRecyclerAdapter.add(SingleImageToBucketRoll(imageObject!!))
-
-                    }
-                })
-
+                        override fun onDataChange(p0: DataSnapshot) {
+                            val imageObject = p0.getValue(Images::class.java)
+                            if (imageObject != null) {
+                                imagesRecyclerAdapter.add(SingleImageToBucketRoll(imageObject))
+                            }
+                        }
+                    })
                 count += 1
             }
-
         }
-
 
         imagesRecyclerAdapter.setOnItemClickListener { _, _ ->
             goToCollectionGallery()
@@ -614,30 +540,6 @@ class SingleCollectionBox(
 
     }
 
-//    private fun goToItinerary() {
-//        val itineraryRef = FirebaseDatabase.getInstance().getReference("/itineraries/${purchasedItineraryObject.key}/body")
-//
-//        itineraryRef.addListenerForSingleValueEvent(object : ValueEventListener {
-//            override fun onCancelled(p0: DatabaseError) {
-//            }
-//
-//            override fun onDataChange(p0: DataSnapshot) {
-//
-////                sharedViewModelItinerary.itinerary.postValue(p0.getValue(ItineraryBody::class.java))
-//
-//                activity.subFm.beginTransaction().hide(activity.subActive)
-//                    .add(R.id.feed_subcontents_frame_container, activity.itineraryFragment, "itineraryFragment")
-//                    .commit()
-//                activity.subActive = activity.itineraryFragment
-//                activity.isItineraryActive = true
-//                activity.switchVisibility(1)
-//            }
-//
-//        })
-//
-//
-//    }
-
     private fun goToCollectionGallery() {
         sharedViewModelCollection.imageCollection.postValue(collection)
         activity.subFm.beginTransaction()
@@ -648,38 +550,14 @@ class SingleCollectionBox(
         activity.isCollectionGalleryActive = true
         activity.switchVisibility(1)
     }
-
-
-//    private fun goToItineraryGallery() {
-//        sharedViewModelCollection.imageCollection.postValue(purchasedItineraryObject)
-//        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
-//            .commit()
-//        activity.subActive = activity.collectionGalleryFragment
-//        activity.isCollectionGalleryActive = true
-//        activity.switchVisibility(1)
-//    }
-//
-//    private fun goToBucketGallery() {
-//        sharedViewModelCollection.imageCollection.postValue(purchasedItineraryObject)
-//        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.collectionGalleryFragment, "collectionGalleryFragment").addToBackStack("collectionGalleryFragment")
-//            .commit()
-//        activity.subActive = activity.collectionGalleryFragment
-//        activity.isCollectionGalleryActive = true
-//        activity.switchVisibility(1)
-//    }
-
-
 }
 
 
 class SingleImageToBucketRoll(val image: Images) : Item<ViewHolder>() {
-    override fun getLayout(): Int {
-        return R.layout.collection_box_single_photo
-    }
+    override fun getLayout(): Int = R.layout.collection_box_single_photo
+
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
         Glide.with(viewHolder.root.context).load(image.imageSmall).into(viewHolder.itemView.bucket_box_single_photo)
     }
-
-
 }

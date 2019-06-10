@@ -39,7 +39,7 @@ import java.nio.channels.Selector
 open class InterestsFeedFragment : Fragment(), DereMethods {
 
     lateinit var sharedViewModelImage: SharedViewModelImage
-    lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
+    private lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
 
     lateinit var sharedViewModelInterests: SharedViewModelInterests
     var staggeredImageList = mutableListOf<StaggeredFeedImage>()
@@ -67,9 +67,12 @@ open class InterestsFeedFragment : Fragment(), DereMethods {
 
     var airLocation: AirLocation? = null
 
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_feeds_layout, container, false)
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         activity?.let {
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
@@ -78,15 +81,7 @@ open class InterestsFeedFragment : Fragment(), DereMethods {
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
         }
 
-    }
-
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_feeds_layout, container, false)
-
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
 
         feedRecycler = feed_gallery
         setUpGalleryAdapter()
@@ -108,7 +103,6 @@ open class InterestsFeedFragment : Fragment(), DereMethods {
                 sortByDistance.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
                 sortByDate.setTextColor(ContextCompat.getColor(context!!, R.color.gray500))
 
-                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
                 firebaseAnalytics.logEvent("sort_by_distance", null)
 
                 isDistanceActive = true
@@ -134,7 +128,6 @@ open class InterestsFeedFragment : Fragment(), DereMethods {
             sortByDistance.setTextColor(ContextCompat.getColor(context!!, R.color.gray500))
             sortByDate.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
 
-            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
             firebaseAnalytics.logEvent("sort_by_date", null)
 
             isDistanceActive = false
@@ -153,7 +146,6 @@ open class InterestsFeedFragment : Fragment(), DereMethods {
             linearButton.setImageResource(R.drawable.linear_layout_active)
             staggeredButton.setImageResource(R.drawable.staggered_layout)
 
-            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
             firebaseAnalytics.logEvent("feed_linear", null)
 
             val position = IntArray(2)
@@ -172,7 +164,6 @@ open class InterestsFeedFragment : Fragment(), DereMethods {
             staggeredButton.setImageResource(R.drawable.staggered_layout_active)
             linearButton.setImageResource(R.drawable.linear_layout)
 
-            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
             firebaseAnalytics.logEvent("feed_staggered", null)
 
             val position = linearGalleryLayoutManager.findFirstCompletelyVisibleItemPosition()
@@ -203,10 +194,7 @@ open class InterestsFeedFragment : Fragment(), DereMethods {
         linearImageList.clear()
         staggeredImageList.clear()
 
-
-        val ref = FirebaseDatabase.getInstance().getReference("/images")
-
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+        FirebaseDatabase.getInstance().getReference("/images").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
 
                 for (i in p0.children) {
@@ -277,10 +265,7 @@ open class InterestsFeedFragment : Fragment(), DereMethods {
 
             override fun onSuccess(location: Location) {
 
-
-                val ref = FirebaseDatabase.getInstance().getReference("/images")
-
-                ref.addListenerForSingleValueEvent(object : ValueEventListener {
+                FirebaseDatabase.getInstance().getReference("/images").addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(p0: DataSnapshot) {
 
                         for (i in p0.children) {
@@ -288,17 +273,11 @@ open class InterestsFeedFragment : Fragment(), DereMethods {
                             val singleImageFromDB = i.child("body").getValue(Images::class.java)
 
                             if (singleImageFromDB != null) {
-
-                                Log.d("AccountPhoto", singleImageFromDB.photographer)
-
-
                                 val completedInterestsList = sharedViewModelInterests.interestList
 
                                 singlePhotoLoop@ for (tag in singleImageFromDB.tags) {
 
                                     for (interest in completedInterestsList) {
-
-                                        Log.d("AccountFromList", interest)
 
                                         if (interest == tag) {
                                             if (!singleImageFromDB.private) {
@@ -345,31 +324,20 @@ open class InterestsFeedFragment : Fragment(), DereMethods {
                                                     distanceLinearGalleryAdapter.add(objectFromList.image)
                                                 }
 
-
-
                                                 break@singlePhotoLoop
                                             }
                                         }
-
                                     }
-
                                 }
-
-
                             }
-
                         }
-
                     }
 
                     override fun onCancelled(p0: DatabaseError) {
                     }
                 })
-
             }
-
         })
-
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -389,5 +357,4 @@ open class InterestsFeedFragment : Fragment(), DereMethods {
     companion object {
         fun newInstance(): InterestsFeedFragment = InterestsFeedFragment()
     }
-
 }

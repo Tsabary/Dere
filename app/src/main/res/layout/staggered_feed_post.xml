@@ -14,18 +14,17 @@
         android:paddingTop="8dp">
 
     <ImageButton
-            android:layout_width="16dp"
-            android:layout_height="16dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             app:srcCompat="@drawable/heart_white"
             android:id="@+id/staggered_feed_like_button"
             android:elevation="4dp"
             android:background="@android:color/transparent"
-            android:layout_marginBottom="16dp"
             app:layout_constraintBottom_toBottomOf="@+id/staggered_feed_image_card"
-            android:layout_marginStart="16dp"
             app:layout_constraintStart_toStartOf="@+id/staggered_feed_image_card"
             android:scaleType="fitCenter"
-            android:contentDescription="@string/like_icon"/>
+            android:contentDescription="@string/like_icon"
+            android:padding="16dp"/>
 
     <androidx.cardview.widget.CardView
             android:layout_width="0dp"

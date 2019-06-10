@@ -32,41 +32,42 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.stripe.android.Stripe
 import kotlinx.android.synthetic.main.fragment_register_login_screens.*
 
 class RegisterFragment : Fragment() {
-    lateinit var userName: EditText
-    lateinit var userEmail: EditText
+    private lateinit var userName: EditText
+    private lateinit var userEmail: EditText
     lateinit var userPassword: EditText
     lateinit var userConfirmPassword: EditText
-    lateinit var button: TextView
-    lateinit var loadingAnimation: ConstraintLayout
+    private lateinit var button: TextView
+    private lateinit var loadingAnimation: ConstraintLayout
 
     lateinit var textUserName: String
     lateinit var textUserEmail: String
 
     private lateinit var firebaseAuth: FirebaseAuth
 
-    val RC_SIGN_IN: Int = 1
+    private val RC_SIGN_IN: Int = 1
     lateinit var mGoogleSignInClient: GoogleSignInClient
     lateinit var mGoogleSignInOptions: GoogleSignInOptions
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_register_login_screens, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_register_login_screens, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         firebaseAuth = FirebaseAuth.getInstance()
         val googleLogin = register_fragment_google_login
+        val stripe = Stripe(this.context!!)
+
 
         register_fragment_forgot_password.visibility = View.GONE
-        register_fragment_button.text = "Sign up"
+        register_fragment_button.text = getString(R.string.sign_up)
 
         userName = register_fragment_name
         userEmail = register_fragment_email
@@ -75,7 +76,6 @@ class RegisterFragment : Fragment() {
         button = register_fragment_button
         loadingAnimation = register_fragment_spinner
 
-
         googleLogin.setOnClickListener {
             configureGoogleSignIn()
         }
@@ -83,7 +83,6 @@ class RegisterFragment : Fragment() {
         button.setOnClickListener {
             performRegister()
         }
-
 
         userConfirmPassword.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -104,39 +103,32 @@ class RegisterFragment : Fragment() {
                     register_fragment_password_check.visibility = View.GONE
                 }
             }
-
         })
-
     }
-
 
     private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
         firebaseAuth.signInWithCredential(credential).addOnCompleteListener {
             if (it.isSuccessful) {
-
                 val user = firebaseAuth.currentUser
                 if (user != null) {
+                    FirebaseDatabase.getInstance().getReference("/users/${user.uid}")
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onCancelled(p0: DatabaseError) {}
 
-                    val userRef = FirebaseDatabase.getInstance().getReference("/users/${user.uid}")
-
-                    userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-                        }
-
-                        override fun onDataChange(p0: DataSnapshot) {
-                            if (p0.hasChild("interests") || p0.hasChild("images") || p0.hasChild("buckets") || p0.hasChild(
-                                    "likes"
-                                ) || p0.hasChild("questions")
-                            ){
-                                val intent = Intent(activity as RegisterLoginActivity, MainActivity::class.java)
-                                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                startActivity(intent)
-                            }else {
-                                addUserToFirebaseDatabase(user.displayName!!, user.email!!, 1)
+                            override fun onDataChange(p0: DataSnapshot) {
+                                if (p0.hasChild("interests") || p0.hasChild("images") || p0.hasChild("buckets") || p0.hasChild(
+                                        "likes"
+                                    ) || p0.hasChild("questions")
+                                ) {
+                                    val intent = Intent(activity as RegisterLoginActivity, MainActivity::class.java)
+                                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    startActivity(intent)
+                                } else {
+                                    addUserToFirebaseDatabase(user.displayName!!, user.email!!, 1)
+                                }
                             }
-                        }
-                    })
+                        })
                 }
             } else {
                 Toast.makeText(this.context, "Google sign in failed:(", Toast.LENGTH_LONG).show()
@@ -151,8 +143,7 @@ class RegisterFragment : Fragment() {
             .build()
         mGoogleSignInClient = GoogleSignIn.getClient(activity as RegisterLoginActivity, mGoogleSignInOptions)
 
-        val signInIntent: Intent = mGoogleSignInClient.signInIntent
-        startActivityForResult(signInIntent, RC_SIGN_IN)
+        startActivityForResult(mGoogleSignInClient.signInIntent, RC_SIGN_IN)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -185,26 +176,17 @@ class RegisterFragment : Fragment() {
             if (textUserEmail.contains("@") && textUserEmail.contains(".")) {
                 if (textUserConfirmPassword == textUserPassword) {
                     if (textUserPassword.length > 7) {
-
                         FirebaseAuth.getInstance().createUserWithEmailAndPassword(textUserEmail, textUserPassword)
                             .addOnCompleteListener {
                                 if (it.isSuccessful) {
-                                    Log.d(
-                                        "RegisterActivity",
-                                        "Succesflly created a user using uid: ${it.result?.user?.uid}"
-                                    )
-
                                     addUserToFirebaseDatabase(textUserName, textUserEmail, 0)
-
                                     return@addOnCompleteListener
                                 } else {
                                     registerFail()
-                                    Log.d("RegisterActivity", "Failed creating a user using uid")
                                 }
 
                             }.addOnFailureListener {
                                 registerFail()
-                                Log.d("RegisterActivity", "Failed to create user : ${it.message}")
                             }
                     } else {
                         registerFail()
@@ -235,11 +217,8 @@ class RegisterFragment : Fragment() {
         loadingAnimation.visibility = View.GONE
     }
 
-
     private fun addUserToFirebaseDatabase(userNameForDatabase: String, userEmailForDatabase: String, case: Int) {
         val uid = FirebaseAuth.getInstance().uid
-        val ref = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
-
 
         val newUser =
             Users(
@@ -252,17 +231,13 @@ class RegisterFragment : Fragment() {
                 System.currentTimeMillis()
             )
 
-        ref.setValue(newUser)
+        FirebaseDatabase.getInstance().getReference("/users/$uid/profile").setValue(newUser)
             .addOnSuccessListener {
 
-                val staxRef = FirebaseDatabase.getInstance().getReference("/users/$uid/stax")
-                staxRef.setValue("").addOnSuccessListener {
-                    Log.d("RegisterActivity", "Saved user to Firebase Database")
-
+                FirebaseDatabase.getInstance().getReference("/users/$uid/stax").setValue("").addOnSuccessListener {
                     if (case == 0) {
                         val user = FirebaseAuth.getInstance().currentUser
-
-                        user!!.sendEmailVerification().addOnSuccessListener {
+                        user?.sendEmailVerification()?.addOnSuccessListener {
                             Toast.makeText(
                                 this.context,
                                 "Please check your email and click the link in our message",
@@ -274,15 +249,9 @@ class RegisterFragment : Fragment() {
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
                         startActivity(intent)
                     }
-
-
                 }
-            }.addOnFailureListener {
-                Log.d("RegisterActivity", "Failed to save user to database")
             }
-
     }
-
 
     override fun onStart() {
         super.onStart()

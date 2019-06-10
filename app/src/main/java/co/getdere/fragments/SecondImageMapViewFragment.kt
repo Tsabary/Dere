@@ -46,16 +46,6 @@ class SecondImageMapViewFragment : Fragment(), PermissionsListener, DereMethods 
     private var mapView: MapView? = null
     private lateinit var permissionsManager: PermissionsManager
 
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelSecondImage::class.java)
-        }
-    }
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mapView?.onCreate(savedInstanceState)
@@ -74,6 +64,10 @@ class SecondImageMapViewFragment : Fragment(), PermissionsListener, DereMethods 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        activity?.let {
+            sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelSecondImage::class.java)
+        }
+
         mapView = image_map_view
 
         val currentLocationFocus = image_map_focus
@@ -91,8 +85,6 @@ class SecondImageMapViewFragment : Fragment(), PermissionsListener, DereMethods 
                 val locationComponent = mapboxMap.locationComponent
 
                 if (PermissionsManager.areLocationPermissionsGranted(this.context)) {
-
-
                     // Activate with options
                     if (ContextCompat.checkSelfPermission(
                             this.context!!,
@@ -140,9 +132,6 @@ class SecondImageMapViewFragment : Fragment(), PermissionsListener, DereMethods 
                             .withZIndex(10)
                             .withDraggable(false)
 
-//                            .withIconImage(image.imageBig)
-
-
                         symbolManager.create(symbolOptions)
 
                         val position = CameraPosition.Builder()
@@ -151,15 +140,10 @@ class SecondImageMapViewFragment : Fragment(), PermissionsListener, DereMethods 
                             .build()
 
                         mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position))
-
-
                     }
                 })
-
-
             }
         }
-
     }
 
 
@@ -206,7 +190,6 @@ class SecondImageMapViewFragment : Fragment(), PermissionsListener, DereMethods 
         mapView?.onSaveInstanceState(outState)
     }
 
-
     override fun onLowMemory() {
         super.onLowMemory()
         mapView?.onLowMemory()
@@ -217,9 +200,7 @@ class SecondImageMapViewFragment : Fragment(), PermissionsListener, DereMethods 
         mapView?.onDestroy()
     }
 
-
     companion object {
         fun newInstance(): SecondImageMapViewFragment = SecondImageMapViewFragment()
     }
-
 }

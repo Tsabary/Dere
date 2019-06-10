@@ -99,7 +99,7 @@
                         app:layout_constraintHorizontal_bias="0.0"
                         android:textSize="15sp"/>
                 <TextView
-                        android:text="Name"
+                        android:text="@string/name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView"
@@ -111,7 +111,7 @@
                         android:textColor="@color/gray900"
                         android:textSize="14sp"/>
                 <TextView
-                        android:text="Instagram handle"
+                        android:text="@string/instagram_handle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView2"
@@ -122,7 +122,7 @@
                         android:layout_marginStart="32dp"
                         android:textColor="@color/gray900"/>
                 <TextView
-                        android:text="Tagline"
+                        android:text="@string/tagline"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView5"
@@ -134,7 +134,7 @@
                         android:textColor="@color/gray900"
                         android:textSize="14sp"/>
                 <TextView
-                        android:text="https://www.instagram.com/"
+                        android:text="@string/https_www_instagram_com"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView6"
@@ -146,7 +146,7 @@
                         app:layout_constraintStart_toStartOf="parent"
                         android:textSize="15sp"/>
                 <TextView
-                        android:text="Save"
+                        android:text="@string/save"
                         android:layout_width="0dp"
                         android:layout_height="60dp"
                         android:id="@+id/edit_profile_save"

@@ -18,7 +18,7 @@
             android:id="@+id/constraintLayout">
 
         <TextView
-                android:text="Welcome to Dere"
+                android:text="@string/welcome_to_dere"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/on_boarding_title"
@@ -35,7 +35,7 @@
                 android:textColor="@color/white"
                 android:fontFamily="@font/roboto_black"/>
         <TextView
-                android:text="Press and hold your finger on a photo that you like, and add it to your first bucket"
+                android:text="@string/press_and_hold_your_finger_on_a_photo_that_you_like_and_add_it_to_your_first_bucket"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/on_boarding_subtitle"
@@ -74,7 +74,7 @@
             android:visibility="visible">
 
         <TextView
-                android:text="Finish"
+                android:text="@string/finish"
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:id="@+id/on_boarding_button"

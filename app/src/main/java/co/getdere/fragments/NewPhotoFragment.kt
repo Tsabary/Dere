@@ -17,28 +17,25 @@ import kotlinx.android.synthetic.main.fragment_new_photo.*
 
 class NewPhotoFragment : Fragment() {
 
-    lateinit var pagerAdapter: CameraPagerAdapter
-
+    private lateinit var pagerAdapter: CameraPagerAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_new_photo, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_new_photo, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val tabLayout = new_photo_pager_tab_layout
+        val activity = activity as CameraActivity
 
+        val tabLayout = new_photo_pager_tab_layout
 
         val viewPager = new_photo_pager_pager
         pagerAdapter = CameraPagerAdapter(childFragmentManager)
         viewPager.adapter = pagerAdapter
 
-        val activity = activity as CameraActivity
 
         viewPager?.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
 
@@ -47,15 +44,11 @@ class NewPhotoFragment : Fragment() {
 
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
                 viewPagerController(activity, position, tabLayout)
-
             }
 
             override fun onPageSelected(position: Int) {
-
                 viewPagerController(activity, position, tabLayout)
-
             }
-
         })
 
         tabLayout.setupWithViewPager(viewPager)
@@ -63,15 +56,12 @@ class NewPhotoFragment : Fragment() {
 
     private fun viewPagerController(activity: CameraActivity, position : Int, tabLayout: TabLayout){
         when (position) {
-
             0 -> {
             }
 
             1 -> {
                 tabLayout.setBackgroundColor(Color.parseColor("#FF616161"))
             }
-
         }
     }
-
 }

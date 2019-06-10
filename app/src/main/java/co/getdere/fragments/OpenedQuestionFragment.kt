@@ -1,9 +1,7 @@
 package co.getdere.fragments
 
 import android.app.Activity
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,39 +42,23 @@ import java.util.*
 
 class OpenedQuestionFragment : Fragment(), DereMethods {
 
-    lateinit var sharedViewModelQuestion: SharedViewModelQuestion
-    lateinit var questionObject: Question
-
-    lateinit var currentUserObject: Users
-
+    private lateinit var sharedViewModelQuestion: SharedViewModelQuestion
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
 
+    lateinit var questionObject: Question
+    lateinit var currentUserObject: Users
+
+
     lateinit var saveButton: TextView
-
     lateinit var openedQuestionAuthorReputation: TextView
-    lateinit var deleteBox: ConstraintLayout
-    lateinit var editDeleteBox : ConstraintLayout
+    private lateinit var deleteBox: ConstraintLayout
+    private lateinit var editDeleteBox: ConstraintLayout
 
 
-    lateinit var buo: BranchUniversalObject
-    lateinit var lp: LinkProperties
-
-    val uid = FirebaseAuth.getInstance().uid
+    private lateinit var buo: BranchUniversalObject
+    private lateinit var lp: LinkProperties
 
     val answersAdapter = GroupAdapter<ViewHolder>()
-
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            sharedViewModelQuestion = ViewModelProviders.of(it).get(SharedViewModelQuestion::class.java)
-//            questionObject = sharedViewModelQuestion.questionObject.value!!
-            currentUserObject = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-            sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
-        }
-    }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -87,7 +69,15 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+
         val activity = activity as MainActivity
+
+        activity.let {
+            sharedViewModelQuestion = ViewModelProviders.of(it).get(SharedViewModelQuestion::class.java)
+            currentUserObject = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+            sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
+        }
 
         val shareButton = opened_question_share
         saveButton = opened_question_save
@@ -116,16 +106,13 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 questionObject = question
                 checkIfQuestionSaved(0, activity)
 
-                val date = PrettyTime().format(Date(questionObject.timestamp))
-
-
                 openedQuestionTitle.text = questionObject.title
                 openedQuestionContent.text = questionObject.details
-                openedQuestionTimeStamp.text = date
+                openedQuestionTimeStamp.text = PrettyTime().format(Date(questionObject.timestamp))
                 openedQuestionTags.text = questionObject.tags.joinToString()
                 listenToAnswers(questionObject.id)
 
-                if (question.author == currentUserObject.uid || currentUserObject.uid == "hQ3KL1zqpsZIhY38IpSRW2G0wXJ2") {
+                if (question.author == currentUserObject.uid || currentUserObject.uid == getString(R.string.get_dere_uid)) {
                     editDeleteBox.visibility = View.VISIBLE
 
                 } else {
@@ -137,30 +124,33 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 }
 
                 editButton.setOnClickListener {
-                    activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.editQuestionFragment, "editQuestionFragment").addToBackStack("editQuestionFragment")
+                    activity.subFm.beginTransaction().add(
+                        R.id.feed_subcontents_frame_container,
+                        activity.editQuestionFragment,
+                        "editQuestionFragment"
+                    ).addToBackStack("editQuestionFragment")
                         .commit()
                     activity.subActive = activity.editQuestionFragment
                 }
 
                 removeButton.setOnClickListener {
-                    val questionRef = FirebaseDatabase.getInstance().getReference("/questions/${question.id}")
-                    questionRef.removeValue().addOnSuccessListener {
+                    FirebaseDatabase.getInstance().getReference("/questions/${question.id}").removeValue()
+                        .addOnSuccessListener {
 
-                        val refUserQuestion = FirebaseDatabase.getInstance().getReference("/users/$uid/questions/${question.id}")
-                        refUserQuestion.removeValue().addOnSuccessListener {
-                            for (tag in question.tags) {
-                                val refTag =
-                                    FirebaseDatabase.getInstance().getReference("/tags/$tag/${question.id}")
-                                refTag.removeValue()
-                            }
+                            FirebaseDatabase.getInstance()
+                                .getReference("/users/${currentUserObject.uid}/questions/${question.id}").removeValue()
+                                .addOnSuccessListener {
+                                    for (tag in question.tags) {
+                                        FirebaseDatabase.getInstance().getReference("/tags/$tag/${question.id}")
+                                            .removeValue()
+                                    }
 
-                            activity.switchVisibility(0)
-                            activity.boardFragment.listenToQuestions()
+                                    activity.switchVisibility(0)
+                                    activity.boardFragment.listenToQuestions()
 
-                            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-                            firebaseAnalytics.logEvent("question_answer_removed", null)
+                                    firebaseAnalytics.logEvent("question_answer_removed", null)
+                                }
                         }
-                    }
                 }
 
                 cancelButton.setOnClickListener {
@@ -233,9 +223,7 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
         )
 
 
-
         openedQuestionUpVote.setOnClickListener {
-
             if (currentUserObject.uid != questionObject.author) {
                 executeVote(
                     "up",
@@ -296,28 +284,30 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                 override fun onShareLinkDialogDismissed() {}
                 override fun onLinkShareResponse(sharedLink: String, sharedChannel: String, error: BranchError) {}
                 override fun onChannelSelected(channelName: String) {
-                    val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
                     firebaseAnalytics.logEvent("question_shared_$channelName", null)
                 }
-
             })
         }
 
         answerButton.setOnClickListener {
-
-            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.answerFragment, "answerFragment").addToBackStack("answerFragment")
+            activity.subFm.beginTransaction()
+                .add(R.id.feed_subcontents_frame_container, activity.answerFragment, "answerFragment")
+                .addToBackStack("answerFragment")
                 .commit()
             activity.subActive = activity.answerFragment
         }
 
-        val answersRecyclerLayoutManager = LinearLayoutManager(this.context)
         answersRecycler.adapter = answersAdapter
-        answersRecycler.layoutManager = answersRecyclerLayoutManager
+        answersRecycler.layoutManager = LinearLayoutManager(this.context)
     }
 
-    private fun goToProfile(activity : MainActivity, user : Users){
-        if (user.uid != uid){
-            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.profileRandomUserFragment, "profileRandomUserFragment").addToBackStack("profileRandomUserFragment")
+    private fun goToProfile(activity: MainActivity, user: Users) {
+        if (user.uid != currentUserObject.uid) {
+            activity.subFm.beginTransaction().add(
+                R.id.feed_subcontents_frame_container,
+                activity.profileRandomUserFragment,
+                "profileRandomUserFragment"
+            ).addToBackStack("profileRandomUserFragment")
                 .commit()
             activity.subActive = activity.profileRandomUserFragment
         } else {
@@ -326,56 +316,44 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
     }
 
     fun listenToAnswers(qId: String) {
-
         answersAdapter.clear()
+        FirebaseDatabase.getInstance().getReference("/questions/$qId/answers")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
+                    for (answer in p0.children) {
 
-        val ref = FirebaseDatabase.getInstance().getReference("/questions/$qId/answers")
+                        val singleAnswerFromDB = answer.child("body").getValue(Answers::class.java)
 
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
-                for (answer in p0.children) {
-
-                    Log.d("answer", answer.key)
-
-                    val singleAnswerFromDB = answer.child("body").getValue(Answers::class.java)
-
-                    if (singleAnswerFromDB != null) {
-                        answersAdapter.add(
-                            SingleAnswer(
-                                singleAnswerFromDB,
-                                currentUserObject,
-                                activity as MainActivity
+                        if (singleAnswerFromDB != null) {
+                            answersAdapter.add(
+                                SingleAnswer(
+                                    singleAnswerFromDB,
+                                    currentUserObject,
+                                    activity as MainActivity
+                                )
                             )
-                        )
+                        }
                     }
-
-
                 }
-            }
 
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-        })
+                override fun onCancelled(p0: DatabaseError) {
+                }
+            })
     }
 
     private fun checkIfQuestionSaved(event: Int, activity: Activity) {
-
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
         val refCurrentUserSavedQuestions =
             FirebaseDatabase.getInstance().getReference("/users/${currentUserObject.uid}/saved-questions")
-
         val questionsListOfUsersWhoSaved = FirebaseDatabase.getInstance()
             .getReference("/questions/${questionObject.id}/main/saves/${currentUserObject.uid}")
 
         refCurrentUserSavedQuestions.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
+            override fun onCancelled(p0: DatabaseError) {}
             override fun onDataChange(p0: DataSnapshot) {
                 if (p0.hasChild(questionObject.id)) {
                     if (event == 1) {
-                        saveButton.text = getString(R.string.Save)
+                        saveButton.text = getString(R.string.save)
                         saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray900))
 
                         refCurrentUserSavedQuestions.child(questionObject.id).removeValue().addOnSuccessListener {
@@ -393,36 +371,30 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                                     activity
                                 )
 
-                                val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
                                 firebaseAnalytics.logEvent("question_unsaved", null)
                                 (activity as MainActivity).savedQuestionFragment.listenToQuestions()
                             }
                         }
 
                     } else {
-                        saveButton.text = getString(R.string.Saved)
+                        saveButton.text = getString(R.string.saved)
                         saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
                     }
-
-
                 } else {
                     if (event == 1) {
 
-                        saveButton.text = getString(R.string.Saved)
+                        saveButton.text = getString(R.string.saved)
                         saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
 
-                        val refQuestionInUserSavedQuestions =
-                            FirebaseDatabase.getInstance()
-                                .getReference("/users/${currentUserObject.uid}/saved-questions/${questionObject.id}")
-                        refQuestionInUserSavedQuestions.setValue(true)
+                        FirebaseDatabase.getInstance()
+                            .getReference("/users/${currentUserObject.uid}/saved-questions/${questionObject.id}")
+                            .setValue(true)
                             .addOnSuccessListener {
-
 
                                 questionsListOfUsersWhoSaved.setValue(true).addOnSuccessListener {
                                     for (t in questionObject.tags) {
-                                        val refUserTags = FirebaseDatabase.getInstance()
-                                            .getReference("users/${currentUserObject.uid}/interests/$t")
-                                        refUserTags.setValue(true)
+                                        FirebaseDatabase.getInstance()
+                                            .getReference("users/${currentUserObject.uid}/interests/$t").setValue(true)
                                     }
 
                                     changeReputation(
@@ -437,14 +409,13 @@ class OpenedQuestionFragment : Fragment(), DereMethods {
                                         activity
                                     )
 
-                                    val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
                                     firebaseAnalytics.logEvent("question_saved", null)
                                     (activity as MainActivity).savedQuestionFragment.listenToQuestions()
                                 }
                             }
 
                     } else {
-                        saveButton.text = getString(R.string.Save)
+                        saveButton.text = getString(R.string.save)
                         saveButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray900))
                     }
                 }
@@ -462,16 +433,20 @@ class SingleAnswer(
     val imagesAdapter = GroupAdapter<ViewHolder>()
 
     lateinit var sharedViewModelSecondRandomUser: SharedViewModelSecondRandomUser
-    lateinit var sharedViewModelSecondImage: SharedViewModelSecondImage
-    lateinit var sharedViewModelAnswer: SharedViewModelAnswer
-    override fun getLayout(): Int {
-        return R.layout.answer_layout
-    }
+    private lateinit var sharedViewModelSecondImage: SharedViewModelSecondImage
+    private lateinit var sharedViewModelAnswer: SharedViewModelAnswer
+    override fun getLayout(): Int = R.layout.answer_layout
+
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
-        val userImage = viewHolder.itemView.single_answer_author_image
+        activity.let {
+            sharedViewModelAnswer = ViewModelProviders.of(it).get(SharedViewModelAnswer::class.java)
+            sharedViewModelSecondRandomUser = ViewModelProviders.of(it).get(SharedViewModelSecondRandomUser::class.java)
+            sharedViewModelSecondImage = ViewModelProviders.of(it).get(SharedViewModelSecondImage::class.java)
+        }
 
+        val userImage = viewHolder.itemView.single_answer_author_image
         val upvote = viewHolder.itemView.single_answer_upvote
         val downvote = viewHolder.itemView.single_answer_downvote
         val comment = viewHolder.itemView.single_answer_comment_button
@@ -482,15 +457,12 @@ class SingleAnswer(
         val remove = viewHolder.itemView.single_answer_remove
 
         val commentsRecycler = viewHolder.itemView.single_answer_comments_recycler
-        val imagesRecycler = viewHolder.itemView.single_answer_photos_recycler
-
-        val commentsLayoutManager = LinearLayoutManager(viewHolder.root.context)
         commentsRecycler.adapter = commentsAdapter
-        commentsRecycler.layoutManager = commentsLayoutManager
+        commentsRecycler.layoutManager = LinearLayoutManager(viewHolder.root.context)
 
-        val imageLayoutManager = GridLayoutManager(viewHolder.root.context, 4)
+        val imagesRecycler = viewHolder.itemView.single_answer_photos_recycler
         imagesRecycler.adapter = imagesAdapter
-        imagesRecycler.layoutManager = imageLayoutManager
+        imagesRecycler.layoutManager = GridLayoutManager(viewHolder.root.context, 4)
 
 
         if (answer.author == currentUser.uid) {
@@ -501,35 +473,27 @@ class SingleAnswer(
             edit.visibility = View.GONE
         }
 
-
-        activity.let {
-            sharedViewModelAnswer = ViewModelProviders.of(it).get(SharedViewModelAnswer::class.java)
-            sharedViewModelSecondRandomUser = ViewModelProviders.of(it).get(SharedViewModelSecondRandomUser::class.java)
-            sharedViewModelSecondImage = ViewModelProviders.of(it).get(SharedViewModelSecondImage::class.java)
-        }
-
         edit.setOnClickListener {
             sharedViewModelAnswer.sharedAnswerObject.postValue(answer)
-            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.editAnswerFragment, "editAnswerFragment").addToBackStack("editAnswerFragment")
+            activity.subFm.beginTransaction()
+                .add(R.id.feed_subcontents_frame_container, activity.editAnswerFragment, "editAnswerFragment")
+                .addToBackStack("editAnswerFragment")
                 .commit()
             activity.subActive = activity.editAnswerFragment
             activity.isEditAnswerActive = true
         }
 
-
         delete.setOnClickListener {
             deleteBox.visibility = View.VISIBLE
         }
-
 
         cancel.setOnClickListener {
             deleteBox.visibility = View.GONE
         }
 
         remove.setOnClickListener {
-            val answerRef = FirebaseDatabase.getInstance()
-                .getReference("/questions/${answer.questionId}/answers/${answer.answerId}")
-            answerRef.removeValue()
+            FirebaseDatabase.getInstance()
+                .getReference("/questions/${answer.questionId}/answers/${answer.answerId}").removeValue()
             activity.openedQuestionFragment.answersAdapter.removeGroup(position)
             activity.openedQuestionFragment.listenToAnswers(answer.questionId)
             deleteBox.visibility = View.GONE
@@ -538,75 +502,75 @@ class SingleAnswer(
             firebaseAnalytics.logEvent("question_answer_removed", null)
         }
 
-        val refAnswerComments = FirebaseDatabase.getInstance()
-            .getReference("/questions/${answer.questionId}/answers/${answer.answerId}/comments")
-
         userImage.setOnClickListener {
-
             if (currentUser.uid != answer.author) {
-                val answerUserRef = FirebaseDatabase.getInstance().getReference("/users/${answer.author}/profile")
-                answerUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onCancelled(p0: DatabaseError) {
-                    }
+                FirebaseDatabase.getInstance().getReference("/users/${answer.author}/profile")
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
+                        }
 
-                    override fun onDataChange(p0: DataSnapshot) {
+                        override fun onDataChange(p0: DataSnapshot) {
 
-                        sharedViewModelSecondRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
-                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.profileSecondRandomUserFragment, "profileSecondRandomUserFragment").addToBackStack("profileSecondRandomUserFragment")
-                            .commit()
-                        activity.subActive = activity.profileSecondRandomUserFragment
-                        activity.isSecondRandomUserProfileActive = true
-                    }
-                })
+                            sharedViewModelSecondRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
+                            activity.subFm.beginTransaction().add(
+                                R.id.feed_subcontents_frame_container,
+                                activity.profileSecondRandomUserFragment,
+                                "profileSecondRandomUserFragment"
+                            ).addToBackStack("profileSecondRandomUserFragment")
+                                .commit()
+                            activity.subActive = activity.profileSecondRandomUserFragment
+                            activity.isSecondRandomUserProfileActive = true
+                        }
+                    })
             } else {
                 activity.navigateToProfile()
             }
         }
 
 
-
-        refAnswerComments.addChildEventListener(object : ChildEventListener {
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-                val singleCommentFromDB = p0.child("body").getValue(AnswerComments::class.java)
-                if (singleCommentFromDB != null) {
-                    commentsAdapter.add(SingleAnswerComment(singleCommentFromDB, activity, currentUser))
+        FirebaseDatabase.getInstance()
+            .getReference("/questions/${answer.questionId}/answers/${answer.answerId}/comments")
+            .addChildEventListener(object : ChildEventListener {
+                override fun onChildMoved(p0: DataSnapshot, p1: String?) {
                 }
-            }
 
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
+                override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+                }
 
-            override fun onCancelled(p0: DatabaseError) {
-            }
+                override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                    val singleCommentFromDB = p0.child("body").getValue(AnswerComments::class.java)
+                    if (singleCommentFromDB != null) {
+                        commentsAdapter.add(SingleAnswerComment(singleCommentFromDB, activity, currentUser))
+                    }
+                }
 
-        })
+                override fun onChildRemoved(p0: DataSnapshot) {
+                }
+
+                override fun onCancelled(p0: DatabaseError) {
+                }
+            })
 
         if (answer.photos.isNotEmpty()) {
             viewHolder.itemView.single_answer_photos_recycler.visibility = View.VISIBLE
 
             for (imagePath in answer.photos) {
-                val refAnswerImages = FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
-                refAnswerImages.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onCancelled(p0: DatabaseError) {
-                    }
+                FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
+                        }
 
-                    override fun onDataChange(p0: DataSnapshot) {
-
-                        val imageObject = p0.getValue(Images::class.java)
-                        imagesAdapter.add(FeedImage(imageObject!!, 1))
-                    }
-                })
+                        override fun onDataChange(p0: DataSnapshot) {
+                            val imageObject = p0.getValue(Images::class.java)
+                            if (imageObject != null) {
+                                imagesAdapter.add(FeedImage(imageObject, 1))
+                            }
+                        }
+                    })
             }
         } else {
             viewHolder.itemView.single_answer_photos_recycler.visibility = View.GONE
         }
-
 
         executeVote(
             "checkStatus",
@@ -624,8 +588,8 @@ class SingleAnswer(
             activity
         )
 
-        val answeAuthorRef = FirebaseDatabase.getInstance().getReference("/users/${answer.author}/profile")
-        answeAuthorRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        val answerAuthorRef = FirebaseDatabase.getInstance().getReference("/users/${answer.author}/profile")
+        answerAuthorRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
             }
 
@@ -698,7 +662,9 @@ class SingleAnswer(
 
         comment.setOnClickListener {
             activity.answerObject = answer
-            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.answerCommentFragment, "answerCommentFragment").addToBackStack("answerCommentFragment")
+            activity.subFm.beginTransaction()
+                .add(R.id.feed_subcontents_frame_container, activity.answerCommentFragment, "answerCommentFragment")
+                .addToBackStack("answerCommentFragment")
                 .commit()
             activity.subActive = activity.answerCommentFragment
 
@@ -709,17 +675,20 @@ class SingleAnswer(
             val imageItem = item as FeedImage
 
             sharedViewModelSecondImage.sharedSecondImageObject.postValue(imageItem.image)
-            answeAuthorRef.addListenerForSingleValueEvent(object : ValueEventListener{
+            answerAuthorRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
                 }
 
                 override fun onDataChange(p0: DataSnapshot) {
                     sharedViewModelSecondRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
 
-                    activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.secondImageFullSizeFragment, "secondImageFullSizeFragment").addToBackStack("secondImageFullSizeFragment")
+                    activity.subFm.beginTransaction().add(
+                        R.id.feed_subcontents_frame_container,
+                        activity.secondImageFullSizeFragment,
+                        "secondImageFullSizeFragment"
+                    ).addToBackStack("secondImageFullSizeFragment")
                         .commit()
                     activity.subActive = activity.secondImageFullSizeFragment
-//                    activity.isOpenedQuestionActive = true
                 }
             })
         }
@@ -731,17 +700,14 @@ class SingleAnswerComment(val comment: AnswerComments, val activity: MainActivit
 
     lateinit var sharedViewModelSecondRandomUser: SharedViewModelSecondRandomUser
 
-    override fun getLayout(): Int {
-        return R.layout.answer_comment_layout
-    }
+    override fun getLayout(): Int = R.layout.answer_comment_layout
+
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
         activity.let {
             sharedViewModelSecondRandomUser = ViewModelProviders.of(it).get(SharedViewModelSecondRandomUser::class.java)
         }
-
-        val uid = FirebaseAuth.getInstance().uid
 
         val commentContent = viewHolder.itemView.answer_comment_comment
         val commentContentEditable = viewHolder.itemView.answer_comment_comment_editable
@@ -752,7 +718,6 @@ class SingleAnswerComment(val comment: AnswerComments, val activity: MainActivit
         val deleteBox = viewHolder.itemView.answer_comment_delete_box
         val cancel = viewHolder.itemView.answer_comment_cancel
         val remove = viewHolder.itemView.answer_comment_remove
-
         val authorImage = viewHolder.itemView.answer_comment_author_image
 
         commentContent.text = comment.content
@@ -765,7 +730,7 @@ class SingleAnswerComment(val comment: AnswerComments, val activity: MainActivit
         val refUser = FirebaseDatabase.getInstance().getReference("/users/${comment.author}/profile")
 
 
-        if (comment.author == uid) {
+        if (comment.author == currentUser.uid) {
             edit.visibility = View.VISIBLE
             delete.visibility = View.VISIBLE
         } else {
@@ -825,7 +790,11 @@ class SingleAnswerComment(val comment: AnswerComments, val activity: MainActivit
                     override fun onDataChange(p0: DataSnapshot) {
 
                         sharedViewModelSecondRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
-                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.profileSecondRandomUserFragment, "profileSecondRandomUserFragment").addToBackStack("profileSecondRandomUserFragment")
+                        activity.subFm.beginTransaction().add(
+                            R.id.feed_subcontents_frame_container,
+                            activity.profileSecondRandomUserFragment,
+                            "profileSecondRandomUserFragment"
+                        ).addToBackStack("profileSecondRandomUserFragment")
                             .commit()
                         activity.subActive = activity.profileSecondRandomUserFragment
                     }

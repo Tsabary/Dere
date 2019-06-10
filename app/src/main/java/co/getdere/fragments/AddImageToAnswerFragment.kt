@@ -33,7 +33,7 @@ class AddImageToAnswerFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =inflater.inflate(R.layout.fragment_add_image_to_collection, container, false)
+    ): View? = inflater.inflate(R.layout.fragment_add_image_to_collection, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -54,26 +54,28 @@ class AddImageToAnswerFragment : Fragment() {
             })
         }
 
-        FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/images").addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {}
+        FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/images")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {}
 
-            override fun onDataChange(p0: DataSnapshot) {
+                override fun onDataChange(p0: DataSnapshot) {
 
-                for (imagePath in p0.children) {
+                    for (imagePath in p0.children) {
 
-                    FirebaseDatabase.getInstance().getReference("/images/${imagePath.key}/body").addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {}
+                        FirebaseDatabase.getInstance().getReference("/images/${imagePath.key}/body")
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onCancelled(p0: DatabaseError) {}
 
-                        override fun onDataChange(p0: DataSnapshot) {
-                            val imageObject = p0.getValue(Images::class.java)
-                            if (imageObject != null){
-                                galleryAdapter.add(ImageSelector(imageObject, activity, "answer", 0))
-                            }
-                        }
-                    })
+                                override fun onDataChange(p0: DataSnapshot) {
+                                    val imageObject = p0.getValue(Images::class.java)
+                                    if (imageObject != null) {
+                                        galleryAdapter.add(ImageSelector(imageObject, activity, "answer", 0))
+                                    }
+                                }
+                            })
+                    }
                 }
-            }
-        })
+            })
 
         galleryAdapter.setOnItemClickListener { item, _ ->
             val image = item as ImageSelector

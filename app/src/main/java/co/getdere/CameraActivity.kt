@@ -9,9 +9,19 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.fragments.DarkRoomEditFragment
 import co.getdere.fragments.NewPhotoFragment
+import co.getdere.fragments.SingleTagForList
+import co.getdere.fragments.SingleTagSuggestion
+import co.getdere.models.Users
 import co.getdere.roomclasses.LocalImagePost
 import co.getdere.roomclasses.LocalImageViewModel
+import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelLocalImagePost
+import co.getdere.viewmodels.SharedViewModelTags
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.content_camera.*
 import kotlinx.android.synthetic.main.subcontent_camera.*
 
@@ -33,13 +43,22 @@ class CameraActivity : AppCompatActivity() {
 
     private lateinit var localImageViewModel: LocalImageViewModel
     lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
+    lateinit var sharedViewModelTags: SharedViewModelTags
+    lateinit var sharedViewModelCurrentUser: SharedViewModelCurrentUser
+
+    var tags: MutableList<SingleTagForList> = mutableListOf()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
 
+        fetchCurrentUser(FirebaseAuth.getInstance().uid!!)
+
         localImageViewModel = ViewModelProviders.of(this).get(LocalImageViewModel::class.java)
         sharedViewModelLocalImagePost = ViewModelProviders.of(this).get(SharedViewModelLocalImagePost::class.java)
+        sharedViewModelTags = ViewModelProviders.of(this).get(SharedViewModelTags::class.java)
+        sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
 
         mainFrame = camera_frame_container
         subFrame = camera_subcontents_frame_container
@@ -50,8 +69,21 @@ class CameraActivity : AppCompatActivity() {
         fm.beginTransaction().add(mainFrame.id, newPhotoFragment, "newPhotoFragment").commit()
         active = newPhotoFragment
 
-    }
+        FirebaseDatabase.getInstance().getReference("/tags")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
 
+                    for (tag in p0.children) {
+                        val tagName = tag.key.toString()
+                        val count = tag.childrenCount.toInt()
+                        tags.add(SingleTagForList(tagName, count))
+                        sharedViewModelTags.tagList = tags
+                    }
+                }
+
+                override fun onCancelled(p0: DatabaseError) {}
+            })
+    }
 
     fun switchVisibility(case: Int) {
 
@@ -65,7 +97,6 @@ class CameraActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-
         if (mainFrame.visibility == 8) {
             subFm.beginTransaction()
                 .remove(darkRoomEditFragment).commit()
@@ -73,5 +104,21 @@ class CameraActivity : AppCompatActivity() {
         } else {
             super.onBackPressed()
         }
+    }
+
+    private fun fetchCurrentUser(uid: String) {
+        FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {}
+
+                override fun onDataChange(p0: DataSnapshot) {
+                    if (p0.getValue(Users::class.java) != null) {
+                        val currentUser = p0.getValue(Users::class.java)
+                        if (currentUser != null) {
+                            sharedViewModelCurrentUser.currentUserObject = currentUser
+                        }
+                    }
+                }
+            })
     }
 }

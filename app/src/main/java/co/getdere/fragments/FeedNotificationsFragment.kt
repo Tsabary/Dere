@@ -18,6 +18,7 @@ import co.getdere.MainActivity
 import co.getdere.models.*
 
 import co.getdere.R
+import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelImage
 import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
@@ -38,13 +39,12 @@ import java.util.*
 class FeedNotificationsFragment : Fragment() {
 
     val notificationsRecyclerAdapter = GroupAdapter<ViewHolder>()
-    lateinit var notificationRecyclerLayoutManager: androidx.recyclerview.widget.LinearLayoutManager
+    private lateinit var notificationRecyclerLayoutManager: androidx.recyclerview.widget.LinearLayoutManager
     val uid = FirebaseAuth.getInstance().uid
-    val refFeedNotifications =
-        FirebaseDatabase.getInstance().getReference("/users/$uid/notifications/gallery")
 
     lateinit var sharedViewModelImage: SharedViewModelImage
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
+    lateinit var currentUser: Users
 
     private val permissions = arrayOf(
         Manifest.permission.CAMERA,
@@ -52,15 +52,6 @@ class FeedNotificationsFragment : Fragment() {
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.ACCESS_FINE_LOCATION
     )
-
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        activity?.let {
-            sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
-            sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
-        }
-    }
 
 
     override fun onCreateView(
@@ -73,10 +64,17 @@ class FeedNotificationsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val activity = activity as MainActivity
+
+        activity.let {
+            sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
+            sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+        }
+
         val notificationBadge = feed_toolbar_notifications_badge
 
         notifications_swipe_refresh.setOnRefreshListener {
-            listenToNotifications()
+            listenToNotifications(currentUser)
             notifications_swipe_refresh.isRefreshing = false
         }
 
@@ -99,14 +97,14 @@ class FeedNotificationsFragment : Fragment() {
 
         notificationIcon.setImageResource(R.drawable.notification_bell_active)
 
-        listenToNotifications()
+        listenToNotifications(currentUser)
 
         notificationIcon.setOnClickListener {
-            listenToNotifications()
+            listenToNotifications(currentUser)
         }
 
         notificationBadge.setOnClickListener {
-            listenToNotifications()
+            listenToNotifications(currentUser)
         }
 
         feedToCamera.setOnClickListener {
@@ -119,70 +117,66 @@ class FeedNotificationsFragment : Fragment() {
         }
 
         notifications_mark_all_as_read.setOnClickListener {
-            refFeedNotifications.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(p0: DataSnapshot) {
+            FirebaseDatabase.getInstance().getReference("/users/$uid/notifications/gallery")
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(p0: DataSnapshot) {
 
-                    var itirations = 0
-                    val childrenCount = p0.childrenCount.toInt()
+                        var itirations = 0
+                        val childrenCount = p0.childrenCount.toInt()
 
-                    for (i in p0.children) {
-                        val notificationsRef =
-                            FirebaseDatabase.getInstance()
-                                .getReference("/users/$uid/notifications/gallery/${i.key}/seen")
-                        notificationsRef.setValue(1)
-                        itirations++
-                        if (itirations == childrenCount) {
-                            notificationsRecyclerAdapter.clear()
-                            listenToNotifications()
+                        for (i in p0.children) {
+                            val notificationsRef =
+                                FirebaseDatabase.getInstance()
+                                    .getReference("/users/$uid/notifications/gallery/${i.key}/seen")
+                            notificationsRef.setValue(1)
+                            itirations++
+                            if (itirations == childrenCount) {
+                                notificationsRecyclerAdapter.clear()
+                                listenToNotifications(currentUser)
+                            }
                         }
                     }
 
-                }
-
-                override fun onCancelled(p0: DatabaseError) {}
-
-            })
-
-
+                    override fun onCancelled(p0: DatabaseError) {}
+                })
         }
     }
 
-    fun listenToNotifications() {
-        val mActivity = activity as MainActivity
+    fun listenToNotifications(currentUser: Users) {
+        val activity = activity as MainActivity
 
         notificationsRecyclerAdapter.clear()
 
-        val refFeedNotificationsByTime =
-            FirebaseDatabase.getInstance().getReference("/users/$uid/notifications/gallery").orderByChild("timestamp")
+        FirebaseDatabase.getInstance().getReference("/users/$uid/notifications/gallery").orderByChild("timestamp")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
 
-        refFeedNotificationsByTime.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
+                    var feedNotCount = 0
 
-                var feedNotCount = 0
+                    for (i in p0.children) {
+                        val notification = i.getValue(NotificationFeed::class.java)
 
-                for (i in p0.children) {
-                    val notification = i.getValue(NotificationFeed::class.java)
+                        if (notification != null) {
 
-                    if (notification != null) {
+                            if (notification.seen == 0) {
+                                feedNotCount++
+                            }
+                            activity.feedNotificationsCount.postValue(feedNotCount)
 
-                        if (notification.seen == 0) {
-                            feedNotCount++
-                        }
-                        mActivity.feedNotificationsCount.postValue(feedNotCount)
-
-                        notificationsRecyclerAdapter.add(
-                            SingleFeedNotification(
-                                notification,
-                                mActivity
+                            notificationsRecyclerAdapter.add(
+                                SingleFeedNotification(
+                                    notification,
+                                    activity,
+                                    currentUser
+                                )
                             )
-                        )
+                        }
                     }
                 }
-            }
 
-            override fun onCancelled(p0: DatabaseError) {
-            }
-        })
+                override fun onCancelled(p0: DatabaseError) {
+                }
+            })
     }
 
 
@@ -205,90 +199,89 @@ class FeedNotificationsFragment : Fragment() {
 }
 
 
-class SingleFeedNotification(val notification: NotificationFeed, val activity: MainActivity) : Item<ViewHolder>() {
-    override fun getLayout(): Int {
-        return R.layout.feed_notification_single_row
-    }
+class SingleFeedNotification(val notification: NotificationFeed, val activity: MainActivity, val currentUser: Users) :
+    Item<ViewHolder>() {
+    override fun getLayout(): Int = R.layout.feed_notification_single_row
+
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
         val notificationBox = viewHolder.itemView.feed_notification_box
 
-
         viewHolder.itemView.feed_notification_timestamp.text = PrettyTime().format(Date(notification.timestamp))
-
-
 
         activity.let {
             val sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             val sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
 
-
             viewHolder.itemView.feed_notification_initiator_image.setOnClickListener {
-                val randomUserRef =
-                    FirebaseDatabase.getInstance().getReference("/users/${notification.initiatorId}/profile")
-                randomUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onCancelled(p0: DatabaseError) {
-                    }
+                FirebaseDatabase.getInstance().getReference("/users/${notification.initiatorId}/profile")
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
+                        }
 
-                    override fun onDataChange(p0: DataSnapshot) {
-                        sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
-                        activity.subFm.beginTransaction()
-                            .add(R.id.feed_subcontents_frame_container, activity.profileRandomUserFragment, "profileRandomUserFragment")
-                            .addToBackStack("profileRandomUserFragment").commit()
-                        activity.subActive = activity.profileRandomUserFragment
-                        activity.isFeedNotificationsActive = true
-                    }
-                })
+                        override fun onDataChange(p0: DataSnapshot) {
+                            sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
+                            activity.subFm.beginTransaction()
+                                .add(
+                                    R.id.feed_subcontents_frame_container,
+                                    activity.profileRandomUserFragment,
+                                    "profileRandomUserFragment"
+                                )
+                                .addToBackStack("profileRandomUserFragment").commit()
+                            activity.subActive = activity.profileRandomUserFragment
+                        }
+                    })
             }
 
 
             viewHolder.itemView.setOnClickListener {
 
-                val uid = FirebaseAuth.getInstance().uid
-
-                val refImageId = FirebaseDatabase.getInstance().getReference("/images/${notification.mainPostId}/body")
-
-                refImageId.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onCancelled(p0: DatabaseError) {
-                    }
-
-                    override fun onDataChange(p0: DataSnapshot) {
-
-                        val image = p0.getValue(Images::class.java)
-
-                        if (image != null) {
-
-                            sharedViewModelImage.sharedImageObject.postValue(image)
-
-                            val refRandomUser =
-                                FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
-
-                            refRandomUser.addListenerForSingleValueEvent(object : ValueEventListener {
-                                override fun onCancelled(p0: DatabaseError) {
-                                }
-
-                                override fun onDataChange(p0: DataSnapshot) {
-                                    val randomUser = p0.getValue(Users::class.java)
-
-                                    if (randomUser != null) {
-                                        sharedViewModelRandomUser.randomUserObject.postValue(randomUser)
-
-                                        val notificationRef = FirebaseDatabase.getInstance()
-                                            .getReference("/users/$uid/notifications/gallery/${notification.mainPostId}${notification.specificPostId}${notification.initiatorId}${notification.scenarioType}/seen")
-                                        notificationRef.setValue(1).addOnSuccessListener {
-                                            activity.subFm.beginTransaction()
-                                                .add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment")
-                                                .addToBackStack("imageFullSizeFragment").commit()
-                                            activity.subActive = activity.imageFullSizeFragment
-                                            activity.feedNotificationsFragment.listenToNotifications()
-                                        }
-                                    }
-                                }
-                            })
+                FirebaseDatabase.getInstance().getReference("/images/${notification.mainPostId}/body")
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
                         }
-                    }
-                })
+
+                        override fun onDataChange(p0: DataSnapshot) {
+
+                            val image = p0.getValue(Images::class.java)
+
+                            if (image != null) {
+
+                                sharedViewModelImage.sharedImageObject.postValue(image)
+
+                                FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
+                                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                                        override fun onCancelled(p0: DatabaseError) {
+                                        }
+
+                                        override fun onDataChange(p0: DataSnapshot) {
+                                            val randomUser = p0.getValue(Users::class.java)
+
+                                            if (randomUser != null) {
+                                                sharedViewModelRandomUser.randomUserObject.postValue(randomUser)
+
+                                                FirebaseDatabase.getInstance()
+                                                    .getReference("/users/${currentUser.uid}/notifications/gallery/${notification.mainPostId}${notification.specificPostId}${notification.initiatorId}${notification.scenarioType}/seen")
+                                                    .setValue(1).addOnSuccessListener {
+                                                        activity.subFm.beginTransaction()
+                                                            .add(
+                                                                R.id.feed_subcontents_frame_container,
+                                                                activity.imageFullSizeFragment,
+                                                                "imageFullSizeFragment"
+                                                            )
+                                                            .addToBackStack("imageFullSizeFragment").commit()
+                                                        activity.subActive = activity.imageFullSizeFragment
+                                                        activity.feedNotificationsFragment.listenToNotifications(
+                                                            currentUser
+                                                        )
+                                                    }
+                                            }
+                                        }
+                                    })
+                            }
+                        }
+                    })
             }
         }
 
@@ -300,7 +293,6 @@ class SingleFeedNotification(val notification: NotificationFeed, val activity: M
             notificationBox.setBackgroundColor(ContextCompat.getColor(viewHolder.root.context, R.color.white))
         }
 
-
         Glide.with(viewHolder.root.context).load(
             if (notification.initiatorImage.isNotEmpty()) {
                 notification.initiatorImage
@@ -310,9 +302,14 @@ class SingleFeedNotification(val notification: NotificationFeed, val activity: M
         )
             .into(viewHolder.itemView.feed_notification_initiator_image)
 
-        Glide.with(viewHolder.root.context).load(notification.mainPostImage)
+        Glide.with(viewHolder.root.context).load(
+            if (notification.mainPostImage.isNotEmpty()) {
+                notification.mainPostImage
+            } else {
+                android.R.color.transparent
+            }
+        )
             .into(viewHolder.itemView.feed_notification_post_image)
-
 
         viewHolder.itemView.feed_notification_content.text = when (notification.scenarioType) {
 

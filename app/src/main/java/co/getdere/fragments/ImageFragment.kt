@@ -30,16 +30,12 @@ class ImageFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_image, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_image, container, false)
+
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-
 
         activity?.let {
             sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
@@ -49,8 +45,6 @@ class ImageFragment : Fragment() {
         val imagePrivacy = image_privacy_text
         val imagePrivacyContainer = image_privacy_container
 
-
-
         sharedViewModelForImage.sharedImageObject.observe(this, Observer {
             it?.let { image ->
                 Glide.with(this).load(image.imageBig).into(image_frame_image)
@@ -59,20 +53,20 @@ class ImageFragment : Fragment() {
                     imagePrivacyContainer.visibility = View.VISIBLE
 
                     if (image.private) {
-                        imagePrivacy.text = "Private"
+                        imagePrivacy.text = getString(R.string.private_text)
                     } else {
-                        imagePrivacy.text = "Public"
+                        imagePrivacy.text = getString(R.string.public_text)
                     }
 
                     imagePrivacyContainer.setOnClickListener {
                         val imagePrivacyRef = FirebaseDatabase.getInstance().getReference("/images/${image.id}/body/private")
 
                         if (imagePrivacy.text == "Private"){
-                            imagePrivacy.text = "Public"
+                            imagePrivacy.text = getString(R.string.public_text)
                             imagePrivacyRef.setValue(false)
 
                         } else {
-                            imagePrivacy.text = "Private"
+                            imagePrivacy.text = getString(R.string.private_text)
                             imagePrivacyRef.setValue(true)
                         }
                     }

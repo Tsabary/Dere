@@ -36,6 +36,7 @@ import co.getdere.otherClasses.CustomMapView
 import co.getdere.otherClasses.MyCircleProgressBar
 import co.getdere.roomclasses.LocalImagePost
 import co.getdere.roomclasses.LocalImageViewModel
+import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelLocalImagePost
 import co.getdere.viewmodels.SharedViewModelTags
 import com.bumptech.glide.Glide
@@ -75,9 +76,7 @@ import java.util.*
 class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
-    var REQUEST_CODE_AUTOCOMPLETE = 9
-//    val geojsonSourceLayerId: String = "geojsonSourceLayerId"
-//    val symbolIconId = "symbolIconId"
+    private var REQUEST_CODE_AUTOCOMPLETE = 9
 
     private lateinit var localImagePost: LocalImagePost
     private lateinit var sharedViewModelLocalImagePost: SharedViewModelLocalImagePost
@@ -85,15 +84,14 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
     private lateinit var localImageViewModel: LocalImageViewModel
 
-    lateinit var currentLocalImagePost: LocalImagePost
+    private lateinit var currentLocalImagePost: LocalImagePost
 
     val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
     lateinit var imageChipGroup: ChipGroup
-    private val tagsRef = FirebaseDatabase.getInstance().getReference("/tags")
 
     lateinit var imageLocationInput: TextView
     lateinit var imageUrl: EditText
-    var imageTagsList: MutableList<String> = mutableListOf()
+    private var imageTagsList: MutableList<String> = mutableListOf()
     var imagePrivacy = false
     lateinit var imageTagsInput: EditText
 
@@ -122,47 +120,9 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
     lateinit var urlContainer: ConstraintLayout
 
     lateinit var currentUser: Users
+    val uid = FirebaseAuth.getInstance().uid
 
     lateinit var locationComponent: LocationComponent
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            sharedViewModelLocalImagePost = ViewModelProviders.of(it).get(SharedViewModelLocalImagePost::class.java)
-            sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
-            localImageViewModel = ViewModelProviders.of(it).get(LocalImageViewModel::class.java)
-        }
-
-
-        tagsRef.addChildEventListener(object : ChildEventListener {
-
-            var tags: MutableList<SingleTagForList> = mutableListOf()
-
-
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-                val tagName = p0.key.toString()
-                val count = p0.childrenCount.toInt()
-                tags.add(SingleTagForList(tagName, count))
-                sharedViewModelTags.tagList = tags
-            }
-
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
-
-        })
-
-    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -186,6 +146,16 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
 
         val activity = activity as CameraActivity
 
+        activity.let {
+            sharedViewModelLocalImagePost = ViewModelProviders.of(it).get(SharedViewModelLocalImagePost::class.java)
+            sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
+            localImageViewModel = ViewModelProviders.of(it).get(LocalImageViewModel::class.java)
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+
+            dark_room_edit_author_name.text = currentUser.name
+            Glide.with(activity).load(currentUser.image).into(dark_room_edit_author_image)
+        }
+
         val imageView = dark_room_edit_image_horizontal
         val addTagButton = dark_room_edit_add_tag_button
         imageTagsInput = dark_room_edit_tag_input
@@ -196,25 +166,7 @@ class DarkRoomEditFragment : Fragment(), PermissionsListener, DereMethods {
         mapView = dark_room_edit_mapview
         val mapContainer = dark_room_edit_map_include
 
-        val currentUserName = dark_room_edit_author_name
-        val currentUserPhoto = dark_room_edit_author_image
-
-        val uid = FirebaseAuth.getInstance().uid
-        val userRef = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
-        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                currentUser = p0.getValue(Users::class.java)!!
-                currentUserName.text = currentUser.name
-                Glide.with(activity).load(currentUser.image).into(currentUserPhoto)
-            }
-        })
-
-
         var symbolOptions: SymbolOptions
-
 
         val options = dark_room_edit_options
         val optionsContainer = dark_room_edit_options_background

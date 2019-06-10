@@ -18,5 +18,5 @@
             app:layout_constraintDimensionRatio="1:1"
             tools:srcCompat="@drawable/profile_icon"
             android:scaleType="centerCrop"
-    />
+            android:contentDescription="@string/image"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

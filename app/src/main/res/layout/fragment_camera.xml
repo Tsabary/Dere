@@ -24,12 +24,12 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintDimensionRatio=""
             app:layout_constraintBottom_toBottomOf="parent"/>
+
     <ImageButton
             android:src="@drawable/snap_button"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:id="@+id/camera_btn"
-
             android:scaleType="centerCrop"
             android:background="@android:color/transparent"
             android:layout_marginBottom="96dp"
@@ -37,7 +37,8 @@
             android:layout_marginStart="8dp"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginEnd="8dp"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            android:contentDescription="@string/snap_button"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

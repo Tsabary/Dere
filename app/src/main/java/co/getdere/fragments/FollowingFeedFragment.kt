@@ -38,7 +38,7 @@ import mumayank.com.airlocationlibrary.AirLocation
 open class FollowingFeedFragment : Fragment(), DereMethods {
 
     lateinit var sharedViewModelImage: SharedViewModelImage
-    lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
+    private lateinit var sharedViewModelForRandomUser: SharedViewModelRandomUser
 
     lateinit var sharedViewModelFollowedAccounts: SharedViewModelFollowedAccounts
     var staggeredImageList = mutableListOf<StaggeredFeedImage>()
@@ -55,8 +55,6 @@ open class FollowingFeedFragment : Fragment(), DereMethods {
     val distanceStaggeredGalleryAdapter = GroupAdapter<ViewHolder>()
     val distanceLinearGalleryAdapter = GroupAdapter<ViewHolder>()
 
-    val uid = FirebaseAuth.getInstance().uid
-
     lateinit var staggeredGalleryLayoutManager: StaggeredGridLayoutManager
     lateinit var linearGalleryLayoutManager: LinearLayoutManager
 
@@ -66,11 +64,16 @@ open class FollowingFeedFragment : Fragment(), DereMethods {
 
     var airLocation: AirLocation? = null
 
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_feeds_layout, container, false)
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
 
-        activity?.let {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val activity = activity as MainActivity
+
+        activity.let {
             sharedViewModelFollowedAccounts = ViewModelProviders.of(it).get(SharedViewModelFollowedAccounts::class.java)
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
@@ -78,15 +81,7 @@ open class FollowingFeedFragment : Fragment(), DereMethods {
             createFollowedAccountsList()
         }
 
-    }
-
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_feeds_layout, container, false)
-
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
 
         feedRecycler = feed_gallery
         setUpGalleryAdapter()
@@ -110,7 +105,6 @@ open class FollowingFeedFragment : Fragment(), DereMethods {
                 sortByDistance.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
                 sortByDate.setTextColor(ContextCompat.getColor(context!!, R.color.gray500))
 
-                val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
                 firebaseAnalytics.logEvent("sort_by_distance", null)
 
                 isDistanceActive = true
@@ -136,7 +130,6 @@ open class FollowingFeedFragment : Fragment(), DereMethods {
             sortByDistance.setTextColor(ContextCompat.getColor(context!!, R.color.gray500))
             sortByDate.setTextColor(ContextCompat.getColor(context!!, R.color.green700))
 
-            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
             firebaseAnalytics.logEvent("sort_by_date", null)
 
             isDistanceActive = false
@@ -155,7 +148,6 @@ open class FollowingFeedFragment : Fragment(), DereMethods {
             linearButton.setImageResource(R.drawable.linear_layout_active)
             staggeredButton.setImageResource(R.drawable.staggered_layout)
 
-            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
             firebaseAnalytics.logEvent("feed_linear", null)
 
             val position = IntArray(2)
@@ -174,7 +166,6 @@ open class FollowingFeedFragment : Fragment(), DereMethods {
             staggeredButton.setImageResource(R.drawable.staggered_layout_active)
             linearButton.setImageResource(R.drawable.linear_layout)
 
-            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
             firebaseAnalytics.logEvent("feed_staggered", null)
 
             val position = linearGalleryLayoutManager.findFirstCompletelyVisibleItemPosition()
@@ -205,56 +196,54 @@ open class FollowingFeedFragment : Fragment(), DereMethods {
         linearImageList.clear()
         staggeredImageList.clear()
 
+        FirebaseDatabase.getInstance().getReference("/images")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
 
-        val ref = FirebaseDatabase.getInstance().getReference("/images")
+                    for (i in p0.children) {
 
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
+                        val singleImageFromDB = i.child("body").getValue(Images::class.java)
 
-                for (i in p0.children) {
+                        if (singleImageFromDB != null) {
+                            val completedFollowedAccountsList = sharedViewModelFollowedAccounts.followedAccounts
 
-                    val singleImageFromDB = i.child("body").getValue(Images::class.java)
+                            for (accountUid in completedFollowedAccountsList) {
 
-                    if (singleImageFromDB != null) {
-                        val completedFollowedAccountsList = sharedViewModelFollowedAccounts.followedAccounts
-
-                        for (accountUid in completedFollowedAccountsList) {
-
-                            if (!singleImageFromDB.private) {
-                                if (accountUid == singleImageFromDB.photographer) {
-                                    staggeredImageList.add(
-                                        StaggeredFeedImage(
-                                            singleImageFromDB,
-                                            currentUser,
-                                            activity as MainActivity
+                                if (!singleImageFromDB.private) {
+                                    if (accountUid == singleImageFromDB.photographer) {
+                                        staggeredImageList.add(
+                                            StaggeredFeedImage(
+                                                singleImageFromDB,
+                                                currentUser,
+                                                activity as MainActivity
+                                            )
                                         )
-                                    )
 
-                                    linearImageList.add(
-                                        LinearFeedImageLean(
-                                            singleImageFromDB,
-                                            currentUser,
-                                            activity as MainActivity
+                                        linearImageList.add(
+                                            LinearFeedImageLean(
+                                                singleImageFromDB,
+                                                currentUser,
+                                                activity as MainActivity
+                                            )
                                         )
-                                    )
 
-                                    staggeredGalleryAdapter.clear()
-                                    staggeredGalleryAdapter.addAll(staggeredImageList.reversed())
+                                        staggeredGalleryAdapter.clear()
+                                        staggeredGalleryAdapter.addAll(staggeredImageList.reversed())
 
-                                    linearGalleryAdapter.clear()
-                                    linearGalleryAdapter.addAll(linearImageList.reversed())
+                                        linearGalleryAdapter.clear()
+                                        linearGalleryAdapter.addAll(linearImageList.reversed())
+                                    }
                                 }
+
                             }
 
                         }
-
                     }
                 }
-            }
 
-            override fun onCancelled(p0: DatabaseError) {
-            }
-        })
+                override fun onCancelled(p0: DatabaseError) {
+                }
+            })
     }
 
 
@@ -278,79 +267,74 @@ open class FollowingFeedFragment : Fragment(), DereMethods {
 
             override fun onSuccess(location: Location) {
 
+                FirebaseDatabase.getInstance().getReference("/images")
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(p0: DataSnapshot) {
 
-                val ref = FirebaseDatabase.getInstance().getReference("/images")
+                            for (i in p0.children) {
 
-                ref.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(p0: DataSnapshot) {
+                                val singleImageFromDB = i.child("body").getValue(Images::class.java)
 
-                        for (i in p0.children) {
+                                if (singleImageFromDB != null) {
 
-                            val singleImageFromDB = i.child("body").getValue(Images::class.java)
+                                    val completedFollowedAccountsList = sharedViewModelFollowedAccounts.followedAccounts
 
-                            if (singleImageFromDB != null) {
+                                    for (accountUid in completedFollowedAccountsList) {
 
-                                Log.d("AccountPhoto", singleImageFromDB.photographer)
-
-
-                                val completedFollowedAccountsList = sharedViewModelFollowedAccounts.followedAccounts
-
-                                for (accountUid in completedFollowedAccountsList) {
-
-                                    if (accountUid == singleImageFromDB.photographer) {
-                                        if (!singleImageFromDB.private) {
-                                            val result = FloatArray(1)
-                                            Location.distanceBetween(
-                                                location.latitude,
-                                                location.longitude,
-                                                singleImageFromDB.location[0],
-                                                singleImageFromDB.location[1],
-                                                result
-                                            )
-
-                                            staggeredWithLocationList.add(
-                                                StaggeredWithLocation(
-                                                    StaggeredFeedImage(
-                                                        singleImageFromDB,
-                                                        currentUser,
-                                                        activity as MainActivity
-                                                    ), result[0]
+                                        if (accountUid == singleImageFromDB.photographer) {
+                                            if (!singleImageFromDB.private) {
+                                                val result = FloatArray(1)
+                                                Location.distanceBetween(
+                                                    location.latitude,
+                                                    location.longitude,
+                                                    singleImageFromDB.location[0],
+                                                    singleImageFromDB.location[1],
+                                                    result
                                                 )
-                                            )
 
-                                            linearWithLocationList.add(
-                                                LinearWithLocation(
-                                                    LinearFeedImage(
-                                                        singleImageFromDB,
-                                                        currentUser,
-                                                        activity as MainActivity
-                                                    ), result[0]
+                                                staggeredWithLocationList.add(
+                                                    StaggeredWithLocation(
+                                                        StaggeredFeedImage(
+                                                            singleImageFromDB,
+                                                            currentUser,
+                                                            activity as MainActivity
+                                                        ), result[0]
+                                                    )
                                                 )
-                                            )
 
-                                            distanceStaggeredGalleryAdapter.clear()
-                                            distanceLinearGalleryAdapter.clear()
+                                                linearWithLocationList.add(
+                                                    LinearWithLocation(
+                                                        LinearFeedImage(
+                                                            singleImageFromDB,
+                                                            currentUser,
+                                                            activity as MainActivity
+                                                        ), result[0]
+                                                    )
+                                                )
 
-                                            staggeredWithLocationList.sortBy { it.distance }
-                                            linearWithLocationList.sortBy { it.distance }
+                                                distanceStaggeredGalleryAdapter.clear()
+                                                distanceLinearGalleryAdapter.clear()
 
-                                            for (objectFromList in staggeredWithLocationList) {
-                                                distanceStaggeredGalleryAdapter.add(objectFromList.image)
-                                            }
+                                                staggeredWithLocationList.sortBy { it.distance }
+                                                linearWithLocationList.sortBy { it.distance }
 
-                                            for (objectFromList in linearWithLocationList) {
-                                                distanceLinearGalleryAdapter.add(objectFromList.image)
+                                                for (objectFromList in staggeredWithLocationList) {
+                                                    distanceStaggeredGalleryAdapter.add(objectFromList.image)
+                                                }
+
+                                                for (objectFromList in linearWithLocationList) {
+                                                    distanceLinearGalleryAdapter.add(objectFromList.image)
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    override fun onCancelled(p0: DatabaseError) {
-                    }
-                })
+                        override fun onCancelled(p0: DatabaseError) {
+                        }
+                    })
             }
         })
     }
@@ -373,42 +357,35 @@ open class FollowingFeedFragment : Fragment(), DereMethods {
 
         sharedViewModelFollowedAccounts.followedAccounts.clear()
 
+        FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/following")
+            .addChildEventListener(object : ChildEventListener {
 
-        val followedAccountRef = FirebaseDatabase.getInstance().getReference("/users/$uid/following")
+                var followedUsersList: MutableList<String> = mutableListOf()
 
-        followedAccountRef.addChildEventListener(object : ChildEventListener {
+                override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
+                    val followedUserUid = p0.key.toString()
+                    followedUsersList.add(followedUserUid)
+                    sharedViewModelFollowedAccounts.followedAccounts = followedUsersList
 
-            var followedUsersList: MutableList<String> = mutableListOf()
+                }
 
+                override fun onCancelled(p0: DatabaseError) {
+                }
 
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+                }
 
-                val followedUserUid = p0.key.toString()
-                followedUsersList.add(followedUserUid)
-                sharedViewModelFollowedAccounts.followedAccounts = followedUsersList
+                override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+                }
 
-            }
-
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
-
-        })
+                override fun onChildRemoved(p0: DataSnapshot) {
+                }
+            })
 
     }
-
 
     companion object {
         fun newInstance(): FollowingFeedFragment = FollowingFeedFragment()
     }
-
 }

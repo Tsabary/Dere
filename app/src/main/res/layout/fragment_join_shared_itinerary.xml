@@ -19,7 +19,7 @@
 
 
         <TextView
-                android:text="You were invited to join the itinerary"
+                android:text="@string/you_were_invited_to_join_the_itinerary"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView37"
@@ -32,7 +32,7 @@
                 android:fontFamily="@font/roboto_medium"
                 android:textSize="18sp"/>
         <TextView
-                android:text="Join to earn excess and editing capabilities"
+                android:text="@string/join_to_earn_excess_and_editing_capabilities"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView40"
@@ -67,7 +67,7 @@
                 android:id="@+id/join_shared_itinerary_teaser_recycler"/>
         <TextView
                 android:gravity="center"
-                android:text="Join itinerary"
+                android:text="@string/join_itinerary"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/join_shared_itinerary_cta"

@@ -62,10 +62,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     app:layout_constraintTop_toBottomOf="@+id/marketplace_single_row_image"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginStart="14dp"
-                    android:layout_marginEnd="16dp"
-                    app:layout_constraintEnd_toStartOf="@+id/marketplace_single_row_rating"
                     android:isIndicator="true"
                     app:srb_numStars="5"
                     app:srb_minimumStars="0"
@@ -78,39 +74,37 @@
                     app:srb_scrollable="false"
                     app:srb_clearRatingEnabled="true"
                     app:srb_drawableEmpty="@drawable/star_gray"
-                    app:srb_drawableFilled="@drawable/star"/>
+                    app:srb_drawableFilled="@drawable/star"
+                    app:layout_constraintStart_toEndOf="@+id/marketplace_single_row_rating"
+                    android:layout_marginStart="8dp"/>
 
-            <!---->
-            <!--<RatingBar-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:id="@+id/marketplace_single_row_rating_bar"-->
-                    <!--android:layout_marginTop="16dp"-->
-                    <!--app:layout_constraintTop_toBottomOf="@+id/marketplace_single_row_image"-->
-                    <!--app:layout_constraintStart_toStartOf="parent"-->
-                    <!--android:layout_marginStart="16dp"-->
-       <!---->
-                    <!--android:layout_marginEnd="8dp"-->
-                    <!--app:layout_constraintEnd_toStartOf="@+id/marketplace_single_row_rating"-->
-
-                    <!--android:isIndicator="true"-->
-                    <!--app:layout_constraintHorizontal_bias="0.0"-->
-                    <!--style="@style/RatingBarFixed"-->
-                    <!--android:numStars="5"-->
-                    <!--android:rating="0"-->
-                    <!--android:stepSize="0.1"/>-->
             <TextView
                     tools:text="3.5"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/marketplace_single_row_rating"
-                    android:layout_marginEnd="16dp"
-                    app:layout_constraintEnd_toEndOf="parent"
                     android:fontFamily="@font/roboto_bold"
                     android:textColor="@color/gray900"
                     android:textSize="15sp"
+                    android:layout_marginStart="16dp"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintBottom_toBottomOf="@+id/marketplace_single_row_rating_bar"
                     app:layout_constraintTop_toTopOf="@+id/marketplace_single_row_rating_bar"/>
+            <TextView
+                    tools:text="(13)"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/marketplace_single_row_raters"
+                    android:fontFamily="@font/roboto"
+                    android:textColor="@color/gray500"
+                    android:textSize="15sp"
+                    android:layout_marginStart="8dp"
+                    app:layout_constraintStart_toEndOf="@+id/marketplace_single_row_rating_bar"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginEnd="16dp"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintTop_toTopOf="@+id/marketplace_single_row_rating_bar"
+                    app:layout_constraintBottom_toBottomOf="@+id/marketplace_single_row_rating_bar"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

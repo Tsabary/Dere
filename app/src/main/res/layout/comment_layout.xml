@@ -20,7 +20,7 @@
             android:visibility="gone">
 
         <TextView
-                android:text="Are you sure you want to delete your comment?"
+                android:text="@string/are_you_sure_you_want_to_delete_your_comment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/single_comment_delete_message"
@@ -46,7 +46,7 @@
                 android:textColor="@color/gray500"
                 android:fontFamily="@font/roboto_medium"/>
         <TextView
-                android:text="Remove"
+                android:text="@string/remove"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/single_comment_remove"
@@ -110,7 +110,8 @@
             android:textColor="@color/gray800"
             android:visibility="gone"
             android:textSize="15sp"
-            android:background="@android:color/transparent"/>
+            android:background="@android:color/transparent"
+            android:inputType="textCapSentences"/>
 
     <TextView
             android:layout_width="wrap_content"
@@ -136,7 +137,8 @@
             android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toStartOf="@+id/single_comment_like_count"
             app:layout_constraintTop_toTopOf="@+id/single_comment_author"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="8dp"
+            android:contentDescription="@string/comment_like"/>
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -151,7 +153,7 @@
             android:textSize="15sp"/>
 
     <TextView
-            android:text="Edit"
+            android:text="@string/edit"
             android:layout_width="35dp"
             android:layout_height="wrap_content"
             android:id="@+id/single_comment_edit"
@@ -166,7 +168,7 @@
             android:fontFamily="@font/roboto_medium"/>
 
     <TextView
-            android:text="@string/Save"
+            android:text="@string/save"
             android:layout_width="35dp"
             android:layout_height="wrap_content"
             android:id="@+id/single_comment_save"
@@ -181,7 +183,7 @@
             android:fontFamily="@font/roboto_medium"/>
 
     <TextView
-            android:text="Delete"
+            android:text="@string/delete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/single_comment_delete"
@@ -202,7 +204,7 @@
             app:layout_constraintTop_toTopOf="@+id/single_comment_author"
             app:layout_constraintBottom_toBottomOf="@+id/single_comment_author"
             android:textColor="@color/gray500"
-            android:hint="6"
+            tools:text="6"
             android:fontFamily="@font/roboto_medium"
             android:textSize="15sp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

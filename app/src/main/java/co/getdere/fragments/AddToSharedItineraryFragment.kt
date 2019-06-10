@@ -38,13 +38,18 @@ class AddToSharedItineraryFragment : Fragment(), DereMethods {
 
     lateinit var imageObject: Images
     private lateinit var currentUser: Users
+
     lateinit var recycler: RecyclerView
-
     val itinerariesAdapter = GroupAdapter<ViewHolder>()
-    private lateinit var bucketsLayoutManager: LinearLayoutManager
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? = inflater.inflate(R.layout.fragment_add_to_collection, container, false)
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         activity?.let {
             sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
@@ -55,16 +60,6 @@ class AddToSharedItineraryFragment : Fragment(), DereMethods {
             })
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
         }
-    }
-
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_add_to_collection, container, false)
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
 
         add_to_collection_new_input.visibility = View.GONE
         add_to_collection_new_button.visibility = View.GONE
@@ -82,48 +77,42 @@ class AddToSharedItineraryFragment : Fragment(), DereMethods {
 
         itinerariesAdapter.clear()
 
-        val userRef = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}")
+        FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                }
 
-        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
+                override fun onDataChange(p0: DataSnapshot) {
 
-            override fun onDataChange(p0: DataSnapshot) {
+                    if (p0.hasChild("sharedItineraries")) {
+                        recycler.visibility = View.VISIBLE
 
-                if (p0.hasChild("sharedItineraries")) {
-                    recycler.visibility = View.VISIBLE
+                        for (itineraryPath in p0.child("sharedItineraries").children) {
 
-                    for (itineraryPath in p0.child("sharedItineraries").children) {
+                            FirebaseDatabase.getInstance().getReference("/sharedItineraries/${itineraryPath.key}/body")
+                                .addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onCancelled(p0: DatabaseError) {}
 
-                        FirebaseDatabase.getInstance().getReference("/sharedItineraries/${itineraryPath.key}/body")
-                            .addListenerForSingleValueEvent(object : ValueEventListener {
-                                override fun onCancelled(p0: DatabaseError) {
-                                }
+                                    override fun onDataChange(p0: DataSnapshot) {
 
-                                override fun onDataChange(p0: DataSnapshot) {
+                                        val sharedItinerary = p0.getValue(SharedItineraryBody::class.java)
 
-                                    val sharedItinerary = p0.getValue(SharedItineraryBody::class.java)
-
-                                    if (sharedItinerary != null) {
-                                        itinerariesAdapter.add(
-                                            SingleSharedItinerarySuggestion(
-                                                sharedItinerary,
-                                                imageObject,
-                                                currentUser,
-                                                activity as MainActivity
+                                        if (sharedItinerary != null) {
+                                            itinerariesAdapter.add(
+                                                SingleSharedItinerarySuggestion(
+                                                    sharedItinerary,
+                                                    imageObject,
+                                                    currentUser,
+                                                    activity as MainActivity
+                                                )
                                             )
-                                        )
+                                        }
                                     }
-
-                                }
-
-                            })
-
-
+                                })
+                        }
                     }
                 }
-            }
-        })
+            })
     }
 
     companion object {
@@ -133,7 +122,7 @@ class AddToSharedItineraryFragment : Fragment(), DereMethods {
 
 
 class SingleSharedItinerarySuggestion(
-    val sharedItinerary: SharedItineraryBody,
+    private val sharedItinerary: SharedItineraryBody,
     val image: Images,
     val currentUser: Users,
     val activity: Activity
@@ -174,8 +163,6 @@ class SingleSharedItinerarySuggestion(
                 activity
             )
         }
-
-
     }
 
 
@@ -203,31 +190,25 @@ class SingleSharedItinerarySuggestion(
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-
                 if (p0.hasChild(image.id)) {
-
                     if (case == 1) {
-
                         sharedItineraryRef.child(image.id).removeValue()
                             .addOnSuccessListener {
 
                                 imageSharedItinerariesRef.removeValue().addOnSuccessListener {
-                                    actionText.text = "Add"
+                                    actionText.text = context.getString(R.string.add)
                                     actionText.setTextColor(
                                         ContextCompat.getColor(
                                             context,
                                             R.color.green700
                                         )
                                     )
-
                                     activity.marketplacePurchasedFragment.listenToItineraries()
-
                                 }
                             }
 
-
                     } else {
-                        actionText.text = "Remove"
+                        actionText.text = context.getString(R.string.remove)
                         actionText.setTextColor(
                             ContextCompat.getColor(
                                 context,
@@ -237,28 +218,24 @@ class SingleSharedItinerarySuggestion(
                     }
 
                 } else {
-
                     if (case == 1) {
-
                         sharedItineraryRef.child(image.id).setValue(true)
                             .addOnSuccessListener {
 
                                 imageSharedItinerariesRef.setValue(true).addOnSuccessListener {
-                                    actionText.text = "Remove"
+                                    actionText.text = context.getString(R.string.remove)
                                     actionText.setTextColor(
                                         ContextCompat.getColor(
                                             context,
                                             R.color.gray500
                                         )
                                     )
-
                                     activity.marketplacePurchasedFragment.listenToItineraries()
-
                                 }
                             }
 
                     } else {
-                        actionText.text = "Add"
+                        actionText.text = context.getString(R.string.add)
                         actionText.setTextColor(
                             ContextCompat.getColor(
                                 context,
@@ -267,11 +244,8 @@ class SingleSharedItinerarySuggestion(
                         )
                     }
                 }
-
             }
-
         })
-
     }
 }
 

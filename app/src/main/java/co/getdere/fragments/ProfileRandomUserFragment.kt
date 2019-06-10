@@ -2,11 +2,9 @@ package co.getdere.fragments
 
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
@@ -48,21 +46,6 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
     var imageList = mutableListOf<FeedImage>()
 
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            sharedViewModelSecondImage = ViewModelProviders.of(it).get(SharedViewModelSecondImage::class.java)
-            sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
-            sharedViewModelForSecondRandomUser =
-                ViewModelProviders.of(it).get(SharedViewModelSecondRandomUser::class.java)
-            sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
-            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-        }
-    }
-
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_profile_random_user, container, false)
 
@@ -70,9 +53,20 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+
         val activity = activity as MainActivity
 
-        val profileTagline = profile_ru_tagline
+        activity.let {
+            sharedViewModelSecondImage = ViewModelProviders.of(it).get(SharedViewModelSecondImage::class.java)
+            sharedViewModelForRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
+            sharedViewModelForSecondRandomUser =
+                ViewModelProviders.of(it).get(SharedViewModelSecondRandomUser::class.java)
+            sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+        }
+
+        val profileTagLine = profile_ru_tagline
         val profilePicture: ImageView = profile_ru_image
         val profileName: TextView = profile_ru_user_name
         val instagramButton = profile_ru_insta_icon
@@ -87,7 +81,6 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
         instagramButton.setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(instaLink)))
-            val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
             firebaseAnalytics.logEvent("instagram_clicked_other_user", null)
         }
 
@@ -95,7 +88,6 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
         sharedViewModelForRandomUser.randomUserObject.observe(this, Observer {
             it?.let { user ->
                 userProfile = user
-
 
                 userRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}")
 
@@ -122,39 +114,32 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
                 profileName.text = it.name
                 profileReputation.text = numberCalculation(it.reputation)
-                profileTagline.text = it.tagline
+                profileTagLine.text = it.tagline
 
                 galleryRollAdapter.clear()
                 listenToImagesFromRoll()
 
                 executeFollow(0, followButton, activity)
 
+                FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
+                    .addValueEventListener(object : ValueEventListener {
 
-                val photosRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
+                        override fun onCancelled(p0: DatabaseError) {}
 
-                photosRef.addValueEventListener(object : ValueEventListener {
+                        override fun onDataChange(p0: DataSnapshot) {
+                            profilePhotos.text = numberCalculation(p0.childrenCount)
+                        }
+                    })
 
-                    override fun onCancelled(p0: DatabaseError) {
+                FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/followers")
+                    .addValueEventListener(object : ValueEventListener {
 
-                    }
+                        override fun onCancelled(p0: DatabaseError) {}
 
-                    override fun onDataChange(p0: DataSnapshot) {
-                        profilePhotos.text = numberCalculation(p0.childrenCount)
-                    }
-                })
-
-                val followersRef = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/followers")
-
-                followersRef.addValueEventListener(object : ValueEventListener {
-
-                    override fun onCancelled(p0: DatabaseError) {
-
-                    }
-
-                    override fun onDataChange(p0: DataSnapshot) {
-                        profileFollowers.text = numberCalculation(p0.childrenCount)
-                    }
-                })
+                        override fun onDataChange(p0: DataSnapshot) {
+                            profileFollowers.text = numberCalculation(p0.childrenCount)
+                        }
+                    })
 
                 galleryRollAdapter.setOnItemClickListener { item, view ->
                     val image = item as FeedImage
@@ -174,20 +159,16 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
         }
         )
 
-
         followButton.setOnClickListener {
             executeFollow(1, followButton, activity)
         }
 
-
         userMapButton.setOnClickListener {
             activity.isRandomUserProfileActive = true
             userRef.child("images").addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-                }
+                override fun onCancelled(p0: DatabaseError) {}
 
                 override fun onDataChange(p0: DataSnapshot) {
-
                     if (p0.hasChildren()) {
                         sharedViewModelCollection.imageCollection.postValue(p0)
                         activity.subFm.beginTransaction()
@@ -195,7 +176,6 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
                             .addToBackStack("collectionMapView")
                             .commit()
                         activity.subActive = activity.collectionMapView
-                        val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
                         firebaseAnalytics.logEvent("map_checked_user", null)
                     } else {
                         Toast.makeText(activity, "User has no photos to view on the map", Toast.LENGTH_SHORT).show()
@@ -208,12 +188,9 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
     private fun executeFollow(case: Int, followButton: TextView, activity: Activity) {
 
         val followerRef = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/following")
-        val beingFollowedRef = FirebaseDatabase.getInstance().getReference("users/${userProfile.uid}/followers")
 
         followerRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
+            override fun onCancelled(p0: DatabaseError) {}
 
             override fun onDataChange(p0: DataSnapshot) {
 
@@ -221,54 +198,50 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
 
                     if (case == 1) {
 
-                        val followerRefThisAccount = FirebaseDatabase.getInstance()
-                            .getReference("/users/${currentUser.uid}/following/${userProfile.uid}")
-                        val beingFollowedRefThisAccount = FirebaseDatabase.getInstance()
-                            .getReference("users/${userProfile.uid}/followers/${currentUser.uid}")
-
-                        followerRefThisAccount.removeValue()
-                        beingFollowedRefThisAccount.removeValue()
-
-                        followButton.setBackgroundResource(R.drawable.follow_button)
-                        followButton.setTextColor(ContextCompat.getColor(context!!, R.color.white))
-                        followButton.text = "Follow"
-//                        followButton.tag = "unfollowed"
-
+                        FirebaseDatabase.getInstance()
+                            .getReference("/users/${currentUser.uid}/following/${userProfile.uid}").removeValue()
+                            .addOnSuccessListener {
+                                FirebaseDatabase.getInstance()
+                                    .getReference("users/${userProfile.uid}/followers/${currentUser.uid}").removeValue()
+                                    .addOnSuccessListener {
+                                        followButton.setBackgroundResource(R.drawable.follow_button)
+                                        followButton.setTextColor(ContextCompat.getColor(context!!, R.color.white))
+                                        followButton.text = getString(R.string.follow)
+                                    }
+                            }
                     } else {
                         followButton.setBackgroundResource(R.drawable.unfollow_button)
                         followButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray300))
-                        followButton.text = "Unfollow"
-//                        followButton.tag = "followed"
-
+                        followButton.text = getString(R.string.unfollow)
                     }
-
                 } else {
-
                     if (case == 1) {
 
-                        followerRef.child(userProfile.uid).setValue(true)
-                        beingFollowedRef.child(currentUser.uid).setValue(true)
+                        followerRef.child(userProfile.uid).setValue(true).addOnSuccessListener {
+                            FirebaseDatabase.getInstance().getReference("users/${userProfile.uid}/followers")
+                                .child(currentUser.uid).setValue(true).addOnSuccessListener {
+                                    followButton.setBackgroundResource(R.drawable.unfollow_button)
+                                    followButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray300))
+                                    followButton.text = getString(R.string.unfollow)
 
-                        followButton.setBackgroundResource(R.drawable.unfollow_button)
-                        followButton.setTextColor(ContextCompat.getColor(context!!, R.color.gray300))
-                        followButton.text = "Unfollow"
-
-                        changeReputation(
-                            20,
-                            userProfile.uid,
-                            userProfile.uid,
-                            currentUser.uid,
-                            currentUser.name,
-                            userProfile.uid,
-                            TextView(context),
-                            "follow",
-                            activity
-                        )
+                                    changeReputation(
+                                        20,
+                                        userProfile.uid,
+                                        userProfile.uid,
+                                        currentUser.uid,
+                                        currentUser.name,
+                                        userProfile.uid,
+                                        TextView(context),
+                                        "follow",
+                                        activity
+                                    )
+                                }
+                        }
 
                     } else {
                         followButton.setBackgroundResource(R.drawable.follow_button)
                         followButton.setTextColor(ContextCompat.getColor(context!!, R.color.white))
-                        followButton.text = "Follow"
+                        followButton.text = getString(R.string.follow)
                     }
                 }
             }
@@ -284,74 +257,35 @@ class ProfileRandomUserFragment : Fragment(), DereMethods {
         galleryRollAdapter.clear()
         imageList.clear()
 
-        val ref = FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
+        FirebaseDatabase.getInstance().getReference("/users/${userProfile.uid}/images")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
 
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
-
-                for (imagePath in p0.children) {
-
-                    val imageObjectPath =
+                    for (imagePath in p0.children) {
                         FirebaseDatabase.getInstance().getReference("/images/${imagePath.key}/body")
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onCancelled(p0: DatabaseError) {}
 
-                    imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-                        }
-
-                        override fun onDataChange(p0: DataSnapshot) {
-                            val imageObject = p0.getValue(Images::class.java)
-                            if (imageObject != null) {
-                                if (!imageObject.private) {
-                                    imageList.add(FeedImage(imageObject, 1))
-                                    galleryRollAdapter.clear()
-                                    galleryRollAdapter.addAll(imageList.reversed())
+                                override fun onDataChange(p0: DataSnapshot) {
+                                    val imageObject = p0.getValue(Images::class.java)
+                                    if (imageObject != null) {
+                                        if (!imageObject.private) {
+                                            imageList.add(FeedImage(imageObject, 1))
+                                            galleryRollAdapter.clear()
+                                            galleryRollAdapter.addAll(imageList.reversed())
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                    })
+                            })
+                    }
                 }
-            }
 
-//            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-//
-//                val imagePath = p0.key
-//
-//                val imageObjectPath =
-//                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
-//
-//                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-//                    override fun onCancelled(p0: DatabaseError) {
-//
-//                    }
-//
-//                    override fun onDataChange(p0: DataSnapshot) {
-//                        val imageObject = p0.getValue(Images::class.java)
-//
-//                        galleryRollAdapter.add(FeedImage(imageObject!!, 0))
-//                    }
-//                })
-//            }
-
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-//
-//            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-//            }
-//
-//            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-//            }
-//
-//            override fun onChildRemoved(p0: DataSnapshot) {
-//            }
-
-        })
+                override fun onCancelled(p0: DatabaseError) {}
+            })
     }
 
 
     companion object {
         fun newInstance(): ProfileRandomUserFragment = ProfileRandomUserFragment()
     }
-
-
 }

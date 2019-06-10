@@ -41,7 +41,7 @@ import kotlin.math.ceil
 
 
 class ItineraryEditFragment : Fragment(), DereMethods {
-    val REQUEST_CODE_AUTOCOMPLETE = 19
+    private val REQUEST_CODE_AUTOCOMPLETE = 19
     lateinit var selectedCarmenFeature: CarmenFeature
 
     lateinit var sharedViewModelItineraryImages: SharedViewModelItineraryImages
@@ -61,8 +61,8 @@ class ItineraryEditFragment : Fragment(), DereMethods {
     lateinit var priceContainer: ConstraintLayout
 
     lateinit var location: TextView
-    var locationIdString = ""
-    var locationNameString = ""
+    private var locationIdString = ""
+    private var locationNameString = ""
     lateinit var title: EditText
     lateinit var description: EditText
     var audience = mutableListOf<Boolean>()
@@ -104,15 +104,6 @@ class ItineraryEditFragment : Fragment(), DereMethods {
 
     var step = 0
 
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        activity?.let {
-            sharedViewModelItineraryImages = ViewModelProviders.of(it).get(SharedViewModelItineraryImages::class.java)
-            sharedViewModelItinerary = ViewModelProviders.of(it).get(SharedViewModelItinerary::class.java)
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -125,6 +116,11 @@ class ItineraryEditFragment : Fragment(), DereMethods {
         super.onViewCreated(view, savedInstanceState)
 
         val activity = activity as MainActivity
+
+        activity.let {
+            sharedViewModelItineraryImages = ViewModelProviders.of(it).get(SharedViewModelItineraryImages::class.java)
+            sharedViewModelItinerary = ViewModelProviders.of(it).get(SharedViewModelItinerary::class.java)
+        }
 
         aboutYouContainer = itinerary_edit_about_you_container
         basicInformationContainer = itinerary_edit_basic_information
@@ -140,8 +136,7 @@ class ItineraryEditFragment : Fragment(), DereMethods {
         audienceCouples = itinerary_edit_couples_checkbox
         audienceFamilies = itinerary_edit_families_checkbox
         audienceGroups = itinerary_edit_groups_checkbox
-        val lengthMinText = itinerary_edit_days_min
-        val lengthMaxText = itinerary_edit_days_max
+
 
         val residencyOptionsContainer = itinerary_edit_author_residency
         val selectResidency = itinerary_edit_select_residency
@@ -187,7 +182,6 @@ class ItineraryEditFragment : Fragment(), DereMethods {
                     itineraryInformational = itinerary.child("content").getValue(ItineraryInformational::class.java)!!
                     itineraryListing = itinerary.child("listing").getValue(ItineraryListing::class.java)!!
                     itineraryBudget = itinerary.child("budget").getValue(ItineraryBudget::class.java)!!
-
 
 
                     title.setText(itineraryBody.title)
@@ -246,9 +240,8 @@ class ItineraryEditFragment : Fragment(), DereMethods {
 //                        price.setText("0")
 //                    }
 
-                    val imagesRef = FirebaseDatabase.getInstance().getReference("/images/")
                     for (image in itineraryListing.sampleImages) {
-                        imagesRef.child("${image.key}/body")
+                        FirebaseDatabase.getInstance().getReference("/images/").child("${image.key}/body")
                             .addListenerForSingleValueEvent(object : ValueEventListener {
                                 override fun onCancelled(p0: DatabaseError) {
                                 }
@@ -324,7 +317,6 @@ class ItineraryEditFragment : Fragment(), DereMethods {
         }
 
 
-
         teaserImageCta.setOnClickListener {
             activity.subFm.beginTransaction().add(
                 R.id.feed_subcontents_frame_container,
@@ -352,11 +344,8 @@ class ItineraryEditFragment : Fragment(), DereMethods {
         teaserImagesRecycler.layoutManager = GridLayoutManager(this.context, 3)
 
 
-
-
         sharedViewModelItineraryImages.imageList.observe(this, Observer {
             it?.let { existingImageList ->
-
 
                 teaserImagesRecyclerAdapter.clear()
                 sampleImages.clear()
@@ -364,12 +353,9 @@ class ItineraryEditFragment : Fragment(), DereMethods {
                 if (existingImageList.isNotEmpty()) {
                     teaserImagesRecycler.visibility = View.VISIBLE
 
-                    val imagesRef = FirebaseDatabase.getInstance().getReference("/images")
-
-
                     for (image in existingImageList) {
 
-                        imagesRef.child("$image/body")
+                        FirebaseDatabase.getInstance().getReference("/images").child("$image/body")
                             .addListenerForSingleValueEvent(object : ValueEventListener {
                                 override fun onCancelled(p0: DatabaseError) {
                                 }
@@ -390,14 +376,10 @@ class ItineraryEditFragment : Fragment(), DereMethods {
                                     }
                                 }
                             })
-
-
                     }
                 } else {
                     teaserImagesRecycler.visibility = View.GONE
                 }
-
-
             }
         })
     }
@@ -415,7 +397,6 @@ class ItineraryEditFragment : Fragment(), DereMethods {
         if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_AUTOCOMPLETE) {
             // Retrieve selected locationId's CarmenFeature
             selectedCarmenFeature = PlaceAutocomplete.getPlace(data!!)
-
 
             location.text = selectedCarmenFeature.placeName()
             locationIdString = selectedCarmenFeature.id()!!
@@ -575,12 +556,8 @@ class ItineraryEditFragment : Fragment(), DereMethods {
             itineraryRef.child("content").setValue(itineraryInformationalDetails).addOnSuccessListener {
                 itineraryRef.child("listing").setValue(itineraryTechnicalDetails).addOnSuccessListener {
                     itineraryRef.child("budget").setValue(itineraryBudgetDetails).addOnSuccessListener {
-                        //                    activity.switchVisibility(0)
-//                    activity.subActive = activity.imageFullSizeFragment
                         step = 0
                         activity.subFm.popBackStack("itineraryEditFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
-//                    activity.subFm.beginTransaction().remove(activity.addImagesToItineraryFragment)
-//                        .remove(activity.itineraryEditFragment).remove(activity.collectionGalleryFragment).commit()
                     }
                 }
             }

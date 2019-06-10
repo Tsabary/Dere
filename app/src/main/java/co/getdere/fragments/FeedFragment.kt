@@ -60,31 +60,26 @@ class FeedFragment : Fragment(), DereMethods {
 
     private lateinit var pagerAdapter: FeedPagerAdapter
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
 
-        activity?.let {
-            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-            sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
-        }
-    }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_feed, container, false)
 
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_feed, container, false)
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val activity = activity as MainActivity
 
+        activity.let {
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+            sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
+        }
+
         val feedSearchBox = feed_toolbar_search_box
         val tagSuggestionRecycler = feed_search_tags_recycler
         feedFilterChipGroup = feed_toolbar_chipgroup
 
-        val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
-        tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
+        tagSuggestionRecycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.adapter = tagsFilteredAdapter
 
         searchedImagesRecycler = feed_search_results_recycler
@@ -159,7 +154,6 @@ class FeedFragment : Fragment(), DereMethods {
 
         viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {
-
             }
 
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
@@ -177,7 +171,6 @@ class FeedFragment : Fragment(), DereMethods {
                     firebaseAnalytics.logEvent("following_feed", null)
                 }
             }
-
         })
 
 
@@ -212,55 +205,46 @@ class FeedFragment : Fragment(), DereMethods {
         activity.subActive = activity.feedNotificationsFragment
         activity.switchVisibility(1)
         activity.isFeedNotificationsActive = true
-//        activity.feedNotificationsFragment.listenToNotifications()
     }
 
     private fun searchImages(searchedTag: String) { //This needs to be fixed to not update in real time. Or should it?
 
         searchedImagesRecyclerAdapter.clear()
 
+        FirebaseDatabase.getInstance().getReference("/images")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
+                    for (image in p0.children) {
+                        val singleImageFromDB = image.child("body").getValue(Images::class.java)
 
-        val ref = FirebaseDatabase.getInstance().getReference("/images")
+                        if (singleImageFromDB != null) {
 
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
-                for (image in p0.children) {
-                    val singleImageFromDB = image.child("body").getValue(Images::class.java)
+                            checkMatchWithPhoto@ for (imageTag in singleImageFromDB.tags) {
 
-                    if (singleImageFromDB != null) {
-
-                        checkMatchWithPhoto@ for (imageTag in singleImageFromDB.tags) {
-
-                            if (imageTag == searchedTag) {
-                                if (!singleImageFromDB.private) {
-                                    searchedImagesRecyclerAdapter.add(
-                                        LinearFeedImage(
-                                            singleImageFromDB,
-                                            currentUser,
-                                            activity as MainActivity
+                                if (imageTag == searchedTag) {
+                                    if (!singleImageFromDB.private) {
+                                        searchedImagesRecyclerAdapter.add(
+                                            LinearFeedImage(
+                                                singleImageFromDB,
+                                                currentUser,
+                                                activity as MainActivity
+                                            )
                                         )
-                                    )
-                                    break@checkMatchWithPhoto
+                                        break@checkMatchWithPhoto
+                                    }
                                 }
                             }
                         }
                     }
+                    searchedImagesRecycler.smoothScrollToPosition(0)
                 }
-
-                searchedImagesRecycler.smoothScrollToPosition(0)
-            }
-
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
-        })
-
+                override fun onCancelled(p0: DatabaseError) {
+                }
+            })
     }
 
 
     private fun onTagSelected(selectedTag: String) {
-
         val chip = Chip(this.context)
         chip.text = selectedTag
         chip.isCloseIconVisible = true
@@ -272,15 +256,11 @@ class FeedFragment : Fragment(), DereMethods {
             feedFilterChipGroup.removeView(it)
             recyclersVisibility(0)
         }
-
         feedFilterChipGroup.addView(chip)
         feedFilterChipGroup.visibility = View.VISIBLE
-
     }
 
-
     private fun recyclersVisibility(case: Int) {
-
         if (case == 0) {
             searchedImagesRecycler.visibility = View.GONE
             viewPager.visibility = View.VISIBLE
@@ -288,15 +268,6 @@ class FeedFragment : Fragment(), DereMethods {
             searchedImagesRecycler.visibility = View.VISIBLE
             viewPager.visibility = View.GONE
         }
-
-    }
-
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-
-        inflater.inflate(co.getdere.R.menu.feed_navigation, menu)
-        super.onCreateOptionsMenu(menu, inflater)
-
     }
 
 
@@ -321,5 +292,4 @@ class FeedFragment : Fragment(), DereMethods {
     companion object {
         fun newInstance(): FeedFragment = FeedFragment()
     }
-
 }

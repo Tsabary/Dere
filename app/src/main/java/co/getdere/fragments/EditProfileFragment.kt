@@ -34,7 +34,7 @@ import java.util.*
 class EditProfileFragment : Fragment() {
 
 
-    lateinit var user: Users
+    lateinit var currentUser: Users
     lateinit var userImage: CircleImageView
     lateinit var tagLineInput: EditText
     lateinit var userNameInput: EditText
@@ -43,42 +43,32 @@ class EditProfileFragment : Fragment() {
 
     lateinit var sharedViewModelForCurrentUser: SharedViewModelCurrentUser
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            sharedViewModelForCurrentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java)
-
-            user = sharedViewModelForCurrentUser.currentUserObject
-        }
-
-    }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(co.getdere.R.layout.fragment_edit_profile, container, false)
-    }
+    ): View? = inflater.inflate(co.getdere.R.layout.fragment_edit_profile, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val activity = activity as MainActivity
+
+        activity.let {
+            sharedViewModelForCurrentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java)
+            currentUser = sharedViewModelForCurrentUser.currentUserObject
+        }
 
         userImage = edit_profile_image
         tagLineInput = edit_profile_description
         userNameInput = edit_profile_name
         userInstagramInput = edit_profile_instagram
-
         saveButton = edit_profile_save
 
         setUpUserDetails()
 
-
         userImage.setOnClickListener {
-
             val intent = Intent(Intent.ACTION_PICK)
             intent.type = "image/*"
             startActivityForResult(intent, 0)
@@ -88,9 +78,8 @@ class EditProfileFragment : Fragment() {
         saveButton.setOnClickListener {
             saveButton.isClickable = false
             edit_profile_loading.visibility = View.VISIBLE
-            uploadImageToFirebase(user.image)
+            uploadImageToFirebase(currentUser.image)
         }
-
     }
 
     private var selectedPhotoUri: Uri? = null
@@ -99,8 +88,6 @@ class EditProfileFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == 0 && resultCode == Activity.RESULT_OK && data != null) {
-            Log.d("Main", "Photo was selected")
-
             selectedPhotoUri = data.data
             val bitmap =
                 MediaStore.Images.Media.getBitmap((activity as MainActivity).contentResolver, selectedPhotoUri)
@@ -110,70 +97,57 @@ class EditProfileFragment : Fragment() {
 
 
     private fun performUpdateProfile(imageUri: String) {
+        val activity = activity as MainActivity
 
-        val userRef = FirebaseDatabase.getInstance().getReference("/users/${user.uid}/profile")
-
+        val userRef = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/profile")
 
         if (userNameInput.length() > 2) {
             userRef.child("name").setValue(userNameInput.text.toString().trimEnd()).addOnSuccessListener {
-
-
                 userRef.child("tagline").setValue(tagLineInput.text.toString().trimEnd()).addOnSuccessListener {
-
                     userRef.child("image").setValue(imageUri).addOnSuccessListener {
-
-                        val userStaxRef = FirebaseDatabase.getInstance().getReference("/users/${user.uid}/stax/")
-
-                        userStaxRef.child("instagram").setValue(userInstagramInput.text.toString().trimEnd())
+                        FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/stax").child("instagram")
+                            .setValue(userInstagramInput.text.toString().trimEnd())
                             .addOnSuccessListener {
-
                                 userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                                    override fun onCancelled(p0: DatabaseError) {
-
-                                    }
+                                    override fun onCancelled(p0: DatabaseError) {}
 
                                     override fun onDataChange(p0: DataSnapshot) {
 
                                         val user = p0.getValue(Users::class.java)
+                                        if (user != null) {
+                                            sharedViewModelForCurrentUser.currentUserObject = user
 
+                                            activity.fm.beginTransaction().detach(activity.profileLoggedInUserFragment)
+                                                .attach(activity.profileLoggedInUserFragment).commit()
 
-                                        sharedViewModelForCurrentUser.currentUserObject = user!!
+                                            activity.switchVisibility(0)
 
-                                        val activity = activity as MainActivity
-
-                                        activity.fm.beginTransaction().detach(activity.profileLoggedInUserFragment)
-                                            .attach(activity.profileLoggedInUserFragment).commit()
-
-                                        activity.switchVisibility(0)
-
-                                        saveButton.isClickable = true
-                                        edit_profile_loading.visibility = View.GONE
+                                            saveFail()
+                                        }
                                     }
-
                                 })
                             }.addOnFailureListener {
-                                saveButton.isClickable = true
-                                edit_profile_loading.visibility = View.GONE
+                                saveFail()
                             }
-
                     }.addOnFailureListener {
-                        saveButton.isClickable = true
-                        edit_profile_loading.visibility = View.GONE
+                        saveFail()
                     }
-
                 }.addOnFailureListener {
-                    saveButton.isClickable = true
-                    edit_profile_loading.visibility = View.GONE
+                    saveFail()
                 }
             }.addOnFailureListener {
-                saveButton.isClickable = true
-                edit_profile_loading.visibility = View.GONE
+                saveFail()
             }
         } else {
             Toast.makeText(this.context, "Name can't be less than 2 letters", Toast.LENGTH_LONG).show()
         }
 
 
+    }
+
+    fun saveFail() {
+        saveButton.isClickable = true
+        edit_profile_loading.visibility = View.GONE
     }
 
 
@@ -186,52 +160,43 @@ class EditProfileFragment : Fragment() {
 
             ref.putFile(selectedPhotoUri!!)
                 .addOnSuccessListener {
-                    Log.d("RegisterActivity", "Successfully uploaded image ${it.metadata?.path}")
-
                     ref.downloadUrl.addOnSuccessListener { newImageUri ->
-                        Log.d("RegisterActivity", "File location: $newImageUri")
-
                         performUpdateProfile(newImageUri.toString())
                     }
-
-                }.addOnFailureListener {
-                    Log.d("RegisterActivity", "Failed to upload image to server $it")
-
                 }
-
         } else {
             performUpdateProfile(currentImageUri)
         }
-
-
     }
 
 
     private fun setUpUserDetails() {
 
-        val userInstagramRef = FirebaseDatabase.getInstance().getReference("/users/${user.uid}/stax/instagram")
-
-
-        Glide.with(this).load(if(user.image.isNotEmpty()){user.image}else{
-            R.drawable.user_profile}).into(userImage)
-        tagLineInput.setText(user.tagline)
-        userNameInput.setText(user.name)
-
-        userInstagramRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-
+        Glide.with(this).load(
+            if (currentUser.image.isNotEmpty()) {
+                currentUser.image
+            } else {
+                R.drawable.user_profile
             }
+        ).into(userImage)
+        tagLineInput.setText(currentUser.tagline)
+        userNameInput.setText(currentUser.name)
 
-            override fun onDataChange(p0: DataSnapshot) {
-                val instagramHandle = p0.value.toString()
-                if (instagramHandle == "null") {
-                    userInstagramInput.setText("")
-                } else
-                    userInstagramInput.setText(instagramHandle)
-            }
+        FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/stax/instagram")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {}
 
-
-        })
+                override fun onDataChange(p0: DataSnapshot) {
+                    val instagramHandle = p0.value.toString()
+                    if (instagramHandle == "null") {
+                        userInstagramInput.setText("")
+                    } else
+                        userInstagramInput.setText(instagramHandle)
+                }
+            })
     }
 
+    companion object {
+        fun newInstance(): EditProfileFragment = EditProfileFragment()
+    }
 }

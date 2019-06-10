@@ -32,24 +32,22 @@ import kotlinx.android.synthetic.main.itinerary_summery_location.view.*
 
 class ItinerarySummeryFragment : Fragment() {
 
-    lateinit var sharedViewModelItineraryDayStrings: SharedViewModelItineraryDayStrings
+    private lateinit var sharedViewModelItineraryDayStrings: SharedViewModelItineraryDayStrings
     lateinit var sharedViewModelCollection: SharedViewModelCollection
+    private lateinit var currentUser : Users
 
-    var myImageList = mutableListOf<MutableMap<String, Boolean>>()
+    private var myImageList = mutableListOf<MutableMap<String, Boolean>>()
 
-    val daysAdapter = GroupAdapter<ViewHolder>()
-    var startDay = 0
+    private val daysAdapter = GroupAdapter<ViewHolder>()
+    private var startDay = 0
 
-    lateinit var itineraryBody: ItineraryBody
-    val uid = FirebaseAuth.getInstance().uid
+    private lateinit var itineraryBody: ItineraryBody
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_itinerary_summery, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_itinerary_summery, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -61,6 +59,7 @@ class ItinerarySummeryFragment : Fragment() {
         daysRecycler.layoutManager = LinearLayoutManager(this.context)
 
         activity.let {
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
             sharedViewModelItineraryDayStrings =
                 ViewModelProviders.of(it).get(SharedViewModelItineraryDayStrings::class.java)
 
@@ -74,7 +73,6 @@ class ItinerarySummeryFragment : Fragment() {
 
                         itineraryBody = collection2.child("body").getValue(ItineraryBody::class.java)!!
                         startDay = itineraryBody.startDay
-
                     }
                 }
             })
@@ -88,26 +86,24 @@ class ItinerarySummeryFragment : Fragment() {
 
             sharedViewModelItineraryDayStrings.daysList.observe(activity, Observer { mutableList ->
                 mutableList?.let { existingImageList ->
-                    //                    myImageList.clear()
                     myImageList = existingImageList
                     populateDays(activity)
                 }
             })
-
         }
 
 
-        sharedViewModelItineraryDayStrings.daysList.observe(activity, Observer { mutableList ->
-            mutableList?.let { existingImageList ->
-                myImageList = existingImageList
-            }
-        })
+//        sharedViewModelItineraryDayStrings.daysList.observe(activity, Observer { mutableList ->
+//            mutableList?.let { existingImageList ->
+//                myImageList = existingImageList
+//            }
+//        })
     }
 
     private fun populateDays(activity: MainActivity) {
         daysAdapter.clear()
         for (day in myImageList) {
-            daysAdapter.add(SingleDaySummery(activity, startDay, itineraryBody, uid!!))
+            daysAdapter.add(SingleDaySummery(activity, startDay, itineraryBody, currentUser.uid))
         }
     }
 
@@ -125,27 +121,15 @@ class SingleDaySummery(
 ) :
     Item<ViewHolder>() {
 
-    private var sharedViewModelImage = ViewModelProviders.of(activity).get(
-        SharedViewModelImage::class.java
-    )
-
-    private var sharedViewModelRandomUser = ViewModelProviders.of(activity).get(
-        SharedViewModelRandomUser::class.java
-    )
-
     private var sharedViewModelItineraryImages = ViewModelProviders.of(activity).get(
         SharedViewModelItineraryDayStrings::class.java
     )
 
-    private val sharedViewModelDayCollection =
-        ViewModelProviders.of(activity).get(SharedViewModelDayCollection::class.java)
 
     val daysAdapter = GroupAdapter<ViewHolder>()
-//        val dayLocationsImages = mutableMapOf<String, Boolean>()
 
-    override fun getLayout(): Int {
-        return R.layout.itinerary_summery_day
-    }
+    override fun getLayout(): Int = R.layout.itinerary_summery_day
+
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
@@ -159,16 +143,13 @@ class SingleDaySummery(
                 it1?.let { existingDaysList ->
 
                     daysAdapter.clear()
-//                        dayLocationsImages.clear()
-
-                    val imagesRef = FirebaseDatabase.getInstance().getReference("/images")
 
                     if (existingDaysList.size > position) {
                         daysRecycler.visibility = View.VISIBLE
 
                         for (image in existingDaysList[position]) {
 
-                            imagesRef.child("${image.key}/body")
+                            FirebaseDatabase.getInstance().getReference("/images").child("${image.key}/body")
                                 .addListenerForSingleValueEvent(object : ValueEventListener {
                                     override fun onCancelled(p0: DatabaseError) {
                                     }
@@ -182,7 +163,6 @@ class SingleDaySummery(
                                                     activity
                                                 )
                                             )
-//                                                dayLocationsImages[imageObject.id] = true
                                         }
                                     }
                                 })
@@ -192,7 +172,6 @@ class SingleDaySummery(
                     }
                 }
             })
-
         }
 
 
@@ -226,11 +205,8 @@ class SingleDaySummery(
             }
 
             else -> ("unknown")
-
         }
-
     }
-
 }
 
 class SingleLocationSummery(val image : Images, val activity : MainActivity) : Item<ViewHolder>(){
@@ -243,9 +219,8 @@ class SingleLocationSummery(val image : Images, val activity : MainActivity) : I
         SharedViewModelRandomUser::class.java
     )
 
-    override fun getLayout(): Int {
-        return R.layout.itinerary_summery_location
-    }
+    override fun getLayout(): Int =R.layout.itinerary_summery_location
+
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
 
@@ -284,5 +259,4 @@ class SingleLocationSummery(val image : Images, val activity : MainActivity) : I
                 })
         }
     }
-
 }

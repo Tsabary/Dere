@@ -18,7 +18,7 @@
 
 
             <TextView
-                    android:text="Question"
+                    android:text="@string/question"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/new_question_static_title"
@@ -39,7 +39,7 @@
                     android:id="@+id/new_question_title"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    android:hint="Start with &quot;How&quot;, &quot;What&quot;, &quot;Where&quot; or &quot;When&quot;"
+                    android:hint="@string/start_with_quot_how_quot_quot_what_quot_quot_where_quot_or_quot_when_quot"
                     app:layout_constraintHorizontal_bias="0.0"
                     android:layout_marginStart="32dp"
                     android:layout_marginEnd="32dp"
@@ -52,30 +52,9 @@
                     android:fontFamily="@font/roboto_medium"
                     android:textSize="15sp"/>
 
-            <!--<com.tobiasschuerg.prefixsuffix.PrefixSuffixEditText-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:ems="10"-->
-                    <!--android:maxLength="150"-->
-                    <!--android:id="@+id/new_question_title"-->
-                    <!--app:layout_constraintEnd_toEndOf="parent"-->
-                    <!--app:layout_constraintStart_toStartOf="parent"-->
-                    <!--android:hint="Start with &quot;How&quot;, &quot;What&quot;, &quot;Where&quot; or &quot;When&quot;"-->
-                    <!--app:layout_constraintHorizontal_bias="0.0"-->
-                    <!--android:layout_marginStart="32dp"-->
-                    <!--android:layout_marginEnd="32dp"-->
-                    <!--android:layout_marginTop="8dp"-->
-                    <!--app:layout_constraintTop_toBottomOf="@+id/new_question_static_title"-->
-                    <!--android:inputType="textMultiLine|textCapSentences"-->
-                    <!--android:digits="abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 ?,'$/&quot;"-->
-                    <!--android:background="@android:color/transparent"-->
-                    <!--android:gravity="top"-->
-                    <!--android:fontFamily="@font/open_sans_semibold"-->
-                    <!--android:textSize="15sp"/>-->
-
 
             <TextView
-                    android:text="Extra details"
+                    android:text="@string/extra_details"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/new_question_static_details"
@@ -98,7 +77,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/new_question_static_details"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    android:hint="Can you add information that would help people answer you question?"
+                    android:hint="@string/can_you_add_information_that_would_help_people_answer_you_question"
                     android:layout_marginTop="8dp"
                     app:layout_constraintHorizontal_bias="0.0"
                     android:layout_marginStart="32dp"
@@ -111,7 +90,7 @@
 
 
             <TextView
-                    android:text="Tags"
+                    android:text="@string/tags"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/new_question_static_tags"
@@ -142,7 +121,7 @@
 
             <EditText android:layout_width="0dp"
                       android:layout_height="23dp"
-                      android:hint="Enter tags"
+                      android:hint="@string/enter_tags"
                       android:id="@+id/new_question_tag_input"
                       app:layout_constraintTop_toBottomOf="@+id/new_question_chip_group"
                       app:layout_constraintStart_toStartOf="parent"
@@ -174,7 +153,7 @@
 
 
             <TextView
-                    android:text="Use a dash to seperate multi-word tags.\nMaximum 5 tags"
+                    android:text="@string/maximum_5_tags"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/new_question_tag_instructions"
@@ -188,7 +167,7 @@
 
 
             <TextView
-                    android:text="Post Question"
+                    android:text="@string/post_question"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:background="@drawable/buttons_shape"
@@ -222,7 +201,8 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginEnd="24dp"
                     android:scaleType="fitCenter"
-                    android:padding="10dp"/>
+                    android:padding="10dp"
+                    android:contentDescription="@string/add_tag"/>
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

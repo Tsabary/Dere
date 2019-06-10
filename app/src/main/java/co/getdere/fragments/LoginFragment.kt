@@ -35,16 +35,16 @@ import kotlinx.android.synthetic.main.fragment_register_login_screens.*
 
 class LoginFragment : Fragment(), DereMethods {
 
-    lateinit var userEmail:EditText
-    lateinit var userPassword : EditText
-    lateinit var button : TextView
-    lateinit var loadingAnimation : ConstraintLayout
+    private lateinit var userEmail:EditText
+    private lateinit var userPassword : EditText
+    private lateinit var button : TextView
+    private lateinit var loadingAnimation : ConstraintLayout
 
     private lateinit var firebaseAuth: FirebaseAuth
 
-    val RC_SIGN_IN: Int = 1
-    lateinit var mGoogleSignInClient: GoogleSignInClient
-    lateinit var mGoogleSignInOptions: GoogleSignInOptions
+    private val RC_SIGN_IN: Int = 1
+    private lateinit var mGoogleSignInClient: GoogleSignInClient
+    private lateinit var mGoogleSignInOptions: GoogleSignInOptions
 
     private val permissions = arrayOf(
         Manifest.permission.CAMERA,
@@ -56,10 +56,8 @@ class LoginFragment : Fragment(), DereMethods {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_register_login_screens, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_register_login_screens, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -69,7 +67,7 @@ class LoginFragment : Fragment(), DereMethods {
 
         register_fragment_confirm_password.visibility = View.GONE
         register_fragment_name.visibility = View.GONE
-        register_fragment_button.text = "Login"
+        register_fragment_button.text = getString(R.string.login)
 
         val forgotPassword = register_fragment_forgot_password
 
@@ -113,12 +111,9 @@ class LoginFragment : Fragment(), DereMethods {
 //        Patterns.EMAIL_ADDRESS.matcher(logEmail).matches()  <--- this methos was used before for the if statement but I've replaced it as I kept getting the invalid email error
 
         if (logEmail.contains("@") && logEmail.contains(".")) {
-
                 FirebaseAuth.getInstance().signInWithEmailAndPassword(logEmail, logPass).addOnSuccessListener {
-
                     FirebaseInstanceId.getInstance().instanceId
                         .addOnSuccessListener {
-
                             // Get new Instance ID token
                             val token = it.token
 
@@ -148,13 +143,11 @@ class LoginFragment : Fragment(), DereMethods {
                     registerFail()
                     Toast.makeText(this.context, "Failed to log you in. ${it.localizedMessage}", Toast.LENGTH_LONG)
                         .show()
-                    Log.d("Main", "Failed to log in user : ${it.message}")
                 }
         } else {
             registerFail()
             Toast.makeText(this.context, "Please enter a valid email address", Toast.LENGTH_LONG).show()
         }
-
     }
 
 
@@ -165,11 +158,9 @@ class LoginFragment : Fragment(), DereMethods {
 
                 val user = firebaseAuth.currentUser
                 if (user != null){
-
                     val intent = Intent(this.context, MainActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
                     startActivity(intent)
-
                 }
             } else {
                 Toast.makeText(this.context, "Google sign in failed:(", Toast.LENGTH_LONG).show()
@@ -228,7 +219,6 @@ class LoginFragment : Fragment(), DereMethods {
         button.isClickable = true
         loadingAnimation.visibility = View.GONE
     }
-
 
     companion object {
         fun newInstance(): LoginFragment = LoginFragment()

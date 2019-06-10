@@ -40,25 +40,9 @@ class AddToItineraryFragment : Fragment(), DereMethods {
 
     lateinit var imageObject: Images
     private lateinit var currentUser: Users
+
     lateinit var recycler: RecyclerView
-
     val itinerariesAdapter = GroupAdapter<ViewHolder>()
-    private lateinit var itinerariesLayoutManager: LinearLayoutManager
-
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
-            sharedViewModelForImage.sharedImageObject.observe(this, Observer { images ->
-                images?.let { image ->
-                    imageObject = image
-                }
-            })
-            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-        }
-    }
 
 
     override fun onCreateView(
@@ -71,12 +55,21 @@ class AddToItineraryFragment : Fragment(), DereMethods {
 
         val activity = activity as MainActivity
 
+        activity.let {
+            sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
+            sharedViewModelForImage.sharedImageObject.observe(this, Observer { images ->
+                images?.let { image ->
+                    imageObject = image
+                }
+            })
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+        }
+
         add_to_collection_title.text = getString(R.string.add_to_itinerary)
 
         recycler = add_to_collection_recycler
         recycler.adapter = itinerariesAdapter
-        itinerariesLayoutManager = LinearLayoutManager(this.context)
-        recycler.layoutManager = itinerariesLayoutManager
+        recycler.layoutManager = LinearLayoutManager(this.context)
 
         listenToItineraryOptions()
 
@@ -85,7 +78,6 @@ class AddToItineraryFragment : Fragment(), DereMethods {
         val addNewButton = add_to_collection_new_button
 
         addNewButton.setOnClickListener {
-
             val itineraryImages: MutableMap<String, Boolean> = mutableMapOf()
 
 
@@ -94,10 +86,6 @@ class AddToItineraryFragment : Fragment(), DereMethods {
                 itineraryImages[imageObject.id] = true
 
                 val refItineraries = FirebaseDatabase.getInstance().getReference("/itineraries").push()
-                val refUserItineraries =
-                    FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/itineraries/")
-                val refImageItineraries =
-                    FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/itineraries")
 
                 val newItinerary = ItineraryBody(
                     refItineraries.key!!,
@@ -116,9 +104,11 @@ class AddToItineraryFragment : Fragment(), DereMethods {
 
 
                 refItineraries.child("body").setValue(newItinerary).addOnSuccessListener {
-                    refUserItineraries.child(refItineraries.key!!).setValue(true)
+                    FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/itineraries/")
+                        .child(refItineraries.key!!).setValue(true)
                         .addOnSuccessListener {
-                            refImageItineraries.child(refItineraries.key!!).setValue(true)
+                            FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/itineraries")
+                                .child(refItineraries.key!!).setValue(true)
 
                             itinerariesAdapter.add(
                                 SingleItinerarySuggestion(
@@ -128,7 +118,6 @@ class AddToItineraryFragment : Fragment(), DereMethods {
                                     activity
                                 )
                             )
-
 
                             closeKeyboard(activity)
 
@@ -153,54 +142,50 @@ class AddToItineraryFragment : Fragment(), DereMethods {
 
         itinerariesAdapter.clear()
 
+        FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                }
 
-        val itinerariesRef = FirebaseDatabase.getInstance().getReference("/itineraries")
-        val userRef = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}")
+                override fun onDataChange(p0: DataSnapshot) {
 
-        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
+                    if (p0.hasChild("itineraries")) {
+                        recycler.visibility = View.VISIBLE
 
-            override fun onDataChange(p0: DataSnapshot) {
+                        for (itineraryPath in p0.child("itineraries").children) {
 
-                if (p0.hasChild("itineraries")) {
-                    recycler.visibility = View.VISIBLE
+                            if (itineraryPath.key != null) {
 
-                    for (itineraryPath in p0.child("itineraries").children) {
-
-                        if (itineraryPath.key != null) {
-
-                            itinerariesRef.child(itineraryPath.key!!).child("body")
-                                .addListenerForSingleValueEvent(object : ValueEventListener {
-                                    override fun onCancelled(p0: DatabaseError) {
-                                    }
-
-                                    override fun onDataChange(p0: DataSnapshot) {
-
-                                        val itineraryObject = p0.getValue(ItineraryBody::class.java)
-                                        if (itineraryObject != null) {
-                                            itinerariesAdapter.add(
-                                                SingleItinerarySuggestion(
-                                                    itineraryObject,
-                                                    imageObject,
-                                                    currentUser,
-                                                    activity as MainActivity
-                                                )
-                                            )
+                                FirebaseDatabase.getInstance().getReference("/itineraries").child(itineraryPath.key!!)
+                                    .child("body")
+                                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                                        override fun onCancelled(p0: DatabaseError) {
                                         }
 
-                                    }
+                                        override fun onDataChange(p0: DataSnapshot) {
 
-                                })
+                                            val itineraryObject = p0.getValue(ItineraryBody::class.java)
+                                            if (itineraryObject != null) {
+                                                itinerariesAdapter.add(
+                                                    SingleItinerarySuggestion(
+                                                        itineraryObject,
+                                                        imageObject,
+                                                        currentUser,
+                                                        activity as MainActivity
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    })
+                            }
                         }
                     }
                 }
-            }
-        })
+            })
     }
 
     companion object {
-        fun newInstance(): AddToBucketFragment = AddToBucketFragment()
+        fun newInstance(): AddToItineraryFragment = AddToItineraryFragment()
     }
 }
 
@@ -221,8 +206,7 @@ class SingleItinerarySuggestion(
     }
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
-        viewHolder.itemView.add_to_collection_name.setText(itinerary.title)
-        Log.d("itinerary", itinerary.title)
+        viewHolder.itemView.add_to_collection_name.text = itinerary.title
 
         val actionText = viewHolder.itemView.add_to_collection_add
 
@@ -239,10 +223,7 @@ class SingleItinerarySuggestion(
         actionText.setOnClickListener {
             executeItinerary(1, itinerary, image, currentUser, actionText, viewHolder.root.context, activity)
         }
-
-
     }
-
 
     private fun executeItinerary(
         case: Int,
@@ -264,19 +245,15 @@ class SingleItinerarySuggestion(
             FirebaseDatabase.getInstance().getReference("/itineraries/${itinerary.id}/body/images")
 
         refItinerary.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
+            override fun onCancelled(p0: DatabaseError) {}
 
             override fun onDataChange(p0: DataSnapshot) {
 
                 if (p0.hasChild(image.id)) {
                     if (case == 1) {
-
                         refUserItineraries.child(image.id).removeValue()
                             .addOnSuccessListener {
-
                                 refImageItineraries.removeValue().addOnSuccessListener {
-
                                     refItinerary.child(image.id).removeValue().addOnSuccessListener {
 
                                         firebaseAnalytics.logEvent("image_removed_from_itinerary", null)
@@ -289,27 +266,18 @@ class SingleItinerarySuggestion(
 
                                         activity.profileLoggedInUserFragment.listenToItineraries()
 
-                                        actionText.text = "Add"
+                                        actionText.text = context.getString(R.string.add)
                                         actionText.setTextColor(
                                             ContextCompat.getColor(
                                                 context,
                                                 R.color.green700
                                             )
                                         )
-
-//                                        activity.sharedViewModelImage.sharedImageObject.postValue(Images())
-//                                        activity.sharedViewModelImage.sharedImageObject.postValue(image) //not needed?
-
-//                                        activity.profileLoggedInUserFragment.listenToImagesFromCollection() change to listen to itineraries
-
-//                                    activity.addToBucketFragment.listenToBuckets()
-
-
                                     }
                                 }
                             }
                     } else {
-                        actionText.text = "Remove"
+                        actionText.text = context.getString(R.string.remove)
                         actionText.setTextColor(
                             ContextCompat.getColor(
                                 context,
@@ -322,10 +290,9 @@ class SingleItinerarySuggestion(
                     if (case == 1) {
                         refUserItineraries.setValue(true).addOnSuccessListener {
                             refImageItineraries.setValue(true).addOnSuccessListener {
-
                                 refItinerary.child(image.id).setValue(true).addOnSuccessListener {
 
-                                    actionText.text = "Remove"
+                                    actionText.text = context.getString(R.string.remove)
                                     actionText.setTextColor(
                                         ContextCompat.getColor(
                                             context,
@@ -333,13 +300,7 @@ class SingleItinerarySuggestion(
                                         )
                                     )
 
-
-//                                                activity.sharedViewModelImage.sharedImageObject.postValue(Images())
-//                                                activity.sharedViewModelImage.sharedImageObject.postValue(image) not needed
-
                                     activity.profileLoggedInUserFragment.listenToItineraries()
-
-//                                                        activity.addToBucketFragment.listenToBuckets()
 
                                     checkIfInItinerary(
                                         activity.imageFullSizeFragment.collectButton,
@@ -349,9 +310,7 @@ class SingleItinerarySuggestion(
 
                                     refUserItineraries.addListenerForSingleValueEvent(object :
                                         ValueEventListener {
-                                        override fun onCancelled(p0: DatabaseError) {
-
-                                        }
+                                        override fun onCancelled(p0: DatabaseError) {}
 
                                         override fun onDataChange(p0allBuckets: DataSnapshot) {
 
@@ -360,10 +319,6 @@ class SingleItinerarySuggestion(
                                             for (bucket in p0allBuckets.children) {
                                                 if (bucket.hasChild(image.id)) {
                                                     existsInOtherBuckets++
-                                                    Log.d(
-                                                        "existanceCountReached",
-                                                        existsInOtherBuckets.toString()
-                                                    )
                                                 }
                                             }
                                             if (existsInOtherBuckets <= 1) {
@@ -380,7 +335,7 @@ class SingleItinerarySuggestion(
 
 
                     } else {
-                        actionText.text = "Add"
+                        actionText.text = context.getString(R.string.add)
                         actionText.setTextColor(
                             ContextCompat.getColor(
                                 context,

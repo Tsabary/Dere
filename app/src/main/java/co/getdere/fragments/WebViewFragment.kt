@@ -22,15 +22,6 @@ class WebViewFragment : Fragment() {
 
     lateinit var sharedViewModelForImage : SharedViewModelImage
 
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -39,6 +30,10 @@ class WebViewFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        activity?.let {
+            sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
+        }
 
         val webView = webview_view
 
@@ -53,17 +48,8 @@ class WebViewFragment : Fragment() {
                 webView.settings.pluginState = WebSettings.PluginState.ON
                 webView.webViewClient = WebViewClient()
                 webView.loadUrl(url)
-
             }
         }
         )
-
-
-
-//        webView.settings.javaScriptEnabled = true
-
-
     }
-
-
 }

@@ -45,16 +45,16 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
     lateinit var imageObject: Images
 
     lateinit var sharedViewModelForImage: SharedViewModelSecondImage
-    lateinit var sharedViewModelForSecondRandomUser: SharedViewModelSecondRandomUser
+    private lateinit var sharedViewModelForSecondRandomUser: SharedViewModelSecondRandomUser
     lateinit var currentUser: Users
-    lateinit var imageAuthor : Users
+    private lateinit var imageAuthor: Users
 
-    val commentsRecyclerAdapter = GroupAdapter<ViewHolder>()
+    private val commentsRecyclerAdapter = GroupAdapter<ViewHolder>()
 
     lateinit var layoutScroll: NestedScrollView
 
-    lateinit var buo: BranchUniversalObject
-    lateinit var lp: LinkProperties
+    private lateinit var buo: BranchUniversalObject
+    private lateinit var lp: LinkProperties
 
     private var viewPagerPosition = 0
     private lateinit var imageExpendedViewPager: SwipeLockableViewPager
@@ -68,18 +68,6 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
 
     lateinit var bucketButton: ImageButton
 
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelSecondImage::class.java)
-            sharedViewModelForSecondRandomUser = ViewModelProviders.of(it).get(SharedViewModelSecondRandomUser::class.java)
-            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-        }
-    }
-
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -89,7 +77,16 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
+
         val activity = activity as MainActivity
+
+        activity.let {
+            sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelSecondImage::class.java)
+            sharedViewModelForSecondRandomUser =
+                ViewModelProviders.of(it).get(SharedViewModelSecondRandomUser::class.java)
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+        }
 
         val authorName = image_expended_author_name
         val authorReputation = image_expended_author_reputation
@@ -97,11 +94,9 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
 
         val currentUserImage = image_expended_comments_current_user_image
 
-//        val mainImage = image_expended_image
         showLocation = image_expended_map
         val imageContent = image_expended_image_details
         val imageTimestamp = image_expended_timestamp
-
 
         val likeCount = image_expended_like_count
         val likeButton = image_expended_like_button
@@ -121,13 +116,11 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
         val removeButton = image_expended_delete_remove_button
         val cancelButton = image_expended_delete_cancel_button
 
-
         val postButton = image_expended_comments_post_button
         val commentInput = image_expended_comments_comment_input
 
         imageExpendedViewPager = image_expended_viewpager
-        val pagerAdapter = SecondImageExpandedPagerAdapter(childFragmentManager)
-        imageExpendedViewPager.adapter = pagerAdapter
+        imageExpendedViewPager.adapter = SecondImageExpandedPagerAdapter(childFragmentManager)
 
         actionsContainer = image_expended_actions_container
 
@@ -142,9 +135,6 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
 
         sharedViewModelForImage.sharedSecondImageObject.observe(this, Observer {
             it?.let { image ->
-
-
-
                 val contentDescription = if (image.details.isNotEmpty()) {
                     image.details
                 } else {
@@ -153,12 +143,17 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
 
                 sharedViewModelForSecondRandomUser.randomUserObject.observe(this, Observer { users ->
                     users?.let { user ->
-
                         imageAuthor = user
 
                         authorName.text = user.name
                         authorReputation.text = "(${numberCalculation(user.reputation)})"
-                        Glide.with(context!!).load(if (user.image.isNotEmpty()){user.image}else{R.drawable.user_profile}).into(authorImage)
+                        Glide.with(context!!).load(
+                            if (user.image.isNotEmpty()) {
+                                user.image
+                            } else {
+                                R.drawable.user_profile
+                            }
+                        ).into(authorImage)
 
 
                         buo = BranchUniversalObject()
@@ -177,12 +172,6 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
                     }
                 })
 
-
-
-
-
-
-
                 imageExpendedViewPager.currentItem = 0
                 imageObject = image
 
@@ -192,7 +181,6 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
 
                 val imageRatioFinal: Double =
                     imageRatioWidth.toString().toDouble() / imageRationHeight.toString().toDouble()
-
 
                 when {
                     imageRatioFinal > 1.25 -> (imageExpendedViewPager.layoutParams as ConstraintLayout.LayoutParams).dimensionRatio =
@@ -230,16 +218,16 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
                     imageContent.text = image.details
                 } else {
                     imageContent.visibility = View.GONE
-
                 }
 
                 if (image.link.isNotEmpty()) {
                     linkAddress.text = image.link
                     linkAddress.visibility = View.VISIBLE
-//                    linkIcon.visibility = View.VISIBLE
 
                     linkAddress.setOnClickListener {
-                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.webViewFragment, "webViewFragment").addToBackStack("webViewFragment")
+                        activity.subFm.beginTransaction()
+                            .add(R.id.feed_subcontents_frame_container, activity.webViewFragment, "webViewFragment")
+                            .addToBackStack("webViewFragment")
                             .commit()
                         activity.subActive = activity.webViewFragment
                     }
@@ -247,7 +235,7 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
                     linkAddress.visibility = View.GONE
                 }
 
-                if (image.photographer == currentUser.uid || currentUser.uid == "hQ3KL1zqpsZIhY38IpSRW2G0wXJ2") {
+                if (image.photographer == currentUser.uid || currentUser.uid == getString(R.string.get_dere_uid)) {
                     optionsButton.visibility = View.VISIBLE
 
                     optionsButton.setOnClickListener {
@@ -259,7 +247,11 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
                     }
 
                     editButton.setOnClickListener {
-                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.imagePostEditFragment, "imagePostEditFragment").addToBackStack("imagePostEditFragment")
+                        activity.subFm.beginTransaction().add(
+                            R.id.feed_subcontents_frame_container,
+                            activity.imagePostEditFragment,
+                            "imagePostEditFragment"
+                        ).addToBackStack("imagePostEditFragment")
                             .commit()
                         activity.subActive = activity.imagePostEditFragment
                         optionsContainer.visibility = View.GONE
@@ -280,17 +272,13 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
                     removeButton.setOnClickListener {
 
                         for (tag in image.tags) {
-                            val tagRef = FirebaseDatabase.getInstance().getReference("/tags/$tag/${image.id}")
-                            tagRef.removeValue()
+                            FirebaseDatabase.getInstance().getReference("/tags/$tag/${image.id}").removeValue()
                         }
 
-                        val imageRef = FirebaseDatabase.getInstance().getReference("/images/${image.id}")
-                        imageRef.removeValue()
-                        val imageAtUserRef =
-                            FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/images/${image.id}")
-                        imageAtUserRef.removeValue()
+                        FirebaseDatabase.getInstance().getReference("/images/${image.id}").removeValue()
+                        FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/images/${image.id}")
+                            .removeValue()
 
-                        val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
                         firebaseAnalytics.logEvent("image_removed", null)
 
                         activity.switchVisibility(0)
@@ -298,27 +286,17 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
                         optionsContainer.visibility = View.GONE
                         deleteEditContainer.visibility = View.VISIBLE
                         deleteContainer.visibility = View.GONE
-//
-//                        activity.fm.beginTransaction().detach(activity.profileLoggedInUserFragment)
-//                            .attach(activity.profileLoggedInUserFragment).commit()
 
                         activity.profileLoggedInUserFragment.listenToImagesFromRoll()
-
-
                     }
 
                 } else {
                     optionsButton.visibility = View.GONE
                 }
 
-
-
                 actionsContainer.visibility = View.VISIBLE
 
                 listenToImageComments(image, commentsRecyclerAdapter, commentsRecycler, divider, currentUser, activity)
-
-
-
             }
         })
 
@@ -326,7 +304,6 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
         showLocation.setOnClickListener {
             switchImageAndMap()
         }
-
 
         shareButton.setOnClickListener {
 
@@ -345,16 +322,12 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
                 override fun onShareLinkDialogDismissed() {}
                 override fun onLinkShareResponse(sharedLink: String, sharedChannel: String, error: BranchError) {}
                 override fun onChannelSelected(channelName: String) {
-                    val firebaseAnalytics = FirebaseAnalytics.getInstance(activity)
                     firebaseAnalytics.logEvent("image_shared_$channelName", null)
                 }
             })
         }
 
-
-
         likeButton.setOnClickListener {
-
             if (currentUser.uid != imageObject.photographer) {
                 executeLike(
                     imageObject,
@@ -371,11 +344,11 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
             }
         }
 
-
-
         bucketButton.setOnClickListener {
             if (currentUser.uid != imageObject.photographer) {
-                activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment").addToBackStack("addToBucketFragment")
+                activity.subFm.beginTransaction()
+                    .add(R.id.feed_subcontents_frame_container, activity.addToBucketFragment, "addToBucketFragment")
+                    .addToBackStack("addToBucketFragment")
                     .commit()
                 activity.subActive = activity.addToBucketFragment
             }
@@ -399,38 +372,27 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
 
             commentInput.text.clear()
 
-
-
             ref.child("body").setValue(comment).addOnSuccessListener {
 
-                val refImageLastInteraction = FirebaseDatabase.getInstance()
-                    .getReference("/images/${imageObject.id}/body/lastInteraction")
+                FirebaseDatabase.getInstance()
+                    .getReference("/images/${imageObject.id}/body/lastInteraction").setValue(timestamp)
+                    .addOnSuccessListener {
+                        sendNotification(
+                            3,
+                            16,
+                            currentUser.uid,
+                            currentUser.name,
+                            imageObject.id,
+                            ref.key!!,
+                            imageObject.photographer
+                        )
 
-                refImageLastInteraction.setValue(timestamp).addOnSuccessListener {
-                    sendNotification(
-                        3,
-                        16,
-                        currentUser.uid,
-                        currentUser.name,
-                        imageObject.id,
-                        ref.key!!,
-                        imageObject.photographer
-                    )
+                        closeKeyboard(activity)
 
-                    closeKeyboard(activity)
-//                listenToImageComments(image, commentsRecyclerAdapter, commentsRecycler, divider, currentUser, activity)
+                        layoutScroll.fullScroll(View.FOCUS_DOWN)
 
-                    layoutScroll.fullScroll(View.FOCUS_DOWN)
-
-                    val firebaseAnalytics = FirebaseAnalytics.getInstance(this.context!!)
-                    firebaseAnalytics.logEvent("image_comment_added", null)
-
-                    Log.d("postCommentActivity", "Saved comment to Firebase Database")
-                }.addOnFailureListener {
-                    Log.d("postCommentActivity", "Failed to update image last interaction based on comment")
-                }
-            }.addOnFailureListener {
-                Log.d("postCommentActivity", "Failed to save comment to database")
+                        firebaseAnalytics.logEvent("image_comment_added", null)
+                    }
             }
         }
 
@@ -448,7 +410,6 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
     }
 
     private fun switchImageAndMap() {
-
         if (viewPagerPosition == 0) {
             imageExpendedViewPager.currentItem = 1
             viewPagerPosition = 1
@@ -464,7 +425,11 @@ class SecondImageFullSizeFragment : androidx.fragment.app.Fragment(), DereMethod
 
         val activity = activity as MainActivity
 
-        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.profileSecondRandomUserFragment, "profileSecondRandomUserFragment").addToBackStack("profileSecondRandomUserFragment")
+        activity.subFm.beginTransaction().add(
+            R.id.feed_subcontents_frame_container,
+            activity.profileSecondRandomUserFragment,
+            "profileSecondRandomUserFragment"
+        ).addToBackStack("profileSecondRandomUserFragment")
             .commit()
         activity.subActive = activity.profileSecondRandomUserFragment
 

@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import co.getdere.fragments.*
 import co.getdere.interfaces.DereMethods
@@ -16,6 +17,7 @@ import co.getdere.models.Images
 import co.getdere.models.Question
 import co.getdere.models.Users
 import co.getdere.viewmodels.*
+import com.etebarian.meowbottomnavigation.MeowBottomNavigation
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -77,7 +79,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
     lateinit var addImagesToItineraryDayFragment: AddImagesToItineraryDayFragment
     lateinit var dayMapViewFragment: DayMapViewFragment
     lateinit var bucketAndSharedItineraryPagerFragment: BucketAndSharedItineraryPagerFragment
-    lateinit var joinSharedItineraryFragment : JoinSharedItineraryFragment
+    lateinit var joinSharedItineraryFragment: JoinSharedItineraryFragment
+    lateinit var sharedViewModelTags: SharedViewModelTags
+
 
     lateinit var mainFrame: FrameLayout
     lateinit var subFrame: FrameLayout
@@ -113,19 +117,21 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
     var answerObject = Answers()
 
+    var tags: MutableList<SingleTagForList> = mutableListOf()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        FirebaseApp.initializeApp(this)
         firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-
 
         checkIfLoggedIn()
 
+        sharedViewModelTags = ViewModelProviders.of(this).get(SharedViewModelTags::class.java)
+
         sharedViewModelCurrentUser = ViewModelProviders.of(this).get(SharedViewModelCurrentUser::class.java)
         sharedViewModelQuestion = ViewModelProviders.of(this).get(SharedViewModelQuestion::class.java)
-
-        FirebaseApp.initializeApp(this)
 
 
         sharedViewModelImage = ViewModelProviders.of(this).get(SharedViewModelImage::class.java)
@@ -157,25 +163,20 @@ class MainActivity : AppCompatActivity(), DereMethods {
     }
 
     private fun fetchCurrentUser(uid: String) {
-
-        val ref = FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-
-                if (p0.getValue(Users::class.java) != null) {
-                    currentUser = p0.getValue(Users::class.java)!!
-                    sharedViewModelCurrentUser.currentUserObject = currentUser
-                    addFragmentsToFragmentManagers()
+        FirebaseDatabase.getInstance().getReference("/users/$uid/profile")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {}
+                override fun onDataChange(p0: DataSnapshot) {
+                    if (p0.getValue(Users::class.java) != null) {
+                        currentUser = p0.getValue(Users::class.java)!!
+                        sharedViewModelCurrentUser.currentUserObject = currentUser
+                        addFragmentsToFragmentManagers()
+                    }
                 }
-            }
-        })
+            })
     }
 
     fun addFragmentsToFragmentManagers() {
-
         //main container
         onBoardingFragment = OnBoardingFragment()
         feedFragment = FeedFragment()
@@ -183,32 +184,28 @@ class MainActivity : AppCompatActivity(), DereMethods {
         marketplaceFragment = MarketplaceFragment()
         profileLoggedInUserFragment = ProfileLoggedInUserFragment()
 
+        FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/interests")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {}
 
-        val uid = FirebaseAuth.getInstance().uid
-        val interestsRef = FirebaseDatabase.getInstance().getReference("/users/$uid/interests")
-        interestsRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
+                override fun onDataChange(p0: DataSnapshot) {
+                    if (p0.hasChildren()) {
+                        fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment")
+                            .commitAllowingStateLoss()
 
-            override fun onDataChange(p0: DataSnapshot) {
-                if (p0.hasChildren()) {
+                        active = feedFragment
 
-                    fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment")
-                        .commitAllowingStateLoss()
+                    } else {
+                        fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment")
+                            .hide(feedFragment).commitAllowingStateLoss()
+                        fm.beginTransaction().add(R.id.feed_frame_container, onBoardingFragment, "onBoardingFragment")
+                            .commitAllowingStateLoss()
 
-                    active = feedFragment
-
-                } else {
-                    fm.beginTransaction().add(R.id.feed_frame_container, feedFragment, "feedFragment")
-                        .hide(feedFragment).commitAllowingStateLoss()
-                    fm.beginTransaction().add(R.id.feed_frame_container, onBoardingFragment, "onBoardingFragment")
-                        .commitAllowingStateLoss()
-
-                    active = onBoardingFragment
+                        active = onBoardingFragment
+                    }
+                    fragmentsHaveBeenInitialized = true
                 }
-                fragmentsHaveBeenInitialized = true
-            }
-        })
+            })
 
         fm.beginTransaction().add(R.id.feed_frame_container, boardFragment, "boardFragment").hide(boardFragment)
             .commitAllowingStateLoss()
@@ -218,7 +215,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
         fm.beginTransaction()
             .add(R.id.feed_frame_container, profileLoggedInUserFragment, "profileLoggedInUserFragment")
             .hide(profileLoggedInUserFragment).commitAllowingStateLoss()
-
 
         //sub container
         imageFullSizeFragment = ImageFullSizeFragment()
@@ -269,34 +265,86 @@ class MainActivity : AppCompatActivity(), DereMethods {
         setupBottomNav()
     }
 
-
     private fun setupBottomNav() {
+        val bottomNavigation = main_activity_bottom_nav
+        bottomNavigation.add(MeowBottomNavigation.Model(1, R.drawable.footprint))
+        bottomNavigation.add(MeowBottomNavigation.Model(2, R.drawable.signpost))
+        bottomNavigation.add(MeowBottomNavigation.Model(3, R.drawable.itinerary))
+        bottomNavigation.add(MeowBottomNavigation.Model(4, R.drawable.astronaut))
 
-        mBottomNav = feed_bottom_nav
+        bottomNavigation.setOnClickMenuListener {
+            when (it.id) {
+                1 -> navigateToFeed()
+                2 -> navigateToBoard()
+                3 -> navigateToMarketplace()
+                4 -> navigateToProfile()
+            }
+        }
 
-        mBottomNav.setOnNavigationItemSelectedListener { item ->
-            when (item.itemId) {
+        bottomNavigation.show(1, true)
 
-                R.id.destination_feed -> {
-                    navigateToFeed()
-                }
-
-                R.id.destination_board -> {
-                    navigateToBoard()
-                }
-                R.id.destination_marketplace -> {
-                    navigateToMarketplace()
-                }
-                R.id.destination_profile_logged_in_user -> {
-                    navigateToProfile()
+        boardNotificationsCount.observe(this, Observer {
+            it?.let { notCount ->
+                bottomNavigation.setCount(2, notCount.toString())
+                if(notCount == 0){
+                    bottomNavigation.setCount(2, "empty")
                 }
             }
-            false
-        }
+        })
+
+        feedNotificationsCount.observe(this, Observer {
+            it?.let { notCount ->
+                bottomNavigation.setCount(1, notCount.toString())
+                if(notCount == 0){
+                    bottomNavigation.setCount(1, "empty")
+                }
+            }
+        })
+    }
+
+//    private fun setupBottomNav() {
+//
+//        mBottomNav = feed_bottom_nav
+//
+//        mBottomNav.setOnNavigationItemSelectedListener { item ->
+//            when (item.itemId) {
+//
+//                R.id.destination_feed -> {
+//                    navigateToFeed()
+//                }
+//
+//                R.id.destination_board -> {
+//                    navigateToBoard()
+//                }
+//                R.id.destination_marketplace -> {
+//                    navigateToMarketplace()
+//                }
+//                R.id.destination_profile_logged_in_user -> {
+//                    navigateToProfile()
+//                }
+//            }
+//            false
+//        }
+//        addTagsToViewModel()
+//    }
+
+    private fun addTagsToViewModel() {
+        FirebaseDatabase.getInstance().getReference("/tags")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
+                    for (tag in p0.children) {
+                        val tagName = tag.key.toString()
+                        val count = tag.childrenCount.toInt()
+                        tags.add(SingleTagForList(tagName, count))
+                        sharedViewModelTags.tagList = tags
+                    }
+                }
+
+                override fun onCancelled(p0: DatabaseError) {}
+            })
     }
 
     fun switchVisibility(case: Int) {
-
         if (case == 0) {
             mainFrame.visibility = View.VISIBLE
             subFrame.visibility = View.GONE
@@ -304,13 +352,9 @@ class MainActivity : AppCompatActivity(), DereMethods {
             mainFrame.visibility = View.GONE
             subFrame.visibility = View.VISIBLE
         }
-
-
     }
 
-
     override fun onBackPressed() {
-
         when {
             mainFrame.visibility == View.GONE -> // subframe is active
 
@@ -358,8 +402,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
                             }
                             else -> {
                                 subActive = imageFullSizeFragment
-
-                                //                            sharedViewModelSecondRandomUser.randomUserObject.postValue(Users())
                             }
                         }
                     }
@@ -374,7 +416,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     }
 
                     feedNotificationsFragment -> {
-                        //                    subFm.popBackStack("feedNotificationsFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
                         subFm.beginTransaction().hide(feedNotificationsFragment).commit()
                         switchVisibility(0)
                         isFeedNotificationsActive = false
@@ -383,23 +424,19 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     openedQuestionFragment -> {
                         if (isBoardNotificationsActive) {
                             subActive = boardNotificationsFragment
-                            //                        openedQuestionFragment.deleteBox.visibility = View.GONE
                         } else {
                             switchVisibility(0)
-                            //                        openedQuestionFragment.deleteBox.visibility = View.GONE
                         }
                         subFm.popBackStack("openedQuestionFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
                         isOpenedQuestionActive = false
                     }
 
                     boardNotificationsFragment -> {
-                        //                    subFm.popBackStack("boardNotificationsFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
                         subFm.beginTransaction().hide(boardNotificationsFragment).commit()
                         switchVisibility(0)
                     }
 
                     savedQuestionFragment -> {
-                        //                    subFm.popBackStack("savedQuestionFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
                         subFm.beginTransaction().hide(savedQuestionFragment).commit()
                         switchVisibility(0)
                     }
@@ -420,10 +457,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     }
 
                     collectionGalleryFragment -> {
-                        //                    subFm.beginTransaction().hide(collectionGalleryFragment).show(imageFullSizeFragment).commit()
-                        //                    subActive = imageFullSizeFragment
-                        //                    collectionGalleryFragment.pagerAdapter.notifyDataSetChanged()
-
                         if (collectionGalleryFragment.viewPagerPosition == 1) {
                             collectionGalleryFragment.switchImageAndMap()
                         } else {
@@ -432,7 +465,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
                             } else {
                                 switchVisibility(0)
                                 isCollectionGalleryActive = false
-                                //                        collectionGalleryFragment.mapButton.setImageResource(R.drawable.world)
                             }
                             subFm.popBackStack("collectionGalleryFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
                         }
@@ -465,7 +497,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     }
 
                     addImageToAnswer -> {
-
                         if (isEditAnswerActive) {
                             subActive = editAnswerFragment
                         } else {
@@ -480,7 +511,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     }
 
                     collectionMapView -> {
-
                         when {
                             isRandomUserProfileActive -> {
                                 subActive = profileRandomUserFragment
@@ -525,8 +555,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
                         subFm.popBackStack("itineraryEditFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
                         subActive = collectionGalleryFragment
                         itineraryEditFragment.step = 0
-
-                        //need to save the data to the itinerary
                     }
 
                     addImagesToItineraryFragment -> {
@@ -536,7 +564,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
                     marketplacePurchasedFragment -> {
                         subFm.beginTransaction().hide(marketplacePurchasedFragment).commit()
-                        //                    subActive = imageFullSizeFragment
                         switchVisibility(0)
                         isSavedItinerariesActive = false
                     }
@@ -617,7 +644,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
             }
             else -> super.onBackPressed()
         }
-
     }
 
 
@@ -653,9 +679,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
         Branch.getInstance().initSession({ branchUniversalObject, _, error ->
 
             if (error == null) {
-                println("branch no error")
-
-
                 if (branchUniversalObject != null) {
 
                     when (branchUniversalObject.contentMetadata.customMetadata["type"]) {
@@ -671,8 +694,6 @@ class MainActivity : AppCompatActivity(), DereMethods {
             } else {
                 println("branch definitely error" + error.message)
             }
-
-
         }, this.intent.data, this)
     }
 
@@ -689,16 +710,16 @@ class MainActivity : AppCompatActivity(), DereMethods {
     private fun navigateToFeed() {
         fm.beginTransaction().hide(active).show(feedFragment).commit()
         active = feedFragment
-        val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
-        menuItem.isChecked = true
+//        val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
+//        menuItem.isChecked = true
         resetFragments()
     }
 
     private fun navigateToBoard() {
         fm.beginTransaction().hide(active).show(boardFragment).commit()
         active = boardFragment
-        val menuItem = mBottomNav.menu.findItem(R.id.destination_board)
-        menuItem.isChecked = true
+//        val menuItem = mBottomNav.menu.findItem(R.id.destination_board)
+//        menuItem.isChecked = true
         resetFragments()
         isFeedActive = false
     }
@@ -706,8 +727,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
     private fun navigateToMarketplace() {
         fm.beginTransaction().hide(active).show(marketplaceFragment).commit()
         active = marketplaceFragment
-        val menuItem = mBottomNav.menu.findItem(R.id.destination_marketplace)
-        menuItem.isChecked = true
+//        val menuItem = mBottomNav.menu.findItem(R.id.destination_marketplace)
+//        menuItem.isChecked = true
         resetFragments()
         isFeedActive = false
         isItineraryActive = false
@@ -717,8 +738,8 @@ class MainActivity : AppCompatActivity(), DereMethods {
     fun navigateToProfile() {
         fm.beginTransaction().hide(active).show(profileLoggedInUserFragment).commit()
         active = profileLoggedInUserFragment
-        val menuItem = mBottomNav.menu.findItem(R.id.destination_profile_logged_in_user)
-        menuItem.isChecked = true
+//        val menuItem = mBottomNav.menu.findItem(R.id.destination_profile_logged_in_user)
+//        menuItem.isChecked = true
         resetFragments()
         isFeedActive = false
         profileLoggedInUserFragment.scrollView.fullScroll(View.FOCUS_UP)
@@ -732,22 +753,22 @@ class MainActivity : AppCompatActivity(), DereMethods {
         if (uid == profileId) {
             navigateToProfile()
         } else {
-
             FirebaseDatabase.getInstance().getReference("/users/$profileId/profile")
                 .addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onCancelled(p0: DatabaseError) {
-                    }
+                    override fun onCancelled(p0: DatabaseError) {}
 
                     override fun onDataChange(p0: DataSnapshot) {
                         val user = p0.getValue(Users::class.java)
-
-                        sharedViewModelRandomUser.randomUserObject.postValue(user)
-                        subFm.beginTransaction().hide(subActive).show(profileRandomUserFragment).commit()
-                        switchVisibility(1)
-                        subActive = profileRandomUserFragment
-
-                        val menuItem = mBottomNav.menu.findItem(R.id.destination_profile_logged_in_user)
-                        menuItem.isChecked = true
+                        if (user != null) {
+                            sharedViewModelRandomUser.randomUserObject.postValue(user)
+                            subFm.beginTransaction().add(
+                                R.id.feed_subcontents_frame_container,
+                                profileRandomUserFragment,
+                                "profileRandomUserFragment"
+                            ).addToBackStack("profileRandomUserFragment").commit()
+                            subActive = profileRandomUserFragment
+                            switchVisibility(1)
+                        }
                     }
                 })
         }
@@ -756,38 +777,37 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
     private fun collectImage(branchUniversalObject: BranchUniversalObject) {
 
-        val imageId = branchUniversalObject.canonicalIdentifier
-
-        FirebaseDatabase.getInstance().getReference("/images/$imageId/body")
+        FirebaseDatabase.getInstance().getReference("/images/${branchUniversalObject.canonicalIdentifier}/body")
             .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-                }
+                override fun onCancelled(p0: DatabaseError) {}
 
                 override fun onDataChange(p0: DataSnapshot) {
 
                     val image = p0.getValue(Images::class.java)
 
-                    sharedViewModelImage.sharedImageObject.postValue(image)
+                    if (image != null) {
+                        sharedViewModelImage.sharedImageObject.postValue(image)
 
-                    val refUser = FirebaseDatabase.getInstance().getReference("/users/${image!!.photographer}/profile")
+                        FirebaseDatabase.getInstance().getReference("/users/${image.photographer}/profile")
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onCancelled(p0: DatabaseError) {}
 
-                    refUser.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-                        }
-
-                        override fun onDataChange(p0: DataSnapshot) {
-
-                            sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
-
-                            subFm.beginTransaction().hide(subActive).show(imageFullSizeFragment).commit()
-                            switchVisibility(1)
-                            subActive = imageFullSizeFragment
-
-                            val menuItem = mBottomNav.menu.findItem(R.id.destination_feed)
-                            menuItem.isChecked = true
-                        }
-
-                    })
+                                override fun onDataChange(p0: DataSnapshot) {
+                                    val randomUser = p0.getValue(Users::class.java)
+                                    if (randomUser != null) {
+                                        sharedViewModelRandomUser.randomUserObject.postValue(randomUser)
+                                        navigateToFeed()
+                                        subFm.beginTransaction().add(
+                                            R.id.feed_subcontents_frame_container,
+                                            imageFullSizeFragment,
+                                            "imageFullSizeFragment"
+                                        ).addToBackStack("imageFullSizeFragment").commit()
+                                        subActive = imageFullSizeFragment
+                                        switchVisibility(1)
+                                    }
+                                }
+                            })
+                    }
                 }
             })
     }
@@ -795,59 +815,49 @@ class MainActivity : AppCompatActivity(), DereMethods {
 
     private fun collectQuestion(branchUniversalObject: BranchUniversalObject) {
 
-        val questionId = branchUniversalObject.canonicalIdentifier
-
-        FirebaseDatabase.getInstance().getReference("/questions/$questionId/main/body")
+        FirebaseDatabase.getInstance().getReference("/questions/${branchUniversalObject.canonicalIdentifier}/main/body")
             .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-                }
+                override fun onCancelled(p0: DatabaseError) {}
 
                 override fun onDataChange(p0: DataSnapshot) {
 
                     val question = p0.getValue(Question::class.java)
 
-                    sharedViewModelQuestion.questionObject.postValue(question)
+                    if (question != null) {
+                        sharedViewModelQuestion.questionObject.postValue(question)
 
-                    val refUser = FirebaseDatabase.getInstance().getReference("/users/${question!!.author}/profile")
+                        FirebaseDatabase.getInstance().getReference("/users/${question.author}/profile")
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onCancelled(p0: DatabaseError) {}
 
-                    refUser.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-                        }
+                                override fun onDataChange(p0: DataSnapshot) {
+                                    val randomUser = p0.getValue(Users::class.java)
+                                    if (randomUser != null) {
+                                        sharedViewModelRandomUser.randomUserObject.postValue(randomUser)
+                                        navigateToBoard()
 
-                        override fun onDataChange(p0: DataSnapshot) {
-
-                            sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
-
-                            subFm.beginTransaction().hide(subActive).show(openedQuestionFragment).commit()
-
-                            switchVisibility(1)
-
-                            fm.beginTransaction().hide(active).show(boardFragment).commit()
-
-                            subActive = openedQuestionFragment
-                            active = boardFragment
-
-                            val menuItem = mBottomNav.menu.findItem(R.id.destination_board)
-                            menuItem.isChecked = true
-                        }
-
-                    })
+                                        subFm.beginTransaction().add(
+                                            R.id.feed_subcontents_frame_container,
+                                            openedQuestionFragment,
+                                            "openedQuestionFragment"
+                                        )
+                                            .addToBackStack("openedQuestionFragment").commit()
+                                        subActive = openedQuestionFragment
+                                        switchVisibility(1)
+                                    }
+                                }
+                            })
+                    }
                 }
-
-
             })
-
     }
 
     private fun collectSharedItinerary(branchUniversalObject: BranchUniversalObject) {
         active = feedFragment
 
-        val itineraryId = branchUniversalObject.canonicalIdentifier
-
-        FirebaseDatabase.getInstance().getReference("/sharedItineraries/$itineraryId")
+        FirebaseDatabase.getInstance().getReference("/sharedItineraries/${branchUniversalObject.canonicalIdentifier}")
             .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-                }
+                override fun onCancelled(p0: DatabaseError) {}
 
                 override fun onDataChange(p0: DataSnapshot) {
 
@@ -857,7 +867,7 @@ class MainActivity : AppCompatActivity(), DereMethods {
                     subFm.beginTransaction().show(marketplacePurchasedFragment).commit()
                     isSavedItinerariesActive = true
 
-                    if (p0.hasChild("/body/contributors/${currentUser.uid}") || p0.child("/body/contributors").childrenCount < 2){
+                    if (p0.hasChild("/body/contributors/${currentUser.uid}") || p0.child("/body/contributors").childrenCount < 2) {
 
                         subFm.beginTransaction().add(
                             R.id.feed_subcontents_frame_container,
@@ -872,14 +882,10 @@ class MainActivity : AppCompatActivity(), DereMethods {
                             joinSharedItineraryFragment,
                             "joinSharedItineraryFragment"
                         ).addToBackStack("joinSharedItineraryFragment").commit()
-
                         subActive = joinSharedItineraryFragment
-
                     }
                     switchVisibility(1)
-
                 }
-
             })
     }
 
@@ -893,6 +899,4 @@ class MainActivity : AppCompatActivity(), DereMethods {
     companion object {
         fun newInstance(): MainActivity = MainActivity()
     }
-
 }
-

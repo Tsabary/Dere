@@ -32,25 +32,12 @@ import kotlinx.android.synthetic.main.fragment_answer.*
 
 class EditAnswerFragment : Fragment(), DereMethods {
 
-    lateinit var currentUser: Users
-    var imagesRecyclerAdapter = GroupAdapter<ViewHolder>()
-
     lateinit var sharedViewModelAnswerImages: SharedViewModelAnswerImages
     lateinit var sharedViewModelAnswer: SharedViewModelAnswer
+
     lateinit var answer: Answers
-
-
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-            sharedViewModelAnswerImages = ViewModelProviders.of(it).get(SharedViewModelAnswerImages::class.java)
-            sharedViewModelAnswer = ViewModelProviders.of(it).get(SharedViewModelAnswer::class.java)
-        }
-
-    }
+    lateinit var currentUser: Users
+    var imagesRecyclerAdapter = GroupAdapter<ViewHolder>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -61,6 +48,12 @@ class EditAnswerFragment : Fragment(), DereMethods {
         super.onViewCreated(view, savedInstanceState)
 
         val activity = activity as MainActivity
+
+        activity.let {
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+            sharedViewModelAnswerImages = ViewModelProviders.of(it).get(SharedViewModelAnswerImages::class.java)
+            sharedViewModelAnswer = ViewModelProviders.of(it).get(SharedViewModelAnswer::class.java)
+        }
 
         val addImage = answer_add_photos_button
         val updateAnswer = answer_btn
@@ -86,26 +79,22 @@ class EditAnswerFragment : Fragment(), DereMethods {
                     View.GONE
                 }
 
-                val imagesRef = FirebaseDatabase.getInstance().getReference("/images")
-
                 for (image in existingImageList) {
 
-                    imagesRef.child("$image/body")
+                    FirebaseDatabase.getInstance().getReference("/images").child("$image/body")
                         .addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onCancelled(p0: DatabaseError) {
                             }
 
                             override fun onDataChange(p0: DataSnapshot) {
 
-                                val imageObject  = p0.getValue(Images::class.java)
-                                if (imageObject != null){
+                                val imageObject = p0.getValue(Images::class.java)
+                                if (imageObject != null) {
                                     imagesRecyclerAdapter.add(CollectionPhoto(imageObject, activity, "answer", 0))
                                     imageListFinal.add(imageObject.id)
                                 }
                             }
                         })
-
-
                 }
 
 
@@ -115,21 +104,23 @@ class EditAnswerFragment : Fragment(), DereMethods {
 
                         activity.isEditAnswerActive = false
 
-                        val answerRef = FirebaseDatabase.getInstance().getReference("/questions/${answer.questionId}/answers/${answer.answerId}/body")
+                        val answerRef = FirebaseDatabase.getInstance()
+                            .getReference("/questions/${answer.questionId}/answers/${answer.answerId}/body")
 
                         answerRef.child("content").setValue(content.text.toString())
                         answerRef.child("photos").setValue(imageListFinal)
 
-                        activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.openedQuestionFragment, "openedQuestionFragment").addToBackStack("openedQuestionFragment").commit()
+                        activity.subFm.beginTransaction().add(
+                            R.id.feed_subcontents_frame_container,
+                            activity.openedQuestionFragment,
+                            "openedQuestionFragment"
+                        ).addToBackStack("openedQuestionFragment").commit()
                         activity.subActive = activity.openedQuestionFragment
-
                     } else {
-                        Toast.makeText(this.context, "Your answer is too short, please elaborate", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this.context, "Your answer is too short, please elaborate", Toast.LENGTH_SHORT)
+                            .show()
                     }
                 }
-
-
-
             }
         })
 
@@ -146,40 +137,29 @@ class EditAnswerFragment : Fragment(), DereMethods {
 
                 answerObject.photos.forEach {
 
-                    val singleImageRef = FirebaseDatabase.getInstance().getReference("/images/$it/body")
-
-                    singleImageRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-                        }
-
-                        override fun onDataChange(p0: DataSnapshot) {
-
-                            val imageObject = p0.getValue(Images::class.java)
-                            if(imageObject != null){
-                                answerImagesList.add(imageObject.id)
-                                sharedViewModelAnswerImages.imageList.postValue(answerImagesList)
+                    FirebaseDatabase.getInstance().getReference("/images/$it/body")
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onCancelled(p0: DatabaseError) {
                             }
 
-                        }
-                    })
+                            override fun onDataChange(p0: DataSnapshot) {
+                                val imageObject = p0.getValue(Images::class.java)
+                                if (imageObject != null) {
+                                    answerImagesList.add(imageObject.id)
+                                    sharedViewModelAnswerImages.imageList.postValue(answerImagesList)
+                                }
+                            }
+                        })
                 }
-
                 content.setText(answerObject.content)
-
-
             }
         })
 
-
-
-
-
-
-
         addImage.setOnClickListener {
-            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.addImageToAnswer, "addImageToAnswer").addToBackStack("addImageToAnswer").commit()
+            activity.subFm.beginTransaction()
+                .add(R.id.feed_subcontents_frame_container, activity.addImageToAnswer, "addImageToAnswer")
+                .addToBackStack("addImageToAnswer").commit()
             activity.subActive = activity.addImageToAnswer
         }
     }
-
 }

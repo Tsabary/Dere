@@ -38,30 +38,23 @@ class CollectionFeedFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_collection_feed, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_collection_feed, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        val activity = activity as MainActivity
 
         val galleryRecycler = bucket_feed_recycler
-
-        val imagesRecyclerLayoutManager =
-            GridLayoutManager(this.context, 3, RecyclerView.VERTICAL, false)
-
         galleryRecycler.adapter = galleryAdapter
-        galleryRecycler.layoutManager = imagesRecyclerLayoutManager
+        galleryRecycler.layoutManager = GridLayoutManager(this.context, 3, RecyclerView.VERTICAL, false)
 
-        activity?.let {
+        activity.let {
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
 
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
-            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
             sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
-
             sharedViewModelCollection.imageCollection.observe(this, Observer { bucketName ->
                 bucketName?.let { bucket ->
                     galleryAdapter.clear()
@@ -71,31 +64,26 @@ class CollectionFeedFragment : Fragment() {
         }
 
         galleryAdapter.setOnItemClickListener { item, _ ->
-
             val image = item as FeedImage
             sharedViewModelImage.sharedImageObject.postValue(image.image)
 
-            val userRef = FirebaseDatabase.getInstance().getReference("/users/${image.image.photographer}/profile")
+            FirebaseDatabase.getInstance().getReference("/users/${image.image.photographer}/profile")
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
 
-            userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-                }
+                    override fun onDataChange(p0: DataSnapshot) {
 
-                override fun onDataChange(p0: DataSnapshot) {
+                        sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
 
-                    sharedViewModelRandomUser.randomUserObject.postValue(p0.getValue(Users::class.java))
-
-                    val activity = activity as MainActivity
-
-                    activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.imageFullSizeFragment, "imageFullSizeFragment").addToBackStack("imageFullSizeFragment").commit()
-                    activity.subActive = activity.imageFullSizeFragment
-
-//                    activity.switchVisibility(1)
-
-                }
-
-            })
-
+                        activity.subFm.beginTransaction().add(
+                            R.id.feed_subcontents_frame_container,
+                            activity.imageFullSizeFragment,
+                            "imageFullSizeFragment"
+                        ).addToBackStack("imageFullSizeFragment").commit()
+                        activity.subActive = activity.imageFullSizeFragment
+                    }
+                })
         }
 
     }
@@ -106,85 +94,22 @@ class CollectionFeedFragment : Fragment() {
 
         for (image in collectionSnapshot.child("/body/images").children) {
 
-            val imagePath = image.key
-
-            val imageObjectPath =
-                FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
-
-            imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-
-                }
-
-                override fun onDataChange(p0: DataSnapshot) {
-                    val imageObject = p0.getValue(Images::class.java)
-
-                    galleryAdapter.add(FeedImage(imageObject!!, 1))
-
-                }
-            })
-
-
-        }
-
-
-/*
-        if(collectionSnapshot.hasChild("body")){
-            for (image in collectionSnapshot.child("/body/images").children) {
-
-                val imagePath = image.key
-
-                val imageObjectPath =
-                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
-
-                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
+            FirebaseDatabase.getInstance().getReference("/images/${image.key}/body")
+                .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onCancelled(p0: DatabaseError) {
-
                     }
 
                     override fun onDataChange(p0: DataSnapshot) {
                         val imageObject = p0.getValue(Images::class.java)
-
-                        galleryAdapter.add(FeedImage(imageObject!!, 1))
-
+                        if (imageObject != null) {
+                            galleryAdapter.add(FeedImage(imageObject, 1))
+                        }
                     }
                 })
-
-
-            }
-
-        }else{
-            for (image in collectionSnapshot.children) {
-
-                val imagePath = image.key
-
-                val imageObjectPath =
-                    FirebaseDatabase.getInstance().getReference("/images/$imagePath/body")
-
-                imageObjectPath.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onCancelled(p0: DatabaseError) {
-
-                    }
-
-                    override fun onDataChange(p0: DataSnapshot) {
-                        val imageObject = p0.getValue(Images::class.java)
-
-                        galleryAdapter.add(FeedImage(imageObject!!, 1))
-
-                    }
-                })
-
-
-            }
         }
-
-*/
     }
-
 
     companion object {
         fun newInstance(): CollectionFeedFragment = CollectionFeedFragment()
     }
-
-
 }

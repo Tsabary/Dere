@@ -8,7 +8,8 @@
         android:layout_height="match_parent"
         tools:context=".fragments.DarkRoomEditFragment"
         android:background="@color/white"
-        android:clickable="true">
+        android:clickable="true"
+        android:focusable="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -42,7 +43,7 @@
                     android:visibility="gone">
 
                 <TextView
-                        android:text="Are you sure you want to delete this post?"
+                        android:text="@string/are_you_sure_you_want_to_delete_this_post"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/dark_room_edit_delete_message"
@@ -71,7 +72,7 @@
                         android:padding="16dp"
                         android:textSize="15sp"/>
                 <TextView
-                        android:text="Remove"
+                        android:text="@string/remove"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/dark_room_edit_delete_remove_button"
@@ -96,7 +97,7 @@
                     android:visibility="visible">
 
                 <TextView
-                        android:text="Save"
+                        android:text="@string/save"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/dark_room_edit_save"
@@ -113,7 +114,7 @@
                         android:paddingBottom="16dp"
                         android:textSize="15sp"/>
                 <TextView
-                        android:text="Delete"
+                        android:text="@string/delete"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/dark_room_edit_delete"
@@ -178,7 +179,7 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="wrap_content"
@@ -194,7 +195,7 @@
 
 
                 <TextView
-                        android:text="public"
+                        android:text="@string/public_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/dark_room_edit_privacy_text"
@@ -243,25 +244,14 @@
                     android:layout_marginTop="16dp"
                     mapbox:layout_constraintTop_toBottomOf="@+id/dark_room_edit_author_image"
                     mapbox:layout_constraintDimensionRatio="1:1"
-                    android:background="@color/gray100"/>
-
-            <ImageView
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:id="@+id/dark_room_edit_image_vertical"
-                    app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_image_horizontal"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintDimensionRatio="4:5"
-                    android:scaleType="centerCrop"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    android:visibility="gone"/>
+                    android:background="@color/gray100"
+                    android:contentDescription="@string/image"/>
 
             <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:id="@+id/dark_room_edit_buttons_container"
-                    app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_image_vertical"
+                    app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_image_horizontal"
                     android:layout_marginTop="24dp"
                     mapbox:layout_constraintStart_toStartOf="parent"
                     mapbox:layout_constraintEnd_toEndOf="parent">
@@ -291,7 +281,8 @@
                                 mapbox:layout_constraintTop_toTopOf="parent"
                                 mapbox:layout_constraintBottom_toBottomOf="parent"
                                 mapbox:layout_constraintStart_toStartOf="parent"
-                                android:visibility="gone"/>
+                                android:visibility="gone"
+                                android:contentDescription="@string/info_unactive_icon"/>
                         <ImageButton
                                 android:src="@drawable/info_active"
                                 android:layout_width="48dp"
@@ -303,7 +294,8 @@
                                 mapbox:layout_constraintTop_toTopOf="parent"
                                 mapbox:layout_constraintBottom_toBottomOf="parent"
                                 mapbox:layout_constraintVertical_bias="0.0"
-                                mapbox:layout_constraintStart_toEndOf="@+id/dark_room_edit_info_button_unactive"/>
+                                mapbox:layout_constraintStart_toEndOf="@+id/dark_room_edit_info_button_unactive"
+                                android:contentDescription="@string/info_active_icon"/>
 
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -328,7 +320,8 @@
                                 android:scaleType="centerCrop"
                                 mapbox:layout_constraintTop_toTopOf="parent"
                                 mapbox:layout_constraintBottom_toBottomOf="parent"
-                                mapbox:layout_constraintStart_toStartOf="parent"/>
+                                mapbox:layout_constraintStart_toStartOf="parent"
+                                android:contentDescription="@string/tags_unactive_icon"/>
                         <ImageButton
                                 android:src="@drawable/tag_active"
                                 android:layout_width="48dp"
@@ -341,7 +334,8 @@
                                 mapbox:layout_constraintBottom_toBottomOf="parent"
                                 mapbox:layout_constraintVertical_bias="0.0"
                                 mapbox:layout_constraintStart_toEndOf="@+id/dark_room_edit_tags_button_unactive"
-                                android:visibility="gone"/>
+                                android:visibility="gone"
+                                android:contentDescription="@string/tags_active_icon"/>
 
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -367,7 +361,8 @@
                                 android:scaleType="centerCrop"
                                 mapbox:layout_constraintTop_toTopOf="parent"
                                 mapbox:layout_constraintBottom_toBottomOf="parent"
-                                mapbox:layout_constraintStart_toStartOf="parent"/>
+                                mapbox:layout_constraintStart_toStartOf="parent"
+                                android:contentDescription="@string/link_unactive_icon"/>
                         <ImageButton
                                 android:src="@drawable/link_active"
                                 android:layout_width="48dp"
@@ -380,7 +375,8 @@
                                 mapbox:layout_constraintBottom_toBottomOf="parent"
                                 mapbox:layout_constraintVertical_bias="0.0"
                                 mapbox:layout_constraintStart_toEndOf="@+id/dark_room_edit_url_button_unactive"
-                                android:visibility="gone"/>
+                                android:visibility="gone"
+                                android:contentDescription="@string/link_active_icon"/>
 
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -409,7 +405,7 @@
                         android:layout_height="wrap_content"
                         android:layout_width="0dp"
                         android:ems="10"
-                        android:hint="Any tips for other travelers?"
+                        android:hint="@string/any_tips_for_other_travelers"
                         android:inputType="textMultiLine"
                         android:lineSpacingExtra="4sp"
                         android:background="@android:color/transparent"
@@ -452,7 +448,7 @@
                 <EditText
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:hint="Enter tags"
+                        android:hint="@string/enter_tags"
                         android:id="@+id/dark_room_edit_tag_input"
                         app:layout_constraintTop_toBottomOf="@+id/dark_room_edit_chip_group"
                         app:layout_constraintStart_toStartOf="parent"
@@ -475,7 +471,8 @@
                         app:layout_constraintBottom_toBottomOf="@+id/dark_room_edit_tag_input"
                         android:scaleType="centerCrop"
                         android:padding="8dp"
-                        app:layout_constraintEnd_toEndOf="parent"/>
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:contentDescription="@string/add_tag"/>
 
                 <androidx.recyclerview.widget.RecyclerView
                         android:layout_width="0dp"
@@ -490,7 +487,7 @@
                         android:layout_marginTop="16dp"/>
 
                 <TextView
-                        android:text="Use a dash to seperate multi-word tags.\nMaximum 5 tags"
+                        android:text="@string/use_a_dash_to_seperate_multi_word_tags_nmaximum_5_tags"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/dark_room_edit_tag_instructions"
@@ -521,14 +518,13 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="Any useful links that you can share?"
+                        android:hint="@string/any_useful_links_that_you_can_share"
                         android:elevation="2dp"
-                        android:inputType="textEmailAddress"
+                        android:inputType="textUri"
                         android:background="@android:color/transparent"
                         android:gravity="top"
                         android:lineSpacingExtra="4sp"
                         android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]@!$'()*+,;=&amp;"
-
                         mapbox:layout_constraintEnd_toEndOf="parent"
                         mapbox:layout_constraintStart_toStartOf="parent"
                         mapbox:layout_constraintBottom_toBottomOf="parent"
@@ -652,7 +648,8 @@
                     android:layout_marginEnd="16dp"
                     android:scaleType="fitCenter"
                     mapbox:layout_constraintTop_toTopOf="parent"
-                    mapbox:layout_constraintBottom_toTopOf="@+id/dark_room_edit_image_horizontal"/>
+                    mapbox:layout_constraintBottom_toTopOf="@+id/dark_room_edit_image_horizontal"
+                    android:contentDescription="@string/menu_icon"/>
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

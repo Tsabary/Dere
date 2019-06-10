@@ -56,11 +56,10 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
     lateinit var sharedViewModelTags: SharedViewModelTags
     lateinit var sharedViewModelImage: SharedViewModelImage
 
-    lateinit var myImageObject: Images
+    private lateinit var myImageObject: Images
 
     val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
     lateinit var imageChipGroup: ChipGroup
-    private val tagsRef = FirebaseDatabase.getInstance().getReference("/tags")
 
     lateinit var imageLocationInput: TextView
     lateinit var imageUrl: TextView
@@ -89,47 +88,6 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
     lateinit var currentUser: Users
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
-            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-            sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
-        }
-
-
-        tagsRef.addChildEventListener(object : ChildEventListener {
-
-            var tags: MutableList<SingleTagForList> = mutableListOf()
-
-
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
-                val tagName = p0.key.toString()
-
-                val count = p0.childrenCount.toInt()
-
-                tags.add(SingleTagForList(tagName, count))
-
-                sharedViewModelTags.tagList = tags
-
-            }
-
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
-        })
-    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -152,6 +110,12 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         super.onViewCreated(view, savedInstanceState)
 
         val activity = activity as MainActivity
+
+        activity.let {
+            sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+            sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
+        }
 
         val imageView = dark_room_edit_image_horizontal
         val addTagButton = dark_room_edit_add_tag_button
@@ -180,7 +144,6 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         val cancelButton = dark_room_edit_after_post_cancel
 
         val focus = dark_room_edit_map_focus
-        val pinHint = dark_room_edit_pin_hint
         val pinAction = dark_room_edit_map_pin
 
 
@@ -196,7 +159,6 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
         infoContainer = dark_room_edit_information_container
         tagsContainer = dark_room_edit_tags_container
         urlContainer = dark_room_edit_url_container
-
 
         options.setOnClickListener {
             optionsContainer.visibility = View.VISIBLE
@@ -218,14 +180,9 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
             makeUrlActive()
         }
 
-
-
-
         focus.setOnClickListener {
             panToCurrentLocation(activity, myMapboxMap!!)
         }
-
-
 
         cancelButton.setOnClickListener {
             activity.subFm.popBackStack("imagePostEditFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
@@ -246,12 +203,10 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                 symbolManager.iconAllowOverlap = true
 
-
                 style.addImage(
                     DERE_PIN,
                     BitmapUtils.getBitmapFromDrawable(resources.getDrawable(R.drawable.location_map))!!
                 )
-
 
                 sharedViewModelImage.sharedImageObject.observe(this, Observer {
                     it?.let { imageObject ->
@@ -277,18 +232,18 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
                         if (imageObject.private) {
-                            dark_room_edit_privacy_text.text = "private"
+                            dark_room_edit_privacy_text.text = getString(R.string.private_text)
                         } else {
-                            dark_room_edit_privacy_text.text = "public"
+                            dark_room_edit_privacy_text.text = getString(R.string.public_text)
                         }
 
                         dark_room_edit_privacy_container.setOnClickListener {
 
                             if (dark_room_edit_privacy_text.text == "private") {
-                                dark_room_edit_privacy_text.text = "public"
+                                dark_room_edit_privacy_text.text = getString(R.string.public_text)
                                 imagePrivacy = false
                             } else {
-                                dark_room_edit_privacy_text.text = "private"
+                                dark_room_edit_privacy_text.text = getString(R.string.private_text)
                                 imagePrivacy = true
                             }
                         }
@@ -379,8 +334,6 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
                                 val privacy = dark_room_edit_privacy_text.text == "private"
 
-//                                imageTagsList.clear()
-
                                 for (i in 0 until imageChipGroup.childCount) {
                                     val chip = imageChipGroup.getChildAt(i) as Chip
                                     imageTagsList.add(chip.text.toString())
@@ -394,25 +347,6 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
                                 imageRef.child("details").setValue(locationInput)
                                 imageRef.child("tags").setValue(imageTagsList)
                                 imageRef.child("location").setValue(mutableListOf(imageLat, imageLong))
-//
-//
-//                                val updatedImage = Images(
-//                                    imageObject.id,
-//                                    imageObject.imageBig,
-//                                    imageObject.imageSmall,
-//                                    privacy,
-//                                    imageObject.photographer,
-//                                    url,
-//                                    locationInput,
-//                                    mutableListOf(imageLat, imageLong),
-//                                    imageObject.timestampTaken,
-//                                    imageObject.timestampUpload,
-//                                    imageTagsList,
-//                                    imageObject.verified,
-//                                    0,
-//                                    imageObject.ratio,
-//                                    0
-//                                )
 
                                 FirebaseDatabase.getInstance().getReference("/images/${imageObject.id}/body")
                                     .addListenerForSingleValueEvent(object : ValueEventListener {
@@ -459,10 +393,8 @@ class ImagePostEditFragment : Fragment(), PermissionsListener, DereMethods {
 
 
         val tagSuggestionRecycler = dark_room_edit_tag_recycler
-        val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
-        tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
+        tagSuggestionRecycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.adapter = tagsFilteredAdapter
-
 
         addTagButton.setOnClickListener {
 

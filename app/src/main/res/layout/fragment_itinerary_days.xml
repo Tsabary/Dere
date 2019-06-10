@@ -20,7 +20,7 @@
 
 
             <TextView
-                    android:text="Add a day"
+                    android:text="@string/add_a_day"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/itinerary_days_add_day"
@@ -56,7 +56,7 @@
                     android:ems="9"
                     android:gravity="start"/>
             <TextView
-                    android:text="Itinerary starts on: "
+                    android:text="@string/itinerary_starts_on"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView38"

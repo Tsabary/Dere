@@ -8,14 +8,13 @@
         android:background="@android:color/white"
         android:backgroundTint="@color/white">
 
-    <androidx.core.widget.NestedScrollView android:layout_width="match_parent"
-                                           android:layout_height="match_parent">
+    <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent"
-                                                           android:layout_height="match_parent">
-
-
-
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
             <de.hdodenhof.circleimageview.CircleImageView
                     android:layout_width="112dp"
@@ -89,7 +88,8 @@
                     android:scaleType="fitCenter"
                     android:visibility="gone"
                     android:layout_marginEnd="8dp"
-                    android:layout_marginStart="8dp"/>
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="@string/instagram_button"/>
             <View
                     android:id="@+id/divider6"
                     android:layout_width="0dp"
@@ -128,7 +128,7 @@
                     app:layout_constraintBottom_toBottomOf="@+id/profile_ru_reputation_count"
                     tools:text="45"/>
             <TextView
-                    android:text="Photos"
+                    android:text="@string/photos"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/profile_ru_photos_static"
@@ -141,7 +141,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/profile_ru_photos_count"
                     android:fontFamily="@font/roboto_medium"/>
             <TextView
-                    android:text="Reputation"
+                    android:text="@string/reputation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/profile_ru_reputation_static"
@@ -154,7 +154,7 @@
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintEnd_toStartOf="@+id/profile_ru_follower_static"/>
             <TextView
-                    android:text="Followers"
+                    android:text="@string/followers"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/profile_ru_follower_static"
@@ -167,7 +167,7 @@
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintEnd_toEndOf="parent"/>
             <TextView
-                    android:text="Follow"
+                    android:text="@string/follow"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/profile_ru_follow_button"
@@ -196,8 +196,8 @@
                     android:layout_marginStart="8dp"
                     android:scaleType="centerCrop"
                     app:layout_constraintTop_toTopOf="@+id/profile_ru_image"
-                    app:layout_constraintBottom_toBottomOf="@+id/profile_ru_image"/>
-
+                    app:layout_constraintBottom_toBottomOf="@+id/profile_ru_image"
+                    android:contentDescription="@string/profile_photo"/>
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

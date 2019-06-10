@@ -71,10 +71,8 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_collection_gallery, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_collection_gallery, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -92,89 +90,36 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
         val pagerAdapterBucket = FeedAndMapPagerAdapter(childFragmentManager)
         val pagerAdapterItinerary = ItineraryGalleryParentPagerAdapter(childFragmentManager)
 
-        mapButton.setOnClickListener {
-            switchImageAndMap()
-        }
-
-        editableTitle.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (editableTitle.text.toString() != collection.child("/body/title").value.toString()) {
-                    editButton.visibility = View.VISIBLE
-                }
-            }
-
-        })
-
-        editButton.setOnClickListener {
-            //            switchEditableTitle()
-            val newTitle = editableTitle.text.toString()
-
-            if (editableTitle.text.isNotEmpty()) {
-                if (collection.hasChild("body/contributors")) {
-                    FirebaseDatabase.getInstance().getReference("/sharedItineraries/${collection.key}/body/title")
-                        .setValue(newTitle)
-                } else if (collection.hasChild("body/locationId")) {
-                    FirebaseDatabase.getInstance().getReference("/itineraries/${collection.key}/body/title")
-                        .setValue(newTitle)
-                } else {
-                    FirebaseDatabase.getInstance()
-                        .getReference("/users/${currentUser.uid}/buckets/${collection.key}/body/title")
-                        .setValue(editableTitle.text.toString())
-                }
-                fixedTitle.text = newTitle
-                hasItineraryDataChanged = true
-                editButton.visibility = View.GONE
-                editableTitle.clearFocus()
-                activity.dismissKeyboard()
-//                closeKeyboard(activity)
-
-            } else {
-                Toast.makeText(this.context, "Can't save an empty name", Toast.LENGTH_SHORT).show()
-            }
-        }
 
         activity.let {
 
             sharedViewModelImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
             sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-            sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
             sharedViewModelItinerary = ViewModelProviders.of(it).get(SharedViewModelItinerary::class.java)
             sharedViewModelItineraryDayStrings =
                 ViewModelProviders.of(it).get(SharedViewModelItineraryDayStrings::class.java)
-
-
+            sharedViewModelCollection = ViewModelProviders.of(it).get(SharedViewModelCollection::class.java)
             sharedViewModelCollection.imageCollection.observe(this, Observer { dataSnapshot ->
                 dataSnapshot?.let { collectionSnapshot ->
 
                     collection = collectionSnapshot
-
-//                    editableTitle.isFocusable =
-//                        !(collection.child("body/creator").value != currentUser.uid || collection.key == "AllBuckets")
-
 
                     galleryViewPager.currentItem = 0
 
                     fixedTitle.text = collectionSnapshot.child("/body/title").value.toString()
                     editableTitle.setText(collectionSnapshot.child("/body/title").value.toString())
                     collection_gallery_photos_count.text =
-                        collectionSnapshot.child("/body/days").childrenCount.toString() + " days"
+                        "${collectionSnapshot.child("/body/days").childrenCount} days"
 
                     if (collectionSnapshot.hasChild("/body/contributors")) {
                         mapButton.visibility = View.GONE
                         shareButton.visibility = View.VISIBLE
                         galleryViewPager.adapter = pagerAdapterItinerary
-                        galleryViewPager.offscreenPageLimit = 6
+                        galleryViewPager.offscreenPageLimit = 2
 
                         collection_gallery_photos_count.text =
-                            collectionSnapshot.child("/body/days").childrenCount.toString() + " days"
+                            "${collectionSnapshot.child("/body/days").childrenCount} days"
 
                         if (!collectionSnapshot.child("/body/contributors").hasChild(currentUser.uid)) {
                             FirebaseDatabase.getInstance()
@@ -212,7 +157,7 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
                         galleryViewPager.offscreenPageLimit = 6
 
                         collection_gallery_photos_count.text =
-                            collectionSnapshot.child("/body/days").childrenCount.toString() + " days"
+                            "${collectionSnapshot.child("/body/days").childrenCount} days"
 
                         if (collectionSnapshot.child("body/creator").value == currentUser.uid) {
                             publish.visibility = View.VISIBLE
@@ -225,7 +170,7 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
                         galleryViewPager.adapter = pagerAdapterBucket
 
                         collection_gallery_photos_count.text =
-                            collectionSnapshot.child("/body/images").childrenCount.toString() + " places"
+                            "${collectionSnapshot.child("/body/images").childrenCount} places"
 
                     }
 
@@ -240,11 +185,55 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
                         ).addToBackStack("itineraryEditFragment").commit()
                         activity.subActive = activity.itineraryEditFragment
                     }
-
-
                 }
             })
         }
+
+        mapButton.setOnClickListener {
+            switchImageAndMap()
+        }
+
+        editableTitle.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (editableTitle.text.toString() != collection.child("/body/title").value.toString()) {
+                    editButton.visibility = View.VISIBLE
+                }
+            }
+        })
+
+        editButton.setOnClickListener {
+
+            val newTitle = editableTitle.text.toString()
+
+            if (editableTitle.text.isNotEmpty()) {
+                if (collection.hasChild("body/contributors")) {
+                    FirebaseDatabase.getInstance().getReference("/sharedItineraries/${collection.key}/body/title")
+                        .setValue(newTitle)
+                } else if (collection.hasChild("body/locationId")) {
+                    FirebaseDatabase.getInstance().getReference("/itineraries/${collection.key}/body/title")
+                        .setValue(newTitle)
+                } else {
+                    FirebaseDatabase.getInstance()
+                        .getReference("/users/${currentUser.uid}/buckets/${collection.key}/body/title")
+                        .setValue(editableTitle.text.toString())
+                }
+                fixedTitle.text = newTitle
+                hasItineraryDataChanged = true
+                editButton.visibility = View.GONE
+                editableTitle.clearFocus()
+                activity.dismissKeyboard()
+            } else {
+                Toast.makeText(this.context, "Can't save an empty name", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+
 
         shareButton.setOnClickListener {
 
@@ -292,43 +281,6 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
         }
     }
 
-//    private fun switchEditableTitle() {
-//        val activity = activity as MainActivity
-//
-//        if (fixedTitle.visibility == View.VISIBLE) {
-//            fixedTitle.visibility = View.GONE
-//            editableTitle.visibility = View.VISIBLE
-//            editableTitle.requestFocus()
-//            editableTitle.setSelection(editableTitle.text.length)
-//            editButton.setImageResource(R.drawable.edit_active)
-//            showKeyboard(activity)
-//        } else {
-//            val newTitle = editableTitle.text.toString()
-//            fixedTitle.visibility = View.VISIBLE
-//            editableTitle.visibility = View.GONE
-//            editButton.setImageResource(R.drawable.edit)
-//
-//            if (editableTitle.text.isNotEmpty()) {
-//                if (publish.visibility == View.VISIBLE) {
-//                    FirebaseDatabase.getInstance().getReference("/itineraries/${collection.key}/body/title")
-//                        .setValue(newTitle)
-//                    fixedTitle.text = newTitle
-//                    closeKeyboard(activity)
-//                    hasItineraryDataChanged = true
-//                } else {
-//                    FirebaseDatabase.getInstance()
-//                        .getReference("/users/${currentUser.uid}/buckets/${collection.key}/body/title")
-//                        .setValue(editableTitle.text.toString())
-//                    fixedTitle.text = newTitle
-//                    closeKeyboard(activity)
-//                    hasBucketDataChanged = true
-//                }
-//            } else {
-//                Toast.makeText(this.context, "Can't save an empty name", Toast.LENGTH_SHORT).show()
-//            }
-//        }
-//    }
-
     override fun onPause() {
         super.onPause()
         mapButton.setImageResource(R.drawable.world)
@@ -340,14 +292,10 @@ class CollectionGalleryFragment : Fragment(), DereMethods {
             (activity as MainActivity).profileLoggedInUserFragment.listenToImagesFromBucket()
             hasBucketDataChanged = false
         }
-
         editButton.visibility = View.GONE
-
     }
-
 
     companion object {
         fun newInstance(): CollectionGalleryFragment = CollectionGalleryFragment()
     }
-
 }

@@ -26,24 +26,10 @@ open class RecentFeedOnBoardingFragment : Fragment() {
 
     var staggeredImageList = mutableListOf<StaggeredFeedImageOnBoarding>()
 
-
     lateinit var currentUser: Users
 
-    lateinit var feedRecycler: RecyclerView
+    private lateinit var feedRecycler: RecyclerView
     val staggeredGalleryAdapter = GroupAdapter<ViewHolder>()
-    val uid = FirebaseAuth.getInstance().uid
-
-    lateinit var staggeredGalleryLayoutManager: StaggeredGridLayoutManager
-
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
-        }
-    }
-
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_feeds_layout, container, false)
@@ -51,6 +37,11 @@ open class RecentFeedOnBoardingFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val activity = activity as MainActivity
+        activity.let {
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
+        }
 
         feed_filter_container.visibility = View.GONE
 
@@ -64,54 +55,45 @@ open class RecentFeedOnBoardingFragment : Fragment() {
     }
 
     private fun setUpGalleryAdapter() {
-        staggeredGalleryLayoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         feedRecycler.adapter = staggeredGalleryAdapter
-        feedRecycler.layoutManager = staggeredGalleryLayoutManager
+        feedRecycler.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         listenToImages(currentUser)
     }
-
 
     private fun listenToImages(currentUser: Users) {
         staggeredGalleryAdapter.clear()
         staggeredImageList.clear()
 
+        FirebaseDatabase.getInstance().getReference("/images")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
 
-        val ref = FirebaseDatabase.getInstance().getReference("/images")
+                    for (i in p0.children) {
+                        val singleImageFromDB = i.child("body").getValue(Images::class.java)
 
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
+                        if (singleImageFromDB != null) {
+                            if (!singleImageFromDB.private) {
 
-                for (i in p0.children) {
-
-                    val singleImageFromDB = i.child("body").getValue(Images::class.java)
-
-                    if (singleImageFromDB != null) {
-
-                        if (!singleImageFromDB.private) {
-
-                            staggeredImageList.add(
-                                StaggeredFeedImageOnBoarding(
-                                    singleImageFromDB,
-                                    currentUser,
-                                    activity as MainActivity
+                                staggeredImageList.add(
+                                    StaggeredFeedImageOnBoarding(
+                                        singleImageFromDB,
+                                        currentUser,
+                                        activity as MainActivity
+                                    )
                                 )
-                            )
 
-                            staggeredGalleryAdapter.clear()
-                            staggeredGalleryAdapter.addAll(staggeredImageList.reversed())
-
+                                staggeredGalleryAdapter.clear()
+                                staggeredGalleryAdapter.addAll(staggeredImageList.reversed())
+                            }
                         }
                     }
                 }
-            }
 
-            override fun onCancelled(p0: DatabaseError) {
-            }
-        })
+                override fun onCancelled(p0: DatabaseError) {}
+            })
     }
 
     companion object {
         fun newInstance(): RecentFeedOnBoardingFragment = RecentFeedOnBoardingFragment()
     }
-
 }

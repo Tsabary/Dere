@@ -18,16 +18,6 @@
             app:tabTextColor="@color/gray500"
             app:tabIndicatorColor="@color/gray900">
 
-        <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Itinerary"/>
-
-        <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="All locations"/>
-
     </com.google.android.material.tabs.TabLayout>
     <androidx.viewpager.widget.ViewPager
             android:layout_width="0dp"

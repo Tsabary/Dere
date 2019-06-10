@@ -40,62 +40,16 @@ import kotlinx.android.synthetic.main.tag_auto_complete.view.*
 class EditQuestionFragment : Fragment(), DereMethods {
 
     lateinit var sharedViewModelTags: SharedViewModelTags
-    lateinit var sharedViewModelQuestion: SharedViewModelQuestion
+    private lateinit var sharedViewModelQuestion: SharedViewModelQuestion
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
-    lateinit var myQuestionObject: Question
-
-    val tagsRef = FirebaseDatabase.getInstance().getReference("/tags")
+    private lateinit var myQuestionObject: Question
 
     val tagsFilteredAdapter = GroupAdapter<ViewHolder>()
     lateinit var questionChipGroup: ChipGroup
-    var tagsList: MutableList<String> = mutableListOf()
+    private var tagsList: MutableList<String> = mutableListOf()
     lateinit var questionDetails: EditText
     lateinit var questionTitle: EditText
     lateinit var questionTagsInput: EditText
-
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-
-        activity?.let {
-            sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
-            sharedViewModelQuestion = ViewModelProviders.of(it).get(SharedViewModelQuestion::class.java)
-            sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
-        }
-
-        tagsRef.addChildEventListener(object : ChildEventListener {
-
-            var tags: MutableList<SingleTagForList> = mutableListOf()
-
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
-                val tagName = p0.key.toString()
-
-                val count = p0.childrenCount.toInt()
-
-                tags.add(SingleTagForList(tagName, count))
-
-                sharedViewModelTags.tagList = tags
-
-            }
-
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot) {
-            }
-
-        })
-    }
-
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_new_question, container, false)
@@ -106,15 +60,20 @@ class EditQuestionFragment : Fragment(), DereMethods {
 
         val activity = activity as MainActivity
 
+        activity.let {
+            sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
+            sharedViewModelQuestion = ViewModelProviders.of(it).get(SharedViewModelQuestion::class.java)
+            sharedViewModelRandomUser = ViewModelProviders.of(it).get(SharedViewModelRandomUser::class.java)
+        }
+
         questionTitle = new_question_title
         questionTitle.requestFocus()
         questionDetails = new_question_details
         val questionButton = new_question_btn
-        questionButton.text = "Save question"
+        questionButton.text = getString(R.string.save_question)
         questionTagsInput = new_question_tag_input
         val addTagButton = new_question_add_tag_button
         questionChipGroup = new_question_chip_group
-
 
 
         sharedViewModelQuestion.questionObject.observe(this, Observer {
@@ -132,11 +91,18 @@ class EditQuestionFragment : Fragment(), DereMethods {
                     addTag(tag)
                 }
 
-
                 questionButton.setOnClickListener {
                     when {
-                        questionTitle.text!!.length < 15 -> Toast.makeText(this.context, "Question title is too short", Toast.LENGTH_SHORT).show()
-                        questionDetails.text.isEmpty() -> Toast.makeText(this.context, "Please give your question some more details", Toast.LENGTH_SHORT).show()
+                        questionTitle.text!!.length < 15 -> Toast.makeText(
+                            this.context,
+                            "Question title is too short",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        questionDetails.text.isEmpty() -> Toast.makeText(
+                            this.context,
+                            "Please give your question some more details",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         questionChipGroup.childCount == 0 -> Toast.makeText(
                             this.context,
                             "Please add at least one tag to your question",
@@ -151,59 +117,48 @@ class EditQuestionFragment : Fragment(), DereMethods {
                                 tagsList.add(chip.text.toString())
                             }
 
-                            val questionRef = FirebaseDatabase.getInstance().getReference("/questions/${question.id}/main/body")
+                            val questionRef =
+                                FirebaseDatabase.getInstance().getReference("/questions/${question.id}/main/body")
 
                             questionRef.child("title").setValue(questionTitle.text.toString())
                             questionRef.child("details").setValue(questionDetails.text.toString())
                             questionRef.child("tags").setValue(tagsList)
                             questionRef.child("lastInteraction").setValue(System.currentTimeMillis())
 
-                            val updatedQuestion = Question(question.id, questionTitle.text.toString(), questionDetails.text.toString(), tagsList, question.timestamp, question.author, question.lastInteraction)
+                            val updatedQuestion = Question(
+                                question.id,
+                                questionTitle.text.toString(),
+                                questionDetails.text.toString(),
+                                tagsList,
+                                question.timestamp,
+                                question.author,
+                                question.lastInteraction
+                            )
 
                             sharedViewModelQuestion.questionObject.postValue(updatedQuestion)
 
-                            for (tag in tagsList){
-                                val userInterests = FirebaseDatabase.getInstance().getReference("/users/${question.author}/interests/$tag")
-                                userInterests.setValue(true)
-                                val refTag =
-                                    FirebaseDatabase.getInstance().getReference("/tags/$tag/${question.id}")
-                                refTag.setValue("question")
+                            for (tag in tagsList) {
+                                FirebaseDatabase.getInstance()
+                                    .getReference("/users/${question.author}/interests/$tag").setValue(true)
+                                FirebaseDatabase.getInstance().getReference("/tags/$tag/${question.id}")
+                                    .setValue("question")
                             }
 
-                            activity.subFm.beginTransaction().add(R.id.feed_subcontents_frame_container, activity.openedQuestionFragment, "openedQuestionFragment").addToBackStack("openedQuestionFragment").commit()
+                            activity.subFm.beginTransaction().add(
+                                R.id.feed_subcontents_frame_container,
+                                activity.openedQuestionFragment,
+                                "openedQuestionFragment"
+                            ).addToBackStack("openedQuestionFragment").commit()
                             activity.subActive = activity.openedQuestionFragment
                         }
                     }
                 }
-
-
             }
         })
 
 
-
-        questionTitle.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-//                if (questionTitle.text!!.isNotEmpty()) {
-//                    questionTitle.setText("${questionTitle.text}?")
-//                } else {
-//                    questionTitle.setText("")
-//                }
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-            }
-        })
-
-
-
-        val tagSuggestionRecycler =new_question_tag_recycler
-        val tagSuggestionLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
-        tagSuggestionRecycler.layoutManager = tagSuggestionLayoutManager
+        val tagSuggestionRecycler = new_question_tag_recycler
+        tagSuggestionRecycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this.context)
         tagSuggestionRecycler.adapter = tagsFilteredAdapter
 
 
@@ -230,18 +185,13 @@ class EditQuestionFragment : Fragment(), DereMethods {
                             val chip = questionChipGroup.getChildAt(i) as Chip
 
                             if (t.tagString == chip.text.toString()) {
-
                                 countTagMatches += 1
-
                             }
-
                         }
-
 
                         if (countTagMatches == 0) {
                             tagSuggestionRecycler.visibility = View.VISIBLE
                             tagsFilteredAdapter.add(SingleTagSuggestion(t))
-
                         }
                     }
                 }
@@ -261,14 +211,10 @@ class EditQuestionFragment : Fragment(), DereMethods {
             }
         }
 
-
-
-
         tagsFilteredAdapter.setOnItemClickListener { item, _ ->
             val row = item as SingleTagSuggestion
             addTag(row.tag.tagString)
         }
-
     }
 
     private fun addTag(tag: String) {

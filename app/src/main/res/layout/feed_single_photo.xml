@@ -28,14 +28,13 @@
                 android:background="#A6FFFFFF"
                 android:elevation="1dp"
                 android:visibility="gone"
-                android:id="@+id/feed_single_photo_chosen">
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                android:id="@+id/feed_single_photo_chosen"/>
         <ImageView
                 android:id="@+id/feed_single_photo_photo"
                 tools:srcCompat="@drawable/profile_icon"
                 android:scaleType="centerCrop"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:contentDescription="@string/image"/>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

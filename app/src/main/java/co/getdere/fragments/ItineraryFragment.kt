@@ -19,6 +19,7 @@ import co.getdere.MainActivity
 import co.getdere.R
 import co.getdere.interfaces.DereMethods
 import co.getdere.models.*
+import co.getdere.viewmodels.SharedViewModelCurrentUser
 import co.getdere.viewmodels.SharedViewModelItinerary
 import co.getdere.viewmodels.SharedViewModelRandomUser
 import com.bumptech.glide.Glide
@@ -46,6 +47,7 @@ import java.util.*
 class ItineraryFragment : Fragment(), DereMethods {
 
     private lateinit var sharedViewModelItinerary: SharedViewModelItinerary
+    lateinit var currentUser: Users
 
     val sampleImagesAdapter = GroupAdapter<ViewHolder>()
     val lastReviewsAdapter = GroupAdapter<ViewHolder>()
@@ -58,8 +60,6 @@ class ItineraryFragment : Fragment(), DereMethods {
     lateinit var itineraryListing: ItineraryListing
     lateinit var itineraryContent: ItineraryInformational
     lateinit var itineraryBudget: ItineraryBudget
-
-    val uid = FirebaseAuth.getInstance().uid
 
     var sumAllReviews = 0f
     var numAllReviews = 0f
@@ -147,77 +147,12 @@ class ItineraryFragment : Fragment(), DereMethods {
         starBar4Fg = itinerary_4_star_filling_bar
         starBar5Fg = itinerary_5_star_filling_bar
 
-        sampleImagesRecycler.adapter = sampleImagesAdapter
-        sampleImagesRecycler.layoutManager = GridLayoutManager(this.context, 4)
-
-        latestReviewsRecycler.adapter = lastReviewsAdapter
-        latestReviewsRecycler.layoutManager = LinearLayoutManager(this.context)
-
-        allReviewsRecycler.adapter = allReviewsAdapter
-        allReviewsRecycler.layoutManager = LinearLayoutManager(this.context)
-
-        budgetIncludesRecycler.adapter = budgetIncludesAdapter
-        budgetIncludesRecycler.layoutManager = GridLayoutManager(this.context, 2)
-
-        readAllReviews.setOnClickListener {
-            allReviewsContainer.visibility = View.VISIBLE
-        }
-
-        dismissAllReviews.setOnClickListener {
-            allReviewsContainer.visibility = View.GONE
-        }
-
-        leaveReview.setOnClickListener {
-            reviewContainer.visibility = View.VISIBLE
-        }
-
-        reviewCancel.setOnClickListener {
-            reviewContainer.visibility = View.GONE
-        }
-
-        purchaseBtn.setOnClickListener {
-            purchaseItinerary(activity)
-        }
-
-        purchaseBtn2.setOnClickListener {
-            purchaseItinerary(activity)
-        }
-
-        reviewSubmit.setOnClickListener {
-            if (reviewInput.text.isNotEmpty() && reviewStars.rating.toInt() != 0) {
-                val reviewRef =
-                    FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryBody.id}/reviews").push()
-                val newReview = ItineraryReview(
-                    reviewRef.key!!,
-                    reviewInput.text.toString(),
-                    reviewStars.rating.toInt(),
-                    uid!!,
-                    System.currentTimeMillis()
-                )
-
-                reviewRef.child("body").setValue(newReview).addOnSuccessListener {
-
-                    numAllReviews++
-                    sumAllReviews += reviewStars.rating
-                    val newRating = sumAllReviews / numAllReviews
-                    FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryBody.id}/listing/rating")
-                        .setValue(newRating).addOnSuccessListener {
-                            reviewInput.text.clear()
-                            reviewStars.rating = 0f
-                            reviewContainer.visibility = View.GONE
-                            closeKeyboard(activity)
-
-                        }
-                }
-
-            }
-        }
-
 
         lifecycle.addObserver(youtubePlayer)
 
         activity.let {
             sharedViewModelItinerary = ViewModelProviders.of(it).get(SharedViewModelItinerary::class.java)
+            currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
 
             youtubePlayer.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
 
@@ -237,7 +172,7 @@ class ItineraryFragment : Fragment(), DereMethods {
                             itineraryBudget =
                                 itinerarySnapshot.child("budget").getValue(ItineraryBudget::class.java)!!
 
-                            leaveReview.visibility = if (itinerarySnapshot.hasChild("buyers/$uid")) {
+                            leaveReview.visibility = if (itinerarySnapshot.hasChild("buyers/${currentUser.uid}")) {
                                 View.VISIBLE
                             } else {
                                 View.GONE
@@ -283,23 +218,11 @@ class ItineraryFragment : Fragment(), DereMethods {
                             }
 
                             if (itineraryBody != null) {
-                                itineraryBody = itineraryBody
                                 listenToLastReviews()
 
                                 title.text = itineraryBody.title
-
-                                description.text = if (itineraryBody.description.isNotEmpty()) {
-                                    itineraryBody.description
-                                } else {
-                                    dummyDescription
-                                }
-
-                                location.text = if (itineraryBody.locationName.isNotEmpty()) {
-                                    itineraryBody.locationName
-                                } else {
-                                    "Dark Side, Moon"
-                                }
-
+                                description.text = itineraryBody.description
+                                location.text = itineraryBody.locationName
                                 imageCount.text = "${itineraryBody.images.size} locations"
                             }
 
@@ -385,11 +308,81 @@ class ItineraryFragment : Fragment(), DereMethods {
                 }
             })
         }
+
+
+        sampleImagesRecycler.adapter = sampleImagesAdapter
+        sampleImagesRecycler.layoutManager = GridLayoutManager(this.context, 4)
+
+        latestReviewsRecycler.adapter = lastReviewsAdapter
+        latestReviewsRecycler.layoutManager = LinearLayoutManager(this.context)
+
+        allReviewsRecycler.adapter = allReviewsAdapter
+        allReviewsRecycler.layoutManager = LinearLayoutManager(this.context)
+
+        budgetIncludesRecycler.adapter = budgetIncludesAdapter
+        budgetIncludesRecycler.layoutManager = GridLayoutManager(this.context, 2)
+
+
+        readAllReviews.setOnClickListener {
+            allReviewsContainer.visibility = View.VISIBLE
+        }
+
+        dismissAllReviews.setOnClickListener {
+            allReviewsContainer.visibility = View.GONE
+        }
+
+        leaveReview.setOnClickListener {
+            reviewContainer.visibility = View.VISIBLE
+        }
+
+        reviewCancel.setOnClickListener {
+            reviewContainer.visibility = View.GONE
+        }
+
+        purchaseBtn.setOnClickListener {
+            purchaseItinerary(activity)
+        }
+
+        purchaseBtn2.setOnClickListener {
+            purchaseItinerary(activity)
+        }
+
+        reviewSubmit.setOnClickListener {
+            if (reviewInput.text.isNotEmpty() && reviewStars.rating.toInt() != 0) {
+                val reviewRef =
+                    FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryBody.id}/reviews").push()
+                val newReview = ItineraryReview(
+                    reviewRef.key!!,
+                    reviewInput.text.toString(),
+                    reviewStars.rating.toInt(),
+                    currentUser.uid,
+                    System.currentTimeMillis()
+                )
+
+                reviewRef.child("body").setValue(newReview).addOnSuccessListener {
+
+                    numAllReviews++
+                    sumAllReviews += reviewStars.rating
+                    val newRating = sumAllReviews / numAllReviews
+                    FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryBody.id}/listing/rating")
+                        .setValue(newRating).addOnSuccessListener {
+                            reviewInput.text.clear()
+                            reviewStars.rating = 0f
+                            reviewContainer.visibility = View.GONE
+                            closeKeyboard(activity)
+
+                        }
+                }
+
+            }
+        }
+
+
     }
 
 
     private fun purchaseItinerary(activity: MainActivity) {
-        if (itineraryBody.creator != uid) {
+        if (itineraryBody.creator != currentUser.uid) {
 
             if (itineraryListing.price > 0) {
                 activity.subFm.beginTransaction().hide(activity.subActive)
@@ -397,7 +390,8 @@ class ItineraryFragment : Fragment(), DereMethods {
                     .addToBackStack("buyItineraryFragment").commit()
                 activity.subActive = activity.buyItineraryFragment
             } else {
-                FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryBody.id}/buyers/$uid")
+                FirebaseDatabase.getInstance()
+                    .getReference("/itineraries/${itineraryBody.id}/buyers/${currentUser.uid}")
                     .setValue(true).addOnSuccessListener {
 
                         val newPurchasedItineraryRef =
@@ -405,14 +399,14 @@ class ItineraryFragment : Fragment(), DereMethods {
 
 
 
-                        if (uid != null && newPurchasedItineraryRef.key != null) {
+                        if (newPurchasedItineraryRef.key != null) {
 
                             val newPurchasedItinerary = SharedItineraryBody(
                                 itineraryBody.id,
                                 newPurchasedItineraryRef.key!!,
                                 false,
                                 itineraryBody.creator,
-                                mapOf(uid to true),
+                                mapOf(currentUser.uid to true),
                                 itineraryBody.title,
                                 itineraryBody.description,
                                 itineraryBody.images,
@@ -429,27 +423,26 @@ class ItineraryFragment : Fragment(), DereMethods {
                             newPurchasedItineraryRef.child("body").setValue(newPurchasedItinerary)
                                 .addOnSuccessListener {
 
-                                    val userSharedItinerariesRef = FirebaseDatabase.getInstance()
-                                        .getReference("/users/$uid/sharedItineraries/${newPurchasedItineraryRef.key}")
-
-                                    userSharedItinerariesRef.setValue(true).addOnSuccessListener {
-                                        Toast.makeText(
-                                            this.context,
-                                            "Itinerary purchased successfully",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                            .show()
-                                        activity.marketplacePurchasedFragment.listenToItineraries()
-                                        activity.subFm.beginTransaction().show(activity.marketplacePurchasedFragment)
-                                            .commit()
-                                        activity.subFm.popBackStack(
-                                            "itineraryFragment",
-                                            FragmentManager.POP_BACK_STACK_INCLUSIVE
-                                        )
-                                    }
+                                    FirebaseDatabase.getInstance()
+                                        .getReference("/users/${currentUser.uid}/sharedItineraries/${newPurchasedItineraryRef.key}")
+                                        .setValue(true).addOnSuccessListener {
+                                            Toast.makeText(
+                                                this.context,
+                                                "Itinerary purchased successfully",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                                .show()
+                                            activity.marketplacePurchasedFragment.listenToItineraries()
+                                            activity.subFm.beginTransaction()
+                                                .show(activity.marketplacePurchasedFragment)
+                                                .commit()
+                                            activity.subFm.popBackStack(
+                                                "itineraryFragment",
+                                                FragmentManager.POP_BACK_STACK_INCLUSIVE
+                                            )
+                                        }
                                 }
                         }
-
                     }
             }
         } else {
@@ -468,126 +461,129 @@ class ItineraryFragment : Fragment(), DereMethods {
         fourStarReviews = 0f
         fiveStarReviews = 0f
 
-        val reviewsRef = FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryBody.id}/reviews")
-        reviewsRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
+        FirebaseDatabase.getInstance().getReference("/itineraries/${itineraryBody.id}/reviews")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                }
 
-            override fun onDataChange(p0: DataSnapshot) {
+                override fun onDataChange(p0: DataSnapshot) {
 
-                if (p0.hasChildren()) {
-                    for (review in p0.children) {
-                        val reviewObject = review.child("body").getValue(ItineraryReview::class.java)
-                        if (reviewObject != null) {
-                            reviewsList.add(SingleItineraryReview(reviewObject, activity as MainActivity))
+                    if (p0.hasChildren()) {
+                        for (review in p0.children) {
+                            val reviewObject = review.child("body").getValue(ItineraryReview::class.java)
+                            if (reviewObject != null) {
+                                reviewsList.add(
+                                    SingleItineraryReview(
+                                        reviewObject,
+                                        activity as MainActivity,
+                                        currentUser
+                                    )
+                                )
 
-                            when (reviewObject.rating) {
-                                1 -> {
-                                    oneStarReviews++
-                                    sumAllReviews += 1f
-                                }
-                                2 -> {
-                                    twoStarReviews++
-                                    sumAllReviews += 2f
-                                }
-                                3 -> {
-                                    threeStarReviews++
-                                    sumAllReviews += 3f
-                                }
-                                4 -> {
-                                    fourStarReviews++
-                                    sumAllReviews += 4f
-                                }
-                                5 -> {
-                                    fiveStarReviews++
-                                    sumAllReviews += 5f
+                                when (reviewObject.rating) {
+                                    1 -> {
+                                        oneStarReviews++
+                                        sumAllReviews += 1f
+                                    }
+                                    2 -> {
+                                        twoStarReviews++
+                                        sumAllReviews += 2f
+                                    }
+                                    3 -> {
+                                        threeStarReviews++
+                                        sumAllReviews += 3f
+                                    }
+                                    4 -> {
+                                        fourStarReviews++
+                                        sumAllReviews += 4f
+                                    }
+                                    5 -> {
+                                        fiveStarReviews++
+                                        sumAllReviews += 5f
+                                    }
                                 }
                             }
                         }
+
+                        numAllReviews =
+                            oneStarReviews + twoStarReviews + threeStarReviews + fourStarReviews + fiveStarReviews
+
+                        if (numAllReviews > 0) {
+
+                            val oneStarPercentage = oneStarReviews / numAllReviews
+                            val twoStarPercentage = twoStarReviews / numAllReviews
+                            val threeStarPercentage = threeStarReviews / numAllReviews
+                            val fourStarPercentage = fourStarReviews / numAllReviews
+                            val fiveStarPercentage = fiveStarReviews / numAllReviews
+
+                            if (oneStarReviews > 0) {
+                                (starBar1Fg.layoutParams as ConstraintLayout.LayoutParams).width =
+                                    (starBarBg.width * oneStarPercentage).toInt()
+                                starBar1Fg.visibility = View.VISIBLE
+                            } else {
+                                starBar1Fg.visibility = View.GONE
+                            }
+
+                            if (twoStarReviews > 0) {
+                                (starBar2Fg.layoutParams as ConstraintLayout.LayoutParams).width =
+                                    (starBarBg.width * twoStarPercentage).toInt()
+                                starBar2Fg.visibility = View.VISIBLE
+                            } else {
+                                starBar2Fg.visibility = View.GONE
+                            }
+
+                            if (threeStarReviews > 0) {
+                                (starBar3Fg.layoutParams as ConstraintLayout.LayoutParams).width =
+                                    (starBarBg.width * threeStarPercentage).toInt()
+                                starBar3Fg.visibility = View.VISIBLE
+
+                            } else {
+                                starBar3Fg.visibility = View.GONE
+                            }
+
+                            if (fourStarReviews > 0) {
+                                (starBar4Fg.layoutParams as ConstraintLayout.LayoutParams).width =
+                                    (starBarBg.width * fourStarPercentage).toInt()
+                                starBar4Fg.visibility = View.VISIBLE
+                            } else {
+                                starBar4Fg.visibility = View.GONE
+                            }
+
+                            if (fiveStarReviews > 0) {
+                                (starBar5Fg.layoutParams as ConstraintLayout.LayoutParams).width =
+                                    (starBarBg.width * fiveStarPercentage).toInt()
+                                starBar5Fg.visibility = View.VISIBLE
+                            } else {
+                                starBar5Fg.visibility = View.GONE
+                            }
+
+                            itinerary_1_star_percentage.text = "${(oneStarPercentage * 100).toInt()}%"
+                            itinerary_2_star_percentage.text = "${(twoStarPercentage * 100).toInt()}%"
+                            itinerary_3_star_percentage.text = "${(threeStarPercentage * 100).toInt()}%"
+                            itinerary_4_star_percentage.text = "${(fourStarPercentage * 100).toInt()}%"
+                            itinerary_5_star_percentage.text = "${(fiveStarPercentage * 100).toInt()}%"
+
+                        }
+
+                        var numOfReviews = 0
+                        if (reviewsList.size > 3) {
+                            numOfReviews = 2
+                            itinerary_read_more_reviews.visibility = View.VISIBLE
+                        } else {
+                            numOfReviews = reviewsList.size - 1
+                            itinerary_read_more_reviews.visibility = View.GONE
+                        }
+
+                        for (index in 0..numOfReviews) {
+                            reviewsList.reversed()
+                            val review = reviewsList[index]
+                            lastReviewsAdapter.add(review)
+                        }
+                        allReviewsAdapter.clear()
+                        allReviewsAdapter.addAll(reviewsList.reversed())
                     }
-
-                    numAllReviews =
-                        oneStarReviews + twoStarReviews + threeStarReviews + fourStarReviews + fiveStarReviews
-
-                    if (numAllReviews > 0) {
-
-                        val oneStarPercentage = oneStarReviews / numAllReviews
-                        val twoStarPercentage = twoStarReviews / numAllReviews
-                        val threeStarPercentage = threeStarReviews / numAllReviews
-                        val fourStarPercentage = fourStarReviews / numAllReviews
-                        val fiveStarPercentage = fiveStarReviews / numAllReviews
-
-                        if (oneStarReviews > 0) {
-                            (starBar1Fg.layoutParams as ConstraintLayout.LayoutParams).width =
-                                (starBarBg.width * oneStarPercentage).toInt()
-                            starBar1Fg.visibility = View.VISIBLE
-                        } else {
-                            starBar1Fg.visibility = View.GONE
-                        }
-
-                        if (twoStarReviews > 0) {
-                            (starBar2Fg.layoutParams as ConstraintLayout.LayoutParams).width =
-                                (starBarBg.width * twoStarPercentage).toInt()
-                            starBar2Fg.visibility = View.VISIBLE
-                        } else {
-                            starBar2Fg.visibility = View.GONE
-                        }
-
-                        if (threeStarReviews > 0) {
-                            (starBar3Fg.layoutParams as ConstraintLayout.LayoutParams).width =
-                                (starBarBg.width * threeStarPercentage).toInt()
-                            starBar3Fg.visibility = View.VISIBLE
-
-                        } else {
-                            starBar3Fg.visibility = View.GONE
-                        }
-
-                        if (fourStarReviews > 0) {
-                            (starBar4Fg.layoutParams as ConstraintLayout.LayoutParams).width =
-                                (starBarBg.width * fourStarPercentage).toInt()
-                            starBar4Fg.visibility = View.VISIBLE
-                        } else {
-                            starBar4Fg.visibility = View.GONE
-                        }
-
-                        if (fiveStarReviews > 0) {
-                            (starBar5Fg.layoutParams as ConstraintLayout.LayoutParams).width =
-                                (starBarBg.width * fiveStarPercentage).toInt()
-                            starBar5Fg.visibility = View.VISIBLE
-                        } else {
-                            starBar5Fg.visibility = View.GONE
-                        }
-
-                        itinerary_1_star_percentage.text = "${(oneStarPercentage * 100).toInt()}%"
-                        itinerary_2_star_percentage.text = "${(twoStarPercentage * 100).toInt()}%"
-                        itinerary_3_star_percentage.text = "${(threeStarPercentage * 100).toInt()}%"
-                        itinerary_4_star_percentage.text = "${(fourStarPercentage * 100).toInt()}%"
-                        itinerary_5_star_percentage.text = "${(fiveStarPercentage * 100).toInt()}%"
-
-                    }
-
-                    var numOfReviews = 0
-                    if (reviewsList.size > 3) {
-                        numOfReviews = 2
-                        itinerary_read_more_reviews.visibility = View.VISIBLE
-                    } else {
-                        numOfReviews = reviewsList.size - 1
-                        itinerary_read_more_reviews.visibility = View.GONE
-                    }
-
-                    for (index in 0..numOfReviews) {
-                        reviewsList.reversed()
-                        val review = reviewsList[index]
-                        lastReviewsAdapter.add(review)
-                    }
-                    allReviewsAdapter.clear()
-                    allReviewsAdapter.addAll(reviewsList.reversed())
-
-
                 }
-
-            }
-        })
+            })
     }
 
     companion object {
@@ -599,7 +595,6 @@ class SampleImages(val image: Images, val activity: Activity) : Item<ViewHolder>
 
     lateinit var peekAndPop: PeekAndPop
     lateinit var peekView: View
-
 
     override fun getLayout(): Int {
         return R.layout.feed_single_photo
@@ -636,19 +631,15 @@ class SampleImages(val image: Images, val activity: Activity) : Item<ViewHolder>
 
         })
 
-
         Glide.with(viewHolder.root.context).load(image.imageSmall).into(viewHolder.itemView.feed_single_photo_photo)
     }
 }
 
-class SingleItineraryReview(private val review: ItineraryReview, val activity: MainActivity) : Item<ViewHolder>(),
+class SingleItineraryReview(private val review: ItineraryReview, val activity: MainActivity, val currentUser: Users) :
+    Item<ViewHolder>(),
     DereMethods {
 
     lateinit var sharedViewModelRandomUser: SharedViewModelRandomUser
-
-    val authorRef = FirebaseDatabase.getInstance().getReference("/users/${review.author}/profile")
-    val uid = FirebaseAuth.getInstance().uid
-
 
     override fun getLayout(): Int {
         return R.layout.review_layout
@@ -720,35 +711,36 @@ class SingleItineraryReview(private val review: ItineraryReview, val activity: M
 
 
 
-        authorRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-
-                val author = p0.getValue(Users::class.java)
-                Glide.with(viewHolder.root.context).load(author!!.image).into(authorImage)
-                authorName.text = author.name
-                authorReputation.text = "(${numberCalculation(author.reputation)})"
-
-                authorImage.setOnClickListener {
-                    goToProfile(author)
+        FirebaseDatabase.getInstance().getReference("/users/${review.author}/profile")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
                 }
 
-                authorName.setOnClickListener {
-                    goToProfile(author)
-                }
+                override fun onDataChange(p0: DataSnapshot) {
 
-                authorReputation.setOnClickListener {
-                    goToProfile(author)
-                }
+                    val author = p0.getValue(Users::class.java)
+                    Glide.with(viewHolder.root.context).load(author!!.image).into(authorImage)
+                    authorName.text = author.name
+                    authorReputation.text = "(${numberCalculation(author.reputation)})"
 
-            }
-        })
+                    authorImage.setOnClickListener {
+                        goToProfile(author)
+                    }
+
+                    authorName.setOnClickListener {
+                        goToProfile(author)
+                    }
+
+                    authorReputation.setOnClickListener {
+                        goToProfile(author)
+                    }
+
+                }
+            })
     }
 
     fun goToProfile(user: Users) {
-        if (user.uid != uid) {
+        if (user.uid != currentUser.uid) {
             sharedViewModelRandomUser.randomUserObject.postValue(user)
             activity.subFm.beginTransaction().add(
                 R.id.feed_subcontents_frame_container,
@@ -764,9 +756,8 @@ class SingleItineraryReview(private val review: ItineraryReview, val activity: M
 }
 
 class BudgetIncludes(val includes: String) : Item<ViewHolder>() {
-    override fun getLayout(): Int {
-        return R.layout.budget_includes_layout
-    }
+    override fun getLayout(): Int = R.layout.budget_includes_layout
+
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
         viewHolder.itemView.budget_includes_text.text = includes

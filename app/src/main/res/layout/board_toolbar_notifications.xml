@@ -22,7 +22,8 @@
             android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
             app:layout_constraintDimensionRatio="1:1"
-            android:scaleType="fitCenter"/>
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/saved_questions_icon"/>
 
 
     <ImageButton
@@ -38,7 +39,8 @@
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintDimensionRatio="1:1"/>
+            app:layout_constraintDimensionRatio="1:1"
+            android:contentDescription="@string/notifications_icon"/>
 
     <com.nex3z.notificationbadge.NotificationBadge
             android:id="@+id/board_toolbar_notifications_badge"

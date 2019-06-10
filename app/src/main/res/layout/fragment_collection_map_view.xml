@@ -30,7 +30,8 @@
                 android:background="#33ffffff"
                 android:scaleType="center"
                 mapbox:layout_constraintBottom_toTopOf="@id/bucket_map_images_recycler"
-                android:elevation="2dp"/>
+                android:elevation="2dp"
+                android:contentDescription="@string/focus_icon"/>
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="0dp"
                 android:layout_height="0dp"

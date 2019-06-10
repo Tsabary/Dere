@@ -46,16 +46,6 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
     private var mapView: MapView? = null
     private lateinit var permissionsManager: PermissionsManager
 
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity?.let {
-            sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
-        }
-    }
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mapView?.onCreate(savedInstanceState)
@@ -74,13 +64,19 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val activity= activity as MainActivity
+
+        activity.let {
+            sharedViewModelForImage = ViewModelProviders.of(it).get(SharedViewModelImage::class.java)
+        }
+
         mapView = image_map_view
 
         val currentLocationFocus = image_map_focus
         val imageLocationFocus = image_map_pin
 
         currentLocationFocus.setOnClickListener {
-            panToCurrentLocation(activity as MainActivity, myMapboxMap!!)
+            panToCurrentLocation(activity, myMapboxMap!!)
         }
 
         imageLocationFocus.setOnClickListener {
@@ -163,17 +159,11 @@ class ImageMapViewFragment : Fragment(), PermissionsListener, DereMethods {
                             .build()
 
                         mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position))
-
-
                     }
                 })
-
-
             }
         }
-
     }
-
 
     override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
         Toast.makeText(this.context, "Location needed to use map", Toast.LENGTH_LONG).show()

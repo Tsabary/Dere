@@ -78,9 +78,7 @@ interface DereMethods : FCMMethods {
         }
 
         refVotes.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
+            override fun onCancelled(p0: DatabaseError) {}
 
             override fun onDataChange(postVotesSnapshot: DataSnapshot) {
 
@@ -95,11 +93,8 @@ interface DereMethods : FCMMethods {
 
                                     "up" -> return
                                     "down" -> {
-//                                        defaultView(upvoteView, downvoteView)
 
                                         refVotes.child(initiatorId).removeValue().addOnSuccessListener {
-                                            //                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
-
 
                                             if (postType == 0) {
                                                 changeReputation(
@@ -113,7 +108,6 @@ interface DereMethods : FCMMethods {
                                                     "vote",
                                                     activity
                                                 )
-
 
                                                 firebaseAnalytics.logEvent("question_upvote_cancelled", null)
 
@@ -131,7 +125,6 @@ interface DereMethods : FCMMethods {
                                                 )
 
                                                 firebaseAnalytics.logEvent("answer_upvote_cancelled", null)
-
                                             }
                                         }
                                     }
@@ -146,9 +139,7 @@ interface DereMethods : FCMMethods {
                             if (event == 1) {
                                 when (vote) {
                                     "up" -> {
-//                                        upView(upvoteView, downvoteView)
                                         refVotes.child(initiatorId).setValue(1).addOnSuccessListener {
-                                            //                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
 
                                             if (postType == 0) {
                                                 changeReputation(
@@ -164,8 +155,6 @@ interface DereMethods : FCMMethods {
                                                 )
 
                                                 firebaseAnalytics.logEvent("question_upvote", null)
-
-
                                             } else {
                                                 changeReputation(
                                                     2,
@@ -180,15 +169,12 @@ interface DereMethods : FCMMethods {
                                                 )
 
                                                 firebaseAnalytics.logEvent("answer_upvote", null)
-
                                             }
                                         }
                                     }
                                     "down" -> {
-//                                        downView(upvoteView, downvoteView)
 
                                         refVotes.child(initiatorId).setValue(-1).addOnSuccessListener {
-                                            //                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
 
                                             if (postType == 0) {
                                                 changeReputation(
@@ -219,7 +205,6 @@ interface DereMethods : FCMMethods {
                                                 )
 
                                                 firebaseAnalytics.logEvent("question_downvote", null)
-
                                             }
                                         }
                                     }
@@ -228,17 +213,13 @@ interface DereMethods : FCMMethods {
                                 defaultView(upvoteView, downvoteView)
                                 setVotesCount(specificPostId, mainPostId, votesView, postType)
                             }
-
                         }
 
                         -1 -> {
                             if (event == 1) {
                                 when (vote) {
                                     "up" -> {
-//                                        defaultView(upvoteView, downvoteView)
-
                                         refVotes.child(initiatorId).removeValue().addOnSuccessListener {
-                                            //                                            setVotesCount(specificPostId, mainPostId, votesView, postType)
 
                                             changeReputation(
                                                 5,
@@ -274,10 +255,8 @@ interface DereMethods : FCMMethods {
                         when (vote) {
                             "up" -> {
                                 upView(upvoteView, downvoteView)
-//                                setVotesCount(specificPostId, mainPostId, votesView, postType)
 
                                 refVotes.child(initiatorId).setValue(1).addOnSuccessListener {
-                                    //                                    setVotesCount(specificPostId, mainPostId, votesView, postType)
 
                                     if (postType == 0) {
                                         changeReputation(
@@ -293,8 +272,6 @@ interface DereMethods : FCMMethods {
                                         )
 
                                         firebaseAnalytics.logEvent("question_upvote", null)
-
-
                                     } else {
                                         changeReputation(
                                             2,
@@ -309,16 +286,13 @@ interface DereMethods : FCMMethods {
                                         )
 
                                         firebaseAnalytics.logEvent("answer_upvote", null)
-
                                     }
                                 }
                             }
                             "down" -> {
                                 downView(upvoteView, downvoteView)
-//                                setVotesCount(specificPostId, mainPostId, votesView, postType)
 
                                 refVotes.child(initiatorId).setValue(-1).addOnSuccessListener {
-                                    //                                    setVotesCount(specificPostId, mainPostId, votesView, postType)
 
                                     if (postType == 0) {
                                         changeReputation(
@@ -334,7 +308,6 @@ interface DereMethods : FCMMethods {
                                         )
 
                                         firebaseAnalytics.logEvent("question_downvote", null)
-
                                     } else {
                                         changeReputation(
                                             4,
@@ -384,7 +357,6 @@ interface DereMethods : FCMMethods {
     }
 
     fun setVotesCount(postId: String, questionId: String, votesView: TextView, postType: Int) {
-
         val refVotes = if (postType == 0) {
             FirebaseDatabase.getInstance().getReference("/questions/$questionId/main")
         } else {
@@ -399,7 +371,6 @@ interface DereMethods : FCMMethods {
             override fun onDataChange(p0: DataSnapshot) {
 
                 if (p0.hasChild("votes")) {
-
                     var count = 0
 
                     for (vote in p0.child("votes").children) {
@@ -407,13 +378,10 @@ interface DereMethods : FCMMethods {
                         count += score
                         votesView.text = numberCalculation(count.toLong())
                     }
-
                 } else {
                     votesView.text = "0"
                 }
-
             }
-
         })
     }
 
@@ -468,87 +436,69 @@ interface DereMethods : FCMMethods {
         activity: MainActivity
     ) {
 
-        Log.d("comment", "function called")
-
-
         commentsRecyclerAdapter.clear()
 
+        FirebaseDatabase.getInstance().getReference("/images/${image.id}")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
 
-        val ref = FirebaseDatabase.getInstance().getReference("/images/${image.id}")
+                    if (p0.hasChild("comments")) {
+                        commentsRecycler.visibility = View.VISIBLE
+                        divider.visibility = View.VISIBLE
 
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
+                        for (comment in p0.child("comments").children) {
+                            val singleCommentFromDB = comment.child("body").getValue(Comments::class.java)
 
-                if (p0.hasChild("comments")) {
-                    commentsRecycler.visibility = View.VISIBLE
-                    divider.visibility = View.VISIBLE
-
-                    for (comment in p0.child("comments").children) {
-
-                        val singleCommentFromDB = comment.child("body").getValue(Comments::class.java)
-
-                        if (singleCommentFromDB != null) {
-                            commentsRecyclerAdapter.add(
-                                SingleComment(
-                                    singleCommentFromDB,
-                                    image,
-                                    currentUser,
-                                    activity
+                            if (singleCommentFromDB != null) {
+                                commentsRecyclerAdapter.add(
+                                    SingleComment(
+                                        singleCommentFromDB,
+                                        image,
+                                        currentUser,
+                                        activity
+                                    )
                                 )
-                            )
-
-
+                            }
                         }
-
                     }
                 }
-            }
 
-
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-        })
-
+                override fun onCancelled(p0: DatabaseError) {
+                }
+            })
     }
-
 
     fun listenToLikeCount(likeCount: TextView, image: Images) {
 
-        val refImage = FirebaseDatabase.getInstance().getReference("/images/${image.id}")
+        FirebaseDatabase.getInstance().getReference("/images/${image.id}")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {}
 
-        refImage.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
+                override fun onDataChange(p0: DataSnapshot) {
 
-            }
+                    if (p0.hasChild("likes")) {
 
-            override fun onDataChange(p0: DataSnapshot) {
+                        val refImageBucketingList =
+                            FirebaseDatabase.getInstance().getReference("/images/${image.id}/likes")
 
-                if (p0.hasChild("likes")) {
+                        refImageBucketingList.addValueEventListener(object : ValueEventListener {
+                            override fun onCancelled(p0: DatabaseError) {}
 
-                    val refImageBucketingList =
-                        FirebaseDatabase.getInstance().getReference("/images/${image.id}/likes")
+                            override fun onDataChange(p0: DataSnapshot) {
+                                var count = 0
 
-                    refImageBucketingList.addValueEventListener(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
-
-                        }
-
-                        override fun onDataChange(p0: DataSnapshot) {
-                            var count = 0
-
-                            for (ds in p0.children) {
-                                count += 1
-                                likeCount.text = numberCalculation(count.toLong())
+                                for (ds in p0.children) {
+                                    count += 1
+                                    likeCount.text = numberCalculation(count.toLong())
+                                }
                             }
-                        }
-                    })
+                        })
 
-                } else {
-                    likeCount.text = "0"
+                    } else {
+                        likeCount.text = "0"
+                    }
                 }
-            }
-        })
+            })
     }
 
     fun likedView(likeButton: ImageButton, likeCount: TextView) {
@@ -611,80 +561,106 @@ interface DereMethods : FCMMethods {
             executeLikeForFastResponse(likeButton, likeCount)
         }
 
-        val allUserRef = FirebaseDatabase.getInstance().getReference("/users/$initiatorId")
+        FirebaseDatabase.getInstance().getReference("/users/$initiatorId")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
+                    if (p0.hasChild("likes")) {
 
-        allUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
-                if (p0.hasChild("likes")) {
+                        if (p0.child("likes").hasChild(image.id)) {
 
-                    if (p0.child("likes").hasChild(image.id)) {
+                            if (event == 1) {
 
-                        val allUserLikesRef =
-                            FirebaseDatabase.getInstance().getReference("/users/$initiatorId/likes/${image.id}")
+                                FirebaseDatabase.getInstance().getReference("/users/$initiatorId/likes/${image.id}")
+                                    .removeValue().addOnSuccessListener {
 
-                        if (event == 1) {
+                                        FirebaseDatabase.getInstance()
+                                            .getReference("/images/${image.id}/likes/$initiatorId").removeValue()
+                                            .addOnSuccessListener {
 
-                            allUserLikesRef.removeValue().addOnSuccessListener {
+                                                changeReputation(
+                                                    15,
+                                                    image.id,
+                                                    image.id,
+                                                    initiatorId,
+                                                    initiatorName,
+                                                    receiverId,
+                                                    userReputationView,
+                                                    "like",
+                                                    activity
+                                                )
 
-                                val refImageLikes =
-                                    FirebaseDatabase.getInstance()
-                                        .getReference("/images/${image.id}/likes/$initiatorId")
-
-                                refImageLikes.removeValue().addOnSuccessListener {
-
-                                    changeReputation(
-                                        15,
-                                        image.id,
-                                        image.id,
-                                        initiatorId,
-                                        initiatorName,
-                                        receiverId,
-                                        userReputationView,
-                                        "like",
-                                        activity
-                                    )
-
-                                    firebaseAnalytics.logEvent("image_unliked", null)
-                                }
+                                                firebaseAnalytics.logEvent("image_unliked", null)
+                                            }
+                                    }
+                            } else {
+                                likeButton.setImageResource(R.drawable.heart_active)
+                                likeButton.tag = "liked"
                             }
 
                         } else {
-                            likeButton.setImageResource(R.drawable.heart_active)
-                            likeButton.tag = "liked"
+
+                            if (event == 1) {
+
+                                FirebaseDatabase.getInstance()
+                                    .getReference("/users/$initiatorId/likes/${image.id}").setValue(true)
+                                    .addOnSuccessListener {
+
+                                        FirebaseDatabase.getInstance()
+                                            .getReference("/images/${image.id}/likes/$initiatorId").setValue(true)
+                                            .addOnSuccessListener {
+
+                                                changeReputation(
+                                                    14,
+                                                    image.id,
+                                                    image.id,
+                                                    initiatorId,
+                                                    initiatorName,
+                                                    receiverId,
+                                                    userReputationView,
+                                                    "like",
+                                                    activity
+                                                )
+
+                                                firebaseAnalytics.logEvent("image_liked", null)
+                                            }
+                                    }
+
+                            } else {
+                                if (source == "staggered") {
+                                    likeButton.setImageResource(R.drawable.heart_white)
+                                } else {
+                                    likeButton.setImageResource(R.drawable.heart)
+                                }
+                                likeButton.tag = "notLiked"
+                            }
                         }
-
                     } else {
-
                         if (event == 1) {
 
-                            val refUserLikes =
-                                FirebaseDatabase.getInstance()
-                                    .getReference("/users/$initiatorId/likes/${image.id}")
+                            FirebaseDatabase.getInstance()
+                                .getReference("/users/$initiatorId/likes/${image.id}").setValue(true)
+                                .addOnSuccessListener {
 
-                            refUserLikes.setValue(true).addOnSuccessListener {
-
-                                val refImageLikes =
                                     FirebaseDatabase.getInstance()
-                                        .getReference("/images/${image.id}/likes/$initiatorId")
+                                        .getReference("/images/${image.id}/likes/$initiatorId").setValue(true)
+                                        .addOnSuccessListener {
 
-                                refImageLikes.setValue(true).addOnSuccessListener {
+                                            changeReputation(
+                                                14,
+                                                image.id,
+                                                image.id,
+                                                initiatorId,
+                                                initiatorName,
+                                                receiverId,
+                                                userReputationView,
+                                                "like",
+                                                activity
+                                            )
 
-                                    changeReputation(
-                                        14,
-                                        image.id,
-                                        image.id,
-                                        initiatorId,
-                                        initiatorName,
-                                        receiverId,
-                                        userReputationView,
-                                        "like",
-                                        activity
-                                    )
+                                            firebaseAnalytics.logEvent("image_liked", null)
+                                        }
 
-                                    firebaseAnalytics.logEvent("image_liked", null)
                                 }
-
-                            }
 
                         } else {
                             if (source == "staggered") {
@@ -692,59 +668,13 @@ interface DereMethods : FCMMethods {
                             } else {
                                 likeButton.setImageResource(R.drawable.heart)
                             }
-
                             likeButton.tag = "notLiked"
                         }
                     }
-                } else {
-                    if (event == 1) {
-
-                        val refUserLikes =
-                            FirebaseDatabase.getInstance()
-                                .getReference("/users/$initiatorId/likes/${image.id}")
-
-                        refUserLikes.setValue(true).addOnSuccessListener {
-
-                            val refImageLikes =
-                                FirebaseDatabase.getInstance()
-                                    .getReference("/images/${image.id}/likes/$initiatorId")
-
-                            refImageLikes.setValue(true).addOnSuccessListener {
-
-                                changeReputation(
-                                    14,
-                                    image.id,
-                                    image.id,
-                                    initiatorId,
-                                    initiatorName,
-                                    receiverId,
-                                    userReputationView,
-                                    "like",
-                                    activity
-                                )
-
-                                firebaseAnalytics.logEvent("image_liked", null)
-                            }
-
-                        }
-
-                    } else {
-                        if (source == "staggered") {
-                            likeButton.setImageResource(R.drawable.heart_white)
-                        } else {
-                            likeButton.setImageResource(R.drawable.heart)
-                        }
-                        likeButton.tag = "notLiked"
-                    }
                 }
-            }
 
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-        })
-
-
+                override fun onCancelled(p0: DatabaseError) {}
+            })
     }
 
 
@@ -772,7 +702,6 @@ interface DereMethods : FCMMethods {
         commentRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
                 if (p0.hasChild("likes")) {
-
                     if (p0.child("likes").hasChild(initiatorId)) {
 
                         if (event == 1) {
@@ -799,7 +728,6 @@ interface DereMethods : FCMMethods {
                         }
 
                     } else {
-
                         if (event == 1) {
                             commentRef.child("likes/$initiatorId").setValue(true).addOnSuccessListener {
 
@@ -858,9 +786,7 @@ interface DereMethods : FCMMethods {
         val refImage = FirebaseDatabase.getInstance().getReference("/images/${image.id}")
 
         refImage.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
+            override fun onCancelled(p0: DatabaseError) {}
 
             override fun onDataChange(p0: DataSnapshot) {
 
@@ -876,112 +802,77 @@ interface DereMethods : FCMMethods {
 
     fun listenToBucketCount(bucketCount: TextView, image: Images) {
 
-        val refImage = FirebaseDatabase.getInstance().getReference("/images/${image.id}")
+        FirebaseDatabase.getInstance().getReference("/images/${image.id}")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {}
 
-        refImage.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
+                override fun onDataChange(p0: DataSnapshot) {
 
-            }
+                    if (p0.hasChild("buckets")) {
 
-            override fun onDataChange(p0: DataSnapshot) {
-
-                if (p0.hasChild("buckets")) {
-
-                    val refImageBucketingList =
                         FirebaseDatabase.getInstance().getReference("/images/${image.id}/buckets")
+                            .addValueEventListener(object : ValueEventListener {
+                                override fun onCancelled(p0: DatabaseError) {}
 
-                    refImageBucketingList.addValueEventListener(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
+                                override fun onDataChange(p0: DataSnapshot) {
+                                    var count = 0
 
-                        }
-
-                        override fun onDataChange(p0: DataSnapshot) {
-                            var count = 0
-
-                            for (ds in p0.children) {
-                                count += 1
-                                bucketCount.text = numberCalculation(count.toLong())
-                            }
-                        }
-
-                    })
-
-
-                } else {
-                    bucketCount.text = "0"
+                                    for (ds in p0.children) {
+                                        count += 1
+                                        bucketCount.text = numberCalculation(count.toLong())
+                                    }
+                                }
+                            })
+                    } else {
+                        bucketCount.text = "0"
+                    }
                 }
-
-            }
-
-        })
-
-
+            })
     }
 
 
     fun checkIfBucketed(bucketButton: ImageView, image: Images, uid: String) {
 
-        val refUserBucket = FirebaseDatabase.getInstance().getReference("/users/$uid/buckets/AllBuckets/body/images")
-
-        refUserBucket.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
-
-                if (p0.hasChild(image.id)) {
-                    bucketButton.setImageResource(R.drawable.bucket_saved)
-                } else {
-                    bucketButton.setImageResource(R.drawable.bucket)
+        FirebaseDatabase.getInstance().getReference("/users/$uid/buckets/AllBuckets/body/images")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
+                    if (p0.hasChild(image.id)) {
+                        bucketButton.setImageResource(R.drawable.bucket_saved)
+                    } else {
+                        bucketButton.setImageResource(R.drawable.bucket)
+                    }
                 }
-            }
 
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-        })
-
+                override fun onCancelled(p0: DatabaseError) {}
+            })
     }
 
-    fun checkIfInItinerary (collectButton: ImageView, image: Images, uid: String) {
+    fun checkIfInItinerary(collectButton: ImageView, image: Images, uid: String) {
         collectButton.setImageResource(R.drawable.itinerary)
 
-        val refUserItinerary = FirebaseDatabase.getInstance().getReference("/users/$uid/itineraries")
+        FirebaseDatabase.getInstance().getReference("/users/$uid/itineraries")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
+                    for (itinerary in p0.children) {
+                        FirebaseDatabase.getInstance().getReference("/itineraries/${itinerary.key}/body/images")
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onCancelled(p0: DatabaseError) {}
 
-        refUserItinerary.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
-
-//                var existsInItineraries = 0
-
-                for (itinerary in p0.children){
-
-                    FirebaseDatabase.getInstance().getReference("/itineraries/${itinerary.key}/body/images").addListenerForSingleValueEvent(object : ValueEventListener{
-                        override fun onCancelled(p0: DatabaseError) {
-                        }
-
-                        override fun onDataChange(p0: DataSnapshot) {
-                            if (p0.hasChild(image.id)) {
-                                collectButton.setImageResource(R.drawable.itinerary_saved)
-
-//                                existsInItineraries++
-                            }
-                        }
-
-                    })
+                                override fun onDataChange(p0: DataSnapshot) {
+                                    if (p0.hasChild(image.id)) {
+                                        collectButton.setImageResource(R.drawable.itinerary_saved)
+                                    }
+                                }
+                            })
+                    }
                 }
 
-//                if (existsInItineraries > 0) {
-//                    collectButton.setImageResource(R.drawable.itinerary_saved)
-//                } else {
-//                    collectButton.setImageResource(R.drawable.itinerary)
-//                }
-            }
-
-            override fun onCancelled(p0: DatabaseError) {
-            }
-        })
+                override fun onCancelled(p0: DatabaseError) {}
+            })
     }
 
 
 //following methods are general for the reputation and notifications
-
 
     fun sendNotification(
         postType: Int,
@@ -993,15 +884,19 @@ interface DereMethods : FCMMethods {
         receiverId: String
     ) {
 
+        val refUserGalleryNotifications =
+            FirebaseDatabase.getInstance()
+                .getReference("/users/$receiverId/notifications/gallery/$mainPostId$specificPostId$initiatorId$scenarioType")
+
+        val refUserBoardNotifications =
+            FirebaseDatabase.getInstance()
+                .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId$initiatorId$scenarioType")
+
+        val initiatorRef = FirebaseDatabase.getInstance().getReference("/users/$initiatorId/profile/image")
+
         if (postType == 0 || postType == 1 && initiatorId != receiverId) {
 
-
-            val refUserBoardNotifications =
-                FirebaseDatabase.getInstance()
-                    .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId$initiatorId$scenarioType")
-
-            val userRef = FirebaseDatabase.getInstance().getReference("/users/$initiatorId/profile/image")
-            userRef.addListenerForSingleValueEvent(object : ValueEventListener{
+            initiatorRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
                 }
 
@@ -1009,69 +904,90 @@ interface DereMethods : FCMMethods {
 
                     val userImage = p0.getValue(String::class.java)
 
-                    refUserBoardNotifications.setValue(
-                        NotificationBoard(
-                            postType,
-                            scenarioType,
-                            initiatorId,
-                            initiatorName,
-                            userImage!!,
-                            mainPostId,
-                            specificPostId,
-                            System.currentTimeMillis(),
-                            0
+                    if (userImage != null) {
+                        refUserBoardNotifications.setValue(
+                            NotificationBoard(
+                                postType,
+                                scenarioType,
+                                initiatorId,
+                                initiatorName,
+                                userImage,
+                                mainPostId,
+                                specificPostId,
+                                System.currentTimeMillis(),
+                                0
+                            )
                         )
-                    )
+                    }
                 }
             })
 
 
+        } else if (postType == 2 || postType == 3 && initiatorId != receiverId) {
 
+            FirebaseDatabase.getInstance().getReference("/images/$mainPostId/body/imageSmall")
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {}
 
-        } else if (initiatorId != receiverId) {
+                    override fun onDataChange(p0: DataSnapshot) {
+                        val mainImage = p0.getValue(String::class.java)
 
-            val refUserGalleryNotifications =
-                FirebaseDatabase.getInstance()
-                    .getReference("/users/$receiverId/notifications/gallery/$mainPostId$specificPostId$initiatorId$scenarioType")
+                        if (mainImage != null) {
+                            initiatorRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onCancelled(p0: DatabaseError) {}
 
-            val imageRef = FirebaseDatabase.getInstance().getReference("/images/$mainPostId/body/imageSmall")
-            imageRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-                }
+                                override fun onDataChange(p0: DataSnapshot) {
+
+                                    val userImage = p0.getValue(String::class.java)
+
+                                    if (userImage != null) {
+                                        refUserGalleryNotifications.setValue(
+                                            NotificationFeed(
+                                                postType,
+                                                scenarioType,
+                                                initiatorId,
+                                                initiatorName,
+                                                userImage,
+                                                mainPostId,
+                                                mainImage,
+                                                specificPostId,
+                                                System.currentTimeMillis(),
+                                                0
+                                            )
+                                        )
+                                    }
+                                }
+                            })
+                        }
+                    }
+                })
+        } else {
+            initiatorRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {}
 
                 override fun onDataChange(p0: DataSnapshot) {
-                    val mainImage = p0.getValue(String::class.java)
 
-                    val userRef = FirebaseDatabase.getInstance().getReference("/users/$initiatorId/profile/image")
-                    userRef.addListenerForSingleValueEvent(object : ValueEventListener{
-                        override fun onCancelled(p0: DatabaseError) {
-                        }
-
-                        override fun onDataChange(p0: DataSnapshot) {
-
-                            val userImage = p0.getValue(String::class.java)
-
-                            refUserGalleryNotifications.setValue(
-                                NotificationFeed(
-                                    postType,
-                                    scenarioType,
-                                    initiatorId,
-                                    initiatorName,
-                                    userImage!!,
-                                    mainPostId,
-                                    mainImage!!,
-                                    specificPostId,
-                                    System.currentTimeMillis(),
-                                    0
-                                )
+                    val userImage = p0.getValue(String::class.java)
+                    if (userImage != null) {
+                        refUserGalleryNotifications.setValue(
+                            NotificationFeed(
+                                postType,
+                                scenarioType,
+                                initiatorId,
+                                initiatorName,
+                                userImage!!,
+                                mainPostId,
+                                "",
+                                specificPostId,
+                                System.currentTimeMillis(),
+                                0
                             )
-                        }
-                    })
+                        )
+                    }
                 }
             })
         }
     }
-
 
     fun changeReputation(
         scenarioType: Int,
@@ -1097,182 +1013,206 @@ interface DereMethods : FCMMethods {
             //   0 : question upvote +5 to receiver +notification // type 0
             0 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, 5)
-                refReceiverReputation.setValue(valueForReceiver)
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
-                sendNotification(0, 0, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+                refReceiverReputation.setValue(valueForReceiver).addOnSuccessListener {
+                    updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                    sendNotification(0, 0, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+                }
             }
 
 
             //    1 : question upvote is removed -5 to receiver
             1 -> {
-                val notificationRef = FirebaseDatabase.getInstance()
+                FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}0")
-
-                refReceiverReputation.removeValue()
-                notificationRef.removeValue()
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                    .removeValue().addOnSuccessListener {
+                        refReceiverReputation.removeValue().addOnSuccessListener {
+                            updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                        }
+                    }
             }
 
 
             //  2 : answer upvoted +10 to receiver +notification  // type 1
             2 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, 10)
-                refReceiverReputation.setValue(valueForReceiver)
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
-                sendNotification(1, 2, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "upvoted your answer", initiatorName)
-                Log.d("check if execute", "yes it does")
+                refReceiverReputation.setValue(valueForReceiver).addOnSuccessListener {
+                    updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                    sendNotification(1, 2, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+                    sendMessageTopic(
+                        receiverId,
+                        initiatorId,
+                        mainPostId,
+                        activity,
+                        "upvoted your answer",
+                        initiatorName
+                    )
+                }
             }
 
             // 3 : answer upvote is removed -10 to receiver
             3 -> {
-                val notificationRef = FirebaseDatabase.getInstance()
+                FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}2")
-
-                refReceiverReputation.removeValue()
-                notificationRef.removeValue()
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                    .removeValue().addOnSuccessListener {
+                        refReceiverReputation.removeValue().addOnSuccessListener {
+                            updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                        }
+                    }
             }
 
 
             //  4 : question/answer downvote -2 for receiver -1 for initiator +notification without initiator  // type 0 or 1
             4 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, -2)
-                refReceiverReputation.setValue(valueForReceiver)
                 val valueForInitiator = ReputationScore(specificPostId, initiatorId, -1)
-                refInitiatorReputation.setValue(valueForInitiator)
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
-                sendNotification(0, 4, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+
+                refReceiverReputation.setValue(valueForReceiver).addOnSuccessListener {
+                    refInitiatorReputation.setValue(valueForInitiator).addOnSuccessListener {
+                        updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                        sendNotification(0, 4, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+                    }
+                }
             }
 
 
             // 5 : question/answer downvote is removed +2 for receiver +1 for initiator
             5 -> {
-                val notificationRef = FirebaseDatabase.getInstance()
+                FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}4")
-                notificationRef.removeValue()
-                refReceiverReputation.removeValue()
-                refInitiatorReputation.removeValue()
-
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                    .removeValue().addOnSuccessListener {
+                        refReceiverReputation.removeValue().addOnSuccessListener {
+                            refInitiatorReputation.removeValue().addOnSuccessListener {
+                                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                            }
+                        }
+                    }
             }
 
 
             //6 : answer given +2 to initiator
             6 -> {
                 val valueForInitiator = ReputationScore(specificPostId, initiatorId, 2)
-                refInitiatorReputation.setValue(valueForInitiator)
-                updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
-
-                sendNotification(1, 6, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
-
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "answered your question", initiatorName)
-                Log.d("check if execute", "yes it does")
+                refInitiatorReputation.setValue(valueForInitiator).addOnSuccessListener {
+                    updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
+                    sendNotification(1, 6, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+                    sendMessageTopic(
+                        receiverId,
+                        initiatorId,
+                        mainPostId,
+                        activity,
+                        "answered your question",
+                        initiatorName
+                    )
+                }
             }
 
 
             //7 : answer removed -2 to initiator            ***not implemented yet***
             7 -> {
-                refInitiatorReputation.removeValue()
-
-                val notificationRef = FirebaseDatabase.getInstance()
-                    .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}6")
-                notificationRef.removeValue()
-
-                updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
+                refInitiatorReputation.removeValue().addOnSuccessListener {
+                    FirebaseDatabase.getInstance()
+                        .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}6")
+                        .removeValue().addOnSuccessListener {
+                            updateUserFinalReputation(initiatorId, refInitiatorReputation, userReputationView)
+                        }
+                }
             }
 
 
             // 8 : photo bucketed +15 to receiver +notification  // type 2
             8 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, 15)
-                refReceiverReputation.setValue(valueForReceiver)
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
-                sendNotification(2, 8, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
-
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "bucketed your photo", initiatorName)
-                Log.d("check if execute", "yes it does")
+                refReceiverReputation.setValue(valueForReceiver).addOnSuccessListener {
+                    updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                    sendNotification(2, 8, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+                    sendMessageTopic(
+                        receiverId,
+                        initiatorId,
+                        mainPostId,
+                        activity,
+                        "bucketed your photo",
+                        initiatorName
+                    )
+                }
             }
 
 
             //9 : photo unbucketed -15 to receiver
             9 -> {
-                val notificationRef = FirebaseDatabase.getInstance()
+                FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/gallery/$mainPostId$specificPostId${initiatorId}8")
-                notificationRef.removeValue()
-
-                refReceiverReputation.removeValue()
-
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                    .removeValue().addOnSuccessListener {
+                        refReceiverReputation.removeValue().addOnSuccessListener {
+                            updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                        }
+                    }
             }
 
 
             //10 : question saved +5 to receiver +notification  // type 0
             10 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, 5)
-                refReceiverReputation.setValue(valueForReceiver)
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
-                sendNotification(0, 10, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+                refReceiverReputation.setValue(valueForReceiver).addOnSuccessListener {
+                    updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                    sendNotification(0, 10, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+                }
             }
 
 
             //11 : question unsaved - 5 to receiver
             11 -> {
-                val notificationRef = FirebaseDatabase.getInstance()
+                FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}10")
-                notificationRef.removeValue()
-
-                refReceiverReputation.removeValue()
-
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                    .removeValue().addOnSuccessListener {
+                        refReceiverReputation.removeValue().addOnSuccessListener {
+                            updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                        }
+                    }
             }
 
 
             //12 : comment receives a like +1 to receiver +notification  // type 3
             12 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, 1)
-                refReceiverReputation.setValue(valueForReceiver)
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
-                sendNotification(3, 12, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
-
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "liked your comment", initiatorName)
-                Log.d("check if execute", "yes it does")
+                refReceiverReputation.setValue(valueForReceiver).addOnSuccessListener {
+                    updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                    sendNotification(3, 12, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+                    sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "liked your comment", initiatorName)
+                }
             }
 
 
             //13 : comment like removed -1 to receiver
             13 -> {
-
-                val notificationRef = FirebaseDatabase.getInstance()
+                FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/gallery/$mainPostId$specificPostId${initiatorId}12")
-                notificationRef.removeValue()
-
-
-                refReceiverReputation.removeValue()
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                    .removeValue().addOnSuccessListener {
+                        refReceiverReputation.removeValue().addOnSuccessListener {
+                            updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                        }
+                    }
             }
 
 
             //14 : photo receives a like +2 to receiver +notification  // type 2
             14 -> {
                 val valueForReceiver = ReputationScore(specificPostId, initiatorId, 2)
-                refReceiverReputation.setValue(valueForReceiver)
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
-                sendNotification(2, 14, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
-
-                sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "liked your photo", initiatorName)
-                Log.d("check if execute", "yes it does")
+                refReceiverReputation.setValue(valueForReceiver).addOnSuccessListener {
+                    updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                    sendNotification(2, 14, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
+                    sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "liked your photo", initiatorName)
+                }
             }
 
             //15 : photo like removed -2 to receiver
             15 -> {
-                val notificationRef = FirebaseDatabase.getInstance()
+                FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/gallery/$mainPostId$specificPostId${initiatorId}14")
-                notificationRef.removeValue()
-
-                refReceiverReputation.removeValue()
-
-                updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                    .removeValue().addOnSuccessListener {
+                        refReceiverReputation.removeValue().addOnSuccessListener {
+                            updateUserFinalReputation(receiverId, refReceiverReputation, userReputationView)
+                        }
+                    }
             }
 
 
@@ -1288,15 +1228,14 @@ interface DereMethods : FCMMethods {
                     "commented on your photo",
                     initiatorName
                 )
-                Log.d("check if execute", "yes it does")
             }
 
 
             //17 : photo comment removed
             17 -> {
-                val notificationRef = FirebaseDatabase.getInstance()
+                FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/gallery/$mainPostId$specificPostId${initiatorId}16")
-                notificationRef.removeValue()
+                    .removeValue()
             }
 
 
@@ -1312,164 +1251,62 @@ interface DereMethods : FCMMethods {
                     "commented on your answer",
                     initiatorName
                 )
-                Log.d("check if execute", "yes it does")
             }
 
 
             //19: comment on answer removed // not implemented yet
             19 -> {
-                val notificationRef = FirebaseDatabase.getInstance()
+                FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/board/$mainPostId$specificPostId${initiatorId}18")
-                notificationRef.removeValue()
+                    .removeValue()
             }
 
 
             //20 : profile receives a follow
             20 -> {
                 sendNotification(4, 20, initiatorId, initiatorName, mainPostId, specificPostId, receiverId)
-
                 sendMessageTopic(receiverId, initiatorId, mainPostId, activity, "started following you", initiatorName)
-                Log.d("check if execute", "yes it does")
             }
 
 
             //21 : profile unfollowed
             21 -> {
-                val notificationRef = FirebaseDatabase.getInstance()
+                FirebaseDatabase.getInstance()
                     .getReference("/users/$receiverId/notifications/gallery/$mainPostId$specificPostId${initiatorId}20")
-
-                notificationRef.removeValue()
+                    .removeValue()
             }
-
-
         }
     }
 
 
     fun updateUserFinalReputation(id: String, ref: DatabaseReference, userReputationView: TextView) {
 
-        val refTest = FirebaseDatabase.getInstance().getReference("/users/$id/reputation")
+        FirebaseDatabase.getInstance().getReference("/users/$id/reputation")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(p0: DataSnapshot) {
+                    var count = 0
 
-        refTest.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(p0: DataSnapshot) {
-                var count = 0
+                    for (ds in p0.children) {
+                        val score = ds.getValue(ReputationScore::class.java)
+                        count += score!!.points
+                    }
 
-                for (ds in p0.children) {
-                    val score = ds.getValue(ReputationScore::class.java)
-                    count += score!!.points
-                    Log.d("checkIfCountWorks", count.toString())
+                    val userObject = FirebaseDatabase.getInstance().getReference("/users/$id/profile")
+
+                    if (count < 0) {
+                        userObject.updateChildren(mapOf("reputation" to "0"))
+                        userReputationView.text = "(0)"
+                    } else {
+                        userObject.updateChildren(mapOf("reputation" to count.toLong()))
+                        userReputationView.text = "(${numberCalculation(count.toLong())})"
+                    }
                 }
 
-                val userObject = FirebaseDatabase.getInstance().getReference("/users/$id/profile")
-
-                if (count < 0) {
-                    userObject.updateChildren(mapOf("reputation" to "0"))
-                    userReputationView.text = "(0)"
-                    Log.d("checkIfCountWorks", count.toString())
-                } else {
-                    userObject.updateChildren(mapOf("reputation" to count.toLong()))
-                    userReputationView.text = "(${numberCalculation(count.toLong())})"
-                    Log.d("checkIfCountWorks", count.toString())
-                }
-            }
-
-
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
-        })
+                override fun onCancelled(p0: DatabaseError) {}
+            })
     }
 
-
-//    fun sendMessageTopic(receiverId: String, initiatorId : String, post : String, activity : Activity) {
-//
-//        val notificationTitle = "This is the title that would appear"
-//        val notificationMessage = "This is the message that would appear"
-//
-//        val notification = JSONObject()
-//        val notificationBody = JSONObject()
-//        try {
-//            notificationBody.put("title", notificationTitle)
-//            notificationBody.put("message", notificationMessage)
-//            notificationBody.put("initiator", initiatorId)
-//            notificationBody.put("post", post)
-//
-//            notification.put("to", receiverId)
-//            notification.put("data", notificationBody)
-//        } catch (e: JSONException) {
-//            Log.e("NOTIFICATION TAG", "onCreate: $e")
-//        }
-//        sendTopicNotification(notification, activity)
-//    }
-//
-//    fun sendTopicNotification(notification: JSONObject, activity : Activity) {
-//
-//        val FCM_API = "https://fcm.googleapis.com/fcm/send"
-//        val serverKey =
-//            "AAAAA6gibkM:APA91bHpYv3QKAF4_wfCpRB4dTT11pRr_uZUcLUpgv6OEO-acl7qvnSK0vFyA8iXloJfuQIBS3q61zgGRZ6iFgBrHMpIflEyeTNgD_LJbQZtMnPHlVdRoe-OK8dNUGss7YfR9Hf-4f7L"
-//
-//        val jsonObjectRequest = object : JsonObjectRequest(FCM_API, notification,
-//            Response.Listener<JSONObject> { response -> Log.i("NOTIFICATION TAG", "onResponse: $response") },
-//            Response.ErrorListener {
-//                Toast.makeText(activity, "Request error $it", Toast.LENGTH_LONG).show()
-//                Log.i("NOTIFICATION TAG", "onErrorResponse: Didn't work because $it")
-//            }) {
-//
-//            @Throws(AuthFailureError::class)
-//            override fun getHeaders(): Map<String, String> {
-//                val params = HashMap<String, String>()
-//                params["Authorization"] = serverKey
-//                params["Content-Type"] = "application/json"
-//                return params
-//            }
-//        }
-//        MySingleton.getInstance(activity).addToRequestQueue(jsonObjectRequest)
-//    }
-
-
-//    fun sendCloudMessage(userId: String) {
-//
-//        val receiverRef = FirebaseDatabase.getInstance().getReference("/users/$userId/services/firebase-token")
-//
-//        receiverRef.addListenerForSingleValueEvent(object : ValueEventListener {
-//            override fun onCancelled(p0: DatabaseError) {
-//
-//            }
-//
-//            override fun onDataChange(p0: DataSnapshot) {
-//
-//                val registrationToken = p0.getValue(String::class.java)
-//
-//                val senderId = "15705730627"
-//                val msgID = registrationToken + System.currentTimeMillis()
-//
-//                val fm = FirebaseMessaging.getInstance()
-//
-//                fm.send(
-//                    RemoteMessage.Builder("$senderId@gcm.googleapis.com")
-//                        .setMessageId(msgID)
-//                        .addData("my_message", "Hello World")
-//                        .addData("my_action", "SAY_HELLO")
-//                        .build()
-//                )
-//
-//                Log.d("tokencomplete", p0.toString())
-//                Log.d("tokenonly", registrationToken)
-//
-//            }
-//
-//        })
-//
-//    }
-
-
-// See documentation on defining a message payload.
-
-// Send a message to the device corresponding to the provided
-// registration token.
-
-    fun isLocationServiceEnabled(context : Context): Boolean {
+    fun isLocationServiceEnabled(context: Context): Boolean {
         var gpsEnabled = false
 
         val locationManager: LocationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -1478,12 +1315,10 @@ interface DereMethods : FCMMethods {
         } catch (ex: Exception) {
             //do nothing...
         }
-
         return gpsEnabled
     }
 
     fun closeKeyboard(activity: Activity) {
-
         val view = activity.currentFocus
         if (view != null) {
             val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
@@ -1496,7 +1331,7 @@ interface DereMethods : FCMMethods {
         val view = activity.currentFocus
         if (view != null) {
             val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
-            imm!!.showSoftInput (view, InputMethodManager.SHOW_IMPLICIT)
+            imm!!.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
         }
     }
 
@@ -1512,9 +1347,7 @@ interface DereMethods : FCMMethods {
     fun panToCurrentLocation(activity: Activity, myMapboxMap: MapboxMap) {
         var airLocation: AirLocation? = null
         airLocation = AirLocation(activity, true, true, object : AirLocation.Callbacks {
-            override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {
-
-            }
+            override fun onFailed(locationFailedEnum: AirLocation.LocationFailedEnum) {}
 
             override fun onSuccess(location: Location) {
 
@@ -1524,13 +1357,9 @@ interface DereMethods : FCMMethods {
                     .build()
 
                 myMapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 3000)
-
             }
-
         })
     }
-
-
 }
 
 /*

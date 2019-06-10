@@ -29,21 +29,21 @@ import kotlinx.android.synthetic.main.fragment_on_boarding.*
 class OnBoardingFragment : Fragment() {
 
 
-    val title1 = "Welcome to Dere"
-    val subTitle1 = "All your future travel destinations in one place, filtered by your interests."
+    private val title1 = "Welcome to Dere"
+    private val subTitle1 = "All your future travel destinations in one place, filtered by your interests."
 
-    val title2 = "Photos"
-    val subTitle2 = "Are all geo-tagged, so saving a photo adds it to your map."
+    private val title2 = "Photos"
+    private val subTitle2 = "Are all geo-tagged, so saving a photo adds it to your map."
 
-    val title3 = "Buckets"
-    val subTitle3 =
+    private val title3 = "Buckets"
+    private val subTitle3 =
         "Are like binders for your dreams. Save and arrange photos in different buckets."
 
-    val title4 = "Board"
-    val subTitle4 = "Is where you talk to other explorers. Ask questions and share your knowledge."
+    private val title4 = "Board"
+    private val subTitle4 = "Is where you talk to other explorers. Ask questions and share your knowledge."
 
-    val title5 = "Interests"
-    val subTitle5 =
+    private val title5 = "Interests"
+    private val subTitle5 =
         "Are what filters the content you see in the app, and are saved automatically as you use Dere. Press and hold your finger on a photo to create your first purchasedItineraryObject and collect its tags to your interests"
 
 
@@ -90,38 +90,9 @@ class OnBoardingFragment : Fragment() {
         button.setOnClickListener {
             finishOnBoarding()
         }
-
-//        button.setOnClickListener {
-//            when (viewPagerPosition) {
-//                0 -> {
-//                    setUpItem2()
-//                }
-//
-//                1 -> {
-//                    setUpItem3()
-//
-//                }
-//
-//                2 -> {
-//                    setUpItem4()
-//                }
-//
-//                3 -> {
-//                    setUpItem5()
-//                }
-//
-//                4 -> {
-//                    finishOnBoarding()
-//                }
-//
-//                5 -> {
-//                    finishOnBoarding()
-//                }
-//            }
-//        }
     }
 
-    fun finishOnBoarding(){
+    private fun finishOnBoarding(){
 
         val activity = activity as MainActivity
 
@@ -142,7 +113,6 @@ class OnBoardingFragment : Fragment() {
                         activity.mBottomNav.visibility = View.VISIBLE
 
                         Toast.makeText(activity, "Start exploring!", Toast.LENGTH_SHORT).show()
-
                     }
                 } else {
                     Toast.makeText(activity, "Please create your first purchasedItineraryObject", Toast.LENGTH_LONG).show()

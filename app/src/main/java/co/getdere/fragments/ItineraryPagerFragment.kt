@@ -17,9 +17,8 @@ class ItineraryPagerFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_itinerary_pager, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_itinerary_pager, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -28,15 +27,10 @@ class ItineraryPagerFragment : Fragment() {
 
         val viewPager = itinerary_pager_pager
         viewPager.adapter = ItineraryGalleryChildPagerAdapter(childFragmentManager)
-
         tabLayout.setupWithViewPager(viewPager)
-
-
-
     }
 
     companion object {
         fun newInstance(): ItineraryPagerFragment = ItineraryPagerFragment()
     }
-
 }

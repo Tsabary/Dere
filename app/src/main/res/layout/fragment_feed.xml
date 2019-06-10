@@ -8,7 +8,6 @@
         android:layout_width="match_parent"
         android:background="@color/gray100">
 
-
     <include
             layout="@layout/feed_toolbar"
             android:layout_width="0dp"
@@ -29,7 +28,10 @@
             android:id="@+id/feed_search_tags_recycler"
             android:visibility="gone"
             android:elevation="2dp"
-            android:background="@color/white"/>
+            android:background="@color/white"
+            android:layout_marginBottom="24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="0.0"/>
 
 
     <com.google.android.material.tabs.TabLayout
@@ -79,19 +81,4 @@
             android:id="@+id/feed_search_results_recycler"
             android:visibility="gone"/>
 
-
-    <!--<com.google.android.material.bottomnavigation.BottomNavigationView-->
-    <!--android:id="@+id/feed_bottom_nav"-->
-    <!--android:layout_width="0dp"-->
-    <!--android:layout_height="50dp"-->
-    <!--android:background="?android:attr/windowBackground"-->
-
-    <!--app:itemBackground="@color/white"-->
-    <!--app:itemTextColor="@color/bottom_nav_color"-->
-    <!--app:itemIconTint="@color/bottom_nav_color"-->
-    <!--app:menu="@menu/navigation"-->
-    <!--app:labelVisibilityMode="unlabeled"-->
-    <!--app:layout_constraintBottom_toBottomOf="parent"-->
-    <!--app:layout_constraintEnd_toEndOf="parent"-->
-    <!--app:layout_constraintStart_toStartOf="parent"/>-->
 </androidx.constraintlayout.widget.ConstraintLayout>

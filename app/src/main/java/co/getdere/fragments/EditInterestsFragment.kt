@@ -38,13 +38,12 @@ class EditInterestsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_edit_interests, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_edit_interests, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         activity?.let {
             sharedViewModelTags = ViewModelProviders.of(it).get(SharedViewModelTags::class.java)
             currentUser = ViewModelProviders.of(it).get(SharedViewModelCurrentUser::class.java).currentUserObject
@@ -56,28 +55,24 @@ class EditInterestsFragment : Fragment() {
         tagSuggestionRecycler.adapter = tagsFilteredAdapter
         tagSuggestionRecycler.layoutManager = LinearLayoutManager(this.context)
 
+        FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/interests")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {}
 
-
-        val interestsRef = FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/interests")
-
-        interestsRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {}
-
-            override fun onDataChange(p0: DataSnapshot) {
-
-                for (interest in p0.children) {
-                    tagsInChipGroup.add(interest.key!!)
-                    populateChipGroup()
+                override fun onDataChange(p0: DataSnapshot) {
+                    for (interest in p0.children) {
+                        tagsInChipGroup.add(interest.key!!)
+                        populateChipGroup()
+                    }
                 }
-            }
-        })
+            })
 
 
         searchInput.addTextChangedListener(object : TextWatcher {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 tagsFilteredAdapter.clear()
-                val userInput = s.toString().toLowerCase().replace(" ","-")
+                val userInput = s.toString().toLowerCase().replace(" ", "-")
                 if (userInput == "") {
                     tagSuggestionRecycler.visibility = View.GONE
                 } else {
@@ -87,7 +82,6 @@ class EditInterestsFragment : Fragment() {
                         sharedViewModelTags.tagList.filter { it.tagString.contains(userInput) }
 
                     for (t in relevantTags) {
-
                         var countTagMatches = 0
                         for (i in 0 until chipGroup.childCount) {
                             val chip = chipGroup.getChildAt(i) as Chip
@@ -112,12 +106,11 @@ class EditInterestsFragment : Fragment() {
         })
 
         tagsFilteredAdapter.setOnItemClickListener { item, _ ->
-            val row = item as SingleTagSuggestion
-            tagsInChipGroup.add(row.tag.tagString)
+            val singleTag = item as SingleTagSuggestion
+            tagsInChipGroup.add(singleTag.tag.tagString)
             populateChipGroup()
-            val tagRef =
-                FirebaseDatabase.getInstance().getReference("/users/${currentUser.uid}/interests/${row.tag.tagString}")
-            tagRef.setValue(true)
+            FirebaseDatabase.getInstance()
+                .getReference("/users/${currentUser.uid}/interests/${singleTag.tag.tagString}").setValue(true)
             searchInput.text.clear()
             tagSuggestionRecycler.visibility = View.GONE
 
@@ -136,7 +129,6 @@ class EditInterestsFragment : Fragment() {
     }
 
     private fun onTagSelected(selectedTag: String) {
-
         val chip = Chip(this.context)
         chip.text = selectedTag
         chip.isCloseIconVisible = true

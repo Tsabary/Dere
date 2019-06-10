@@ -42,7 +42,7 @@
                     android:visibility="gone">
 
                 <TextView
-                        android:text="Are you sure you want to delete this post?"
+                        android:text="@string/are_you_sure_you_want_to_delete_this_post"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/image_expended_delete_message"
@@ -66,7 +66,7 @@
                         mapbox:layout_constraintEnd_toStartOf="@id/image_expended_delete_remove_button"
                         android:layout_marginEnd="32dp"/>
                 <TextView
-                        android:text="Remove"
+                        android:text="@string/remove"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/image_expended_delete_remove_button"
@@ -88,7 +88,7 @@
                     android:visibility="visible">
 
                 <TextView
-                        android:text="Edit"
+                        android:text="@string/edit"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/image_expended_edit"
@@ -101,7 +101,7 @@
                         android:paddingBottom="24dp"
                         android:layout_marginTop="8dp"/>
                 <TextView
-                        android:text="Delete"
+                        android:text="@string/delete"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/image_expended_remove"
@@ -149,7 +149,7 @@
                     mapbox:layout_constraintBottom_toBottomOf="@id/image_expended_author_image"
                     android:scaleType="fitCenter"
                     android:padding="16dp"
-            />
+                    android:contentDescription="@string/menu_icon"/>
             <de.hdodenhof.circleimageview.CircleImageView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
@@ -186,7 +186,6 @@
                     android:layout_marginEnd="16dp"
                     mapbox:layout_constraintHorizontal_bias="0.0"
                     android:layout_marginStart="8dp"/>
-
 
             <TextView
                     android:layout_width="wrap_content"
@@ -255,7 +254,8 @@
                         mapbox:layout_constraintEnd_toStartOf="@+id/image_expended_like_button"
                         mapbox:layout_constraintTop_toTopOf="parent"
                         android:layout_marginTop="8dp"
-                        android:padding="24dp"/>
+                        android:padding="24dp"
+                        android:contentDescription="@string/go_to_location_icon"/>
                 <ImageButton
                         android:src="@drawable/heart"
                         android:layout_width="wrap_content"
@@ -268,7 +268,8 @@
                         mapbox:layout_constraintStart_toEndOf="@+id/image_expended_map"
                         mapbox:layout_constraintHorizontal_bias="0.5"
                         mapbox:layout_constraintEnd_toStartOf="@+id/image_expended_bucket_icon"
-                        android:padding="24dp"/>
+                        android:padding="24dp"
+                        android:contentDescription="@string/like_icon"/>
                 <ImageButton
                         android:src="@drawable/bucket"
                         android:layout_width="wrap_content"
@@ -281,7 +282,8 @@
                         mapbox:layout_constraintStart_toEndOf="@+id/image_expended_like_button"
                         mapbox:layout_constraintHorizontal_bias="0.5"
                         mapbox:layout_constraintEnd_toStartOf="@+id/image_expended_share"
-                        android:padding="24dp"/>
+                        android:padding="24dp"
+                        android:contentDescription="@string/bucket_icon"/>
 
                 <TextView
                         android:layout_width="0dp"
@@ -309,7 +311,8 @@
                         mapbox:layout_constraintStart_toEndOf="@+id/image_expended_bucket_icon"
                         mapbox:layout_constraintHorizontal_bias="0.5"
                         mapbox:layout_constraintEnd_toEndOf="parent"
-                        android:padding="24dp"/>
+                        android:padding="24dp"
+                        android:contentDescription="@string/share_icon"/>
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -334,7 +337,7 @@
                             mapbox:layout_constraintStart_toStartOf="parent"
                             mapbox:layout_constraintHorizontal_chainStyle="packed"/>
                     <TextView
-                            android:text="	●"
+                            android:text="@string/black_circle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/textView4"
@@ -360,7 +363,7 @@
                             mapbox:layout_constraintHorizontal_bias="0.5"
                             mapbox:layout_constraintEnd_toStartOf="@+id/textView7"/>
                     <TextView
-                            android:text="●"
+                            android:text="@string/black_circle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/textView7"
@@ -430,7 +433,7 @@
             android:background="@color/white">
 
         <TextView
-                android:text="Post"
+                android:text="@string/post"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/image_expended_comments_post_button"

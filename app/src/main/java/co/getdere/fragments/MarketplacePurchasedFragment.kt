@@ -18,6 +18,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.stripe.android.model.Customer
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
@@ -118,48 +119,6 @@ class MarketplacePurchasedFragment : Fragment() {
     }
 
 
-    fun listenToItineraries2() {
-
-        adapter.clear()
-
-        val userPurchasedItinerariesRef =
-            FirebaseDatabase.getInstance().getReference("/users/$uid/purchasedItineraries")
-
-        val itinerariesRef = FirebaseDatabase.getInstance().getReference("/itineraries")
-
-        userPurchasedItinerariesRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-
-                for (itineraryPath in p0.children) {
-                    itinerariesRef.child(itineraryPath.key!!)
-                        .addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onCancelled(p0: DatabaseError) {
-                            }
-
-                            override fun onDataChange(p0: DataSnapshot) {
-
-
-                                val itinerary = p0.child("body").getValue(ItineraryBody::class.java)
-                                val itineraryListing =
-                                    p0.child("listing").getValue(ItineraryListing::class.java)
-                                val itineraryBudget =
-                                    p0.child("listing").getValue(ItineraryBudget::class.java)
-
-                                if (itinerary != null && itineraryListing != null && itineraryBudget != null) {
-                                    adapter.add(SingleItinerary(itinerary, itineraryListing, itineraryBudget))
-                                }
-
-                            }
-                        })
-                }
-            }
-        })
-    }
-
-
     companion object {
         fun newInstance(): MarketplacePurchasedFragment = MarketplacePurchasedFragment()
     }
@@ -197,7 +156,8 @@ class SinglePurchasedItinerary(val itinerary: DataSnapshot) : Item<ViewHolder>()
                 break@firstImage
             }
 
-            viewHolder.itemView.purchased_itinerary_title.text = purchasedItinerary.title + " in " + purchasedItinerary.locationName
+            viewHolder.itemView.purchased_itinerary_title.text =
+                purchasedItinerary.title + " in " + purchasedItinerary.locationName
             viewHolder.itemView.purchased_itinerary_location.text = purchasedItinerary.locationName
             viewHolder.itemView.purchased_itinerary_days.text = "${purchasedItinerary.days.size} days"
 
